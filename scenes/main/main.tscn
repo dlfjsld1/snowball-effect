@@ -1,0 +1,61 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
+[ext_resource type="Script" path="res://scripts/core/score_ledger.gd" id="2_ledger"]
+[ext_resource type="Script" path="res://scripts/simulation/ball_simulation_manager.gd" id="3_simulation"]
+[ext_resource type="Script" path="res://scripts/simulation/ball_renderer.gd" id="4_renderer"]
+[ext_resource type="PackedScene" path="res://scenes/gameplay/paddle.tscn" id="5_paddle"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
+
+[node name="Main" type="Node2D"]
+
+[node name="GameManager" type="Node" parent="."]
+process_mode = 3
+script = ExtResource("1_game_manager")
+simulation_path = NodePath("../PlayField/SimulationMount/BallSimulationManager")
+paddle_path = NodePath("../PlayField/PaddleMount/Paddle")
+score_ledger_path = NodePath("../ScoreLedger")
+hud_path = NodePath("../UI/HUDMount/HUD")
+pause_menu_path = NodePath("../UI/PauseMenu")
+
+[node name="ScoreLedger" type="Node" parent="."]
+script = ExtResource("2_ledger")
+
+[node name="StageWorld" type="Node2D" parent="."]
+
+[node name="PlayField" type="Node2D" parent="."]
+
+[node name="Backdrop" type="Polygon2D" parent="PlayField"]
+polygon = PackedVector2Array(500, 0, 1100, 0, 1100, 900, 500, 900)
+color = Color(0.09, 0.12, 0.18, 1)
+
+[node name="SimulationMount" type="Node2D" parent="PlayField"]
+
+[node name="BallSimulationManager" type="Node" parent="PlayField/SimulationMount"]
+script = ExtResource("3_simulation")
+
+[node name="BallRenderer" type="Node2D" parent="PlayField/SimulationMount"]
+script = ExtResource("4_renderer")
+simulation_path = NodePath("../BallSimulationManager")
+
+[node name="PaddleMount" type="Node2D" parent="PlayField"]
+
+[node name="Paddle" parent="PlayField/PaddleMount" instance=ExtResource("5_paddle")]
+runtime_start_position = Vector2(800, 760)
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="HUDMount" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="HUD" parent="UI/HUDMount" instance=ExtResource("6_hud")]
+layout_mode = 1
+
+[node name="PauseMenu" parent="UI" instance=ExtResource("7_pause")]

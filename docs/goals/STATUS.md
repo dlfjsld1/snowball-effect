@@ -1,0 +1,76 @@
+# Goal Status
+
+상태와 검증 Evidence의 유일한 기록 장소다. `VERIFIED`는 실제 실행 결과가 있을 때만 사용한다. 역할과 lane은 초기안이며 변경 시 [`../team/`](../team/) 문서와 함께 갱신한다.
+
+## Active lanes
+
+| Lane | Active Goal | Owner | 상태 |
+|---|---|---|---|
+| Core | 없음 | 팀 리드/Core 담당 | available |
+| Presentation | 없음 | 팀원 A | available |
+| Content/Systems | 없음 | 팀원 B | available |
+| Integration | 없음 | 팀 리드/Integration 담당 | available |
+
+각 lane은 `IN PROGRESS`를 최대 하나만 가진다. 서로 다른 lane은 Dependencies와 Integration Point가 충족되면 병렬 진행할 수 있다.
+
+## Integration lock
+
+| Integration Goal | Locked Files | 상태 |
+|---|---|---|
+| 없음 | 없음 | unlocked |
+
+## Goal matrix
+
+| Goal | Owner | 상태 | Evidence / 남은 검증 |
+|---|---|---|---|
+| S0-G1 프로젝트 부트 | Integration | VERIFIED | 2026-08-09 Godot 4.7.1 CLI headless run exit 0. Primary `godot` MCP runtime launch은 strict elicitation 미지원으로 차단; baseline 통과 후 fallback `godot_fallback` debug run 성공(치명 runtime error 없음). WASAPI 출력 장치 실패로 dummy audio fallback만 기록됨. |
+| S0-G2 입력·공유 씬 골격 | Integration | VERIFIED | Input Map 6개 action과 공유 mount tree 확인. Godot 4.7.1 CLI editor load/Main run exit 0, `godot` MCP scene tree 조회 성공. 실제 A/D+회전 동시 동작 검증은 입력 소비자가 존재하는 S1-G2로 이동. |
+| S0-G3 Web smoke | Content/Systems | VERIFIED | Godot 4.7.1 single-threaded Web release export exit 0. 로컬 HTTP에서 HTML/JS/WASM/PCK 모두 200. 새 브라우저 탭에서 Godot 4.7.1 WebGL2 기동, Canvas 1280×720→1024×768 resize, Canvas focus 유지 및 A/← 입력 전달, console warning/error 0건. |
+| S1-G1 배열 풀 낙하 | Core | VERIFIED | 2026-08-09 Lv1 radius 2 logical units와 160 world units/s Spawn tuning을 gravity 0 free-flight 경계에서 재검증. 100공/slot reuse/좌·우·상단 반사·열린 하단 구조 유지, Godot 4.7.1 headless exit 0 및 Primary `godot` validate 3/3. |
+| S1-G2 패들 조작·반사 | Core | VERIFIED | 2026-08-09 position source를 마지막 실제 MouseMotion 또는 A/D key press로 arbitration하도록 수정했다. Keyboard release는 source를 바꾸지 않아 stale Mouse X snap이 없다. Primary `godot` validate 3/3 및 mouse test exit 0. Main runtime에서 D release 뒤 Paddle x `980→980`(250ms) 유지 확인. 최신 clean Web export는 Canvas/focus/console warning·error 0이나 browser tooling pointer/wheel 입력은 별도 `UNVERIFIED`다. |
+| S1-G3 Active Cashout 논리 | Core | VERIFIED | 2026-08-09 Lv1 radius 2에서도 열린 하단 Cashout, slot reuse, stage/run ledger 1회 반영과 reset을 재검증. Godot 4.7.1 headless exit 0 및 Primary `godot` validate 3/3. |
+| S1-G4 최소 HUD | Presentation | VERIFIED | `score_changed`/`ball_count_changed` read-only 구독과 `reset_view()` 구현. Godot 4.7.1 자동검증 exit 0: stage/run 1회 표시, balls 1 표시, HUD reset 후 Core state 불변. Primary `godot` validate 4/4. |
+| S1-G5 Pause·Restart 요청 UI | Content/Systems | VERIFIED | `pause_requested`/`retry_requested` request-only UI와 paused label 상태 구현. Godot 4.7.1 자동검증 exit 0: input pause 1회, button retry 1회, SceneTree/gameplay 직접 변경 없음. Primary `godot` validate 4/4. |
+| S1-G6 Pause·Restart 통합 | Integration | VERIFIED | 2026-08-09 최신 clean Web release export를 사용자의 실제 Chrome 수동 플레이로 검증. Canvas, Mouse X direct 이동, Mouse Wheel 자유회전, A/D 이동, A/D release 뒤 위치 유지, 다음 실제 MouseMotion에서만 Mouse control 복귀, Paddle 이동/회전 충돌, Pause/Retry가 정상이며 browser console game error 0. |
+| S2-G1 공·점수 데이터 | Content/Systems | PENDING | S1 완료 필요 |
+| S2-G2 같은 레벨 후보 탐색 | Core | PENDING | S2-G1 API 필요 |
+| S2-G3 결정적 Merge commit | Core | PENDING | S2-G2 필요 |
+| S2-G4 Score formatter | Content/Systems | PENDING | S2-G1 score range 필요 |
+| S2-G5 Merge 표시 통합 | Presentation | PENDING | S2-G3/G4 계약 필요 |
+| S3-G1 Stage 데이터 | Content/Systems | PENDING | S2-G1 필요 |
+| S3-G2 Stage 진입·Cashout 점수/시간 | Core | PENDING | S3-G1/S1-G3 필요 |
+| S3-G3 Tick 종료 중재 | Core | PENDING | S3-G2/S2-G3 필요 |
+| S3-G4 Snapshot Settlement | Core | PENDING | S3-G3 필요 |
+| S3-G5 Clear·Fail 상태 통합 | Integration | PENDING | S3-G2~G4/G6 계약 필요 |
+| S3-G6 Stage HUD | Presentation | PENDING | S3-G1/G2 signal 필요 |
+| S4-G1 Spatial Grid | Core | PENDING | S2 완료 필요 |
+| S4-G2 슬롯 재사용·할당 점검 | Core | PENDING | S4-G1 필요 |
+| S4-G3 1,000공 스트레스 | Core | PENDING | S4-G2와 release 측정 계약 필요 |
+| S5-G1 Stage 콘텐츠 매핑 | Content/Systems | PENDING | S3-G1/S4 완료 필요 |
+| S5-G2 Stage re-baselining runtime | Core | PENDING | S5-G1/S3 계약 필요 |
+| S5-G3 Scale Shift 상태 통합 | Integration | PENDING | S5-G1/G2/G4 계약 필요 |
+| S5-G4 Stage World·Shift presentation | Presentation | PENDING | S5-G1/G3 signal 필요 |
+| S5-G5 3-Stage 통합 완주 | Integration | PENDING | S5-G1~G4 `VERIFIED` 필요 |
+| S6-G1 이벤트 등급·FX budget | Presentation | PENDING | S5 완료 필요 |
+| S6-G2 CUT-IN·화면 연출 | Presentation | PENDING | S6-G1/S5 상태 계약 필요 |
+| S6-G3 Audio 콘텐츠 | Content/Systems | PENDING | S6-G1 event tier 필요 |
+| S6-G4 사운드 계층·가독성 | Presentation | PENDING | S6-G1/G3 필요 |
+| S7-G1 Item gateway 통합 | Integration | PENDING | S5 완료와 Core/Content API 필요; 선택 |
+| S7-G2 Blizzard | Content/Systems | PENDING | S7-G1 필요; 선택 |
+| S7-G3 Fire Core | Content/Systems | PENDING | S7-G1/S3 회귀 필요; 선택 |
+| S7-G4 Magnet | Content/Systems | PENDING | S7-G1/S4 metric 필요; 선택 |
+| S8-G1 Black Hole force | Core | PENDING | S5/S4 baseline 필요 |
+| S8-G2 최종 Stage Clear runtime | Core | PENDING | S8-G1/S3 필요 |
+| S8-G3 Title·Result·Retry UI | Content/Systems | PENDING | S8-G2 snapshot schema 필요 |
+| S8-G4 Final Result·Retry 통합 | Integration | PENDING | S8-G2/G3와 모든 reset API 필요 |
+| S9-G1 Release tuning·telemetry | Content/Systems | PENDING | S6/S8 완료; S7 선택 |
+| S9-G2 Web export·browser QA | Content/Systems | PENDING | S9-G1과 통합 RC 필요 |
+| S9-G3 Public link·submission | Content/Systems | PENDING | S9-G2와 hosting 필요 |
+
+## 현재 다음 행동
+
+- S0 Bootstrap의 세 Goal이 모두 `VERIFIED`됐다.
+- S1-G1/G3/G4/G5는 기존 `VERIFIED`를 유지한다.
+- S1-G2는 Mouse/Keyboard 마지막 실제 position input arbitration 회귀까지 `VERIFIED`다.
+- S1-G6은 최신 clean Web export의 사용자 Chrome 수동 검증까지 완료해 `VERIFIED`다. S1 Shared Skeleton이 닫혔으며 다음 기존 Goal은 S2-G1 공·점수 데이터다.
+- 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.

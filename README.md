@@ -2,48 +2,56 @@
 
 **Snowball Effect**는 떨어지는 공을 패들로 튕겨 같은 단계끼리 합치고, 눈송이에서 행성·은하·블랙홀까지 규모를 키우는 2D 액션 머지 게임입니다.
 
-> 현재 상태: 개발 준비 단계
+> 현재 상태: S0 Bootstrap과 S1 Shared Skeleton 완료. Desktop/Main과 최신 Chrome Web 수동 플레이 검증을 마쳤으며, 다음 개발 단계는 S2 Merge입니다.
 
-## 핵심 플레이
+## 게임 목표
 
-- 화면 위에서 현재 스테이지의 기본 공이 계속 떨어집니다.
+- 화면 위에서 현재 Stage의 기본 공이 계속 생성됩니다.
 - 패들의 위치와 각도를 조절해 공의 다음 궤도를 만듭니다.
-- 같은 단계의 공 두 개가 만나면 더 높은 단계의 공 하나로 합쳐집니다.
+- 같은 단계의 공 두 개를 합쳐 더 높은 단계의 공을 만드는 것이 목표입니다.
 - 패들 아래로 떨어진 공은 실패가 아니라 점수가 됩니다.
-- 스테이지 최고 공을 만들면 `SCALE SHIFT`가 발생합니다.
-- 이전 스테이지의 최고 공이 다음 스테이지의 기본 공이 되며 생성량도 증가합니다.
+- Stage 최고 공을 만들면 성공이 잠기고, 최종 정산 뒤 `SCALE SHIFT`가 발생합니다.
+- Ground → Planetary → Galactic → Black Hole로 규모가 커집니다.
+
+Merge, Scale Shift, 전체 Stage progression은 게임의 목표이며 아직 구현되지 않았습니다.
+
+## 현재 플레이 가능한 Shared Skeleton
+
+- Lv1 Snowball 생성과 `gravity = 0` 기반 이동
+- 좌·우·상단 벽 반사와 열린 하단 Active Cashout
+- Mouse/Keyboard Paddle 이동과 자유회전
+- 양면 Paddle collision 및 이동·회전에 따른 타격 변화
+- Stage / Run 기본 Score HUD
+- Pause / Retry
+- Desktop 실행과 Web Export
 
 ## 조작
 
-| 키 | 기능 |
+| 입력 | 기능 |
 |---|---|
-| `A` / `D` | 패들 좌우 이동 |
-| `←` / `→` | 패들 각도 변경 |
-| `Esc` | 일시정지 |
+| Mouse X | Paddle 좌우 직접 이동 |
+| Mouse Wheel | Paddle 자유회전 |
+| `A` / `D` | Paddle 좌우 이동 Keyboard fallback |
+| `←` / `→` | Paddle 회전 Keyboard fallback |
+| `Esc` | Pause / Resume |
+| `R` | Retry |
 
-이동과 각도 변경은 동시에 사용할 수 있습니다.
+이동과 회전은 동시에 사용할 수 있습니다. Paddle은 양방향으로 제한 없이 계속 회전하며, Mouse/Keyboard 위치 조작은 마지막으로 실제 사용한 입력 source를 따릅니다.
 
-## 목표 경험
+## 기술 정보
 
-한 판은 약 3분입니다. 처음에는 작은 눈송이를 다루지만, 플레이가 진행될수록 점수와 화면 밀도가 폭증하고 다음 규모로 전환됩니다.
+- Godot `4.7.1 stable`, GDScript
+- 현재 프로젝트 설정: Compatibility renderer
+- 1600×900 logical viewport
+- Desktop browser Web Export
+- 중앙 배열 기반 대량 Ball simulation
+- 향후 spatial grid 기반 Merge 후보 탐색
+- logical ball 약 1,000개에서 최소 30 FPS 목표
 
-목표 스테이지:
+## 다음 단계
 
-1. Ground
-2. Planetary
-3. Galactic
-4. Black Hole
-
-## 기술 목표
-
-- Godot 4.x
-- 1600×900 기준 2D 화면
-- 데스크톱 브라우저 Web Export
-- 대량 공을 위한 중앙 배열 기반 시뮬레이션
-- 공간 그리드를 이용한 인접 합체 후보 탐색
-- 논리 공 1,000개에서 최소 30 FPS 목표
+`Next: S2 — Ball/Score data → Merge system`
 
 ## 라이선스
 
 라이선스는 아직 정해지지 않았습니다.
-

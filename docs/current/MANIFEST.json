@@ -1,0 +1,192 @@
+[
+    {
+        "path":  "00_READ_FIRST.md",
+        "bytes":  6290,
+        "sha256":  "1aeef2121084331e06b285bec7dbe7e774c406b0c9a408404d6187fae947a2ff"
+    },
+    {
+        "path":  "01_PRODUCT_BRIEF.md",
+        "bytes":  5847,
+        "sha256":  "e2733623e8a61bcd64dd7da44571e48f9f108a1f0bb956287e9e6887c1d18574"
+    },
+    {
+        "path":  "02_GAME_RULES.md",
+        "bytes":  10136,
+        "sha256":  "de2194f991e595ffd6b197a715361d5bddc275fe77e9664f5b3e6a284b41004b"
+    },
+    {
+        "path":  "03_TECHNICAL_DESIGN.md",
+        "bytes":  18241,
+        "sha256":  "00d45cae27c671705dc7223e1f18bb55b852dc2816c2c631508231d1b0e6f22d"
+    },
+    {
+        "path":  "04_PROJECT_STRUCTURE.md",
+        "bytes":  7266,
+        "sha256":  "dac06eddace9c74b4e9ce10a52c7d6598f7d60dcd10032e2f0d9f8de8fb2a760"
+    },
+    {
+        "path":  "05_IMPLEMENTATION_PLAN.md",
+        "bytes":  8665,
+        "sha256":  "0e37253a7bf61ef7c7c4276150a1020a2e336eca14fa7bf367fa2d6cb1d3b3ac"
+    },
+    {
+        "path":  "06_CODEX_WORKING_RULES.md",
+        "bytes":  6805,
+        "sha256":  "4f5e5b1b7a019c1f5cd05b2ef63b2eecd7c15c2e24513af7e2347012a31a76dd"
+    },
+    {
+        "path":  "07_INITIAL_PROMPT.md",
+        "bytes":  5873,
+        "sha256":  "02647d3653d1114ffb168719f78f92dbe4cd7573dedddf3b30d1571f6b200195"
+    },
+    {
+        "path":  "08_HACKATHON_REQUIREMENTS.md",
+        "bytes":  6856,
+        "sha256":  "a155e5d564b458d42200d1a65a7a819a839a0f2ba69c64b720aa91cafc0a405c"
+    },
+    {
+        "path":  "09_GAMEPLAY_LOOP_V2.md",
+        "bytes":  13122,
+        "sha256":  "fbd052f4c188483bfac610d92bb89bd216a0ac2e7892ac076cd16afd125298fb"
+    },
+    {
+        "path":  "AGENTS.md",
+        "bytes":  9753,
+        "sha256":  "1749ea061203559470320d53c0b0ec598de1f8ad1240951e77e128f4c3c00cb3"
+    },
+    {
+        "path":  "ALL_IN_ONE.md",
+        "bytes":  174391,
+        "sha256":  "68f247d4c2364110cca0eeac1e9ba693f55ce13fe609d2ddbb0e09d1742c1504"
+    },
+    {
+        "path":  "DESIGN/00_VISUAL_IDENTITY.md",
+        "bytes":  4371,
+        "sha256":  "f3b5cf23d7e84ac67f06c32c9751f02a777e95fc3d9a39f2aae2e8cb1d554c5f"
+    },
+    {
+        "path":  "DESIGN/01_SCREEN_COMPOSITION.md",
+        "bytes":  4178,
+        "sha256":  "6fc7bfc9754680f6ba94ad573c9eb2b575257a39875257723f8a561aa7477896"
+    },
+    {
+        "path":  "DESIGN/02_STAGE_ART_DIRECTION.md",
+        "bytes":  3113,
+        "sha256":  "0c5d25123ebc62b07999c5e2e0cfbad2b2f227b97e278b761eb5f2fb371266a2"
+    },
+    {
+        "path":  "DESIGN/03_GAMEPLAY_EFFECTS.md",
+        "bytes":  2929,
+        "sha256":  "9984c4eb8814216a348398a592530b804c1d31b21fd8560cf016780abe8f8f0a"
+    },
+    {
+        "path":  "DESIGN/04_CUTIN_SYSTEM.md",
+        "bytes":  4880,
+        "sha256":  "1c847382ed776354e7457d2a1974bddffa8279853edfa02fc88346cbb15cfa8c"
+    },
+    {
+        "path":  "DESIGN/README.md",
+        "bytes":  353,
+        "sha256":  "cf9aa4e190122e311ebd27dbe299ca2e4199e8041b293289cd4e8186fe90a592"
+    },
+    {
+        "path":  "README.md",
+        "bytes":  1610,
+        "sha256":  "1a6b688ef65c331ec62ad8e8fad2227b0a3c0add0507e7d2ae1e89b22e2a0d17"
+    },
+    {
+        "path":  "SUBMISSION/00_OFFICIAL_REQUIREMENTS.md",
+        "bytes":  1314,
+        "sha256":  "c6b813a8c04cb64913d0449d0251407739d4e7758de60dce5abe5a254aa8c997"
+    },
+    {
+        "path":  "SUBMISSION/01_JUDGING_STRATEGY.md",
+        "bytes":  4644,
+        "sha256":  "397d0f779707336cc55a6c72a96ff2bf1a610e3ba5c818c46fb692f37d5a1733"
+    },
+    {
+        "path":  "SUBMISSION/02_CODEX_COLLAB_LOG.md",
+        "bytes":  5047,
+        "sha256":  "26d2ad00fae6a6aa7768678e91382139f7aa356c17d041d272b3e1a512b6adb6"
+    },
+    {
+        "path":  "SUBMISSION/03_SUBMISSION_COPY.md",
+        "bytes":  2659,
+        "sha256":  "0f4de6580ae617b8860350fdb2954ffb00175d7e2325225d2518584489563a41"
+    },
+    {
+        "path":  "SUBMISSION/04_DEMO_VIDEO_SCRIPT.md",
+        "bytes":  3188,
+        "sha256":  "305669a87c63c37f09cbb04145ce60ae4c3e593a18382668e6338d9e26da6ef9"
+    },
+    {
+        "path":  "SUBMISSION/05_FINAL_PITCH.md",
+        "bytes":  3601,
+        "sha256":  "b1afa7552f6df7966bd4f574d8abc7b46f5665c19431444aa0e398ef7e00574b"
+    },
+    {
+        "path":  "SUBMISSION/06_RELEASE_CHECKLIST.md",
+        "bytes":  2952,
+        "sha256":  "219875fcf4da445055dbf21fe33a794d68dd1041f003b17e95881440ae6648d8"
+    },
+    {
+        "path":  "SUBMISSION/07_INTERNAL_TIMELINE.md",
+        "bytes":  2261,
+        "sha256":  "e51d0fde9af98258d5e30a5c1803fc83d386962856099fb15e941baf317b4f37"
+    },
+    {
+        "path":  "SUBMISSION/README.md",
+        "bytes":  474,
+        "sha256":  "97b9c0537a3aa95fce6dcc9ed1155ec714f417fd5fda1a52f5aace1649001ae5"
+    },
+    {
+        "path":  "tasks/01_minimum_loop.md",
+        "bytes":  3538,
+        "sha256":  "4506a6d8782805eb8be741e4933ee04a252323d17d839400ab8d8ebe6c989ea2"
+    },
+    {
+        "path":  "tasks/02_5_cashout_time_stage_clear.md",
+        "bytes":  5836,
+        "sha256":  "13a86155bb003c3b34486656eb0fcb9b1ec126afd29cc0cf922c4a08c3828d07"
+    },
+    {
+        "path":  "tasks/02_merge_system.md",
+        "bytes":  2324,
+        "sha256":  "f849031fe958d8705fff0ad211342f747aeb7fab027ede7babd223d27d221ac6"
+    },
+    {
+        "path":  "tasks/03_mass_simulation.md",
+        "bytes":  1774,
+        "sha256":  "ba205402de8fa8fefdb74d5cbc7b14d171b0470e2d39bfb6ff91f4f0d77921b8"
+    },
+    {
+        "path":  "tasks/04_stage_shift.md",
+        "bytes":  2251,
+        "sha256":  "c8e3be92bc1a7e00d940ed911f1f392121e84f907c82c382086c49c59cd3e82a"
+    },
+    {
+        "path":  "tasks/05_effects.md",
+        "bytes":  2736,
+        "sha256":  "82e4e1b4c698a2433b5687169153932326987ac4d282d7f007aa0903fe463004"
+    },
+    {
+        "path":  "tasks/06_items.md",
+        "bytes":  2119,
+        "sha256":  "521b194944e3c02c086fabe696a87888298be6cb215a8dbbab8fef6b99ea602e"
+    },
+    {
+        "path":  "tasks/07_black_hole.md",
+        "bytes":  1890,
+        "sha256":  "d422119d35dce3aee5c3bdca47364da43eb269bff5370bfd368cade20b1128e3"
+    },
+    {
+        "path":  "tasks/08_web_export_release.md",
+        "bytes":  2358,
+        "sha256":  "98c14e8087107f42b4edf37e7704c0b9ef21c1b01fa03a8e6175cc38d5631cc3"
+    },
+    {
+        "path":  "tasks/09_submission_package.md",
+        "bytes":  1382,
+        "sha256":  "edf58261f44d9ce6d0dc1cd9b6a5b3d9fbbcc974d2f81f1ac0045785429ef10f"
+    }
+]

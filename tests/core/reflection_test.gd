@@ -1,0 +1,95 @@
+extends Node
+
+const TEST_DELTA := 0.1
+
+@onready var paddle: Paddle = preload("res://scenes/gameplay/paddle.tscn").instantiate()
+var failures := 0
+
+
+func _ready() -> void:
+	paddle.position = Vector2(400.0, 400.0)
+	paddle.play_field_rect = Rect2(0.0, 0.0, 800.0, 600.0)
+	add_child(paddle)
+	await get_tree().process_frame
+	_verify_keyboard_input()
+	_verify_bilateral_reflection()
+	_verify_translation_sweep_and_impact_cap()
+	_verify_rotation_sweep()
+	_verify_angular_contact_velocity()
+	if failures == 0:
+		print("S1_G2_VERIFIED input=simultaneous bilateral=front_back translation_toi impact_cap=900")
+	await get_tree().create_timer(1.0).timeout
+	get_tree().quit(failures)
+
+
+func _verify_keyboard_input() -> void:
+	var start_x := paddle.position.x
+	paddle.apply_input(1.0, 1.0, TEST_DELTA)
+	_expect(paddle.position.x > start_x, "D must move while Right rotation is held.")
+	_expect(paddle.rotation > 0.0, "Right action must rotate while movement is held.")
+
+
+func _verify_bilateral_reflection() -> void:
+	paddle.position = Vector2(400.0, 400.0)
+	paddle.rotation = 0.0
+	paddle.apply_input(0.0, 0.0, TEST_DELTA)
+	var front := paddle.resolve_continuous_ball_collision(Vector2(400.0, 370.0), Vector2(0.0, 300.0), 6.0, TEST_DELTA)
+	var back := paddle.resolve_continuous_ball_collision(Vector2(400.0, 430.0), Vector2(0.0, -300.0), 6.0, TEST_DELTA)
+	_expect(front.collided and back.collided, "Both Paddle faces must collide.")
+	_expect(front.velocity.y < 0.0, "Front face must reflect upward.")
+	_expect(back.velocity.y > 0.0, "Back face must reflect downward.")
+
+	paddle.rotation = deg_to_rad(90.0)
+	paddle.apply_input(0.0, 0.0, TEST_DELTA)
+	var rotated_front := paddle.resolve_continuous_ball_collision(Vector2(370.0, 400.0), Vector2(300.0, 0.0), 6.0, TEST_DELTA)
+	var rotated_back := paddle.resolve_continuous_ball_collision(Vector2(430.0, 400.0), Vector2(-300.0, 0.0), 6.0, TEST_DELTA)
+	_expect(rotated_front.collided and rotated_back.collided, "Both faces must collide after 90-degree rotation.")
+	_expect(rotated_front.velocity.x < 0.0 and rotated_back.velocity.x > 0.0, "Rotated normals must reflect on their respective sides.")
+
+	paddle.rotation = PI
+	paddle.apply_input(0.0, 0.0, TEST_DELTA)
+	var flipped := paddle.resolve_continuous_ball_collision(Vector2(400.0, 370.0), Vector2(0.0, 300.0), 6.0, TEST_DELTA)
+	_expect(flipped.collided and flipped.velocity.y < 0.0, "A 180-degree Paddle must retain bilateral collision.")
+
+
+func _verify_translation_sweep_and_impact_cap() -> void:
+	paddle.position = Vector2(120.0, 400.0)
+	paddle.rotation = 0.0
+	paddle.apply_input(0.0, 0.0, TEST_DELTA, 680.0)
+	var swept_hit := paddle.resolve_continuous_ball_collision(Vector2(400.0, 400.0), Vector2.ZERO, 2.0, TEST_DELTA)
+	_expect(swept_hit.collided, "A fast Paddle translation must sweep-hit a stationary Lv1 ball.")
+	_expect(swept_hit.velocity.length() <= paddle.maximum_reflection_speed + 0.01, "Sweep reflection must respect the final ball speed cap.")
+
+
+func _verify_rotation_sweep() -> void:
+	paddle.position = Vector2(400.0, 400.0)
+	paddle.rotation = 0.0
+	paddle.apply_input(0.0, 0.0, TEST_DELTA, INF, 90.0)
+	var rotation_hits := 0
+	for x in range(250, 551, 25):
+		for y in range(250, 551, 25):
+			var hit := paddle.resolve_continuous_ball_collision(Vector2(x, y), Vector2.ZERO, 2.0, TEST_DELTA)
+			if hit.collided:
+				rotation_hits += 1
+	_expect(rotation_hits > 0, "Adaptive rotation sweep must contact Lv1-sized balls along the swept Paddle arc.")
+
+
+func _verify_angular_contact_velocity() -> void:
+	paddle.position = Vector2(400.0, 400.0)
+	paddle.rotation = 0.0
+	paddle.apply_input(0.0, 0.0, TEST_DELTA, INF, 90.0)
+	var center_impact := paddle.get_contact_impact_velocity(paddle.global_position + Vector2(0.0, -paddle.paddle_thickness * 0.5))
+	var end_impact := paddle.get_contact_impact_velocity(paddle.global_position + Vector2(paddle.paddle_width * 0.5, 0.0))
+	_expect(end_impact.length() > center_impact.length(), "Paddle end contact must have a larger angular contribution than near-center contact.")
+
+	paddle.rotation = 0.0
+	paddle.apply_input(0.0, 0.0, TEST_DELTA, INF, -90.0)
+	var reverse_end_impact := paddle.get_contact_impact_velocity(paddle.global_position + Vector2(paddle.paddle_width * 0.5, 0.0))
+	_expect(end_impact.y * reverse_end_impact.y < 0.0, "Reversing Paddle rotation must reverse angular impact direction.")
+
+
+func _expect(condition: bool, message: String) -> void:
+	if condition:
+		return
+	failures += 1
+	push_error("S1-G2 reflection verification failed: %s" % message)

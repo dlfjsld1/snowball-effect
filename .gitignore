@@ -1,0 +1,7 @@
+# Godot 4 generated files
+.godot/
+
+# Local exports
+build/
+exports/
+.mcp/
