@@ -25,3 +25,23 @@ Branch: `main` working tree
 ### 다음 작업 / 주의
 
 - Main mount와 실제 source 연결은 S1-G6 Integration 소유다.
+
+## 2026-08-10 — Retro Pixel Arcade visual direction 문서 정교화
+
+Owner: Presentation
+Branch: `main` working tree
+
+### 작업
+
+- 구현 없이 기존 디자인 문서의 Retro Pixel Arcade Machine 방향을 dark retro arcade / dim CRT machine 톤으로 구체화했다.
+
+### 변경
+
+- 어두운 기본 팔레트, 제한적 강조색, CRT·기계 프레임 HUD 방향을 명시했다.
+- Merge와 Cashout 효과의 재질을 각진 픽셀 파편·도트·사각형 스파크로 정리했다.
+- 밝은 캐주얼 퍼즐풍, 파스텔, 과도한 soft bloom, 둥근 모바일 UI, 연기·마법형 파티클을 피할 방향으로 기록했다.
+
+### 확인
+
+- `00_VISUAL_IDENTITY`, `01_SCREEN_COMPOSITION`, `03_GAMEPLAY_EFFECTS`만 수정했다.
+- runtime 코드, Scene, 테스트, Goal 상태는 변경하지 않았다.
