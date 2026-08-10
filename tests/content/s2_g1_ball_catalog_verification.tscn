@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/content/s2_g1_ball_catalog_verification.gd" id="1_runner"]
+
+[node name="S2G1BallCatalogVerification" type="Node"]
+script = ExtResource("1_runner")

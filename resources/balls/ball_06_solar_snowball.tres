@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BallDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/ball_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+global_level = 6
+display_name = "Solar Snowball"
+score_value = 10000000000000.0
+radius = 128.0
+mass = 4096.0
+radius_scale = 32.0
+visual_key = &"solar_snowball"
+base_color = Color(1, 0.71, 0.22, 1)
+fx_tier = 3
