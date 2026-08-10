@@ -88,7 +88,7 @@ paddle_rotation_speed: 150 deg/s
 paddle_angle: unlimited rotation (equivalent-angle normalization allowed)
 mouse_wheel_step_degrees: 5°/step
 paddle_width: 240 px
-lv1_ball_radius: 2 world units (visual/collision diameter 4)
+lv1_ball_radius: 4 world units (visual/collision diameter 8; approved Shared Skeleton base size)
 ```
 
 수치는 한 파일 또는 export 변수에서 쉽게 수정 가능해야 한다.

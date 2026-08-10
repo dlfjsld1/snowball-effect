@@ -273,3 +273,38 @@ Locked files: 없음 — S1 종료 상태 유지
 ### 다음 작업 / 주의
 
 - baseline commit/push 뒤 팀원은 이 기준선에서 S2-G1을 시작할 수 있다.
+
+## 2026-08-10 — Lv1 base-ball size tuning integration
+
+Owner: Integration
+Branch: `main` working tree
+Locked files: `scripts/core/game_manager.gd` — tuning 반영 후 해제
+
+### 변경
+
+- Integration-owned GameManager의 Lv1 Spawn radius를 `4 logical units`로 변경했다. 따라서 visual/collision diameter는 약 `8 logical pixels`다.
+- Spawn 위치 계산은 동일 tuning 값을 소비하므로 필드 경계 안에서 기존과 같은 방식으로 생성된다.
+
+### 확인
+
+- Core S1-G1/G3 회귀와 Main runtime 관찰 후 STATUS evidence를 갱신한다.
+
+### 결과
+
+- Godot 4.7.1 CLI headless S1-G1/G3 회귀가 각각 exit 0으로 완료됐다.
+- Primary `godot` Main runtime에서 Lv1 Spawn radius `4`, diameter `8`, runtime error 0을 확인했다.
+
+## 2026-08-10 — Lv1 8px base size approved
+
+Owner: Integration
+Branch: `main` working tree
+Locked files: 없음
+
+### 변경
+
+- 팀 플레이테스트 결정을 반영해 Lv1 visual/collision diameter `8 logical pixels`를 현재 Shared Skeleton의 승인된 기본 크기로 문서화했다.
+
+### 확인
+
+- 구현값은 `GameManager.lv1_ball_radius = 4`와 일치한다.
+- 별도 gameplay 기능이나 Goal 상태는 변경하지 않았다.

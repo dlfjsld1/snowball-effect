@@ -3,7 +3,7 @@ extends Node
 const SimulationManager = preload("res://scripts/simulation/ball_simulation_manager.gd")
 const BALL_COUNT := 100
 const TEST_DELTA := 1.0 / 60.0
-const LV1_RADIUS := 2.0
+const LV1_RADIUS := 4.0
 const LV1_SPAWN_SPEED := 160.0
 
 @onready var simulation: SimulationManager = $BallSimulationManager
@@ -31,7 +31,7 @@ func _run_verification() -> void:
 	_expect(simulation.free_indices.is_empty(), "No free slot should remain after initial spawn.")
 
 	simulation.step_simulation(TEST_DELTA)
-	_expect(is_equal_approx(simulation.radii[constant_probe_index], LV1_RADIUS), "Lv1 visual and collision radius must start at 2 logical units.")
+	_expect(is_equal_approx(simulation.radii[constant_probe_index], LV1_RADIUS), "Lv1 visual and collision radius must start at 4 logical units.")
 	_expect(is_equal_approx(simulation.velocities[constant_probe_index].length(), LV1_SPAWN_SPEED), "Lv1 Spawn speed tuning must be 160 world units/s.")
 	_expect(simulation.velocities[constant_probe_index].is_equal_approx(constant_velocity), "Free-flight velocity must remain unchanged without an interaction.")
 	_expect(

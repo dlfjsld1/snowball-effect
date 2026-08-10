@@ -284,3 +284,22 @@ Branch: `main` working tree
 - Primary mouse test runtime: exit 0, arbitration regression 포함 `S1_G2_MOUSE_VERIFIED` 출력.
 - Primary Main runtime: D release 뒤 Paddle x `980`이 250ms 뒤에도 `980`으로 유지됐다. 게임 script error는 없었고 WASAPI dummy-audio fallback은 환경 경고로 분리했다.
 - 최신 clean Web release export: Canvas 1280×720/focus 및 console warning/error 0. in-app browser의 pointer move/drag와 wheel scroll은 Godot Canvas에 전달되지 않아 Web Mouse/Wheel은 `UNVERIFIED — browser tooling`으로 유지한다.
+
+## 2026-08-10 — Lv1 8 logical pixel base-ball tuning
+
+Owner: Core
+Branch: `main` working tree
+
+### 변경
+
+- Lv1 visual/collision radius를 `2`에서 `4 logical units`로 조정해 기본 공의 직경을 약 `4`에서 `8 logical pixels`로 두 배 늘렸다.
+- Spawn speed, gravity 0, 중앙 SoA simulation, Paddle collision과 Cashout 경계는 변경하지 않았다.
+
+### 확인
+
+- S1-G1의 100공/slot reuse/벽 반사 검증과 S1-G3의 Cashout·ledger·reset 검증을 새 반지름으로 재실행한다.
+
+### 결과
+
+- Godot 4.7.1 CLI headless에서 S1-G1과 S1-G3 verification scene이 각각 exit 0으로 완료됐다.
+- Primary `godot` Main runtime은 Spawn radius `4`, diameter `8`을 반환했고 runtime error는 없었다.

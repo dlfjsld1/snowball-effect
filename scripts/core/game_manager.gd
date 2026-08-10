@@ -13,7 +13,7 @@ const PauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
 @export var hud_path: NodePath
 @export var pause_menu_path: NodePath
 @export var spawn_rate := 6.0
-@export var lv1_ball_radius := 2.0
+@export var lv1_ball_radius := 4.0
 @export var lv1_spawn_speed_world_units_per_second := 160.0
 @export_range(0.0, 89.0, 0.1) var lv1_spawn_angle_degrees := 20.0
 

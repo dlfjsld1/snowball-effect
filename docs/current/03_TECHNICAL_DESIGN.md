@@ -212,7 +212,7 @@ Spawn은 아래쪽 반구 안의 방향과 공통 Spawn speed tuning을 결합�
 
 현재 Lv1의 physical/design reference는 일반적인 눈송이 낙하속도 약 `1.0 m/s`다. 이는 현실의 움직임 인상을 위한 reference이며 Godot world unit과 직접 변환하지 않는다. 공간은 `1 world unit = 1 logical pixel`, 시간은 second, runtime velocity는 world units/s로 관리한다. `GameManager`의 `lv1_spawn_speed_world_units_per_second`는 한 곳에서 조정하는 게임-space tuning 값이고, 현재 첫 플레이테스트 값은 `160 world units/s`다. 현재 구현 전 component range `x = -50~50`, `y = 40~100 world units/s`의 speed magnitude는 약 `40~112 world units/s`였으므로 새 Lv1 Spawn은 이를 낮추지 않는다.
 
-Lv1 radius는 visual과 collision이 같은 `2 world units`(diameter 4)로 시작한다. 이 값, `160 world units/s` Spawn speed, Paddle max speed cap은 최종 밸런스가 아닌 플레이테스트 가능한 공통 tuning 값이다.
+Lv1 radius는 visual과 collision이 같은 `4 world units`(diameter 8)를 사용한다. 이는 현재 Shared Skeleton의 승인된 기본 크기다. `160 world units/s` Spawn speed와 Paddle max speed cap은 별도 플레이테스트 tuning으로 유지한다.
 
 `base_speed` 또는 Spawn speed는 초기 velocity의 기준이다. runtime velocity를 매 tick 해당 값으로 정규화하거나 덮어쓰지 않는다. Paddle, 명시적인 벽 규칙, Merge, Stage effect, Item, 특수 상태는 runtime direction과 speed를 바꿀 수 있다.
 
@@ -333,7 +333,7 @@ Mouse Wheel은 tuning 가능한 `mouse_wheel_step_degrees`만큼 기존 Paddle a
 6. 시작/끝 overlap과 Paddle 내부에서 시작한 공도 fallback contact로 처리해 penetration 상태를 탈출시킨다.
 7. TOI까지 이동한 뒤 반사하고 남은 tick 시간을 새 velocity로 진행한다.
 
-translation 거리를 작은 고정 step으로만 나누는 방식은 Mouse 직접 매핑 시 지나치게 많은 substep을 요구하므로 기본안으로 사용하지 않는다. 반대로 current-frame OBB overlap만 사용하는 방식도 Lv1 diameter 4에서 translation/rotation tunneling을 놓치므로 폐기한다. 회전만 adaptive substep하고 각 구간의 translation은 sweep으로 처리하면 현재 해커톤 규모에서 정확도와 Web 비용을 함께 통제할 수 있다.
+translation 거리를 작은 고정 step으로만 나누는 방식은 Mouse 직접 매핑 시 지나치게 많은 substep을 요구하므로 기본안으로 사용하지 않는다. 반대로 current-frame OBB overlap만 사용하는 방식도 작은 Lv1 공에서 translation/rotation tunneling을 놓치므로 폐기한다. 회전만 adaptive substep하고 각 구간의 translation은 sweep으로 처리하면 현재 해커톤 규모에서 정확도와 Web 비용을 함께 통제할 수 있다.
 
 같은 Paddle sweep에서 한 공의 가장 이른 접촉을 한 번만 commit한다. 반사 후 contact normal 방향으로 separation epsilon을 적용하고, 공이 해당 면에서 분리되기 전에는 같은 접촉을 다시 반사하지 않는다. 이는 양면에 동일하게 적용한다.
 

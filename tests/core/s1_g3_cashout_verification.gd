@@ -17,8 +17,8 @@ func _ready() -> void:
 
 
 func _run_verification() -> void:
-	var kept_index := simulation.spawn_ball(Vector2(200.0, 100.0), Vector2.ZERO, 2.0)
-	var cashout_index := simulation.spawn_ball(Vector2(300.0, 610.0), Vector2(0.0, 100.0), 2.0)
+	var kept_index := simulation.spawn_ball(Vector2(200.0, 100.0), Vector2.ZERO, 4.0)
+	var cashout_index := simulation.spawn_ball(Vector2(300.0, 610.0), Vector2(0.0, 100.0), 4.0)
 	simulation.step_simulation(0.1)
 
 	_expect(simulation.is_ball_active(kept_index), "Ball inside the field must remain active.")
@@ -33,7 +33,7 @@ func _run_verification() -> void:
 	_expect(_cashout_count == 1, "An inactive ball must not cash out again.")
 	_expect(ledger.stage_score == 1.0 and ledger.run_score == 1.0, "Repeated ticks must not duplicate score.")
 
-	var reused_index := simulation.spawn_ball(Vector2(300.0, 100.0), Vector2.ZERO, 2.0)
+	var reused_index := simulation.spawn_ball(Vector2(300.0, 100.0), Vector2.ZERO, 4.0)
 	_expect(reused_index == cashout_index, "Spawn must reuse the cashout slot.")
 	simulation.reset_runtime()
 	ledger.reset_runtime()

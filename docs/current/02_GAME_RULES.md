@@ -85,7 +85,7 @@ Mouse Wheel Up/Down은 각각 shared Paddle angle을 증가/감소시킨다. Whe
 ### Lv1 크기와 초반 압박
 
 - Lv1은 거의 `.`처럼 읽히는 매우 작은 저해상도 픽셀 눈알갱이다. visual diameter와 simulation/collision diameter는 같은 값으로 시작한다.
-- 현재 Lv1 prototype의 시작 tuning은 약 4 logical pixel 직경이며, 정확한 정수값은 플레이테스트로 조정한다.
+- 현재 Lv1 Shared Skeleton의 승인된 기본 크기는 약 8 logical pixel 직경이며, visual/collision 크기는 같은 값으로 유지한다. 이후 크기 변경은 별도 플레이테스트 결정으로만 수행한다.
 - 초반 압박은 거대한 Lv1 몇 개가 아니라 작은 공의 물량과 Paddle 이후 생길 수 있는 runtime speed 변화에서 온다.
 
 ---
