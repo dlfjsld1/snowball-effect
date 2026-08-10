@@ -35,7 +35,7 @@
 | S2-G1 공·점수 데이터 | Content/Systems | VERIFIED | 2026-08-10 `BallCatalog.get_definition(global_level)`로 Lv0~6의 global level, radius, mass, base score, visual key와 Time Bonus 부재를 자동 검증. `float` score field의 planned `1e36` 범위도 확인. Godot 4.7.1 headless verification 및 S1-G1 회귀 exit 0, Primary `godot` MCP validate 4/4. |
 | S2-G2 같은 레벨 후보 탐색 | Core | PENDING | S2-G1 API 필요 |
 | S2-G3 결정적 Merge commit | Core | PENDING | S2-G2 필요 |
-| S2-G4 Score formatter | Content/Systems | PENDING | S2-G1 score range 필요 |
+| S2-G4 Score formatter | Content/Systems | VERIFIED | 2026-08-10 `format_score(value)` pure API로 0, K/M/B/T 경계, 반올림 승격, `1e36` 과학 표기와 NaN/Infinity 방어를 자동 검증. Godot 4.7.1 headless exit 0, Primary `godot` MCP validate 3/3. |
 | S2-G5 Merge 표시 통합 | Presentation | PENDING | S2-G3/G4 계약 필요 |
 | S3-G1 Stage 데이터 | Content/Systems | PENDING | S2-G1 필요 |
 | S3-G2 Stage 진입·Cashout 점수/시간 | Core | PENDING | S3-G1/S1-G3 필요 |

@@ -59,3 +59,24 @@ Branch: `codex/s2-g1-ball-data`
 
 - Godot 4.7.1 CLI headless parse와 S2-G1 verification exit 0.
 - Primary `godot` MCP validate: 수정한 definition/test/scene 3/3 valid.
+
+## 2026-08-10 — S2-G4 Score formatter
+
+Owner: Content/Systems
+Branch: `main`
+
+### 작업
+
+- `ScoreFormatter.format_score(value: float)` pure API를 추가했다.
+- 1,000 미만 정수, K/M/B/T 접미사, 단위 경계 반올림 승격, 접미사 초과 과학적 표기를 구현했다.
+- `NaN`은 `0`, 양·음 Infinity는 `∞`/`-∞`로 안정적으로 표시한다.
+- 점수 ledger와 HUD layout은 변경하지 않았다.
+
+### 확인
+
+- Godot 4.7.1 CLI headless: project parse, S2-G4 formatter 및 S2-G1 catalog verification 모두 exit 0.
+- Primary `godot` MCP validate: formatter script, verification script/scene 3/3 valid.
+
+### 다음 작업 / 주의
+
+- S2-G5는 Core S2-G3의 `ball_merged(result_level, world_position)` 이벤트 계약이 완료된 뒤 Presentation이 통합한다.
