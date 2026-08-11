@@ -347,3 +347,28 @@ Branch: `main` working tree
 - S2 Core merge contract는 완료됐다. Presentation은 S2-G5에서 `ball_merged`를 구독해 FX를 추가할 수 있다.
 - Stage별 top ball 판정과 점수 ledger 연결은 S3의 별도 범위다.
 - native headless는 이 환경의 `user://logs` open failure와 signal 11 때문에 이번 Evidence로 사용하지 않았다.
+
+## 2026-08-11 — S1-G2 large-ball Paddle overlap regression
+
+Owner: Core
+Branch: `main` working tree
+
+### 변경
+
+- direct Mouse sweep 중 큰 Merge 공이 tick 시작부터 Paddle expanded OBB에 겹친 경우, 이전 Paddle transform에만 보정하던 fallback을 수정했다.
+- sweep에서 얻은 entry normal을 유지한 채 최종 Paddle transform의 실제 surface 밖으로 공 중심을 보정한다. 따라서 Paddle이 이후 이동한 위치에 공이 다시 남지 않는다.
+- S1-G2 reflection test에 radius `64` 큰 공의 좌·우 direct sweep과 90° 회전 Paddle separation 회귀를 추가했다.
+- S1-G1 free-flight test의 촘촘한 probe에는 서로 다른 catalog level을 지정해 S2 Merge가 해당 S1 테스트 목적을 바꾸지 않게 했다.
+
+### 확인
+
+- Primary `godot` validate: Paddle, reflection/mouse/S1-G1/S1-G3 test scene, Main 6/6 valid.
+- Primary reflection test: exit 0, large-overlap 포함 `S1_G2_VERIFIED`.
+- Primary mouse test: exit 0, `S1_G2_MOUSE_VERIFIED`.
+- Primary S1-G1: exit 0, `active=100 capacity=100 reused_slot=50`; S1-G3 test process exit 0.
+- Primary Main runtime: radius 64 direct sweep에서 right normal `(1,0)`, left normal `(-1,0)`, 두 경우 모두 Paddle separation true, runtime error 0.
+
+### 다음 작업 / 주의
+
+- 큰 공을 실제 플레이로 다시 확인할 수 있다. 남은 S2 작업은 Presentation-owned S2-G5 Merge 표시 통합이다.
+- native headless는 이 환경의 `user://logs` open failure와 signal 11 때문에 이번 Evidence로 사용하지 않았다.

@@ -337,6 +337,8 @@ translation 거리를 작은 고정 step으로만 나누는 방식은 Mouse 직�
 
 같은 Paddle sweep에서 한 공의 가장 이른 접촉을 한 번만 commit한다. 반사 후 contact normal 방향으로 separation epsilon을 적용하고, 공이 해당 면에서 분리되기 전에는 같은 접촉을 다시 반사하지 않는다. 이는 양면에 동일하게 적용한다.
 
+direct Mouse sweep 또는 Merge 직후 큰 공 때문에 tick 시작 시 이미 Paddle과 겹친 경우에도, 단순히 공 중심 근처의 면을 고르지 않는다. Paddle의 실제 sweep 방향에서 얻은 entry normal을 유지하고 **현재 tick의 최종 Paddle transform** 기준으로 공을 surface 바깥으로 보정한다. 따라서 Paddle이 큰 공을 가로질러 이동해도 공이 반대/내부 면으로 튀거나 다음 tick까지 Paddle 내부에 남지 않는다.
+
 ### 회전 접촉점 속도
 
 TOI 시점의 Paddle center에서 contact point까지의 world-space 벡터를 `r`이라 하고, signed angular velocity를 `omega`라 한다.

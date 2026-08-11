@@ -182,9 +182,30 @@ func resolve_continuous_ball_collision(
 		var ball_at_contact := ball_start + ball_velocity * (delta * global_t)
 		var paddle_center := _previous_position.lerp(global_position, global_t)
 		var contact_point := ball_at_contact - normal * ball_radius
+		var corrected_position := ball_at_contact + normal * separation_epsilon
+		if toi["starts_inside"]:
+			# A direct Mouse sweep can begin already inside a large ball. Correct against
+			# the final Paddle transform so the Paddle cannot move through it again.
+			paddle_center = global_position
+			sample_rotation = global_rotation
+			var penetration := _resolve_inside_ball_overlap(
+				ball_at_contact,
+				paddle_center,
+				sample_rotation,
+				ball_radius,
+				normal
+			)
+			if not penetration["overlapping"]:
+				continue
+			normal = penetration["normal"]
+			contact_point = penetration["contact_position"]
+			corrected_position = penetration["corrected_position"]
 		var impact_velocity := _contact_impact_velocity(contact_point - paddle_center)
 		var relative_velocity := ball_velocity - impact_velocity
 		if relative_velocity.dot(normal) >= 0.0:
+			if toi["starts_inside"]:
+				var remaining_time := delta * (1.0 - global_t)
+				return _no_collision(corrected_position + ball_velocity * remaining_time, ball_velocity)
 			continue
 		earliest = {
 			"time": global_t,
@@ -194,6 +215,7 @@ func resolve_continuous_ball_collision(
 			"rotation": sample_rotation,
 			"contact_position": contact_point,
 			"impact_velocity": impact_velocity,
+			"corrected_position": corrected_position,
 		}
 		break
 
@@ -210,7 +232,7 @@ func resolve_continuous_ball_collision(
 		earliest["rotation"]
 	)
 	var remaining_time: float = delta * (1.0 - earliest["time"])
-	var corrected_position: Vector2 = earliest["contact_position"] + normal * (ball_radius + separation_epsilon)
+	var corrected_position: Vector2 = earliest["corrected_position"]
 	return {
 		"collided": true,
 		"position": corrected_position + reflected_velocity * remaining_time,
@@ -266,7 +288,12 @@ func _contact_impact_velocity(contact_offset: Vector2) -> Vector2:
 
 func _segment_expanded_obb_toi(start: Vector2, finish: Vector2, half_extents: Vector2) -> Dictionary:
 	if absf(start.x) <= half_extents.x and absf(start.y) <= half_extents.y:
-		return {"hit": true, "time": 0.0, "normal": _inside_normal(start, finish - start, half_extents)}
+		return {
+			"hit": true,
+			"starts_inside": true,
+			"time": 0.0,
+			"normal": _inside_normal(start, finish - start, half_extents),
+		}
 
 	var direction := finish - start
 	var entry_time := -INF
@@ -297,7 +324,42 @@ func _segment_expanded_obb_toi(start: Vector2, finish: Vector2, half_extents: Ve
 
 	if entry_time < 0.0 or entry_time > 1.0:
 		return {"hit": false}
-	return {"hit": true, "time": entry_time, "normal": entry_normal}
+	return {"hit": true, "starts_inside": false, "time": entry_time, "normal": entry_normal}
+
+
+func _resolve_inside_ball_overlap(
+	ball_position: Vector2,
+	paddle_center: Vector2,
+	paddle_rotation: float,
+	ball_radius: float,
+	preferred_normal: Vector2
+) -> Dictionary:
+	var half_extents := Vector2(paddle_width * 0.5, paddle_thickness * 0.5)
+	var local_ball := (ball_position - paddle_center).rotated(-paddle_rotation)
+	var closest_point := Vector2(
+		clampf(local_ball.x, -half_extents.x, half_extents.x),
+		clampf(local_ball.y, -half_extents.y, half_extents.y)
+	)
+	var local_delta := local_ball - closest_point
+	if not local_delta.is_zero_approx() and local_delta.length_squared() > ball_radius * ball_radius:
+		return {"overlapping": false}
+
+	var local_normal := preferred_normal.rotated(-paddle_rotation)
+	if absf(local_normal.x) >= absf(local_normal.y):
+		local_normal = Vector2.RIGHT if local_normal.x >= 0.0 else Vector2.LEFT
+		closest_point = Vector2(local_normal.x * half_extents.x, clampf(local_ball.y, -half_extents.y, half_extents.y))
+	else:
+		local_normal = Vector2.DOWN if local_normal.y >= 0.0 else Vector2.UP
+		closest_point = Vector2(clampf(local_ball.x, -half_extents.x, half_extents.x), local_normal.y * half_extents.y)
+
+	var normal := local_normal.rotated(paddle_rotation)
+	var contact_position := paddle_center + closest_point.rotated(paddle_rotation)
+	return {
+		"overlapping": true,
+		"normal": normal,
+		"contact_position": contact_position,
+		"corrected_position": contact_position + normal * (ball_radius + separation_epsilon),
+	}
 
 
 func _inside_normal(local_position: Vector2, local_velocity: Vector2, half_extents: Vector2) -> Vector2:

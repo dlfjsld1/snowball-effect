@@ -27,7 +27,7 @@
 | S0-G2 입력·공유 씬 골격 | Integration | VERIFIED | Input Map 6개 action과 공유 mount tree 확인. Godot 4.7.1 CLI editor load/Main run exit 0, `godot` MCP scene tree 조회 성공. 실제 A/D+회전 동시 동작 검증은 입력 소비자가 존재하는 S1-G2로 이동. |
 | S0-G3 Web smoke | Content/Systems | VERIFIED | Godot 4.7.1 single-threaded Web release export exit 0. 로컬 HTTP에서 HTML/JS/WASM/PCK 모두 200. 새 브라우저 탭에서 Godot 4.7.1 WebGL2 기동, Canvas 1280×720→1024×768 resize, Canvas focus 유지 및 A/← 입력 전달, console warning/error 0건. |
 | S1-G1 배열 풀 낙하 | Core | VERIFIED | 2026-08-10 팀 플레이테스트로 승인된 Lv1 radius 4 logical units(visual/collision diameter 8)와 160 world units/s Spawn tuning을 gravity 0 free-flight 경계에서 재검증. 100공/slot reuse/좌·우·상단 반사·열린 하단 구조 유지, Godot 4.7.1 headless exit 0 및 Primary `godot` runtime 확인. |
-| S1-G2 패들 조작·반사 | Core | VERIFIED | 2026-08-09 position source를 마지막 실제 MouseMotion 또는 A/D key press로 arbitration하도록 수정했다. Keyboard release는 source를 바꾸지 않아 stale Mouse X snap이 없다. Primary `godot` validate 3/3 및 mouse test exit 0. Main runtime에서 D release 뒤 Paddle x `980→980`(250ms) 유지 확인. 최신 clean Web export는 Canvas/focus/console warning·error 0이나 browser tooling pointer/wheel 입력은 별도 `UNVERIFIED`다. |
+| S1-G2 패들 조작·반사 | Core | VERIFIED | 2026-08-11 direct Mouse sweep 중 큰 공이 깊게 겹칠 때, sweep entry normal을 유지한 채 최종 Paddle transform 기준으로 surface 밖 보정하도록 회귀 수정했다. Primary `godot` reflection test exit 0(양면·translation·rotation·large overlap), mouse test exit 0, S1-G1 verification exit 0, S1-G3 verification exit 0, Main runtime에서 좌/우 large-ball overlap이 각각 올바른 normal과 분리 상태를 확인했고 runtime error 0. Web은 기존 사용자 Chrome 수동 검증을 유지한다. |
 | S1-G3 Active Cashout 논리 | Core | VERIFIED | 2026-08-10 Lv1 radius 4에서도 열린 하단 Cashout, slot reuse, stage/run ledger 1회 반영과 reset을 재검증. Godot 4.7.1 headless exit 0 및 Primary `godot` runtime 확인. |
 | S1-G4 최소 HUD | Presentation | VERIFIED | `score_changed`/`ball_count_changed` read-only 구독과 `reset_view()` 구현. Godot 4.7.1 자동검증 exit 0: stage/run 1회 표시, balls 1 표시, HUD reset 후 Core state 불변. Primary `godot` validate 4/4. |
 | S1-G5 Pause·Restart 요청 UI | Content/Systems | VERIFIED | `pause_requested`/`retry_requested` request-only UI와 paused label 상태 구현. Godot 4.7.1 자동검증 exit 0: input pause 1회, button retry 1회, SceneTree/gameplay 직접 변경 없음. Primary `godot` validate 4/4. |
@@ -71,7 +71,7 @@
 
 - S0 Bootstrap의 세 Goal이 모두 `VERIFIED`됐다.
 - S1-G1/G3/G4/G5는 기존 `VERIFIED`를 유지한다.
-- S1-G2는 Mouse/Keyboard 마지막 실제 position input arbitration 회귀까지 `VERIFIED`다.
+- S1-G2는 Mouse/Keyboard arbitration과 large-ball direct-sweep overlap 회귀까지 `VERIFIED`다.
 - S1-G6은 최신 clean Web export의 사용자 Chrome 수동 검증까지 완료해 `VERIFIED`다. S1 Shared Skeleton이 닫혔다.
 - S2-G1 공·점수 데이터와 S2-G2 같은 레벨 후보 탐색은 `VERIFIED`다.
 - S2-G3 결정적 Merge commit도 `VERIFIED`다. 다음 가능한 기존 Goal은 Presentation의 S2-G5 Merge 표시 통합이며, Core는 S3-G1 Stage 데이터가 준비될 때 S3-G2를 시작할 수 있다.

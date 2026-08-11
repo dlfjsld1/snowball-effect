@@ -14,6 +14,7 @@ func _ready() -> void:
 	_verify_keyboard_input()
 	_verify_bilateral_reflection()
 	_verify_translation_sweep_and_impact_cap()
+	_verify_large_overlap_correction()
 	_verify_rotation_sweep()
 	_verify_angular_contact_velocity()
 	if failures == 0:
@@ -59,6 +60,33 @@ func _verify_translation_sweep_and_impact_cap() -> void:
 	var swept_hit := paddle.resolve_continuous_ball_collision(Vector2(400.0, 400.0), Vector2.ZERO, 2.0, TEST_DELTA)
 	_expect(swept_hit.collided, "A fast Paddle translation must sweep-hit a stationary Lv1 ball.")
 	_expect(swept_hit.velocity.length() <= paddle.maximum_reflection_speed + 0.01, "Sweep reflection must respect the final ball speed cap.")
+
+
+func _verify_large_overlap_correction() -> void:
+	var large_radius := 64.0
+	paddle.position = Vector2(400.0, 400.0)
+	paddle.rotation = 0.0
+	paddle.apply_input(0.0, 0.0, 0.001, 680.0)
+	var right_sweep := paddle.resolve_continuous_ball_collision(Vector2(550.0, 400.0), Vector2.ZERO, large_radius, 0.001)
+	_expect(right_sweep.collided, "A direct Paddle sweep must resolve a deeply overlapping large ball.")
+	if right_sweep.collided:
+		_expect(right_sweep.normal.x > 0.0 and right_sweep.velocity.x > 0.0, "A rightward Paddle sweep must eject the large ball through its right entry face.")
+		_expect(paddle.is_ball_separated(right_sweep.position, large_radius), "Large-ball correction must leave the Paddle before the next tick.")
+
+	paddle.position = Vector2(400.0, 400.0)
+	paddle.rotation = 0.0
+	paddle.apply_input(0.0, 0.0, 0.001, 120.0)
+	var left_sweep := paddle.resolve_continuous_ball_collision(Vector2(250.0, 400.0), Vector2.ZERO, large_radius, 0.001)
+	_expect(left_sweep.collided, "A reverse direct Paddle sweep must resolve a deeply overlapping large ball.")
+	if left_sweep.collided:
+		_expect(left_sweep.normal.x < 0.0 and left_sweep.velocity.x < 0.0, "A leftward Paddle sweep must eject the large ball through its left entry face.")
+		_expect(paddle.is_ball_separated(left_sweep.position, large_radius), "Reverse large-ball correction must leave the Paddle before the next tick.")
+
+	paddle.position = Vector2(400.0, 400.0)
+	paddle.rotation = deg_to_rad(90.0)
+	paddle.apply_input(0.0, 0.0, 0.001, 680.0)
+	var rotated_sweep := paddle.resolve_continuous_ball_collision(Vector2(550.0, 400.0), Vector2.ZERO, large_radius, 0.001)
+	_expect(rotated_sweep.collided and paddle.is_ball_separated(rotated_sweep.position, large_radius), "Large-ball correction must also separate at a rotated Paddle orientation.")
 
 
 func _verify_rotation_sweep() -> void:

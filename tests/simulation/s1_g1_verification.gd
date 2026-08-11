@@ -16,15 +16,16 @@ func _ready() -> void:
 
 
 func _run_verification() -> void:
-	var left_index: int = simulation.spawn_ball(Vector2(1.0, 100.0), Vector2(-120.0, 0.0), LV1_RADIUS)
-	var right_index: int = simulation.spawn_ball(Vector2(799.0, 100.0), Vector2(120.0, 0.0), LV1_RADIUS)
-	var top_index: int = simulation.spawn_ball(Vector2(400.0, 1.0), Vector2(0.0, -120.0), LV1_RADIUS)
+	var left_index: int = simulation.spawn_ball(Vector2(1.0, 100.0), Vector2(-120.0, 0.0), LV1_RADIUS, 0)
+	var right_index: int = simulation.spawn_ball(Vector2(799.0, 100.0), Vector2(120.0, 0.0), LV1_RADIUS, 1)
+	var top_index: int = simulation.spawn_ball(Vector2(400.0, 1.0), Vector2(0.0, -120.0), LV1_RADIUS, 2)
 	var constant_velocity := Vector2(0.0, LV1_SPAWN_SPEED)
-	var constant_probe_index: int = simulation.spawn_ball(Vector2(400.0, 100.0), constant_velocity, LV1_RADIUS)
+	var constant_probe_index: int = simulation.spawn_ball(Vector2(400.0, 100.0), constant_velocity, LV1_RADIUS, 3)
 	for index in range(4, BALL_COUNT):
 		var x := 40.0 + float(index % 90) * 8.0
 		var y := 80.0 + float(index / 10) * 12.0
-		simulation.spawn_ball(Vector2(x, y), Vector2.ZERO, LV1_RADIUS)
+		# S1 verifies free-flight, not Merge. Adjacent probes use different catalog levels.
+		simulation.spawn_ball(Vector2(x, y), Vector2.ZERO, LV1_RADIUS, index % 11 + 4)
 
 	_expect(simulation.get_active_count() == BALL_COUNT, "100 balls must be active after spawn.")
 	_expect(simulation.get_capacity() == BALL_COUNT, "Initial capacity must match spawned balls.")
@@ -49,7 +50,7 @@ func _run_verification() -> void:
 	_expect(simulation.deactivate_ball(released_index), "An active ball must deactivate successfully.")
 	_expect(simulation.get_active_count() == BALL_COUNT - 1, "Deactivate must reduce active count once.")
 	_expect(simulation.free_indices.back() == released_index, "Deactivated slot must enter the free list.")
-	var reused_index: int = simulation.spawn_ball(Vector2(400.0, 120.0), Vector2.ZERO, LV1_RADIUS)
+	var reused_index: int = simulation.spawn_ball(Vector2(400.0, 120.0), Vector2.ZERO, LV1_RADIUS, 14)
 	_expect(reused_index == released_index, "Spawn must reuse the most recently released slot.")
 	_expect(simulation.get_capacity() == BALL_COUNT, "Slot reuse must not grow capacity.")
 
