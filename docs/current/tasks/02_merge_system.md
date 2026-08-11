@@ -82,7 +82,14 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 (position_a + position_b) / 2
 ```
 
-합체 결과 velocity는 아직 미정이다. 두 입력 speed의 평균/최대/별도 계산, 새 등급의 base speed 사용 여부, 방향과 cap을 S2의 별도 Merge velocity 계약에서 확정한 뒤 구현한다.
+합체 결과 velocity는 입력 질량으로 가중한 평균을 계승한다.
+
+```text
+result_velocity = (mass_a * velocity_a + mass_b * velocity_b) / (mass_a + mass_b)
+result_velocity = clamp_length(result_velocity, maximum_ball_runtime_speed)
+```
+
+현재 `maximum_ball_runtime_speed` 첫 tuning 값은 `900 world units/s`다. Merge 결과는 base/spawn speed로 재설정하지 않는다.
 
 ---
 

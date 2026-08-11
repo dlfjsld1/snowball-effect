@@ -133,7 +133,7 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 
 - 두 입력 공 제거
 - 중간 위치에 상위 공 생성
-- 결과 velocity의 방향·speed·계승 방식은 S2 Merge velocity 계약에서 별도로 확정
+- 결과 velocity는 두 입력의 mass-weighted average를 계승하고, 최종 runtime speed cap을 적용한다. 즉 무거운 입력 공의 기존 움직임을 조금 더 많이 반영하되, Merge가 공 속도를 무한히 키우지 않는다.
 - 다음 물리 프레임부터 재머지 가능
 - 점수 가치와 비주얼 레벨 상승
 - Stage 최고 공 여부 확인

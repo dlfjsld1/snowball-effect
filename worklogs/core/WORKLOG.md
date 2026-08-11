@@ -324,3 +324,26 @@ Branch: `main` working tree
 
 - 다음 Core Goal은 S2-G3 결정적 Merge commit이다.
 - native headless는 이 환경의 `user://logs` open failure와 signal 11 때문에 이번 Evidence로 사용하지 않았다.
+
+## 2026-08-11 — S2-G3 deterministic merge commit
+
+Owner: Core
+Branch: `main` working tree
+
+### 변경
+
+- 같은 level 후보를 계획한 뒤 입력을 모두 deactivate하고, 그 뒤에 output을 spawn하는 두 단계 commit으로 한 공이 tick당 한 번만 소비되게 했다.
+- output은 두 input의 midpoint, 다음 global level의 BallDefinition radius, mass-weighted average velocity를 사용한다. velocity는 `maximum_ball_runtime_speed = 900`에서 한 번 제한한다.
+- `ball_merged(result_level, world_position)`와 최고 catalog level 생성용 `top_ball_created(global_level)` 이벤트를 제공했다.
+- 새 output은 후보 snapshot 뒤에 spawn되므로 같은 commit에서 다시 Merge되지 않고 다음 physics tick부터 후보가 된다.
+
+### 확인
+
+- Primary `godot` MCP validate: simulation, S2-G3 test scene, S2-G2, S1-G3, S1-G1 regression 5/5 valid.
+- Primary Main runtime: Lv0 pair → midpoint Lv1 velocity `(50,50)`, 같은 commit의 Lv1 재합체 없음, 다음 commit에서 1회 합체, fast output `900` cap, Lv13 pair → `top_ball_created(14)`, runtime error 0.
+
+### 다음 작업 / 주의
+
+- S2 Core merge contract는 완료됐다. Presentation은 S2-G5에서 `ball_merged`를 구독해 FX를 추가할 수 있다.
+- Stage별 top ball 판정과 점수 ledger 연결은 S3의 별도 범위다.
+- native headless는 이 환경의 `user://logs` open failure와 signal 11 때문에 이번 Evidence로 사용하지 않았다.

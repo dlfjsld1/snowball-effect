@@ -34,7 +34,7 @@
 | S1-G6 Pause·Restart 통합 | Integration | VERIFIED | 2026-08-09 최신 clean Web release export를 사용자의 실제 Chrome 수동 플레이로 검증. Canvas, Mouse X direct 이동, Mouse Wheel 자유회전, A/D 이동, A/D release 뒤 위치 유지, 다음 실제 MouseMotion에서만 Mouse control 복귀, Paddle 이동/회전 충돌, Pause/Retry가 정상이며 browser console game error 0. |
 | S2-G1 공·점수 데이터 | Content/Systems | VERIFIED | 2026-08-11 `BallCatalog` instance API로 global level 0~14의 15개 Resource가 global level, radius, mass, base score, visual key를 읽고 Time Bonus 필드가 없음을 검증했다. Primary `godot` MCP runtime에서 `count=15`, `Snowflake→Omega Snowball`, Lv15 미정의를 확인했고 validate 3/3 통과. 이 환경의 native headless는 `user://logs` open failure 뒤 signal 11로 종료되어 baseline evidence로 사용하지 않았다. |
 | S2-G2 같은 레벨 후보 탐색 | Core | VERIFIED | 2026-08-11 중앙 SoA의 `global_levels`와 read-only `BallCatalog` instance API를 사용한다. Primary `godot` Main runtime에서 같은 Lv0 overlap 후보 `(0,1),(0,3),(1,3)`, 다른 Lv1 제외, 반복 query 동일, index 1 deactivate 뒤 `(0,3)`만 남음을 확인했고 validate 3/3 통과. 실제 Merge commit은 S2-G3 범위. |
-| S2-G3 결정적 Merge commit | Core | PENDING | S2-G2 필요 |
+| S2-G3 결정적 Merge commit | Core | VERIFIED | 2026-08-11 mass-weighted velocity를 `maximum_ball_runtime_speed=900`으로 한 번 제한한다. Primary `godot` Main runtime에서 Lv0 pair가 midpoint Lv1 하나로 합쳐지고 velocity `(50,50)`을 계승, 같은 tick의 Lv1 재합체는 없고 다음 commit에서만 발생, 2000 world units/s pair는 900으로 제한, Lv13 pair의 Lv14 생성은 `top_ball_created(14)` 1회를 확인했다. simulation/S2-G3/S2-G2/S1-G3/S1-G1 validate 5/5 통과 및 runtime error 0. |
 | S2-G4 Score formatter | Content/Systems | VERIFIED | 2026-08-10 `format_score(value)` pure API로 0, K/M/B/T 경계, 반올림 승격, `1e36` 과학 표기와 NaN/Infinity 방어를 자동 검증. Godot 4.7.1 headless exit 0, Primary `godot` MCP validate 3/3. |
 | S2-G5 Merge 표시 통합 | Presentation | PENDING | S2-G3/G4 계약 필요 |
 | S3-G1 Stage 데이터 | Content/Systems | PENDING | S2-G1 필요 |
@@ -73,5 +73,6 @@
 - S1-G1/G3/G4/G5는 기존 `VERIFIED`를 유지한다.
 - S1-G2는 Mouse/Keyboard 마지막 실제 position input arbitration 회귀까지 `VERIFIED`다.
 - S1-G6은 최신 clean Web export의 사용자 Chrome 수동 검증까지 완료해 `VERIFIED`다. S1 Shared Skeleton이 닫혔다.
-- S2-G1 공·점수 데이터와 S2-G2 같은 레벨 후보 탐색은 `VERIFIED`다. 다음 Core Goal은 S2-G3 결정적 Merge commit이며, S2-G5는 S2-G3 완료 뒤 시작할 수 있다.
+- S2-G1 공·점수 데이터와 S2-G2 같은 레벨 후보 탐색은 `VERIFIED`다.
+- S2-G3 결정적 Merge commit도 `VERIFIED`다. 다음 가능한 기존 Goal은 Presentation의 S2-G5 Merge 표시 통합이며, Core는 S3-G1 Stage 데이터가 준비될 때 S3-G2를 시작할 수 있다.
 - 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.

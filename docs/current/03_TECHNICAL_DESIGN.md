@@ -375,7 +375,16 @@ if positions[a].distance_squared_to(positions[b]) <= min_distance * min_distance
 
 ### 속도
 
-Merge 결과 velocity는 아직 확정하지 않는다. 두 입력 speed의 평균/최대/별도 계산, 새 등급의 base speed 사용 여부, 방향 결정과 cap을 S2 Merge velocity 계약에서 함께 정한 뒤 구현한다.
+Merge 결과 velocity는 두 입력의 mass-weighted average를 사용한다.
+
+```text
+result_velocity = (mass_a * velocity_a + mass_b * velocity_b) / (mass_a + mass_b)
+result_velocity = clamp_length(result_velocity, maximum_ball_runtime_speed)
+```
+
+`mass_a + mass_b`가 유효하지 않은 데이터인 경우에만 단순 평균을 fallback으로 사용한다. 현재 initial catalog에서는 같은 level 두 공의 mass가 같으므로 결과는 두 velocity의 평균과 같다. 다만 데이터가 바뀌어도 공식 자체는 그대로 유지된다.
+
+`maximum_ball_runtime_speed`의 첫 tuning 값은 기존 Paddle final reflection cap과 동일한 `900 world units/s`다. 이는 Spawn/base speed로 결과 속도를 덮어쓰는 규칙이 아니며, Merge 후 폭주만 막는다.
 
 ### 연쇄 합체
 
@@ -624,7 +633,7 @@ HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallC
 
 ```gdscript
 signal cashout_completed(score_amount: float, time_bonus: float, world_position: Vector2, ball_level: int)
-signal ball_merged(new_level: int, world_position: Vector2, special_type: int)
+signal ball_merged(new_level: int, world_position: Vector2)
 signal highest_level_changed(new_level: int)
 signal stage_timer_changed(time_left: float)
 signal stage_time_up(stage: int)

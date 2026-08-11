@@ -5,11 +5,14 @@ const BallCatalogScript = preload("res://scripts/data/ball_catalog.gd")
 
 signal ball_count_changed(active_count: int)
 signal cashout_completed(score_amount: float, local_level: int, world_position: Vector2)
+signal ball_merged(result_level: int, world_position: Vector2)
+signal top_ball_created(global_level: int)
 
 @export var play_field_rect := Rect2(500.0, 0.0, 600.0, 900.0)
 @export_range(0.0, 1.0, 0.01) var wall_restitution := 1.0
 @export var base_cashout_score := 1.0
 @export var cashout_enabled := true
+@export var maximum_ball_runtime_speed := 900.0
 
 var positions := PackedVector2Array()
 var velocities := PackedVector2Array()
@@ -110,6 +113,47 @@ func get_merge_candidate_pairs() -> Array[Vector2i]:
 	return candidates
 
 
+func commit_merge_candidates() -> int:
+	var merge_plans: Array[Dictionary] = []
+	var consumed_indices := {}
+	for candidate in get_merge_candidate_pairs():
+		var first_index := candidate.x
+		var second_index := candidate.y
+		if consumed_indices.has(first_index) or consumed_indices.has(second_index):
+			continue
+		if not is_ball_active(first_index) or not is_ball_active(second_index):
+			continue
+
+		var result_level := global_levels[first_index] + 1
+		if not _ball_catalog.has_definition(result_level):
+			continue
+
+		consumed_indices[first_index] = true
+		consumed_indices[second_index] = true
+		merge_plans.append({
+			"first_index": first_index,
+			"second_index": second_index,
+			"result_level": result_level,
+			"position": (positions[first_index] + positions[second_index]) * 0.5,
+			"velocity": _get_merge_result_velocity(first_index, second_index),
+		})
+
+	for plan in merge_plans:
+		deactivate_ball(plan["first_index"])
+		deactivate_ball(plan["second_index"])
+
+	for plan in merge_plans:
+		var result_level: int = plan["result_level"]
+		var result_definition = _ball_catalog.get_definition(result_level)
+		var result_position: Vector2 = plan["position"]
+		spawn_ball(result_position, plan["velocity"], result_definition.radius, result_level)
+		ball_merged.emit(result_level, result_position)
+		if not _ball_catalog.has_definition(result_level + 1):
+			top_ball_created.emit(result_level)
+
+	return merge_plans.size()
+
+
 func set_paddle_collision_provider(provider: Node) -> void:
 	assert(provider == null or provider.has_method("resolve_continuous_ball_collision"), "Paddle provider must expose resolve_continuous_ball_collision().")
 	_paddle_collision_provider = provider
@@ -134,7 +178,6 @@ func step_simulation(delta: float) -> void:
 		# Simulation runs before the sibling Paddle node in Main, so it prepares the shared transform once.
 		_paddle_collision_provider.prepare_physics_transform(delta)
 
-	var pending_cashouts: Array[Dictionary] = []
 	for index in active_indices:
 		var velocity := velocities[index]
 		var position := positions[index]
@@ -169,8 +212,14 @@ func step_simulation(delta: float) -> void:
 
 		positions[index] = position
 		velocities[index] = velocity
-		if cashout_enabled and position.y - radius > play_field_rect.end.y:
-			pending_cashouts.append({"index": index, "position": position})
+
+	commit_merge_candidates()
+
+	var pending_cashouts: Array[Dictionary] = []
+	if cashout_enabled:
+		for index in active_indices:
+			if positions[index].y - radii[index] > play_field_rect.end.y:
+				pending_cashouts.append({"index": index, "position": positions[index]})
 
 	for cashout in pending_cashouts:
 		var ball_index: int = cashout["index"]
@@ -195,3 +244,13 @@ func get_render_snapshot() -> Dictionary:
 		"radii": snapshot_radii,
 		"count": active_count,
 	}
+
+
+func _get_merge_result_velocity(first_index: int, second_index: int) -> Vector2:
+	var first_mass: float = _ball_catalog.get_definition(global_levels[first_index]).mass
+	var second_mass: float = _ball_catalog.get_definition(global_levels[second_index]).mass
+	var total_mass := first_mass + second_mass
+	var result_velocity := (velocities[first_index] + velocities[second_index]) * 0.5
+	if total_mass > 0.0:
+		result_velocity = (velocities[first_index] * first_mass + velocities[second_index] * second_mass) / total_mass
+	return result_velocity.limit_length(maximum_ball_runtime_speed)
