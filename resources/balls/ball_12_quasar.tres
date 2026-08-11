@@ -4,12 +4,11 @@
 
 [resource]
 script = ExtResource("1_definition")
-global_level = 6
-display_name = "Solar Snowball"
-score_value = 10000000000000.0
-radius = 256.0
-mass = 4096.0
-radius_scale = 32.0
-visual_key = &"solar_snowball"
-base_color = Color(1, 0.71, 0.22, 1)
+global_level = 12
+display_name = "Quasar"
+score_value = 1.0e36
+radius = 8192.0
+mass = 16777216.0
+visual_key = &"quasar"
+base_color = Color(0.90980392, 0.90196078, 1, 1)
 fx_tier = 3

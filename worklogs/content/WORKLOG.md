@@ -133,3 +133,25 @@ Branch: `main`
 
 - `git diff --check` passed.
 - Documentation-only change: no runtime code, Resource, or Goal status was changed.
+
+## 2026-08-11 — S2-G1 catalog alignment to current ball contract
+
+Owner: Content/Systems
+Branch: `main` working tree
+
+### Changes
+
+- Updated all fifteen BallDefinition resources to Snowflake through Black Hole with the documented score, radius, mass, snake_case visual key, base color, and fx tier values.
+- Raised the score-data range to `1e50` and removed the legacy BallDefinition `radius_scale`; StageDefinition owns render-only visual scaling.
+- Extended Content catalog verification and repaired ScoreFormatter scientific notation for the `1e50` range.
+
+### Verification
+
+- Primary `godot` validate passed for 7 scripts/scenes.
+- Primary `godot` Main runtime inspection: all 15 catalog entries passed; Lv14 is Black Hole with score `1e50`; no resource exposes `radius_scale`.
+- Formatter runtime checks: `1.00e+15`, `1.00e+36`, and `1.00e+50`; runtime error 0 after restart.
+- Godot CLI baseline was unavailable because the configured executable path was not present in this environment.
+
+### Follow-up
+
+- Core-owned S1-G1 and S2-G3 checks still expect the superseded radius sequence `4 → 8`; their owner must update and rerun those regression checks before treating the cross-lane merge path as reverified.

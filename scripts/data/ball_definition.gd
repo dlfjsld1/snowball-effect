@@ -8,13 +8,10 @@ extends Resource
 
 @export_range(0, 99, 1) var global_level := 0
 @export var display_name := ""
-@export_range(0.0, 1.0e36, 0.000001, "or_greater") var score_value := 0.0
+@export_range(0.0, 1.0e50, 0.000001, "or_greater") var score_value := 0.0
 @export_range(0.001, 100000.0, 0.001, "or_greater") var radius := 1.0
 @export_range(0.001, 1000000000.0, 0.001, "or_greater") var mass := 1.0
 
-## Multiplies the base visual at a stage's current presentation scale. It does
-## not change the collision radius above.
-@export_range(0.001, 1000.0, 0.001, "or_greater") var radius_scale := 1.0
 @export var visual_key: StringName = &""
 @export var base_color := Color.WHITE
 @export var texture: Texture2D

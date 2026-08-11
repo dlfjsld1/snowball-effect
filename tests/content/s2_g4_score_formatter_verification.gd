@@ -16,13 +16,14 @@ func _ready() -> void:
 	_expect_format(10000000000000.0, "10T")
 	_expect_format(999999999999999.0, "1.00e+15")
 	_expect_format(1.0e36, "1.00e+36")
+	_expect_format(1.0e50, "1.00e+50")
 	_expect_format(-1234.0, "-1.23K")
 	_expect_format(NAN, "0")
 	_expect_format(INF, "∞")
 	_expect_format(-INF, "-∞")
 
 	if _failures == 0:
-		print("S2_G4_VERIFIED boundaries=14 suffixes=KMBT scientific=1e36")
+		print("S2_G4_VERIFIED boundaries=15 suffixes=KMBT scientific=1e50")
 	get_tree().quit(_failures)
 
 

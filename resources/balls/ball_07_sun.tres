@@ -5,11 +5,10 @@
 [resource]
 script = ExtResource("1_definition")
 global_level = 7
-display_name = "Supernova Snowball"
-score_value = 5000000000000000.0
-radius = 512.0
+display_name = "Sun"
+score_value = 1.0e15
+radius = 256.0
 mass = 16384.0
-radius_scale = 64.0
-visual_key = &"supernova_snowball"
-base_color = Color(1, 0.48, 0.22, 1)
-fx_tier = 3
+visual_key = &"sun"
+base_color = Color(1, 0.76078431, 0.27843137, 1)
+fx_tier = 2

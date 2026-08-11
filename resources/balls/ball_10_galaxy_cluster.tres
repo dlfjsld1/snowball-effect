@@ -4,12 +4,11 @@
 
 [resource]
 script = ExtResource("1_definition")
-global_level = 4
-display_name = "Lunar Snowball"
-score_value = 100000000.0
-radius = 64.0
-mass = 256.0
-radius_scale = 8.0
-visual_key = &"lunar_snowball"
-base_color = Color(0.74, 0.76, 0.9, 1)
-fx_tier = 2
+global_level = 10
+display_name = "Galaxy Cluster"
+score_value = 1.0e25
+radius = 2048.0
+mass = 1048576.0
+visual_key = &"galaxy_cluster"
+base_color = Color(0.50196078, 0.36078431, 1, 1)
+fx_tier = 3

@@ -27,13 +27,41 @@ static func format_score(value: float) -> String:
 	var rounded_value := _round_to_places(scaled_value, decimal_places)
 	if rounded_value >= 1000.0:
 		if suffix_index >= _SUFFIXES.size() - 1:
-			return sign + "%.2e" % absolute_value
+			return sign + _format_scientific(absolute_value)
 		scaled_value = rounded_value / 1000.0
 		suffix_index += 1
 		decimal_places = _decimal_places_for(scaled_value)
 		rounded_value = _round_to_places(scaled_value, decimal_places)
 
 	return sign + _format_decimal(rounded_value, decimal_places) + _SUFFIXES[suffix_index]
+
+
+static func _format_scientific(value: float) -> String:
+	var exponent := int(floor(log(value) / log(10.0)))
+	var mantissa := value / pow(10.0, exponent)
+	while mantissa >= 10.0:
+		mantissa /= 10.0
+		exponent += 1
+	while mantissa < 1.0:
+		mantissa *= 10.0
+		exponent -= 1
+
+	var rounded_mantissa := _round_to_places(mantissa, 2)
+	if rounded_mantissa >= 10.0:
+		rounded_mantissa = 1.0
+		exponent += 1
+
+	return _format_fixed_two_decimals(rounded_mantissa) + "e" + ("+" if exponent >= 0 else "") + str(exponent)
+
+
+static func _format_fixed_two_decimals(value: float) -> String:
+	var formatted := String.num(value, 2)
+	var decimal_index := formatted.find(".")
+	if decimal_index == -1:
+		return formatted + ".00"
+	if formatted.length() - decimal_index == 2:
+		return formatted + "0"
+	return formatted
 
 
 static func _decimal_places_for(value: float) -> int:
@@ -52,5 +80,5 @@ static func _round_to_places(value: float, decimal_places: int) -> float:
 static func _format_decimal(value: float, decimal_places: int) -> String:
 	if decimal_places == 0:
 		return str(int(value))
-	var formatted := "%.1f" % value if decimal_places == 1 else "%.2f" % value
+	var formatted := String.num(value, decimal_places)
 	return formatted.rstrip("0").rstrip(".")

@@ -4,12 +4,11 @@
 
 [resource]
 script = ExtResource("1_definition")
-global_level = 9
-display_name = "Galaxy Snowball"
-score_value = 1.25e21
-radius = 2048.0
-mass = 262144.0
-radius_scale = 256.0
-visual_key = &"galaxy_snowball"
-base_color = Color(0.34, 0.48, 1, 1)
-fx_tier = 3
+global_level = 8
+display_name = "Supernova"
+score_value = 5.0e17
+radius = 512.0
+mass = 65536.0
+visual_key = &"supernova"
+base_color = Color(1, 0.41960784, 0.20784314, 1)
+fx_tier = 2

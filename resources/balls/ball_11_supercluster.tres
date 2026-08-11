@@ -4,12 +4,11 @@
 
 [resource]
 script = ExtResource("1_definition")
-global_level = 5
-display_name = "Earth Snowball"
-score_value = 50000000000.0
-radius = 128.0
-mass = 1024.0
-radius_scale = 16.0
-visual_key = &"earth_snowball"
-base_color = Color(0.24, 0.65, 0.9, 1)
+global_level = 11
+display_name = "Supercluster"
+score_value = 1.0e30
+radius = 4096.0
+mass = 4194304.0
+visual_key = &"supercluster"
+base_color = Color(0.36862745, 0.45882353, 0.94901961, 1)
 fx_tier = 3
