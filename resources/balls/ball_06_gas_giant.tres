@@ -4,12 +4,11 @@
 
 [resource]
 script = ExtResource("1_definition")
-global_level = 14
-display_name = "Omega Snowball"
-score_value = 3.90625e34
-radius = 65536.0
-mass = 268435456.0
-radius_scale = 1000.0
-visual_key = &"omega_snowball"
-base_color = Color(0.96, 0.92, 0.75, 1)
-fx_tier = 4
+global_level = 6
+display_name = "Gas Giant"
+score_value = 10000000000000.0
+radius = 128.0
+mass = 4096.0
+visual_key = &"gas_giant"
+base_color = Color(0.84313725, 0.60392157, 0.34117647, 1)
+fx_tier = 2

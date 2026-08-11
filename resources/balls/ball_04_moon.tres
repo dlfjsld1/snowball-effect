@@ -4,12 +4,11 @@
 
 [resource]
 script = ExtResource("1_definition")
-global_level = 10
-display_name = "Black Hole"
-score_value = 6.25e23
-radius = 4096.0
-mass = 1048576.0
-radius_scale = 512.0
-visual_key = &"black_hole"
-base_color = Color(0.12, 0.06, 0.22, 1)
-fx_tier = 4
+global_level = 4
+display_name = "Moon"
+score_value = 100000000.0
+radius = 32.0
+mass = 256.0
+visual_key = &"moon"
+base_color = Color(0.78431373, 0.78823529, 0.84705882, 1)
+fx_tier = 2

@@ -4,12 +4,11 @@
 
 [resource]
 script = ExtResource("1_definition")
-global_level = 13
-display_name = "Multiverse"
-score_value = 7.8125e31
+global_level = 14
+display_name = "Black Hole"
+score_value = 1.0e50
 radius = 32768.0
-mass = 67108864.0
-radius_scale = 1000.0
-visual_key = &"multiverse"
-base_color = Color(0.95, 0.3, 0.82, 1)
+mass = 268435456.0
+visual_key = &"black_hole"
+base_color = Color(0.0627451, 0.03529412, 0.12156863, 1)
 fx_tier = 4

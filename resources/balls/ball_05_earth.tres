@@ -4,12 +4,11 @@
 
 [resource]
 script = ExtResource("1_definition")
-global_level = 11
-display_name = "Big Bang"
-score_value = 3.125e26
-radius = 8192.0
-mass = 4194304.0
-radius_scale = 1000.0
-visual_key = &"big_bang"
-base_color = Color(1, 0.78, 0.28, 1)
-fx_tier = 4
+global_level = 5
+display_name = "Earth"
+score_value = 50000000000.0
+radius = 64.0
+mass = 1024.0
+visual_key = &"earth"
+base_color = Color(0.15686275, 0.47058824, 0.83137255, 1)
+fx_tier = 2
