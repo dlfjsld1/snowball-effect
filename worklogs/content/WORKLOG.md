@@ -101,3 +101,19 @@ Branch: `main` working tree
 
 - StageDefinition의 실제 local level 배분은 S3-G1에서 연결한다.
 - native headless는 이 환경의 `user://logs` open failure와 signal 11 때문에 이번 Evidence로 사용하지 않았다.
+
+## 2026-08-11 — S2-G1 base-ball radius seed correction
+
+Owner: Content/Systems
+Branch: `main` working tree
+
+### 변경
+
+- Shared Skeleton의 승인된 base Spawn radius `4`와 BallCatalog global level 0의 반지름을 일치시켰다.
+- initial 15-ball catalog radius를 `4 → 8 → 16 → … → 65,536`으로 재정렬했다. 따라서 어떤 동일 level Merge도 반드시 다음 level의 두 배 반지름 output을 만든다.
+- Game Rules의 initial catalog 표에 현재 radius seed를 명시했다.
+
+### 확인
+
+- Primary `godot` MCP validate: catalog, S2-G1/S2-G3/S1-G1 test scene, Main 5/5 valid.
+- Primary Main runtime: global level 0 radius 4 두 개가 global level 1 radius 8 하나로 Merge됨; runtime error 0.

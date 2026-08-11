@@ -21,7 +21,7 @@ const EXPECTED_NAMES := [
 	"Omega Snowball",
 ]
 const EXPECTED_SCORES := [1.0, 100.0, 10000.0, 1000000.0, 100000000.0, 50000000000.0, 10000000000000.0, 5000000000000000.0, 2.5e18, 1.25e21, 6.25e23, 3.125e26, 1.5625e29, 7.8125e31, 3.90625e34]
-const EXPECTED_RADII := [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0, 1024.0, 2048.0, 4096.0, 8192.0, 16384.0, 32768.0]
+const EXPECTED_RADII := [4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0, 1024.0, 2048.0, 4096.0, 8192.0, 16384.0, 32768.0, 65536.0]
 const EXPECTED_MASSES := [1.0, 4.0, 16.0, 64.0, 256.0, 1024.0, 4096.0, 16384.0, 65536.0, 262144.0, 1048576.0, 4194304.0, 16777216.0, 67108864.0, 268435456.0]
 const EXPECTED_VISUAL_KEYS := [&"snowflake", &"snowball", &"big_snowball", &"giant_snowball", &"lunar_snowball", &"earth_snowball", &"solar_snowball", &"supernova_snowball", &"nebula_snowball", &"galaxy_snowball", &"black_hole", &"big_bang", &"universe", &"multiverse", &"omega_snowball"]
 

@@ -149,25 +149,25 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 
 초기 예:
 
-| global_level | 이름 | score_value |
-|---:|---|---:|
-| 0 | Snowflake | 1 |
-| 1 | Snowball | 100 |
-| 2 | Big Snowball | 10,000 |
-| 3 | Giant Snowball | 1,000,000 |
-| 4 | Lunar Snowball | 100,000,000 |
-| 5 | Earth Snowball | 50,000,000,000 |
-| 6 | Solar Snowball | 10,000,000,000,000 |
-| 7 | Supernova Snowball | 5.0e15 |
-| 8 | Nebula Snowball | 2.5e18 |
-| 9 | Galaxy Snowball | 1.25e21 |
-| 10 | Black Hole | 6.25e23 |
-| 11 | Big Bang | 3.125e26 |
-| 12 | Universe | 1.5625e29 |
-| 13 | Multiverse | 7.8125e31 |
-| 14 | Omega Snowball | 3.90625e34 |
+| global_level | 이름 | radius (logical units) | score_value |
+|---:|---|---:|---:|
+| 0 | Snowflake | 4 | 1 |
+| 1 | Snowball | 8 | 100 |
+| 2 | Big Snowball | 16 | 10,000 |
+| 3 | Giant Snowball | 32 | 1,000,000 |
+| 4 | Lunar Snowball | 64 | 100,000,000 |
+| 5 | Earth Snowball | 128 | 50,000,000,000 |
+| 6 | Solar Snowball | 256 | 10,000,000,000,000 |
+| 7 | Supernova Snowball | 512 | 5.0e15 |
+| 8 | Nebula Snowball | 1,024 | 2.5e18 |
+| 9 | Galaxy Snowball | 2,048 | 1.25e21 |
+| 10 | Black Hole | 4,096 | 6.25e23 |
+| 11 | Big Bang | 8,192 | 3.125e26 |
+| 12 | Universe | 16,384 | 1.5625e29 |
+| 13 | Multiverse | 32,768 | 7.8125e31 |
+| 14 | Omega Snowball | 65,536 | 3.90625e34 |
 
-수치는 플레이테스트용이며 데이터에서 수정한다.
+반지름과 점수는 플레이테스트용 seed이며 `BallDefinition` 데이터에서 수정한다. 현재 기본 Spawn 공은 global level 0의 radius 4이고, Merge 결과는 항상 다음 global level의 두 배 반지름을 사용한다.
 
 ---
 
