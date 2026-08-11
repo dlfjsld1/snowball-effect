@@ -158,12 +158,14 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 | 4 | Lunar Snowball | 100,000,000 |
 | 5 | Earth Snowball | 50,000,000,000 |
 | 6 | Solar Snowball | 10,000,000,000,000 |
-| 7 | Nebula Snowball | 1.0e15 |
-| 8 | Galaxy Snowball | 5.0e17 |
-| 9 | Black Hole Snowball | 1.0e21 |
-| 10 | Big Bang Snowball | 1.0e25 |
-| 11 | Universe Snowball | 1.0e30 |
-| 12 | Multiverse Snowball | 1.0e36 |
+| 7 | Supernova Snowball | 5.0e15 |
+| 8 | Nebula Snowball | 2.5e18 |
+| 9 | Galaxy Snowball | 1.25e21 |
+| 10 | Black Hole | 6.25e23 |
+| 11 | Big Bang | 3.125e26 |
+| 12 | Universe | 1.5625e29 |
+| 13 | Multiverse | 7.8125e31 |
+| 14 | Omega Snowball | 3.90625e34 |
 
 수치는 플레이테스트용이며 데이터에서 수정한다.
 
@@ -424,6 +426,7 @@ Black Hole
 → Big Bang
 → Universe
 → Multiverse
+→ Omega Snowball
 ```
 
 초기 Spawn: 약 `80/s`

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BallDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/ball_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+global_level = 12
+display_name = "Universe"
+score_value = 1.5625e29
+radius = 8192.0
+mass = 16777216.0
+radius_scale = 1000.0
+visual_key = &"universe"
+base_color = Color(0.22, 0.72, 0.92, 1)
+fx_tier = 4

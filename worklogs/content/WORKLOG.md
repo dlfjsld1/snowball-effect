@@ -80,3 +80,24 @@ Branch: `main`
 ### 다음 작업 / 주의
 
 - S2-G5는 Core S2-G3의 `ball_merged(result_level, world_position)` 이벤트 계약이 완료된 뒤 Presentation이 통합한다.
+
+## 2026-08-11 — S2-G1 initial 15-ball data seed completion
+
+Owner: Content/Systems
+Branch: `main` working tree
+
+### 변경
+
+- global level 7~14의 BallDefinition Resource를 추가해 initial catalog를 15종으로 완성했다.
+- 임시 Stage-theme seed는 Supernova, Nebula, Galaxy, Black Hole, Big Bang, Universe, Multiverse, Omega Snowball이다.
+- `BallCatalog`는 Resource를 읽는 instance API로 정리했으며, 명칭·수치·Stage 배분은 이후 Content/Systems 플레이테스트에서 교체 가능한 데이터다.
+
+### 확인
+
+- Primary `godot` MCP validate: definition/catalog/S2-G1 scene 3/3 valid.
+- Primary Main runtime: catalog count `15`, first `Snowflake`, last `Omega Snowball`, last level `14`, undefined level `15=false`, runtime error 0.
+
+### 다음 작업 / 주의
+
+- StageDefinition의 실제 local level 배분은 S3-G1에서 연결한다.
+- native headless는 이 환경의 `user://logs` open failure와 signal 11 때문에 이번 Evidence로 사용하지 않았다.

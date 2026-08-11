@@ -1,6 +1,8 @@
 class_name BallSimulationManager
 extends Node
 
+const BallCatalogScript = preload("res://scripts/data/ball_catalog.gd")
+
 signal ball_count_changed(active_count: int)
 signal cashout_completed(score_amount: float, local_level: int, world_position: Vector2)
 
@@ -12,19 +14,23 @@ signal cashout_completed(score_amount: float, local_level: int, world_position: 
 var positions := PackedVector2Array()
 var velocities := PackedVector2Array()
 var radii := PackedFloat32Array()
+var global_levels := PackedInt32Array()
 var active_flags := PackedByteArray()
 var paddle_contact_locks := PackedByteArray()
 var active_indices: Array[int] = []
 var free_indices: Array[int] = []
 var _paddle_collision_provider: Node
+var _ball_catalog = BallCatalogScript.new()
 
 
 func _physics_process(delta: float) -> void:
 	step_simulation(delta)
 
 
-func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0) -> int:
+func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0, global_level := 0) -> int:
 	assert(radius > 0.0, "Ball radius must be positive.")
+	assert(global_level >= 0, "Ball global level must not be negative.")
+	assert(_ball_catalog.has_definition(global_level), "Ball global level must have a catalog definition.")
 
 	var index: int
 	if free_indices.is_empty():
@@ -32,6 +38,7 @@ func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0) -> i
 		positions.append(position)
 		velocities.append(velocity)
 		radii.append(radius)
+		global_levels.append(global_level)
 		active_flags.append(1)
 		paddle_contact_locks.append(0)
 	else:
@@ -39,6 +46,7 @@ func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0) -> i
 		positions[index] = position
 		velocities[index] = velocity
 		radii[index] = radius
+		global_levels[index] = global_level
 		active_flags[index] = 1
 		paddle_contact_locks[index] = 0
 
@@ -76,6 +84,32 @@ func get_capacity() -> int:
 	return positions.size()
 
 
+func get_ball_global_level(index: int) -> int:
+	if not is_ball_active(index):
+		return -1
+	return global_levels[index]
+
+
+func get_merge_candidate_pairs() -> Array[Vector2i]:
+	var candidates: Array[Vector2i] = []
+	var sorted_indices: Array[int] = active_indices.duplicate()
+	sorted_indices.sort()
+
+	for first_position in range(sorted_indices.size()):
+		var first_index := sorted_indices[first_position]
+		var first_level := global_levels[first_index]
+		for second_position in range(first_position + 1, sorted_indices.size()):
+			var second_index := sorted_indices[second_position]
+			if first_level != global_levels[second_index]:
+				continue
+
+			var combined_radius := radii[first_index] + radii[second_index]
+			if positions[first_index].distance_squared_to(positions[second_index]) <= combined_radius * combined_radius:
+				candidates.append(Vector2i(first_index, second_index))
+
+	return candidates
+
+
 func set_paddle_collision_provider(provider: Node) -> void:
 	assert(provider == null or provider.has_method("resolve_continuous_ball_collision"), "Paddle provider must expose resolve_continuous_ball_collision().")
 	_paddle_collision_provider = provider
@@ -85,6 +119,7 @@ func reset_runtime() -> void:
 	positions.clear()
 	velocities.clear()
 	radii.clear()
+	global_levels.clear()
 	active_flags.clear()
 	paddle_contact_locks.clear()
 	active_indices.clear()

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BallDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/ball_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+global_level = 7
+display_name = "Supernova Snowball"
+score_value = 5000000000000000.0
+radius = 256.0
+mass = 16384.0
+radius_scale = 64.0
+visual_key = &"supernova_snowball"
+base_color = Color(1, 0.48, 0.22, 1)
+fx_tier = 3

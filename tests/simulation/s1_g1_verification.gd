@@ -73,6 +73,7 @@ func _arrays_have_equal_capacity() -> bool:
 	return (
 		simulation.velocities.size() == capacity
 		and simulation.radii.size() == capacity
+		and simulation.global_levels.size() == capacity
 		and simulation.active_flags.size() == capacity
 	)
 

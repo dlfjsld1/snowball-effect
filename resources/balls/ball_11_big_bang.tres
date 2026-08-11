@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BallDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/ball_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+global_level = 11
+display_name = "Big Bang"
+score_value = 3.125e26
+radius = 4096.0
+mass = 4194304.0
+radius_scale = 1000.0
+visual_key = &"big_bang"
+base_color = Color(1, 0.78, 0.28, 1)
+fx_tier = 4

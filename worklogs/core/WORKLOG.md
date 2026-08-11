@@ -303,3 +303,24 @@ Branch: `main` working tree
 
 - Godot 4.7.1 CLI headless에서 S1-G1과 S1-G3 verification scene이 각각 exit 0으로 완료됐다.
 - Primary `godot` Main runtime은 Spawn radius `4`, diameter `8`을 반환했고 runtime error는 없었다.
+
+## 2026-08-11 — S2-G2 same-level merge candidate discovery
+
+Owner: Core
+Branch: `main` working tree
+
+### 변경
+
+- 중앙 SoA simulation에 `global_levels` 배열을 추가하고 spawn, slot reuse, reset과 배열 정합성을 함께 유지했다.
+- Core는 `BallCatalog` instance API를 읽기 전용으로 소비해 정의된 global level만 spawn하도록 경계를 추가했다.
+- active slot을 index 순서로 정렬해 같은 global level이며 반지름 합만큼 겹친 쌍만 결정적으로 반환한다. 후보 탐색은 상태를 변경하지 않으며 입력 제거·출력 생성은 S2-G3에 남겼다.
+
+### 확인
+
+- Primary `godot` MCP validate: simulation, S2-G2 test scene, S1-G1 regression scene 3/3 valid.
+- Primary Main runtime: initial candidates `(0,1),(0,3),(1,3)`, repeated query equal, 다른 level 제외, index 1 deactivate 뒤 `(0,3)`만 유지, runtime error 0.
+
+### 다음 작업 / 주의
+
+- 다음 Core Goal은 S2-G3 결정적 Merge commit이다.
+- native headless는 이 환경의 `user://logs` open failure와 signal 11 때문에 이번 Evidence로 사용하지 않았다.

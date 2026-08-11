@@ -44,7 +44,7 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 
 초기 콘텐츠 목표는 `global_level 0~14`의 총 15종이다. 각 Stage는 세계관에 맞는 local 공 4~5종을 사용하고, 이전 Stage의 최고 공을 다음 Stage의 기본 공으로 공유한다. 정확한 Stage별 배분과 이름은 Content 데이터에서 관리하며, 플레이테스트에서 종류가 과도하다는 피드백이 나오면 축소할 수 있다.
 
-아래 값은 점수 곡선과 초기 테마를 잡기 위한 seed이며 전체 15종의 확정 목록이 아니다.
+아래 값은 구현과 첫 플레이테스트를 위한 데이터 seed다. 이름, 점수, 반지름, mass, visual key와 Stage별 배분은 Content/Systems가 플레이테스트에 따라 교체하거나 축소할 수 있다.
 
 ```text
 0 Snowflake       1
@@ -54,9 +54,17 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 4 Lunar Snowball  100,000,000
 5 Earth Snowball  50,000,000,000
 6 Solar Snowball  10,000,000,000,000
+7 Supernova Snowball  5.0e15
+8 Nebula Snowball     2.5e18
+9 Galaxy Snowball     1.25e21
+10 Black Hole          6.25e23
+11 Big Bang            3.125e26
+12 Universe            1.5625e29
+13 Multiverse          7.8125e31
+14 Omega Snowball      3.90625e34
 ```
 
-나머지 global level도 각 Stage의 Ground / Planetary / Galactic / Black Hole 콘셉트가 읽히도록 이름, visual key, 반지름과 점수를 데이터로 정의한다. 값은 코드에 하드코딩하지 않는다.
+각 level은 Ground / Planetary / Galactic / Black Hole 콘셉트가 읽히도록 Resource 데이터로 정의한다. 값은 코드에 하드코딩하지 않는다.
 
 ---
 
