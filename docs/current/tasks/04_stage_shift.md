@@ -12,9 +12,6 @@
 2. Planetary
 3. Galactic
 
-Black Hole은 Task 07.
-
----
 
 ## 필수 규칙
 
@@ -23,9 +20,10 @@ Black Hole은 Task 07.
 - 이전 최고 공 = 다음 기본 공
 - 생성량 증가
 - 화면상 크기 정규화
+- StageDefinition의 `visual_radius_scale`로 렌더 크기 보정
 - 새 기본 레벨보다 낮은 공 정리
 - 좌우 Stage World 배경 전환
-- HUD 공 족보를 새 Stage의 local 공 4~5종으로 교체
+- HUD 공 족보를 새 Stage의 local 공 5~6종으로 교체
 - Retro Pixel Arcade Machine의 Stage 상태 변화
 - `SCALE SHIFT` 발표
 - Time Up Score Clear 후에도 동일한 Scale Shift 진입
@@ -36,13 +34,13 @@ Black Hole은 Task 07.
 
 ```text
 Ground:
-base 0, top 3, spawn 6/s
+base 0, top 4, spawn 6/s
 
 Planetary:
-base 3, top 6, spawn 15/s
+base 4, top 9, spawn 15/s
 
 Galactic:
-base 6, top 9, spawn 35/s
+base 9, top 14, spawn 35/s
 ```
 
 ---
@@ -98,3 +96,4 @@ base 6, top 9, spawn 35/s
 - Galactic은 화면/계기 밀도 증가
 - 후반 기계는 과부하처럼 보여도 실제 HUD와 조작 가독성은 유지
 - 이전 최고 공의 화면상 크기는 새 Stage 기준으로 재정규화
+- 재정규화는 Stage 데이터가 소유하며 BallDefinition의 물리 반지름을 변경하지 않음

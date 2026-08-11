@@ -172,7 +172,7 @@ Structure:
 
 ## Presentation / Visual Identity
 
-발표와 영상에서는 초반 Ground와 후반 Galactic/Black Hole을 반드시 대비시킨다.
+발표와 영상에서는 초반 Ground와, Lv14 Black Hole Snowball 및 이동 블랙홀 맵 기믹이 있는 후반 Galactic을 반드시 대비시킨다.
 
 시각 한 줄:
 

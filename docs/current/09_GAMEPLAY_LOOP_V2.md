@@ -233,7 +233,6 @@ Score Only
 1. Ground
 2. Planetary
 3. Galactic
-4. Black Hole
 
 각 Stage에는:
 
@@ -267,6 +266,7 @@ Snowflake
 → Snowball
 → Big Snowball
 → Giant Snowball
+→ Moon
 
 Giant Snowball 생성
 → STAGE CLEAR
@@ -438,10 +438,12 @@ Spawn:
 ## Stage 1 — Planetary
 
 ```text
-Giant Snowball
-→ Lunar Snowball
-→ Earth Snowball
-→ Solar Snowball
+Moon
+→ Earth
+→ Gas Giant
+→ Sun
+→ Supernova
+→ Galaxy
 ```
 
 배경:
@@ -460,10 +462,12 @@ Spawn:
 ## Stage 2 — Galactic
 
 ```text
-Solar Snowball
-→ Nebula Snowball
-→ Galaxy Snowball
-→ Black Hole Snowball
+Galaxy
+→ Galaxy Cluster
+→ Supercluster
+→ Quasar
+→ Event Horizon
+→ Black Hole
 ```
 
 배경:
@@ -483,49 +487,27 @@ Spawn:
 - 경고등
 - 일부 글리치
 
----
+맵 기믹:
 
-## Stage 3 — Black Hole
-
-```text
-Black Hole Snowball
-→ Big Bang Snowball
-→ Universe Snowball
-→ Multiverse Snowball
-```
-
-배경:
-
-- 거대한 블랙홀
-- 회전 링
-- 별 왜곡
-
-Spawn:
-
-- 초기 약 80/s
-
-물리:
-
-- 이동하는 블랙홀이 공을 약하게 끌어당김
-
-기계:
-
-- 우주급 현상을 더 이상 감당하지 못하는 느낌
+- 상단의 이동하는 Black Hole은 Lv14 Snowball과 별개인 맵 요소다.
+- 모든 활성 공에 약한 인력을 적용하되, 패들 조작과 Cashout 경로를 막지 않는다.
 
 ---
 
-# 12. Black Hole Stage 종료
+Stage 2가 마지막 Stage이므로 다음 Stage는 없다.
 
-마지막 Stage이므로 다음 Stage는 없다.
+# 12. Galactic Stage 종료
 
-## Multiverse 완성
+## Black Hole 완성
 
 ```text
-Multiverse Snowball
+Black Hole
 → PERFECT / MAX SCALE CLEAR
 → Final Settlement
 → Result
 ```
+
+여기서 완성되는 `Black Hole`은 Lv14 Snowball이다. 상단의 Black Hole은 마지막 Galactic Stage 동안 궤적에 간섭하는 맵 기믹이며, 별도 Stage나 별도 공 등급이 아니다.
 
 ## Time Up
 
@@ -672,7 +654,7 @@ Planetary:
 Earth Snowball
 → CUT-IN 가능
 
-Solar Snowball
+Galaxy
 → SCALE SHIFT
 ```
 
@@ -682,8 +664,8 @@ Galactic:
 Galaxy Snowball
 → CUT-IN 가능
 
-Black Hole Snowball
-→ SCALE SHIFT
+Black Hole
+→ FINAL RESULT 연출
 ```
 
 ---

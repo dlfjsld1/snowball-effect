@@ -117,3 +117,19 @@ Branch: `main` working tree
 
 - Primary `godot` MCP validate: catalog, S2-G1/S2-G3/S1-G1 test scene, Main 5/5 valid.
 - Primary Main runtime: global level 0 radius 4 두 개가 global level 1 radius 8 하나로 Merge됨; runtime error 0.
+
+## 2026-08-11 — 3-Stage content and stage-contract documentation alignment
+
+Owner: Content/Systems
+Branch: `main`
+
+### Scope
+
+- Aligned documentation to the three-stage Ground, Planetary, Galactic structure.
+- Documented the Lv14 Black Hole Snowball and the moving Black Hole map gimmick as separate final-Galactic elements.
+- Recorded Stage-data seeds: base time, clear score, local time bonuses, and render-only visual radius ownership.
+
+### Verification
+
+- `git diff --check` passed.
+- Documentation-only change: no runtime code, Resource, or Goal status was changed.

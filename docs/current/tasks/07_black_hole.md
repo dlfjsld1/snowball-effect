@@ -1,8 +1,8 @@
-# Task 07 — Black Hole Stage
+# Task 07 — Galactic Black Hole Map Gimmick
 
 ## 목적
 
-후반에 물리 규칙을 바꿔 기존 조준법을 흔든다.
+마지막 Galactic Stage의 물리 규칙을 바꿔 기존 조준법을 흔든다. 이 Task의 이동 블랙홀은 Lv14 `Black Hole` Snowball과 별개의 맵 기믹이다.
 
 ---
 
@@ -10,19 +10,23 @@
 
 ```text
 base_global_level: 9
-top_global_level: 12
-spawn_rate: 80/s
+top_global_level: 14
+spawn_rate: 35/s
 black_hole_enabled: true
 ```
 
 공:
 
 ```text
-Black Hole Snowball
-Big Bang Snowball
-Universe Snowball
-Multiverse Snowball
+Galaxy
+Galaxy Cluster
+Supercluster
+Quasar
+Event Horizon
+Black Hole
 ```
+
+`Black Hole`은 이 Stage의 Lv14 최고 Snowball이다. `black_hole_enabled`는 상단 이동 블랙홀 맵 기믹의 활성 여부를 뜻하며, Snowball의 생성·등급과는 별개다.
 
 ---
 
@@ -78,8 +82,8 @@ Multiverse Snowball
 - 블랙홀 위치에 따라 공 궤도가 명확히 변함
 - 중력이 강해도 게임이 계속 진행
 - 공이 블랙홀에 영구 고정되지 않음
-- 80/s 생성량에서 성능 확인
-- Black Hole Stage 진입과 결과 화면 정상
+- Galactic 최종 국면의 생성량에서 성능 확인
+- Black Hole 생성과 결과 화면 정상
 
 
 ---

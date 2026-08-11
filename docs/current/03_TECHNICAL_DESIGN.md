@@ -454,7 +454,7 @@ func format_score(value: float) -> String
 
 로 위계를 만든다.
 
-스테이지마다 화면상 기본 반지름을 재정규화한다.
+스테이지마다 StageDefinition의 `visual_radius_scale`로 화면상 기본 반지름을 재정규화한다. BallDefinition의 `radius`는 전역 물리·충돌 크기이며 이 보정으로 변경하지 않는다.
 
 ---
 
@@ -568,6 +568,8 @@ scale shift: up to about 0.8~1.0s
 
 BackgroundManager가 시각 블랙홀과 논리 위치를 제공한다.
 
+이 블랙홀은 마지막 Galactic Stage에서만 활성화하는 맵 기믹이며, Lv14 `Black Hole` BallDefinition과 별개의 런타임 요소다.
+
 ```gdscript
 func get_black_hole_position() -> Vector2
 func get_black_hole_pull(position: Vector2) -> Vector2
@@ -590,7 +592,6 @@ BallDefinition
 - global_level
 - display_name
 - score_value
-- radius_scale
 - color
 - texture
 - fx_tier
@@ -601,11 +602,12 @@ StageDefinition
 - display_name
 - base_global_level
 - top_global_level
-- local_ball_levels (Stage별 4~5종; 이전 Stage top과 다음 Stage base 중복 허용)
+- local_ball_levels (Stage별 5~6종; 이전 Stage top과 다음 Stage base 중복 허용)
 - base_time
 - clear_score
 - time_bonus_by_local_level
 - spawn_rate
+- visual_radius_scale (현재 Stage의 화면상 공 크기 보정; BallDefinition의 물리 radius는 변경하지 않음)
 - background_id
 - global_force_scale (explicit Stage effect only; not default downward gravity)
 - black_hole_enabled
@@ -621,7 +623,7 @@ ItemDefinition
 초기에는 `.tres` 또는 GDScript Resource를 사용한다.  
 밸런스 값이 여러 코드에 중복되지 않게 한다.
 
-초기 BallCatalog는 중복을 제외한 global 공 15종을 목표로 한다. 15는 밸런스 공식이 아니라 첫 콘텐츠 제작 범위이며, 플레이테스트 결과에 따라 데이터 수를 줄일 수 있다. Stage별 4~5종의 테마 구성과 global catalog의 연결은 `StageDefinition`에서 관리한다.
+초기 BallCatalog는 중복을 제외한 global 공 15종을 목표로 한다. 15는 밸런스 공식이 아니라 첫 콘텐츠 제작 범위이며, 플레이테스트 결과에 따라 데이터 수를 줄일 수 있다. Stage별 5~6종의 테마 구성과 global catalog의 연결은 `StageDefinition`에서 관리한다.
 
 HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallCatalog`의 visual key와 display name을 읽어 표시한다. 별도의 Merge progression 사본이나 `NEXT` Spawn queue를 만들지 않는다. `stage_changed(stage_definition)`을 받을 때 목록을 한 번 갱신하고, HUD가 Merge 결과나 Stage 데이터를 수정하지 않는다.
 
