@@ -248,7 +248,8 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 
 ## 완료 조건
 
-- 아이템은 패들이 먹음
+- 아이템은 현재 Stage의 3단계 이상 Snowball(`local_level >= 2`)이 Item Ball을 여러 번 깨뜨려 획득
+- hit 누적 균열/파편 뒤 최종 파괴 시 CUT-IN과 1회 activation
 - 놓치면 사라짐
 - 지속 시간이 HUD에 표시
 - 같은 아이템 재획득 시 갱신

@@ -38,10 +38,10 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 ### S5-G4 Stage World와 Shift presentation
 
 - Owner: Presentation
-- Owned Files: `scripts/presentation/background_manager.gd`, `scripts/presentation/presentation_manager.gd`, `scenes/backgrounds/**`, `scenes/effects/**`, `tests/presentation/**`
+- Owned Files: `scripts/presentation/background_manager.gd`, `scripts/presentation/presentation_manager.gd`, `scripts/ui/hud.gd`, `scenes/ui/hud.tscn`, `scenes/backgrounds/**`, `scenes/effects/**`, `tests/presentation/**`
 - Integration Point: `stage_changed`, `stage_shift_started` 구독; `stage_shift_presentation_finished` 반환.
 - Dependencies: S5-G1 background key와 `INTEGRATION_CONTRACTS.md`의 Shift signal 계약.
-- Verification: Stage World 전환, Shift 완료 신호 한 번, animation이 gameplay state를 직접 변경하지 않음.
+- Verification: Stage World 전환, 현재 Stage local 공 4~5종의 족보가 순서대로 표시되고 Shift 후 새 목록으로 한 번 교체됨, `NEXT` Spawn 예고 없음, Shift 완료 신호 한 번, animation/HUD가 gameplay state를 직접 변경하지 않음.
 - Do Not Modify: StageManager와 resource level mapping.
 
 ### S5-G5 3-Stage 통합 완주

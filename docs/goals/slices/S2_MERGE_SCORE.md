@@ -14,7 +14,7 @@
 - Owned Files: `scripts/data/ball_definition.gd`, `resources/balls/**`, `tests/content/**`
 - Integration Point: read-only `BallCatalog.get_definition(global_level)` API.
 - Dependencies: S1 완료; Core가 필요한 필드 계약 제시.
-- Verification: global level, radius, mass, base `score_value`, visual key가 로드됨; Time Bonus 필드 없음.
+- Verification: 초기 global level 0~14의 15종에서 radius, mass, base `score_value`, visual key가 로드됨; Stage 콘셉트별 식별 가능; Time Bonus 필드 없음. 15종은 데이터 범위이며 종류 축소 시 Goal 계약을 함께 갱신.
 - Do Not Modify: Merge 로직, renderer, HUD.
 
 ### S2-G2 같은 레벨 후보 탐색

@@ -13,7 +13,10 @@
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration | Clear 표시와 상태 잠금 |
 | Core Settlement | `final_settlement_started/finished(amount)` | Presentation, Integration | 정산 연출과 완료 중재 |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation | data 적용과 Stage World 변경 |
-| Content screens | `start_requested`, `retry_requested`, `pause_requested` | Integration GameManager | 전역 상태 전환 요청 |
+| Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager | 시작, Pause modal 행동과 화면 전환 요청 |
+| Content ItemManager | `item_planet_damaged(item_type, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |
+| Content ItemManager | `item_planet_broken(item_type, world_position)` | Presentation, Integration | 최종 파괴 FX, CUT-IN과 1회 activation 중재 |
+| Content ItemManager | `active_items_changed(read_only_snapshot)` | Presentation HUD | 현재 활성 아이템 표시 |
 | Presentation | `stage_shift_presentation_finished` | Integration StageManager | 다음 Stage 진입 허용 |
 
 ## Integration Goal 조건

@@ -40,9 +40,11 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 
 ---
 
-## 초기 공 정의
+## 초기 공 카탈로그
 
-최소 global_level 0~6을 데이터로 만든다.
+초기 콘텐츠 목표는 `global_level 0~14`의 총 15종이다. 각 Stage는 세계관에 맞는 local 공 4~5종을 사용하고, 이전 Stage의 최고 공을 다음 Stage의 기본 공으로 공유한다. 정확한 Stage별 배분과 이름은 Content 데이터에서 관리하며, 플레이테스트에서 종류가 과도하다는 피드백이 나오면 축소할 수 있다.
+
+아래 값은 점수 곡선과 초기 테마를 잡기 위한 seed이며 전체 15종의 확정 목록이 아니다.
 
 ```text
 0 Snowflake       1
@@ -53,6 +55,8 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 5 Earth Snowball  50,000,000,000
 6 Solar Snowball  10,000,000,000,000
 ```
+
+나머지 global level도 각 Stage의 Ground / Planetary / Galactic / Black Hole 콘셉트가 읽히도록 이름, visual key, 반지름과 점수를 데이터로 정의한다. 값은 코드에 하드코딩하지 않는다.
 
 ---
 

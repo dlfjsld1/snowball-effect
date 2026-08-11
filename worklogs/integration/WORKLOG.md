@@ -308,3 +308,22 @@ Locked files: 없음
 
 - 구현값은 `GameManager.lv1_ball_radius = 4`와 일치한다.
 - 별도 gameplay 기능이나 Goal 상태는 변경하지 않았다.
+
+## 2026-08-11 — Meeting design contract update
+
+Owner: Integration
+Branch: `main` working tree
+Locked files: 없음
+
+### 변경
+
+- HUD 기본 정보를 점수, 시간, 현재 활성 아이템, 일시정지, 현재 Stage 공 족보로 정리했다.
+- Pause modal의 재개·다시 시작·설정·메인 화면과 S8 Title/Main UI 연결을 문서화했다.
+- 초기 global 공 15종과 Stage별 local 공 4~5종 방향을 S2 데이터 계약에 반영했다.
+- Item Ball은 현재 Stage의 3단계 이상(`local_level >= 2`) Snowball hit을 누적해 파괴하며, 최종 파괴 뒤 CUT-IN과 1회 아이템 activation으로 이어지는 계약으로 갱신했다.
+- Scale Shift 때 Stage별 공 족보도 새 목록으로 교체하도록 S5 Presentation 계약에 반영했다.
+
+### 확인
+
+- 게임 코드, Scene, 테스트, Goal 상태를 변경하지 않았다.
+- 문서 diff check를 통과했다.

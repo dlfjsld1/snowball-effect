@@ -25,6 +25,7 @@ Black Hole은 Task 07.
 - 화면상 크기 정규화
 - 새 기본 레벨보다 낮은 공 정리
 - 좌우 Stage World 배경 전환
+- HUD 공 족보를 새 Stage의 local 공 4~5종으로 교체
 - Retro Pixel Arcade Machine의 Stage 상태 변화
 - `SCALE SHIFT` 발표
 - Time Up Score Clear 후에도 동일한 Scale Shift 진입
@@ -56,8 +57,9 @@ base 6, top 9, spawn 35/s
 6. Stage 데이터 변경
 8. 렌더 크기 스케일 재설정
 9. 배경 전환
-10. 새 생성량 적용
-11. 시뮬레이션 정상화
+10. 새 Stage 공 족보 갱신
+11. 새 생성량 적용
+12. 시뮬레이션 정상화
 
 ---
 

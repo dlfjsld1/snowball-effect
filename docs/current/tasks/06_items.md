@@ -2,19 +2,27 @@
 
 ## 목적
 
-패들이 직접 먹는 아이템으로 짧은 폭발 구간과 뇌절 변형을 만든다.
+현재 Stage의 3단계 이상 Snowball로 아이템 행성을 여러 번 깨뜨려 획득하는 짧은 폭발 구간과 뇌절 변형을 만든다.
 
 ---
 
 ## 공통 규칙
 
-- 아이템은 상단에서 낙하
-- 공과 충돌하지 않음
-- 패들과 충돌하면 획득
+- 아이템은 작은 행성 형태의 `Item Ball`에 담겨 Play Field에 등장
+- Item Ball은 일반 Snowball Merge 대상이 아님
+- 현재 Stage의 3단계 이상 공만 파괴 damage를 줄 수 있음
+- 데이터 기준으로 `local_level >= 2`; 그보다 높은 local level도 모두 유효
+- 유효 Snowball 충돌마다 damage 1회와 균열/픽셀 파편 단계 갱신
+- 동일 contact가 여러 physics frame에 걸쳐도 분리 전에는 중복 damage 없음
+- `required_break_hits` 도달 시 파괴·획득 lock을 한 번만 확정
+- 파괴 CUT-IN의 activation cue에서 아이템 효과 시작
+- CUT-IN 실패/skip 시에도 확정된 아이템은 안전하게 한 번 적용
+- 1~2단계 공과 Paddle은 즉시 획득 또는 파괴하지 않음
 - 놓치면 제거
 - 지속 효과는 HUD 표시
 - 같은 효과 재획득 시 지속시간 갱신
 - 다른 효과 동시 유지 가능
+- 파괴 연출 실패나 지연이 실제 아이템 적용을 중복시키지 않음
 
 ---
 
@@ -85,7 +93,7 @@ duration: 7s
 
 ---
 
-## 아이템 스폰
+## 아이템 행성 스폰
 
 초기:
 
@@ -95,6 +103,8 @@ duration: 7s
 ```
 
 Stage가 오르면 약간 자주 나올 수 있다.
+
+행성의 정확한 `required_break_hits`, 낮은 단계 공과의 물리 반응, 등장 궤적은 아직 확정하지 않는다. 파괴 가능 여부는 고정 global level이 아니라 현재 Stage 기준 `local_level >= 2`로 계산한다.
 
 ---
 

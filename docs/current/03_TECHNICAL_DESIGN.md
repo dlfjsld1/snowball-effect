@@ -523,13 +523,19 @@ scale shift: up to about 0.8~1.0s
 
 ## 12. 아이템 기술
 
-아이템 수는 적으므로 개별 `Area2D` 또는 단순 Node2D 사용 가능하다.
+아이템 행성 수는 적으므로 개별 `Area2D` 또는 단순 Node2D 사용 가능하다. 논리 공 배열에 섞지 않는다.
 
 ### 획득
 
-- 패들 AABB 또는 선분과 아이템 원의 충돌
-- 획득 시 ItemManager가 효과 시작
-- 아이템 Node 제거 또는 풀 반환
+- Item Ball과 logical Snowball의 원 충돌 후보를 중앙 simulation 위치 snapshot으로 검사
+- `local_level = ball.global_level - current_stage.base_global_level`로 계산
+- `local_level >= 2`인 접촉만 유효 damage; 더 높은 단계도 같은 규칙으로 damage 가능
+- 한 contact pair는 분리되기 전까지 damage 한 번만 commit
+- 유효 hit마다 damage count를 올리고 Presentation에 균열 단계 이벤트 전달
+- `required_break_hits` 도달 시 broken/acquired lock과 pending activation을 한 번만 확정
+- CUT-IN activation cue에서 ItemManager가 효과를 시작하며, cue가 실패하거나 skip되면 안전한 fallback으로 한 번 적용
+- Item Ball 제거 또는 풀 반환은 논리 획득 확정 뒤 수행
+- 획득·재획득·만료·Retry 때 read-only active item snapshot을 HUD에 전달
 
 ### Blizzard
 
@@ -584,6 +590,7 @@ StageDefinition
 - display_name
 - base_global_level
 - top_global_level
+- local_ball_levels (Stage별 4~5종; 이전 Stage top과 다음 Stage base 중복 허용)
 - base_time
 - clear_score
 - time_bonus_by_local_level
@@ -597,10 +604,15 @@ ItemDefinition
 - spawn_weight
 - duration
 - magnitude
+- required_break_hits
 ```
 
 초기에는 `.tres` 또는 GDScript Resource를 사용한다.  
 밸런스 값이 여러 코드에 중복되지 않게 한다.
+
+초기 BallCatalog는 중복을 제외한 global 공 15종을 목표로 한다. 15는 밸런스 공식이 아니라 첫 콘텐츠 제작 범위이며, 플레이테스트 결과에 따라 데이터 수를 줄일 수 있다. Stage별 4~5종의 테마 구성과 global catalog의 연결은 `StageDefinition`에서 관리한다.
+
+HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallCatalog`의 visual key와 display name을 읽어 표시한다. 별도의 Merge progression 사본이나 `NEXT` Spawn queue를 만들지 않는다. `stage_changed(stage_definition)`을 받을 때 목록을 한 번 갱신하고, HUD가 Merge 결과나 Stage 데이터를 수정하지 않는다.
 
 현재 S1의 Lv1 Spawn speed와 runtime speed cap은 공통 physics tuning이다. Mouse position은 직접 매핑하므로 movement speed cap을 사용하지 않는다. Paddle contact impact cap, ball reflection speed cap, rotation collision tolerance와 최대 rotation substep 수는 서로 다른 tuning이며 확정 디자인값이 아니다. 향후 BallDefinition override를 추가하더라도 runtime velocity를 지속적으로 고정하는 용도로 사용하지 않는다.
 
@@ -623,7 +635,13 @@ signal stage_clear_completed(stage: int, reason: StringName)
 signal stage_failed(stage: int)
 signal stage_shift_started(from_stage: int, to_stage: int)
 signal stage_shift_completed(stage: int)
+signal item_planet_damaged(item_type: int, current_hits: int, required_hits: int, world_position: Vector2)
+signal item_planet_broken(item_type: int, world_position: Vector2)
 signal item_collected(item_type: int)
+signal active_items_changed(items: Array)
+signal resume_requested()
+signal settings_requested()
+signal main_menu_requested()
 signal game_finished(result: Dictionary)
 ```
 

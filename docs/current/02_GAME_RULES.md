@@ -35,6 +35,35 @@
 
 ---
 
+## 1.1 HUD와 일시정지
+
+플레이 중 HUD의 기본 정보는 다음과 같다.
+
+- 점수
+- 남은 시간
+- 현재 활성 아이템
+- 일시정지 진입 버튼
+- 현재 Stage 공 족보
+
+점수 영역 안에서 Stage Score와 Run Score를 어떻게 병기할지는 UI 튜닝 대상으로 두되, HUD의 최상위 정보 종류를 불필요하게 늘리지 않는다. 활성 아이템이 없을 때는 빈 슬롯 또는 비활성 상태로 표시한다.
+
+공 족보는 수박게임의 진화표처럼 현재 Stage의 local 공 4~5종을 낮은 단계부터 최고 단계까지 순서대로 보여준다. 플레이어가 같은 공 두 개를 합치면 다음에 어떤 공이 되는지 화면을 떠나지 않고 확인할 수 있어야 한다.
+
+- `local Lv0 → Lv1 → Lv2 → ... → Stage Top` 순서를 아이콘으로 표시한다.
+- 현재 Stage에 포함된 공만 표시하고 Scale Shift 시 다음 Stage 족보로 교체한다.
+- 족보는 Ball/Stage 데이터의 read-only 표현이며 Merge 결과를 직접 계산하거나 변경하지 않는다.
+
+일시정지는 게임 화면 위에 modal로 열리며 다음 행동을 제공한다.
+
+- 재개
+- 다시 시작
+- 설정
+- 메인 화면
+
+메인 화면은 기존 Title 화면 계획과 같은 진입 화면으로 취급한다. 정확한 Settings 항목과 Main 이동 시 Run 폐기 확인 방식은 해당 UI 구현 전에 확정한다. 현재 S1의 최소 Pause/Retry 구현이 이 확장 메뉴까지 완료된 것으로 간주하지 않는다.
+
+---
+
 ## 2. 조작
 
 | 키 | 기능 |
@@ -351,6 +380,10 @@ Stage 성공 후 Settlement가 끝나면 Scale Shift.
 
 ## 14. Stage 구성
 
+각 Stage는 해당 세계관에 맞는 local 공 4~5종을 사용한다. 전체 Run의 초기 콘텐츠 목표는 중복을 제외한 global 공 15종이다. 이전 Stage의 최고 공이 다음 Stage의 기본 공으로 재사용되므로, Stage별 개수를 단순 합산한 값과 global 공 종류 수는 다를 수 있다.
+
+아래 이름은 현재 테마와 Scale Shift 연결을 보여주는 seed다. 최종 15종의 정확한 Stage 배분, 명칭, 반지름과 점수는 `BallDefinition`/`StageDefinition` 데이터로 확정하며 플레이테스트에서 종류가 과도하다는 피드백이 나오면 축소할 수 있다.
+
 ### Ground
 
 ```text
@@ -421,7 +454,19 @@ Black Hole
 
 ## 16. 아이템
 
-아이템은 상단에서 떨어지고 패들이 직접 획득한다.
+아이템은 패들이 바로 받아먹는 pickup이 아니다. 아이템을 품은 행성형 `Item Ball`로 Play Field에 등장하며, 현재 Stage의 **3단계 이상 Snowball**이 충돌할 때마다 점차 깨진다.
+
+- 사람 기준 3단계 이상은 데이터의 0-based 표기로 `local_level >= 2`다.
+- Stage가 local 공 4종이든 5종이든 3단계, 4단계, 5단계 공은 모두 유효 damage를 줄 수 있다.
+- 유효 충돌 한 번당 파괴 hit를 한 번만 반영하고, 같은 접촉의 frame 중복 damage를 막는다.
+- hit가 누적될수록 균열·픽셀 파편 등 단계적인 damage 표현을 보여준다.
+- 필요한 hit 수는 `ItemDefinition`의 플레이테스트 tuning 값이다.
+- 마지막 hit에서 Item Ball 파괴와 아이템 획득을 한 번만 확정하고 CUT-IN을 요청한다.
+- CUT-IN의 activation cue에 맞춰 효과를 시작하되, 연출 실패가 아이템 유실이나 중복 적용을 만들지 않게 한다.
+- 1~2단계 공과 Paddle은 Item Ball을 즉시 획득하거나 파괴하지 않는다.
+- Item Ball은 일반 Snowball Merge 대상이 아니다.
+- Item Ball을 놓치면 효과 없이 제거한다.
+- 아이템 효과는 Optional Item Layer에 남으며 Core Merge/Settlement 계약을 바꾸지 않는다.
 
 ### Blizzard
 일정 시간 Spawn Rate 증가.
