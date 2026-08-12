@@ -42,7 +42,7 @@ func _verify_top_ball_clears_and_settles() -> void:
 	simulation.spawn_ball(Vector2(100.0, 100.0), Vector2.ZERO, 16.0, 3)
 	simulation.spawn_ball(Vector2(106.0, 100.0), Vector2.ZERO, 16.0, 3)
 	stage_manager._physics_process(0.1)
-	_expect(stage_manager.current_state == StageManager.CLEARED, "Ground top ball must clear the Stage.")
+	_expect(stage_manager.current_state == StageManager.SHIFTING, "Ground top ball must settle before waiting for the next Stage shift.")
 	_expect(is_equal_approx(stage_manager.get_score_ledger().stage_score, 100000000.0), "Top ball must be included in final settlement exactly once.")
 	_expect(simulation.get_active_count() == 0, "Settlement must remove the active snapshot balls.")
 

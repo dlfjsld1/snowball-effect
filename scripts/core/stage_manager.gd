@@ -9,6 +9,7 @@ const Ledger = preload("res://scripts/core/score_ledger.gd")
 
 signal stage_changed(definition: StageDefinition)
 signal stage_state_changed(state: StringName)
+signal stage_shift_started(next_definition: StageDefinition, shift_id: int)
 
 const READY: StringName = &"READY"
 const PLAYING: StringName = &"PLAYING"
@@ -16,9 +17,11 @@ const CLEAR_LOCKED: StringName = &"CLEAR_LOCKED"
 const TIME_UP_LOCKED: StringName = &"TIME_UP_LOCKED"
 const SETTLING: StringName = &"SETTLING"
 const CLEARED: StringName = &"CLEARED"
+const SHIFTING: StringName = &"SHIFTING"
 const FAILED: StringName = &"FAILED"
 
 @export var simulation_path: NodePath
+@export var auto_complete_shift_presentation := false
 
 var current_state: StringName = READY
 var current_stage_index := 0
@@ -29,6 +32,9 @@ var _stage_runtime: StageRuntime
 var _settlement_service: SettlementService
 var _pending_cashouts: Array[Dictionary] = []
 var _top_ball_created := false
+var _pending_shift_id := -1
+var _pending_shift_definition: StageDefinition
+var _next_shift_id := 1
 
 
 func _ready() -> void:
@@ -58,6 +64,8 @@ func _physics_process(delta: float) -> void:
 
 func start_run() -> void:
 	current_stage_index = 0
+	_pending_shift_id = -1
+	_pending_shift_definition = null
 	_stage_runtime.score_ledger.reset_runtime()
 	_enter_stage(_stage_catalog.get_stage(current_stage_index))
 
@@ -81,7 +89,20 @@ func get_runtime_snapshot() -> Dictionary:
 		"stage_time_left": _stage_runtime.stage_time_left,
 		"stage_score": _stage_runtime.score_ledger.stage_score,
 		"run_score": _stage_runtime.score_ledger.run_score,
+		"pending_shift_id": _pending_shift_id,
 	}
+
+
+func accept_stage_shift_presentation_finished(shift_id: int) -> bool:
+	if current_state != SHIFTING or shift_id != _pending_shift_id or _pending_shift_definition == null:
+		return false
+
+	var next_definition := _pending_shift_definition
+	_pending_shift_id = -1
+	_pending_shift_definition = null
+	current_stage_index += 1
+	_enter_stage(next_definition)
+	return true
 
 
 func _enter_stage(definition: StageDefinition) -> void:
@@ -125,8 +146,27 @@ func _settle_and_resolve(reason: StringName) -> void:
 
 	if reason == &"TOP_BALL_CLEAR" or _stage_runtime.score_ledger.stage_score >= _stage_runtime.current_stage.clear_score:
 		_set_state(CLEARED)
+		_begin_scale_shift_if_available()
 	else:
 		_set_state(FAILED)
+
+
+func _begin_scale_shift_if_available() -> void:
+	var next_definition := _stage_catalog.get_stage(current_stage_index + 1) as StageDefinition
+	if next_definition == null:
+		return
+
+	_pending_shift_id = _next_shift_id
+	_next_shift_id += 1
+	_pending_shift_definition = next_definition
+	_set_state(SHIFTING)
+	stage_shift_started.emit(next_definition, _pending_shift_id)
+	if auto_complete_shift_presentation:
+		call_deferred("_complete_temporary_shift_presentation", _pending_shift_id)
+
+
+func _complete_temporary_shift_presentation(shift_id: int) -> void:
+	accept_stage_shift_presentation_finished(shift_id)
 
 
 func _set_state(next_state: StringName) -> void:

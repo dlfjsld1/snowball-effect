@@ -30,9 +30,9 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 
 - Owner: Integration
 - Owned Files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`
-- Integration Point: Core `CLEARED`, Presentation `stage_shift_presentation_finished`, Content StageCatalog를 연결.
+- Integration Point: Core `CLEARED`, `stage_shift_started(next_definition, shift_id)`, Presentation `stage_shift_presentation_finished(shift_id)`, Content StageCatalog를 연결. S5-G4 전에는 Main의 임시 adapter가 같은 완료 API를 deferred 한 번 호출한다.
 - Dependencies: S5-G1, S5-G2와 `INTEGRATION_CONTRACTS.md`의 Shift signal 계약.
-- Verification: `CLEARED` 뒤에만 `SHIFTING`; spawn/timer stop→Settlement→연출→다음 Stage; 중복 signal에도 Shift 한 번.
+- Verification: `CLEARED` 뒤에만 `SHIFTING`; spawn/timer stop→Settlement→연출/임시 adapter→다음 Stage; 잘못되거나 중복된 `shift_id`에도 Shift 한 번.
 - Do Not Modify: Core 계산, StageDefinition 값, Presentation animation.
 
 ### S5-G4 Stage World와 Shift presentation

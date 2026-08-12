@@ -369,3 +369,27 @@ Locked files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `
 
 - S3-G6 Presentation이 Stage name, time, clear target, stage/run labels와 genealogy를 HUD에 표시해야 현재 임시 `STAGE {score}` 표기가 완전히 교체된다.
 - S5-G3 이후에만 다음 Stage/Scale Shift를 자동 진행한다. S3-G5는 Clear/Fail settlement state까지만 통합한다.
+
+## 2026-08-12 — S5-G3 temporary Scale Shift integration
+
+Owner: Integration
+Branch: `main` working tree
+Locked files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`
+
+### 변경
+
+- `StageManager`에 `CLEARED→SHIFTING` 전이와 `stage_shift_started(next_definition, shift_id)`를 추가했다. 정산이 끝난 뒤 다음 Stage가 있을 때만 shift를 시작한다.
+- Presentation 완료는 `accept_stage_shift_presentation_finished(shift_id)` API로 수용한다. matching id 하나만 다음 catalog Stage로 진입하고 stale/duplicate id는 무시한다.
+- S5-G4 Presentation이 아직 없으므로 Main Scene에서만 `auto_complete_shift_presentation`을 켰다. 이 임시 adapter는 deferred 한 번 같은 완료 API를 호출하며 gameplay/animation을 만들지 않는다.
+- S3-G5 기존 clear 검증은 확장된 상태 흐름에 맞게 settlement 이후 `SHIFTING` lock을 기대하도록 갱신했다.
+
+### 확인
+
+- Godot 4.7.1 CLI project load exit 0. 이 환경의 direct headless scene은 `user://logs` 권한 문제로 signal 11이 나므로 test-run evidence에는 사용하지 않았다.
+- Primary `godot` validate로 StageManager, Main, S5-G3 test script/scene 4/4 valid.
+- S5-G3 verification scene과 S3-G5 regression scene은 각각 exit 0으로 완료됐다. 종료형 test scene이라 MCP bridge가 준비되기 전에 정상 종료했다.
+- Primary Main runtime에서 Ground top ball을 만들어 `SHIFTING`, active balls `0`, pending shift id `1`을 확인하고 deferred adapter 뒤 Planetary `PLAYING`, index `1`, pending `-1`을 확인했다. runtime error `0`.
+
+### 다음 작업 / 주의
+
+- Presentation S5-G4가 `stage_shift_started`를 구독하고 화면 전환 뒤 `stage_shift_presentation_finished(shift_id)`를 Integration API에 연결하면 Main의 임시 adapter를 제거한다.

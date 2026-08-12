@@ -22,6 +22,7 @@ pause_menu_path = NodePath("../UI/PauseMenu")
 [node name="StageManager" type="Node" parent="."]
 script = ExtResource("2_stage_manager")
 simulation_path = NodePath("../PlayField/SimulationMount/BallSimulationManager")
+auto_complete_shift_presentation = true
 
 [node name="StageWorld" type="Node2D" parent="."]
 
