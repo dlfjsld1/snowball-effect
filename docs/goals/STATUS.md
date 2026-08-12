@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Core | 없음 | 팀 리드/Core 담당 | available |
 | Presentation | 없음 | 팀원 A | available |
-| Content/Systems | 없음 | 팀원 B | available |
+| Content/Systems | 없음 | 본인/Content·Systems·Release 담당 | available |
 | Integration | 없음 | 팀 리드/Integration 담당 | available |
 
 각 lane은 `IN PROGRESS`를 최대 하나만 가진다. 서로 다른 lane은 Dependencies와 Integration Point가 충족되면 병렬 진행할 수 있다.
@@ -37,7 +37,7 @@
 | S2-G3 결정적 Merge commit | Core | VERIFIED | 2026-08-11 mass-weighted velocity를 `maximum_ball_runtime_speed=900`으로 한 번 제한한다. Primary `godot` Main runtime에서 Lv0 pair가 midpoint Lv1 하나로 합쳐지고 velocity `(50,50)`을 계승, 같은 tick의 Lv1 재합체는 없고 다음 commit에서만 발생, 2000 world units/s pair는 900으로 제한, Lv13 pair의 Lv14 생성은 `top_ball_created(14)` 1회를 확인했다. simulation/S2-G3/S2-G2/S1-G3/S1-G1 validate 5/5 통과 및 runtime error 0. |
 | S2-G4 Score formatter | Content/Systems | VERIFIED | 2026-08-10 `format_score(value)` pure API로 0, K/M/B/T 경계, 반올림 승격, `1e36` 과학 표기와 NaN/Infinity 방어를 자동 검증. Godot 4.7.1 headless exit 0, Primary `godot` MCP validate 3/3. |
 | S2-G5 Merge 표시 통합 | Presentation | PENDING | S2-G3/G4 계약 필요 |
-| S3-G1 Stage 데이터 | Content/Systems | PENDING | S2-G1 필요 |
+| S3-G1 Stage 데이터 | Content/Systems | PENDING | 2026-08-12 main의 `b5736e4`에서 `StageDefinition`/read-only `StageCatalog.get_stage(index)`와 3개 Resource를 추가하고 당시 Ground(0–4), Planetary(4–9), Galactic(9–14) seed를 Primary `godot` 5/5 valid로 검증했다. 그러나 최신 사용자 계약은 각 Stage 5종, Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`이며 Lv7·Lv9를 기본 Run에서 제외한다. 병합된 Resource와 테스트는 이 계약과 불일치하므로 역사 Evidence만 보존하고, Content/Systems가 Owned Files를 정렬한 뒤 CLI/MCP/runtime을 재검증하기 전 `VERIFIED`로 올리지 않는다. |
 | S3-G2 Stage 진입·Cashout 점수/시간 | Core | PENDING | S3-G1/S1-G3 필요 |
 | S3-G3 Tick 종료 중재 | Core | PENDING | S3-G2/S2-G3 필요 |
 | S3-G4 Snapshot Settlement | Core | PENDING | S3-G3 필요 |
@@ -76,5 +76,6 @@
 - S1-G6은 최신 clean Web export의 사용자 Chrome 수동 검증까지 완료해 `VERIFIED`다. S1 Shared Skeleton이 닫혔다.
 - S2-G1은 2026-08-12 catalog 변경으로 `PENDING`에 되돌렸다. 기존 검증은 당시 구현의 역사 Evidence이며 최신 Lv14/Black Hole 분리 계약을 증명하지 않는다.
 - S2-G2와 S2-G3의 동일 레벨 후보/결정적 commit 증거는 유지한다. `ball_merged(result_level, world_position)`는 2인자 계약이다. 비연속 Stage progression(`6→8→10`)은 S5-G2에서 현재 `StageDefinition.local_ball_levels` lookup으로 추가 검증한다.
+- main의 S3-G1 구현과 실행 Evidence는 병합했지만 최신 5종·비연속 Stage chain과 달라 S3-G1은 `PENDING`이다. 따라서 Core S3-G2는 아직 시작하지 않는다.
 - 다음 가능한 Presentation Goal은 S2-G5이며, S3-G6에는 Stage 이름과 세로 5칸 progressive genealogy가 추가됐다. Black Hole Phase 전용 Presentation은 S8-G5에서 수행한다.
 - 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.
