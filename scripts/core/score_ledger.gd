@@ -14,6 +14,11 @@ func apply_score_event(amount: float, _local_level := 0, _world_position := Vect
 	score_changed.emit(stage_score, run_score)
 
 
+func begin_stage() -> void:
+	stage_score = 0.0
+	score_changed.emit(stage_score, run_score)
+
+
 func reset_runtime() -> void:
 	stage_score = 0.0
 	run_score = 0.0

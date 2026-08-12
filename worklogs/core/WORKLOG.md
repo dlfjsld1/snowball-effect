@@ -372,3 +372,26 @@ Branch: `main` working tree
 
 - 큰 공을 실제 플레이로 다시 확인할 수 있다. 남은 S2 작업은 Presentation-owned S2-G5 Merge 표시 통합이다.
 - native headless는 이 환경의 `user://logs` open failure와 signal 11 때문에 이번 Evidence로 사용하지 않았다.
+
+## 2026-08-12 — S3-G2 Stage entry and Active Cashout runtime
+
+Owner: Core
+Branch: `codex/s3-g2-stage-runtime`
+
+### 변경
+
+- `StageRuntime`을 추가해 `enter_stage(definition)`에서 `stage_score = 0`, `stage_time_left = definition.base_time`을 보장하고, 이전 `run_score`는 보존했다.
+- Active Cashout은 `local_ball_levels.find(global_level)`로 현재 Stage의 local level을 계산한 뒤 해당 Time Bonus를 한 번만 더한다. 따라서 Planetary의 비연속 global Lv8도 local Lv3으로 처리된다.
+- `ScoreLedger.begin_stage()`를 추가해 Stage reset과 Run reset을 분리했다. Stage 종료에서 `run_score += stage_score`를 수행하는 API는 만들지 않았다.
+- `StageRuntime`은 ScoreLedger를 소유하고 `score_changed`, `stage_time_changed`, `stage_entered`를 Integration/Presentation consumer에 제공한다. GameManager/HUD/StageManager 연결은 S3-G5/G6 범위로 남겼다.
+
+### 확인
+
+- Godot 4.7.1 CLI headless: S3-G2 verification scene exit 0.
+- Primary `godot` validate: StageRuntime, ScoreLedger, S3-G2 verification script/scene, S1-G3 regression script 5/5 valid.
+- Primary runtime: Ground Lv2 Cashout `+0.5s`, Planetary global Lv8(local Lv3) Cashout `+1.0s`, stage/run score `25/35`, stage time `41`, score/time signal 각각 5회를 확인했다. Main runtime debug error 0.
+
+### 다음 작업 / 주의
+
+- 다음 Core Goal은 S3-G3 tick 종료 중재다. 시간 차감, Merge/Top Ball, Cashout, Time Up 우선순위는 그 Goal에서 simulation과 연결한다.
+- S3-G2는 기존 Main cashout wiring을 변경하지 않았다. StageManager/HUD wiring은 Integration/Presentation 소유 Goal에서 수행한다.
