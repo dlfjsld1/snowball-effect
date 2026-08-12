@@ -12,7 +12,7 @@
 | Core simulation | `ball_merged(result_level, world_position)` — 2 arguments only | Presentation | Merge FX; score amount와 special type은 포함하지 않음 |
 | Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration | Clear 표시와 상태 잠금 |
-| Core Settlement | `final_settlement_started/finished(amount)` | Presentation, Integration | 정산 연출과 완료 중재 |
+| Core Settlement | `final_settlement_started(amount)`, `final_settlement_finished(amount)` | Presentation, Integration | 정산 연출과 완료 중재 |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation | data 적용과 Stage World 변경 |
 | Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager | 시작, Pause modal 행동과 화면 전환 요청 |
 | Content ItemManager | `item_planet_damaged(item_type, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |

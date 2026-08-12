@@ -418,3 +418,25 @@ Branch: `codex/s3-g3-tick-arbitration`
 
 - 다음 Core Goal은 S3-G4 Snapshot Settlement다. settlement 중복 방지와 base score-only 계산은 그 Goal에 남았다.
 - S3-G5 Integration이 simulation Cashout/merge 이벤트를 StageRuntime에 연결해야 실제 Main의 임시 1점 Ledger/HUD를 Stage 계약으로 교체할 수 있다.
+
+## 2026-08-12 — S3-G4 snapshot settlement
+
+Owner: Core
+Branch: `codex/s3-g4-snapshot-settlement`
+
+### 변경
+
+- `SettlementService`를 추가했다. `settle(snapshot)`은 각 snapshot entry의 `global_level`에서 BallCatalog base `score_value`만 읽고, snapshot에 포함된 cashout modifier나 임의 score 값은 사용하지 않는다.
+- 정산 직전에 `settlement_applied`를 잠가 중첩/재호출을 막고 `final_settlement_started(amount)` → score ledger 1회 반영 → `final_settlement_finished(amount)` 순서로 signal을 제공한다.
+- `reset_for_stage()`만 다음 Stage의 새 정산을 허용한다. 공 snapshot 확보·reserved/deactivate·제거는 Integration S3-G5가 simulation 경계에서 수행한다.
+
+### 확인
+
+- Godot 4.7.1 CLI headless: S3-G4, S3-G3, S3-G2 verification scenes exit 0.
+- Primary `godot` validate: SettlementService, Ledger, S3-G4 verification script/scene, S3-G3/G2 verification 6/6 valid.
+- Primary runtime: Lv0+Lv1+Lv4 snapshot은 base total `100000101`, 기존 score 10 뒤 stage/run 각각 `100000111`, 두 번째 call `0`, lifecycle signal 각 1회였다. Main runtime error 0.
+
+### 다음 작업 / 주의
+
+- 다음 가능 Goal은 Integration S3-G5 Clear·Fail 상태 통합이다. StageManager/GameManager/Main이 StageRuntime·SettlementService·simulation snapshot을 연결해야 실제 플레이에 Stage Timer, Clear/Fail, settlement이 나타난다.
+- Presentation S3-G6 Stage HUD는 S3-G2 signals를 소비해 병렬로 시작할 수 있다.
