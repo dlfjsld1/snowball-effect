@@ -6,10 +6,10 @@
 
 | Lane | Active Goal | Owner | 상태 |
 |---|---|---|---|
-| Core | 없음 | 팀 리드/Core 담당 | available |
+| Core | 없음 | 본인/팀 리드 | available |
 | Presentation | 없음 | 팀원 A | available |
-| Content/Systems | 없음 | 본인/Content·Systems·Release 담당 | available |
-| Integration | 없음 | 팀 리드/Integration 담당 | available |
+| Content/Systems | 없음 | 팀원 B | available |
+| Integration | 없음 | 본인/팀 리드 | available |
 
 각 lane은 `IN PROGRESS`를 최대 하나만 가진다. 서로 다른 lane은 Dependencies와 Integration Point가 충족되면 병렬 진행할 수 있다.
 

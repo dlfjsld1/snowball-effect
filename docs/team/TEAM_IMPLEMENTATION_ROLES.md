@@ -4,6 +4,16 @@
 >
 > 역할을 고정하는 조직도가 아니다. 프로토타입 속도, Godot 적응도, 병목, 선호에 따라 재배치한다.
 
+## 현재 3인 배정
+
+| 담당자 | Lane |
+|---|---|
+| 본인 / 팀 리드 | Core Gameplay + Integration |
+| 팀원 A | Presentation / UI |
+| 팀원 B | Content / Systems / Release |
+
+Integration은 네 번째 팀원이 아니라 본인/팀 리드가 Core와 함께 맡는 별도 작업 lane이다. Goal의 `Owner`는 사람 이름이 아니라 이 lane을 뜻한다.
+
 ## 1. Core Gameplay
 
 책임:
