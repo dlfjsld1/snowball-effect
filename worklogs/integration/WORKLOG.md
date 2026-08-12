@@ -327,3 +327,21 @@ Locked files: 없음
 
 - 게임 코드, Scene, 테스트, Goal 상태를 변경하지 않았다.
 - 문서 diff check를 통과했다.
+
+## 2026-08-12 — Galactic Black Hole terminal loop contract
+
+Owner: Integration
+Branch: `codex/docs-black-hole-terminal-loop`
+Locked files: 없음
+
+### 변경
+
+- 첫 Lv14 Black Hole Ball을 이동 Black Hole runtime 기믹으로 전환하고 L2→L3 Play Field 확장 뒤 Galactic gameplay를 계속하는 계약으로 정리했다.
+- Black Hole의 하단 반사, 비성장·일반 Merge 제외, `local_level <= 2` 공 흡수와 Cashout 상당 점수 차감, run score 0 Game Over를 확정했다.
+- 일반 공 대상 source별 pull `300`, 합산 cap `600`, Black Hole 상호 pull `450 world units/s²`를 초기 tuning seed로 기록했다.
+- 두 Black Hole 접촉 뒤 mutual orbit·폭발·HUD 제거·`SNOWBALL EFFECT`·Clear Score·Main Menu로 이어지는 terminal flow를 S8 Goal/Quality Gate/Presentation 문서와 동기화했다.
+
+### 확인
+
+- 게임 코드, Scene, Resource, 테스트와 Goal 상태는 변경하지 않았다.
+- `git diff --check`를 통과했다.

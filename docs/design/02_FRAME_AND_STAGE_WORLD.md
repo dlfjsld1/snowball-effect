@@ -55,7 +55,7 @@ HUD safe inset과 side/top/hybrid 선택은 gameplay Stage data에 넣지 않는
 3. Integration이 Presentation의 `StageWorldPresenter.play_stage_shift(run_epoch: int, shift_id: int, from_rect: Rect2, to_rect: Rect2, frame_visual_key: StringName, background_key: StringName)`를 호출한다.
 4. `StageWorldPresenter`는 Frame, 표시용 Play Field mask, Stage World child track을 병렬 실행하고 필수 track이 모두 끝난 뒤 `stage_shift_presentation_finished(run_epoch: int, shift_id: int)`를 정확히 한 번 보낸다.
 5. Integration은 같은 `run_epoch`와 correlation ID를 확인한 뒤 Core의 prepared Rect를 활성화한다. L1/L2는 다음 Stage activation과 같은 제어 구간에 묶고, L3는 같은 Galactic의 Black Hole phase activation에 묶는다.
-6. Core의 `get_play_field_rect() -> Rect2`가 target과 일치하는지 확인한다. L1/L2와 L3 모두 해당 transition이 끝나면 gameplay를 재개한다. Lv14 최종 공 Clear는 별도 L3 Shift 없이 Result로 이동한다.
+6. Core의 `get_play_field_rect() -> Rect2`가 target과 일치하는지 확인한다. L1/L2와 L3 모두 해당 transition이 끝나면 gameplay를 재개한다. L3에서는 두 Black Hole 접촉 뒤 별도 Shift 없이 finale와 타이틀로 이동한다.
 
 따라서 플레이어가 보는 Frame/Field 전환과 실제 다음 Stage의 logical rect는 같은 target data를 사용한다. animation 중 physics collision을 보간하는 추가 복잡도는 만들지 않는다. Step 4와 5 사이에는 input/simulation이 재개되지 않으므로 visual target과 아직 활성화되지 않은 Core target을 플레이어가 조작하는 순간은 없다.
 

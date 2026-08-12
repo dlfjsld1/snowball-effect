@@ -138,7 +138,7 @@ Codex는 작업을 마치고 아래 형식으로 보고한다.
 - 플레이 중 공을 바닥으로 보내는 것은 `Cashout`.
 - 일반 Cashout = `Score + Time Bonus`.
 - 고등급 공을 더 머지할지 Cashout해 시간을 확보할지 선택한다.
-- Stage 최고 공 제작 = 즉시 Stage Clear.
+- Ground/Planetary 최고 공 제작 = 즉시 Stage Clear. Galactic 첫 Lv14는 이동 Black Hole 국면으로 전환하고 두 번째 Black Hole과 충돌할 때 Run End.
 - Time Up = 화면 공 `Final Settlement`.
 - Final Settlement = `Score only`; Time Bonus 없음.
 - Time Up 후 Final Stage Score가 `clear_score` 이상이면 Stage Clear.

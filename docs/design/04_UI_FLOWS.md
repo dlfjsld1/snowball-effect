@@ -150,7 +150,7 @@ Settlement score가 이미 run score에 반영되는 authoritative event를 표�
 | Trigger | Stage | After Final Settlement | Presentation destination |
 |---|---|---|---|
 | Top Ball | non-final | `CLEARED` | Clear → Scale Shift |
-| Top Ball | final | final clear snapshot | Final Result; Black Hole Phase는 이미 Galactic gameplay 안에서 처리 |
+| Two Black Holes contact | final | terminal snapshot | mutual orbit·폭발 뒤 gameplay UI 제거, `SNOWBALL EFFECT`, `CLEAR SCORE`, `MAIN MENU` |
 | Time Up + score clear | non-final | `CLEARED` | Score Clear → Scale Shift |
 | Time Up + score miss | non-final | `FAILED` | Failure → Run Result |
 | Time Up | final | final result snapshot | Final Result; no next Stage |

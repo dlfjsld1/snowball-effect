@@ -161,7 +161,7 @@ S5-G4는 animation이 gameplay state를 직접 바꾸지 않는 원칙을 유지
 
 이 표는 구현 전 `INTEGRATION_CONTRACTS.md`와 재구성한 S5 Goals에 복사·승인해야 효력이 생긴다.
 
-L1/L2 완료 뒤에는 다음 Stage를 활성화한다. L3는 final Clear가 아니라 Black Hole phase event로 활성화하며 transition 동안만 정지한 뒤 같은 Galactic에서 spawn·timer·input을 재개한다. Lv14 최종 공 Clear는 L3 추가 Shift 없이 Result로 간다.
+L1/L2 완료 뒤에는 다음 Stage를 활성화한다. L3는 첫 Lv14의 Black Hole 전환 event로 활성화하며 transition 동안만 정지한 뒤 같은 Galactic에서 spawn·timer·input을 재개한다. 두 Black Hole 접촉 뒤에는 추가 Shift 없이 finale와 타이틀로 이동한다.
 
 ## 7. S6 — Game Feel
 
@@ -229,7 +229,7 @@ Fire와 optional item은 계속 Core rules와 분리한다. Item Box가 없어�
 
 ## 9. S8 — Black Hole and Final Result
 
-Lv14 `Black Hole`은 Galactic top Ball이다. 이와 별개의 동명 Black Hole 맵 기믹은 Galactic 안의 최종 국면 Stage effect이며, 발동하면 `Black Hole Phase Transition`으로 L2 `920`→L3 `1080` Frame/Play Field를 함께 확장하고 같은 Stage gameplay를 재개한다. Lv14 Black Hole Ball을 만들면 추가 Frame Shift 없이 Final Settlement와 Result로 간다. Presentation 구현은 S8-G5, logical phase/force는 S8-G1, wiring은 S8-G4가 소유한다.
+Lv14 `Black Hole`은 Galactic top Ball이다. 첫 Lv14는 이동 Black Hole runtime 기믹으로 전환되며 `Black Hole Phase Transition`으로 L2 `920`→L3 `1080` Frame/Play Field를 함께 확장하고 같은 Stage gameplay를 재개한다. 두 번째 Black Hole과 접촉하면 추가 Frame Shift 없이 finale와 타이틀 Run End로 간다. Presentation 구현은 S8-G5, logical phase/force는 S8-G1, wiring은 S8-G4가 소유한다.
 
 ### Main/Result UI expansion
 

@@ -36,11 +36,11 @@ V5는 V4의 Frozen Enamel 재질, slim fixed-width bezel, Main/Pause 구성과 M
 | 13 | Event Horizon | Galactic |
 | 14 | Black Hole | Galactic top |
 
-기본 ordered chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7과 Lv9는 15종 visual bible에는 포함하지만 기본 Run에서는 사용하지 않는다. Lv14 Black Hole Ball은 작은 gameplay silhouette, 공 전용 고대비 outline, compact accretion ring을 사용한다. 이동 Black Hole 맵 기믹은 훨씬 큰 환경 scale, field grid lensing, `MAP GIMMICK` label로 구분한다.
+기본 ordered chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7과 Lv9는 15종 visual bible에는 포함하지만 기본 Run에서는 사용하지 않는다. 첫 Lv14 Black Hole Ball은 compact accretion ring을 가진 이동 Black Hole 기믹으로 전환된다. Black Hole 외형을 유지하되 gameplay footprint는 Galactic 사람 기준 3단계 공 Quasar 크기를 기준으로 하며, 고대비 outline과 field grid lensing으로 일반 공과 구분한다.
 
 ## 3. Black Hole Phase
 
-Lv14 `Black Hole`은 BallDefinition이다. 이와 별개의 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아니라 Galactic 안에서 발동하는 최종 국면 Stage effect다. 정확한 발동 조건은 S8 Core/Content 계약에서 정한다.
+Lv14 `Black Hole`은 BallDefinition이다. 첫 Lv14가 생성되면 일반 Clear 대신 이동 Black Hole runtime entity로 전환되고 Galactic 최종 국면을 시작한다. 이는 별도 Stage가 아니며, 두 번째 Lv14도 Black Hole entity가 되어 기존 Black Hole과 충돌할 때 최종 연출을 시작한다.
 
 | Profile | Gameplay role | Active Rect seed |
 |---|---|---|
@@ -49,7 +49,7 @@ Lv14 `Black Hole`은 BallDefinition이다. 이와 별개의 이동 Black Hole �
 | L2 | Galactic | `Rect2(340, 0, 920, 900)` |
 | L3 | Galactic — Black Hole Phase | `Rect2(260, 0, 1080, 900)` |
 
-L2→L3의 이름은 **Black Hole Phase Transition**이다. `terminal presentation transition`은 gameplay가 계속되는 상태를 종료 상태처럼 오해하게 하므로 사용하지 않는다. 전환 중에만 gameplay를 잠그고 Frame·표시 Field·logical Play Field·HUD housing을 같은 중심축에서 함께 확장한 뒤 Galactic gameplay를 재개한다. Lv14 최종 공 Clear 뒤에는 추가 Frame Shift 없이 Result로 이동한다.
+L2→L3의 이름은 **Black Hole Phase Transition**이다. 첫 Black Hole 전환 중에만 gameplay를 잠그고 Frame·표시 Field·logical Play Field·HUD housing을 같은 중심축에서 함께 확장한 뒤 Galactic gameplay를 재개한다. 두 Black Hole 접촉 뒤에는 추가 Frame Shift 없이 서로를 끌어당기는 회전·폭발을 재생하고 gameplay HUD/UI를 제거한 뒤 `SNOWBALL EFFECT` 타이틀로 Run을 끝낸다.
 
 ## 4. HUD Contract
 
@@ -80,7 +80,8 @@ Stage 진입 시 첫 공만 표시한다. 새 local 공을 처음 만들면 다�
 - Merge numeric score popup: 별도 authoritative `amount + world_position` event가 없으면 사용하지 않는다.
 - Item Box: Ball impact → crack → break → item reveal의 `Salvage Burst`.
 - Score milestone: gameplay를 멈추지 않는 `Cabinet Score Lock`.
-- Black Hole Phase: cyan rail charge → L2/L3 edge separation → dark lens reveal → HUD 안정화 → control return. Lv14 Black Hole Ball과 이동 Black Hole 맵 기믹은 이름/motif를 공유하되 scale·outline·field distortion으로 즉시 구분한다.
+- Black Hole Phase: 첫 Lv14 전환 → cyan rail charge → L2/L3 edge separation → dark lens reveal → HUD 안정화 → control return.
+- Black Hole Finale: 두 Black Hole 접촉 → mutual orbit → 폭발 → gameplay HUD/UI 제거 → `SNOWBALL EFFECT` title → `CLEAR SCORE` 최종 run score → `MAIN MENU`. 정확한 길이는 tuning 대상이다.
 
 ## 7. Team Artifact
 

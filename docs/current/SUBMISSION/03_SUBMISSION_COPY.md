@@ -79,7 +79,7 @@ Snowball Effect의 플레이어 선택은 단순 머지가 아니다.
 
 - 높은 공을 계속 살리면 다음 머지로 점수가 폭발할 수 있다.
 - 지금 Cashout하면 현재 점수와 추가 시간을 얻는다.
-- Stage 최고 공은 즉시 Clear.
+- Ground/Planetary 최고 공은 즉시 Clear. Galactic은 첫 Black Hole 전환 뒤 두 Black Hole 충돌로 종료.
 - 시간이 끝나면 화면 공까지 Score-only Final Settlement.
 - 목표 점수를 넘기면 Score Clear.
 

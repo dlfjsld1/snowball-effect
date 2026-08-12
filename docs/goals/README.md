@@ -22,7 +22,7 @@
 | S5 | Ground→Planetary→Galactic Scale Shift가 완주 가능하다 | S3, S4 | Task 04 |
 | S6 | 이벤트 중요도에 맞는 읽기 쉬운 효과와 사운드가 적용된다 | S5 | Task 05 |
 | S7 | Optional Item Layer가 코어 계약을 바꾸지 않고 동작한다 | S5 | Task 06 |
-| S8 | Galactic 내부 Black Hole 최종 국면과 Final Result가 동작한다 | S5 | Task 07 |
+| S8 | 첫 Lv14가 이동 Black Hole로 전환되고 두 Black Hole 충돌 finale로 Run이 끝난다 | S5 | Task 07 |
 | S9 | Stage 기반 한 판을 Public Web Build로 제출할 수 있다 | S6, S8; S7 선택 | Task 08/09 |
 
 ## Owner lanes

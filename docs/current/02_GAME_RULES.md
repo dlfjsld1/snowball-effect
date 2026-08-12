@@ -176,7 +176,7 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 
 `base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. Lv0 반지름 `2`를 기준으로 레벨마다 반지름을 2배(`radius = 2 ^ (global_level + 1)`)로 사용한다. 이에 맞춰 질량은 Lv0의 `1`을 기준으로 레벨마다 4배(`mass = 4 ^ global_level`)를 사용한다. 화면상 크기 보정은 BallDefinition이 아니라 StageDefinition의 `visual_radius_scale`이 소유하며, 물리 `radius`와 충돌 반지름을 바꾸지 않는다. 나머지 수치는 플레이테스트용이며 데이터에서 수정한다.
 
-`fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Nebula(Lv9)부터 Event Horizon(Lv13)은 3, Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. 현재 Stage의 최고 공 생성은 `fx_tier`와 관계없이 Stage Clear 연출을 우선한다.
+`fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Nebula(Lv9)부터 Event Horizon(Lv13)은 3, Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. Ground/Planetary 최고 공은 Stage Clear 연출을, Galactic Lv14는 Black Hole Phase 전환 연출을 우선한다.
 
 ---
 
@@ -229,7 +229,7 @@ Time Bonus를 BallDefinition의 고정값으로 저장하지 않는다.
 | Local Lv3 | +1s |
 | Local Lv4 | +2s |
 
-최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 세 Stage가 모두 5종이므로 Ground의 Moon, Planetary의 Galaxy, Galactic의 Lv14 Black Hole은 모두 Local Lv4이며 일반 Cashout 대상이 아니다.
+최고 local 공은 일반 Active Cashout 대상이 아니다. Ground의 Moon과 Planetary의 Galaxy는 생성 즉시 Stage Clear가 잠기고, Galactic의 Lv14 Black Hole은 아래 Black Hole 최종 국면 계약에 따라 이동 기믹으로 전환된다.
 
 목표:
 
@@ -285,7 +285,7 @@ spawn_rate
 
 ## 10. Stage Clear — Top Ball Clear
 
-현재 Stage 최고 공을 만들면 즉시 Stage 성공 판정.
+현재 Stage 최고 공을 만들면 즉시 Stage 성공 판정한다. 단, 마지막 Galactic의 Lv14 Black Hole은 예외이며 첫 생성은 Stage Clear가 아니라 Black Hole 최종 국면을 활성화한다.
 
 예:
 
@@ -441,18 +441,80 @@ Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole
 
 ## 15. Galactic 최종 Black Hole 국면
 
-- 거대한 블랙홀이 좌우로 움직임
-- 모든 공에 약한 인력을 적용
-- 인력은 최대치를 제한
-- 패들 조작의 의미를 없애지 않음
-- 공을 모아 연쇄 머지를 유도할 수도 있음
+### 첫 번째 Black Hole
 
-이 절의 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아니라 Galactic 안에서 발동하는 Stage effect다. 발동 조건은 S8 Core/Content 계약에서 데이터 기반으로 확정한다. 발동 시 `Black Hole Phase Transition`으로 Frame과 실제 Play Field가 L2 `920`에서 L3 `1080`으로 함께 확장되고, 전환 중에만 spawn·timer·input을 잠근 뒤 같은 Galactic Stage gameplay를 재개한다.
+Galactic에서 첫 Lv14 `Black Hole` Ball을 만들면 일반 Top Ball Clear를 발생시키지 않는다.
 
-Lv14 `Black Hole` Ball과 이동 Black Hole 맵 기믹은 이름과 motif를 공유하지만 서로 다른 gameplay entity다. Ball은 `BallDefinition(global_level=14)`과 일반 Merge/Clear 규칙을 따르고, 맵 기믹은 global level이 없는 Stage effect다. Lv14 Black Hole Ball을 만들면 다음 Stage 없이 Final Settlement와 Result로 진행한다.
+1. 생성된 Lv14 Ball을 이동 Black Hole 기믹으로 전환한다.
+2. `Black Hole Phase Transition`으로 Frame과 실제 Play Field를 L2 `920`에서 L3 `1080`으로 함께 확장한다.
+3. 전환 중에만 spawn·timer·input을 잠그고, 완료 후 같은 Galactic gameplay를 재개한다.
 
-### 최종 공 생성
-`MAX SCALE / PERFECT CLEAR → Final Settlement → Result`
+전환된 Black Hole은 별도 Stage나 새 BallDefinition이 아니다. Lv14 Ball에서 유래했지만 일반 Snowball Merge/Cashout 대상에서 빠져 Black Hole 전용 runtime entity가 된다. Black Hole 외형을 유지하되 gameplay footprint는 사람 기준 Galactic 3단계 공인 Quasar, 즉 `local_level = 2`에 해당하는 크기를 기준으로 한다.
+
+### 이동·흡수·인력
+
+- Black Hole은 Play Field 안을 공처럼 이동한다.
+- 주변 공이 가까워지면 제한된 인력으로 궤도를 휘게 한다.
+- Galactic의 사람 기준 3단계 이하, 즉 `local_level <= 2` 공은 Black Hole 접촉 시 흡수된다.
+- Black Hole은 다른 Black Hole을 제외한 어떤 공과도 Merge하지 않고 성장하지 않는다.
+- 인력과 흡수는 패들 조작의 의미를 없애거나 공 속도를 폭주시켜서는 안 된다.
+- Black Hole은 하단 Cashout 대상이 아니며, 다른 공과 달리 Play Field 하단에서 반사한다.
+
+인력의 첫 플레이테스트 seed:
+
+```text
+influence_radius = 240 world units
+maximum_pull_acceleration = 300 world units/s²
+pull_falloff = (1 - distance / influence_radius)²
+```
+
+영향 반경 밖에서는 인력을 적용하지 않는다. 안쪽에서는 중심에 가까울수록 강해지되 최대 가속도를 넘지 않으며, 최종 Ball runtime speed cap도 유지한다. 이 값들은 확정 밸런스가 아니라 S8 첫 플레이테스트용 데이터다.
+
+두 Black Hole이 존재하면 일반 공은 각 Black Hole이 만드는 pull vector를 합산해서 받는다. 따라서 항상 정확히 2배가 되는 것은 아니다. 두 힘이 같은 방향이면 강해지고, 두 Black Hole 사이에서는 일부 상쇄될 수 있다. 합산 결과에는 별도 cap을 한 번 적용한다.
+
+```text
+ordinary_ball_pull_per_black_hole_max = 300 world units/s²
+ordinary_ball_total_pull_cap = 600 world units/s²
+black_hole_mutual_pull_max = 450 world units/s²
+```
+
+Black Hole끼리는 저등급 공 흡수 규칙을 적용하지 않고 서로에게만 전용 mutual pull을 적용한다. 접촉이 확정되면 일반 force simulation을 중단하고 terminal lock 뒤 연출용 회전·폭발로 전환한다. 세 수치 모두 초기 플레이테스트 seed다.
+
+공을 흡수할 때는 그 순간 해당 공이 Active Cashout됐다면 받을 `calculate_cashout_score(ball)` 값을 `absorption_penalty`로 사용한다. Time Bonus와 Cashout popup은 발생시키지 않으며 다음처럼 점수를 차감한다.
+
+```text
+next_stage_score = stage_score - absorption_penalty
+next_run_score = run_score - absorption_penalty
+
+next_run_score <= 0
+→ stage_score = max(0, next_stage_score)
+→ run_score = 0
+→ immediate FAILED / RUN END
+
+otherwise
+→ stage_score = max(0, next_stage_score)
+→ run_score = next_run_score
+```
+
+Game Over 기준은 Stage마다 0으로 초기화되는 `stage_score`가 아니라 Run 전체 누적인 `run_score`다. 흡수 판정은 Black Hole과 공의 실제 접촉을 사용하며 별도 원거리 즉시 흡수 반경을 추가하지 않는다. 정확한 Black Hole 이동 속도는 tuning 대상으로 남긴다.
+
+### 두 번째 Black Hole과 Run 종료
+
+Black Hole Phase 중 두 번째 Lv14 Black Hole을 만들면 두 Black Hole이 같은 Play Field에 존재한다. 둘이 충돌하면 일반 Merge를 수행하지 않고 최종 시퀀스를 한 번만 잠근다.
+
+```text
+Two Black Holes Contact
+→ spawn / timer / input lock
+→ 서로를 끌어당기며 회전
+→ Black Hole finale FX와 함께 폭발
+→ gameplay HUD / UI 제거
+→ SNOWBALL EFFECT 타이틀 표시
+→ 타이틀 아래 CLEAR SCORE로 최종 run_score 표시
+→ MAIN MENU 버튼 표시
+→ RUN END
+```
+
+이 경로가 최종 성공 조건이며, 첫 Lv14 생성 즉시 Result로 가던 이전 계약을 대체한다. `MAIN MENU`는 메인 화면 복귀를 요청할 뿐 runtime state를 직접 초기화하지 않는다. 두 Black Hole 충돌과 타이틀 연출 사이에 추가 Stage Shift는 없다.
 
 ### Time Up
 `Final Settlement → Result`
