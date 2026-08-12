@@ -7,7 +7,7 @@ Branch: `ui-design`
 Repo: `snowball-effect`  
 Status: APPROVED  
 Approved by: User  
-Approved on: 2026-08-11  
+Approved on: 2026-08-12
 Mode: Builder
 
 ## Approval Ledger
@@ -16,12 +16,13 @@ Mode: Builder
 |---|---|---|---|---|
 | Frame와 Play Field의 동시 폭 확장 | APPROVED DIRECTION | User | 2026-08-10 | 구현 contract와 수치는 아직 DRAFT |
 | Initial + Frame Level 1·2·3 비교 구조 | APPROVED DIRECTION | User | 2026-08-10 | 폭 seed는 tuning 대상 |
-| HUD 정보와 좌우 배치 | APPROVED DIRECTION | User | 2026-08-11 | 왼쪽 판단 정보, 오른쪽 활성 효과와 Pause |
+| HUD 정보와 좌우 배치 | APPROVED DIRECTION | User | 2026-08-12 | Stage 이름, 왼쪽 세로 5칸 progressive genealogy, 오른쪽 활성 효과와 Pause |
 | Main Screen·Pause·Settings 흐름 | APPROVED DIRECTION | User | 2026-08-11 | Title을 Main Screen으로 확장, 현재 Stage Restart 사용 |
-| 낙하 Item Box 획득 방식 | APPROVED DIRECTION | User | 2026-08-11 | 공 충돌·내구도·완전 반사 방식; 기존 Paddle 획득 계약 변경 필요 |
-| 15등급 Ball 디자인과 3×5 기본 배치 | APPROVED DIRECTION | User | 2026-08-11 | 13종 기본 사용, 2종은 대체 구성용 |
+| 낙하 Item Box 획득 방식 | APPROVED DIRECTION | User | 2026-08-11 | 공 충돌·내구도·완전 반사 방식 |
+| 15등급 Ball 디자인과 3×5 기본 배치 | APPROVED DIRECTION | User | 2026-08-12 | Ground 0–4, Planetary `[4,5,6,8,10]`, Galactic 10–14; Lv7/9 비활성 |
 | Presentation 기술 경계와 검증 구조 | CONDITIONAL APPROVAL | User | 2026-08-11 | typed snapshots, epoch correlation, contract+Web tests; Core/Integration handoff 필요 |
 | V4 Frozen Enamel Arcade 목업 | APPROVED VISUAL DIRECTION | User | 2026-08-11 | slim fixed-width bezel, Main/Pause 재질, Merge/Item/Milestone FX 채택 |
+| V5 Black Hole Phase/HUD revision | APPROVED VISUAL DIRECTION | User | 2026-08-12 | L3는 Galactic gameplay, Lv14와 Black Hole 분리, Stage 이름·세로 progressive HUD |
 | 전체 문서 세트 | APPROVED | User | 2026-08-10 | open Decision Gate는 각 Goal 전에 별도 확정 |
 
 ## Problem Statement
@@ -33,7 +34,7 @@ Snowball Effect에는 최소 플레이 루프와 규칙·Goal 계약이 있지�
 - 유지할 시각 정체성과 변경 가능한 과거 콘셉트의 경계
 - 초기 프레임과 확장 1·2·3단계의 화면 구조
 - 프레임과 내부 논리 `Play Field`가 함께 넓어지는 계약
-- 점수·시간·현재 Stage 공 족보·활성 아이템·Pause를 담는 확정 HUD 정보 계층
+- Stage 이름·점수·시간·세로 progressive 공 족보·활성 아이템·Pause를 담는 확정 HUD 정보 계층
 - Main Screen, Pause, Settings, 현재 Stage Restart의 화면 흐름
 - 공으로 내구도를 깎아 파괴하는 Item Box의 상태와 피드백
 - 15개 전역 Ball 등급의 시각 성장 사슬과 Stage별 기본 배치
@@ -50,7 +51,7 @@ Snowball Effect에는 최소 플레이 루프와 규칙·Goal 계약이 있지�
 - 유지: `90년대 픽셀 아케이드`, 어두운 배경, 대비가 높은 게임 오브젝트.
 - 변경 가능: 기존 Stage별 자연·우주 콘셉트의 구체적인 표현, 장식 모티프, 프레임 재질.
 - 프레임 폭이 넓어질 때 내부 논리 `Play Field`도 같은 목표 폭으로 넓어진다.
-- Stage Shift는 Top Ball/Clear Lock과 Final Settlement가 끝난 뒤에만 진행한다.
+- Stage Shift는 Top Ball/Clear Lock과 Final Settlement가 끝난 뒤에만 진행한다. Black Hole Phase Transition은 Stage Shift가 아니라 Galactic 내부 기믹 발동 전환이다.
 - Presentation은 gameplay score/state를 계산하거나 변경하지 않는다.
 - 1600×900을 설계 기준으로 삼되 Web의 다양한 화면 크기를 지원한다.
 - 엄격한 전체 화면 정수 배율보다 일관된 실루엣·텍셀 밀도·최근접 필터·가독성을 우선한다.
@@ -62,18 +63,19 @@ Snowball Effect에는 최소 플레이 루프와 규칙·Goal 계약이 있지�
 
 ### 확정
 
-1. 초기 프레임 뒤에 Clear마다 확장 1·2·3단계가 이어진다.
+1. Initial 뒤 Ground Clear에서 L1, Planetary Clear에서 L2, Galactic의 Black Hole 기믹 발동에서 L3로 확장한다.
 2. 프레임과 표시용 Play Field는 전환 애니메이션 동안 함께 확장한다.
 3. 다음 Stage가 시작될 때 Core의 논리 경계도 같은 목표 Rect를 사용한다.
 4. 확장은 화면 중심을 기준으로 좌우 대칭이다.
 5. Stage Shift 동안 simulation·spawn·timer는 정지 상태다.
 6. Frame·Play Field·Stage World는 하나의 화면 체계로 설계한다.
-7. v1 기본 진행은 3개 Stage이며 Stage마다 5등급을 사용하고 경계 Ball 1종을 공유한다.
-8. HUD는 Stage Score/Target과 Time을 우선하고, Run Score와 활성 효과를 보조한다.
-9. Item Box는 Paddle이 아니라 Ball 충돌로 파괴해 획득한다.
+7. v1 기본 진행은 3개 Stage이며 Stage마다 5등급을 사용하고 경계 Ball 1종을 공유한다. Lv7·Lv9는 visual catalog에는 있지만 기본 Run에서 비활성이다.
+8. HUD는 Stage 이름, Stage Score/Target과 Time을 우선하고, 세로 5칸 공 족보를 새 공 생성에 맞춰 공개한다.
+9. Item Box는 Ball 충돌로 파괴해 획득한다.
 10. V4 `Frozen Enamel Arcade`를 제작 기준으로 사용한다.
 11. Main은 우주의 동결된 arcade cabinet, Pause는 단일 maintenance hatch로 표현한다.
-12. Merge, Item Box break, Score Milestone의 V4 FX 문법을 사용한다.
+12. Merge, Item Box break, Score Milestone의 V4 FX 문법을 유지하고 V5 Black Hole Phase 전환을 추가한다.
+13. Black Hole은 별도 Stage나 Lv14 Ball이 아니라 Galactic 최종 국면 맵 기믹이다.
 
 ### 튜닝 시작값
 
@@ -125,8 +127,10 @@ Approach B를 사용한다. 구조적 계약을 먼저 고정하되 아트 주�
 | [07_VISUAL_VALIDATION.md](07_VISUAL_VALIDATION.md) | 시각·Web·성능 검증 보드와 evidence |
 | [08_TECHNICAL_REVIEW_HANDOFF.md](08_TECHNICAL_REVIEW_HANDOFF.md) | Eng review 결과, Core/Integration blocker, typed 계약과 테스트 구조 |
 | [09_APPROVED_VISUAL_DIRECTION_V4.md](09_APPROVED_VISUAL_DIRECTION_V4.md) | 채택한 V4 목업, Frozen Enamel 토큰, slim bezel, 핵심 FX 제작 기준 |
+| [10_APPROVED_VISUAL_DIRECTION_V5.md](10_APPROVED_VISUAL_DIRECTION_V5.md) | 최신 Ball/HUD/Black Hole Phase 정정과 팀 공유 목업 기준 |
 | [TODOS.md](TODOS.md) | v1 밖 후속 디자인/접근성 작업 |
 | [WIREFRAME_DYNAMIC_PLAYFIELD.png](WIREFRAME_DYNAMIC_PLAYFIELD.png) | 승인된 동적 폭 구조의 1차 비교판 |
+| [mockups/approved-v5/README.md](mockups/approved-v5/README.md) | 팀 공유용 V5 Main/HUD/Black Hole Phase/Pause/FX PNG export |
 
 ## Decision Register
 
@@ -137,6 +141,7 @@ Approach B를 사용한다. 구조적 계약을 먼저 고정하되 아트 주�
 | HUD authoritative payload와 exact signal signature | Presentation + Game Rules + Core | S3-G6 | `HUDViewState` proposal | YES |
 | Result typed snapshot와 terminal identity | Core + Integration + Content | Result UI 구현 전 | `ResultViewState` proposal | YES |
 | Play Field Rect 4개 최종값 | Content + Core + Presentation | S5 cross-lane Goal | 이 문서의 Rect2 seed | YES |
+| Black Hole Phase 발동 조건 | Core + Content + Integration | S8-G1/G4 | data-driven trigger; 목업은 이미 발동한 상태만 표현 | YES |
 | StagePlayFieldProfile API와 Shift correlation signal | Core + Integration + Presentation | S5 cross-lane Goal | 02 문서 proposal | YES |
 | Restart/Retry `run_epoch`와 stale Shift invalidation | Core + Integration + Presentation | S5/S8 reset wiring 전 | epoch + correlation ID | YES |
 | StageWorld별 background motif/장식 | Presentation | S5-G4 production art | Frozen Enamel 공통 cabinet + Stage dominant motif | NO — proxy 가능 |
@@ -154,12 +159,12 @@ Approach B를 사용한다. 구조적 계약을 먼저 고정하되 아트 주�
 ## Success Criteria
 
 - 정지 화면을 5초 본 사람이 Paddle, gameplay ball, 열린 Cashout 방향을 구분한다.
-- 세 번의 Shift에서 프레임과 내부 공간이 넓어졌다는 사실이 장식 변화보다 먼저 읽힌다.
+- 두 번의 Stage Shift와 한 번의 Black Hole Phase Transition에서 프레임과 내부 공간이 넓어졌다는 사실이 장식 변화보다 먼저 읽힌다.
 - Frame 표시와 Core logical bounds가 하나의 Stage profile에서 같은 목표 Rect를 사용한다.
 - HUD의 authoritative 값과 아이템 수가 바뀌어도 Frame·Play Field·Stage World 구조를 다시 설계하지 않는다.
 - Merge/Cashout/Clear feedback이 대량 공 상황에서도 핵심 오브젝트를 가리지 않는다.
 - Item Box의 희귀도·내구도·획득·놓침 상태가 색 없이도 구분된다.
-- 15개 Ball을 크기·outline·motif로 정렬할 수 있고 기본 13종 배치가 Stage마다 이어진다.
+- 15개 Ball을 크기·outline·motif로 정렬할 수 있고 기본 13종 배치가 Stage마다 이어지며, Lv14 최종 공과 Black Hole 맵 기믹이 서로 다른 것으로 읽힌다.
 - 1600×900, 1280×720, 1366×768, 1920×1080에서 필수 텍스트와 조작 대상이 읽힌다.
 - 각 산출물에 Owner, dependency, verification, 의도적 제외 범위가 기록된다.
 
@@ -170,12 +175,12 @@ Approach B를 사용한다. 구조적 계약을 먼저 고정하되 아트 주�
 ## Next Steps
 
 1. [08_TECHNICAL_REVIEW_HANDOFF.md](08_TECHNICAL_REVIEW_HANDOFF.md)의 H1~H8을 담당 lane에 전달하고 현재 Goal에 필요한 blocker부터 승인한다.
-2. S2-G3 계약에 authoritative Merge result/score event와 Stage chain lookup을 확정한 뒤 S2-G5 fixture를 동기화한다.
-3. S3-G6 전에 typed `HUDViewState`, Ball Progression, active-effect payload를 Goal/Integration contract에 반영한다.
-4. S5 계획 단계에서 `StagePlayFieldProfile`, `run_epoch + shift_id`, 3-Stage/terminal L3 구성을 합의한다.
+2. S2-G1 Resource를 최신 0~14 catalog와 맞춰 재검증하고, S5-G2에서 non-contiguous Stage chain lookup을 구현·검증한다.
+3. S3-G6에서 typed `HUDViewState`, Stage 이름, 세로 5칸 progressive Ball Progression, active-effect payload를 구현한다.
+4. S5/S8 계획 단계에서 `StagePlayFieldProfile`, `run_epoch + correlation_id`, 3-Stage/Black Hole Phase L3 구성을 합의한다.
 5. S7 시작 전 Item Box의 deterministic contact/break 계약을 승인하고 Goal을 재분해한다.
 6. Main/Pause/Settings/Stage Restart/Result는 typed snapshots와 atomic restore barrier를 승인한 뒤 구현한다.
-7. [09_APPROVED_VISUAL_DIRECTION_V4.md](09_APPROVED_VISUAL_DIRECTION_V4.md)의 slim bezel을 기반으로 Scale Shift 7-beat storyboard와 3개 Stage + Final L3 keyframe을 제작한다.
+7. [10_APPROVED_VISUAL_DIRECTION_V5.md](10_APPROVED_VISUAL_DIRECTION_V5.md)의 slim bezel을 기반으로 두 Stage Shift와 Galactic Black Hole Phase keyframe을 제작한다.
 8. Merge/Item Box/Score Milestone V4 keyframe을 state sheet로 분해하되 Merge numeric popup은 authoritative amount 계약 전까지 fixture로만 유지한다.
 
 ## What I noticed about how you think

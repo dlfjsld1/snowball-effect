@@ -14,7 +14,7 @@
 - Owned Files: `scripts/data/ball_definition.gd`, `resources/balls/**`, `tests/content/**`
 - Integration Point: read-only `BallCatalog.get_definition(global_level)` API.
 - Dependencies: S1 완료; Core가 필요한 필드 계약 제시.
-- Verification: 초기 global level 0~14의 15종에서 radius, mass, base `score_value`, visual key가 로드됨; Stage 콘셉트별 식별 가능; Time Bonus 필드 없음. 15종은 데이터 범위이며 종류 축소 시 Goal 계약을 함께 갱신.
+- Verification: global level 0~14의 15종에서 radius, mass, base `score_value`, visual key가 로드됨; Lv6 Sun, Lv7 Red Giant, Lv9 Nebula, Lv10 Galaxy, Lv14 `Final Snowball (working title)`가 catalog와 일치하고 Lv14 visual/name이 Black Hole 기믹과 분리됨; Time Bonus 필드 없음. 15종은 데이터 범위이며 종류 축소 시 Goal 계약을 함께 갱신.
 - Do Not Modify: Merge 로직, renderer, HUD.
 
 ### S2-G2 같은 레벨 후보 탐색
@@ -30,7 +30,7 @@
 
 - Owner: Core
 - Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `tests/simulation/**`
-- Integration Point: `ball_merged(result_level, world_position)`와 `top_ball_created(global_level)` 이벤트 제공.
+- Integration Point: 정확히 두 인자의 `ball_merged(result_level, world_position)`와 `top_ball_created(global_level)` 이벤트 제공. score amount나 `special_type`을 `ball_merged`에 추가하지 않음.
 - Dependencies: S2-G2.
 - Verification: 입력 둘 제거·출력 하나 생성, 한 공은 tick당 한 번만 소비, 동일 seed 결과 재현.
 - Do Not Modify: Stage 전환, Merge FX.

@@ -11,7 +11,7 @@ Stage를 Clear하면 프레임 폭이 한 단계 넓어진다. 프레임 장식�
 - 변화 축: 현재 계획은 **폭만 증가**한다. 높이 변화는 별도 결정 전까지 제외한다.
 - 기준점: 화면 중심을 기준으로 좌우 대칭.
 - 경계: 좌·우·상단 반사 경계, 하단 열린 Cashout 경계를 유지한다.
-- 전환 조건: Top Ball/Clear Lock → Final Settlement 뒤에만 시작.
+- 전환 조건: Initial→L1과 L1→L2는 Top Ball/Clear Lock → Final Settlement 뒤에 시작한다. L2→L3는 Galactic 안에서 Black Hole 기믹이 발동할 때 시작한다.
 - gameplay: Shift 동안 simulation, spawn, timer, input effect를 정지한다.
 
 ## 2. Frame Level Naming
@@ -21,9 +21,9 @@ Stage를 Clear하면 프레임 폭이 한 단계 넓어진다. 프레임 장식�
 | 시작 | Initial Frame | Ground | `Rect2(500, 0, 600, 900)` | TUNING |
 | 첫 Clear 후 | Frame Level 1 | Planetary | `Rect2(420, 0, 760, 900)` | TUNING |
 | 둘째 Clear 후 | Frame Level 2 | Galactic | `Rect2(340, 0, 920, 900)` | TUNING |
-| 셋째 Clear 후 | Frame Level 3 | Final Result | `Rect2(260, 0, 1080, 900)` | TUNING |
+| Black Hole 발동 | Frame Level 3 | Galactic — Black Hole Phase | `Rect2(260, 0, 1080, 900)` | TUNING |
 
-폭은 1600×900 authoring viewport의 logical unit 기준이다. v1은 `Ground/Planetary/Galactic` 3개 Stage를 사용한다. 마지막 Clear 뒤 L3는 다음 gameplay Stage가 아니라 최종 규모를 보여주는 terminal profile이다. 각 Stage의 구체적인 그림과 재질은 재설계할 수 있다.
+폭은 1600×900 authoring viewport의 logical unit 기준이다. v1은 `Ground/Planetary/Galactic` 3개 Stage를 사용한다. L3는 별도 Stage나 Final Result 배경이 아니라 Black Hole 기믹이 활성화된 Galactic의 gameplay profile이다. 각 Stage의 구체적인 그림과 재질은 재설계할 수 있다.
 
 ## 3. One Source of Truth Proposal
 
@@ -40,11 +40,11 @@ Authoritative owner는 Content/Systems이고 위치는 `resources/stages/**`다.
 | `frame_visual_key` | `StringName` | Presentation | 프레임 art/animation variant |
 | `background_key` | `StringName` | Presentation | Stage World variant |
 
-`StageDefinition.play_field_profile`은 이 Resource를 가리킨다. `active_rect`는 1600×900 logical Canvas/world 좌표를 사용한다. 현재 height는 `900`, top은 `y = 0`, open Cashout line은 `rect.end.y = 900`으로 유지한다. 폭 변화는 `x = (1600 - width) / 2`로 center x `800`을 보존한다. 별도의 `width`, visual inset, collision Rect를 authoritative 값으로 병행하지 않는다.
+`StageDefinition.play_field_profile`은 Stage 진입 profile을 가리킨다. Galactic은 추가로 `black_hole_phase_profile`을 가리키며 두 필드 모두 같은 `StagePlayFieldProfile` schema를 사용한다. `active_rect`는 1600×900 logical Canvas/world 좌표를 사용한다. 현재 height는 `900`, top은 `y = 0`, open Cashout line은 `rect.end.y = 900`으로 유지한다. 폭 변화는 `x = (1600 - width) / 2`로 center x `800`을 보존한다. 별도의 `width`, visual inset, collision Rect를 authoritative 값으로 병행하지 않는다.
 
 HUD safe inset과 side/top/hybrid 선택은 gameplay Stage data에 넣지 않는다. 현재 `play_field_rect`는 full-height active physics 영역이므로 persistent HUD는 Rect 밖 side gutter에만 둔다. top reserved band가 필요하면 D2 HUD와 D3 Rect를 공동 재승인하고 Core bounds schema부터 바꾼다. Presentation-only inset으로 physics safety를 주장하지 않는다.
 
-현재 문서의 네 `Rect2`는 schema를 고정하기 위한 seed다. L3 terminal profile도 Core와 Presentation이 같은 `active_rect`를 활성화하되 spawn·timer·input은 재개하지 않는다. 실제 Resource field 추가와 값 확정은 S5 Goal 재구성 후에만 수행한다.
+현재 문서의 네 `Rect2`는 schema를 고정하기 위한 seed다. L3 Black Hole profile도 Core와 Presentation이 같은 `active_rect`를 활성화하며, transition 완료 뒤 spawn·timer·input을 재개한다. 실제 Resource field 추가와 값 확정은 S5/S8 Goal 계약에서 수행한다.
 
 ## 4. Visual and Logical Synchronization
 
@@ -54,8 +54,8 @@ HUD safe inset과 side/top/hybrid 선택은 gameplay Stage data에 넣지 않는
 2. Integration이 Core의 `prepare_play_field_rect(target_rect: Rect2, run_epoch: int, shift_id: int)`를 호출한다.
 3. Integration이 Presentation의 `StageWorldPresenter.play_stage_shift(run_epoch: int, shift_id: int, from_rect: Rect2, to_rect: Rect2, frame_visual_key: StringName, background_key: StringName)`를 호출한다.
 4. `StageWorldPresenter`는 Frame, 표시용 Play Field mask, Stage World child track을 병렬 실행하고 필수 track이 모두 끝난 뒤 `stage_shift_presentation_finished(run_epoch: int, shift_id: int)`를 정확히 한 번 보낸다.
-5. Integration은 같은 `run_epoch`와 `shift_id`를 확인한 뒤 Core의 `activate_prepared_play_field_rect(run_epoch: int, shift_id: int)`를 실행한다. L1/L2는 다음 Stage activation과 같은 제어 구간에 묶고, L3는 terminal profile만 활성화한다.
-6. Core의 `get_play_field_rect() -> Rect2`가 target과 일치하는지 확인한다. L1/L2에서만 gameplay를 재개하고 L3는 Final Result로 이동한다.
+5. Integration은 같은 `run_epoch`와 correlation ID를 확인한 뒤 Core의 prepared Rect를 활성화한다. L1/L2는 다음 Stage activation과 같은 제어 구간에 묶고, L3는 같은 Galactic의 Black Hole phase activation에 묶는다.
+6. Core의 `get_play_field_rect() -> Rect2`가 target과 일치하는지 확인한다. L1/L2와 L3 모두 해당 transition이 끝나면 gameplay를 재개한다. Lv14 최종 공 Clear는 별도 L3 Shift 없이 Result로 이동한다.
 
 따라서 플레이어가 보는 Frame/Field 전환과 실제 다음 Stage의 logical rect는 같은 target data를 사용한다. animation 중 physics collision을 보간하는 추가 복잡도는 만들지 않는다. Step 4와 5 사이에는 input/simulation이 재개되지 않으므로 visual target과 아직 활성화되지 않은 Core target을 플레이어가 조작하는 순간은 없다.
 
@@ -107,7 +107,7 @@ HUD safe inset과 side/top/hybrid 선택은 gameplay Stage data에 넣지 않는
 ### Frame Level 3
 
 - 화면 대부분을 Play Field가 차지하지만 외곽 machine silhouette은 남긴다.
-- 3-Stage run의 완주와 도달한 최대 규모를 크기·재질·motion cadence로 표현한다.
+- Black Hole 기믹의 발동과 도달한 최대 gameplay 규모를 크기·재질·motion cadence로 표현한다.
 - 프레임이 사라진 것처럼 보이지 않도록 최소 housing thickness와 corner anchors를 유지한다.
 
 V4의 핵심은 “화면 가장자리에 붙은 넓은 frame 안에서 범위만 조절”하는 방식이 아니다. 중앙에 놓인 완성된 cabinet rig가 시작점이며, Shift 때 실제 Play Field와 그 양쪽의 얇은 housing이 함께 열려야 한다. 자세한 재질·구성은 [09_APPROVED_VISUAL_DIRECTION_V4.md](09_APPROVED_VISUAL_DIRECTION_V4.md)를 따른다.
@@ -121,7 +121,7 @@ Stage World는 “밝은 풍경 네 장”의 교체가 아니라 동일한 arca
 - Scale history layer: 이전 Stage의 흔적을 작은 단위나 panel marking으로 남길 수 있다.
 - Event layer: Shift, Clear, failure 동안만 나타나는 transient lighting.
 
-v1의 Ground/Planetary/Galactic progression을 사용하되 meadow·우주사진·검은 소용돌이 같은 직설적 배경에 묶이지 않는다. Black Hole은 별도 네 번째 Stage가 아니라 Galactic Stage의 최종 Ball과 Final L3의 dominant motif로 사용한다.
+v1의 Ground/Planetary/Galactic progression을 사용하되 meadow·우주사진·검은 소용돌이 같은 직설적 배경에 묶이지 않는다. Black Hole은 별도 네 번째 Stage나 최종 Ball이 아니라 Galactic L3 gameplay phase의 dominant map motif로 사용한다.
 
 ## 8. Balance and Input Dependencies
 
@@ -141,7 +141,7 @@ Presentation은 값을 정하지 않지만, Frame seed 폭을 확정하기 전�
 
 | Lane | 요청 |
 |---|---|
-| Content/Systems | Stage/terminal profile별 authoritative `active_rect`와 visual keys를 data로 제공 |
+| Content/Systems | Stage/Black Hole phase profile별 authoritative `active_rect`와 visual keys를 data로 제공 |
 | Core | target rect를 spawn/boundary/paddle에 일관되게 적용하는 API 제공 |
 | Presentation | current/target profile 기반 Shift animation과 완료 signal 제공 |
 | Integration | Settlement 이후 순서, profile activation, signal once-only 보장 |
@@ -157,7 +157,7 @@ Presentation은 값을 정하지 않지만, Frame seed 폭을 확정하기 전�
 - Shift의 각 beat에서 Restart를 요청해도 이전 epoch의 완료 signal이 새 Run에 반영되지 않는다.
 - resize 후 visual frame, logical collision, Paddle clamp, mouse position이 같은 rect를 사용한다.
 - 새 Stage 시작 첫 tick에 Ball이 경계 바깥에 생성되지 않는다.
-- Final L3에서는 target Rect가 활성화되지만 spawn·timer·input이 재개되지 않는다.
+- Black Hole Phase L3에서는 target Rect 활성화 뒤 spawn·timer·input이 같은 Galactic gameplay로 재개된다.
 
 ## 11. Intentional Exclusions
 

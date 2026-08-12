@@ -20,9 +20,10 @@ Playing
       ├─ Settings → close → Pause Modal
       └─ Main Screen → Confirm/Cancel
            └─ Confirm → end current Run → Main Screen
+  ├─ Black Hole gimmick activation → Black Hole Phase Transition → Galactic Playing (L3)
   ├─ Top Ball Clear Lock → Final Settlement
   │    ├─ non-final Stage → Scale Shift → Next Stage Playing
-  │    └─ final Stage → Final L3 Shift → Final Result
+  │    └─ final Stage → Final Result
   └─ Time Up Lock → Final Settlement
        ├─ non-final + score clear → Score Clear → Scale Shift → Next Stage Playing
        ├─ non-final + score miss → Failure → Run Result
@@ -138,8 +139,8 @@ UI는 다음 순서를 섞지 않는다.
 1. Clear Lock 또는 Time Up Lock.
 2. Final Settlement: 남은 공의 base score 반영 표시.
 3. authoritative success/failure reason 표시.
-4. non-final success면 Scale Shift, final success면 terminal L3 Shift.
-5. HUD reflow와 profile activation.
+4. non-final success면 Scale Shift, final success면 Final Result.
+5. non-final Shift의 HUD reflow와 profile activation.
 6. 다음 Stage control 반환 또는 Final Result.
 
 Settlement score가 이미 run score에 반영되는 authoritative event를 표시할 뿐 Presentation이 `run_score += stage_score`를 수행하지 않는다.
@@ -149,7 +150,7 @@ Settlement score가 이미 run score에 반영되는 authoritative event를 표�
 | Trigger | Stage | After Final Settlement | Presentation destination |
 |---|---|---|---|
 | Top Ball | non-final | `CLEARED` | Clear → Scale Shift |
-| Top Ball | final | final clear snapshot | Final L3 Shift → Final Result |
+| Top Ball | final | final clear snapshot | Final Result; Black Hole Phase는 이미 Galactic gameplay 안에서 처리 |
 | Time Up + score clear | non-final | `CLEARED` | Score Clear → Scale Shift |
 | Time Up + score miss | non-final | `FAILED` | Failure → Run Result |
 | Time Up | final | final result snapshot | Final Result; no next Stage |
@@ -197,7 +198,7 @@ ResultViewState
 ## 11. Screen Deliverables
 
 1. Main Screen normal/focus state sheet.
-2. Playing Initial/L1/L2와 terminal L3 frozen-backdrop keyframes. L3 gameplay keyframe은 만들지 않는다.
+2. Playing Initial/L1/L2와 Galactic Black Hole Phase L3 gameplay keyframes.
 3. Pause modal과 두 destructive confirmation focus sheet.
 4. Settings Main-entry/Pause-entry return states.
 5. Clear → Settlement → Shift storyboard.

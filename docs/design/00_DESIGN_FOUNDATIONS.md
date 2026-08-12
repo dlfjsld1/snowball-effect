@@ -85,7 +85,8 @@ Godot의 strict integer scaling은 pixel art를 선명하게 유지하는 데 �
 - Display: 90년대 arcade 인상을 주는 bitmap/pixel 계열 1종.
 - Numeric: 시간·점수가 폭 변화에도 흔들리지 않는 tabular numeral 지원.
 - Body/Help: 작은 크기에서도 Web 브라우저에서 읽히는 단순한 폰트.
-- 1600×900 기준 gameplay 중 필수 텍스트는 가급적 16px 이상, 보조 표시는 14px 이상에서 검토한다.
+- 1600×900 기준 gameplay 필수 텍스트는 **최소 16px**, 보조 정보와 상태 label은 **최소 14px**를 사용한다. HUD의 Time·Score·Stage 이름처럼 즉시 읽어야 하는 값은 18px 이상에서 시작한다.
+- 14px 미만 텍스트는 읽을 정보가 아닌 장식용 기계 각인에만 허용하며, 제거해도 조작·상태·규칙 이해가 달라지지 않아야 한다.
 - outline/shadow는 어두운 배경과 밝은 오브젝트 양쪽에서 읽히도록 제한적으로 사용한다.
 - 런타임 한국어 지원 여부가 정해질 때 glyph coverage와 fallback font를 다시 확정한다.
 

@@ -18,8 +18,8 @@ Purpose: “예뻐 보인다”를 반복 가능한 evidence로 바꾼다.
 
 ## 2. Required Review Boards
 
-1. **Frame comparison:** V4 fixed-width bezel과 Initial/L1/L2/L3를 같은 scale로 배치.
-2. **HUD movement:** Time·Stage Score/Target·current Stage Ball Progression·Run Score와 active effect 0/1/3개를 같은 폭의 side panel에서 검증.
+1. **Frame comparison:** V5 fixed-width bezel과 Initial/L1/L2/Black Hole Phase L3를 같은 scale로 배치.
+2. **HUD movement:** Stage 이름·Time·Stage Score/Target·세로 5칸 progressive Ball Progression·Run Score와 active effect 0/1/3개를 같은 폭의 side panel에서 검증.
 3. **Ball hierarchy:** 15개 global concept comparison과 Plan 1 Stage별 5종 grouping.
 4. **Event tiers:** T0~T4 representative frame과 duration.
 5. **Scale Shift:** 7-beat storyboard 또는 3초 이내 후보 animatic.
@@ -29,7 +29,7 @@ Purpose: “예뻐 보인다”를 반복 가능한 evidence로 바꾼다.
 9. **UI flow:** Main/Pause/confirm/Settings/Result focus and return-state board.
 10. **V4 gameplay FX:** Compression Bloom, Salvage Burst, Cabinet Score Lock의 keyframe과 reduced recipe 비교.
 
-현재 승인된 구조 sketch는 [WIREFRAME_DYNAMIC_PLAYFIELD.png](WIREFRAME_DYNAMIC_PLAYFIELD.png)이고, 제작 재질·slim bezel·FX 기준은 [09_APPROVED_VISUAL_DIRECTION_V4.md](09_APPROVED_VISUAL_DIRECTION_V4.md)다.
+현재 승인된 팀 공유 mockup은 [WIREFRAME_DYNAMIC_PLAYFIELD.html](WIREFRAME_DYNAMIC_PLAYFIELD.html)과 [WIREFRAME_DYNAMIC_PLAYFIELD.png](WIREFRAME_DYNAMIC_PLAYFIELD.png)이고, 제작 기준은 [10_APPROVED_VISUAL_DIRECTION_V5.md](10_APPROVED_VISUAL_DIRECTION_V5.md)다.
 
 ## 3. Five-second Comprehension Test
 
@@ -43,7 +43,7 @@ Purpose: “예뻐 보인다”를 반복 가능한 evidence로 바꾼다.
 
 관찰자 5명 중 최소 4명이 질문 1(Paddle), 2(Cashout 방향), 4(폭 확장)를 모두 맞히고, 전체 응답 정확도가 80% 이상이어야 hierarchy를 승인한다. 오답은 색을 더하기 전에 size, position, silhouette, spacing으로 먼저 수정한다.
 
-Ball ordering test는 15개 silhouette을 무작위 배열한 뒤 성장 순서와 Stage grouping을 맞히게 한다. 참가자의 80% 이상이 전체 성장 방향을 맞히고, 각 Stage에서 인접 등급 혼동 쌍이 2개 이하여야 한다. Red Giant/Nebula가 빠진 Plan 1과 모두 포함된 Plan 2를 별도 sheet로 테스트한다.
+Ball ordering test는 15개 silhouette을 무작위 배열한 뒤 성장 순서와 Stage grouping을 맞히게 한다. 참가자의 80% 이상이 전체 성장 방향을 맞히고, 각 Stage에서 인접 등급 혼동 쌍이 2개 이하여야 한다. 기본 Run의 3×5 chain과 Lv7 Red Giant/Lv9 Nebula를 포함한 catalog sandbox를 별도 sheet로 테스트한다. Lv14 최종 공을 Black Hole 맵 기믹으로 오인하면 실패다.
 
 Item Box test는 label 없이 Common/Rare/Epic의 상대 희귀도, 손상 진행, 파괴/놓침 결과를 묻는다. 색을 제거해도 border notch, core shape, crack 수로 세 rarity의 순서가 읽혀야 한다.
 
@@ -62,11 +62,11 @@ Item Box test는 label 없이 Common/Rare/Epic의 상대 희귀도, 손상 진�
 
 | Viewport | Scale risk | Required capture |
 |---|---|---|
-| 1280×720 | 1px detail, compact text | Playing L2, terminal L3 backdrop, Pause/Settings, Result |
-| 1366×768 | fractional scale | Playing L0/L2, terminal L3, HUD/effect stress |
+| 1280×720 | 1px detail, compact text | Playing L2, Black Hole Phase L3, Pause/Settings, Result |
+| 1366×768 | fractional scale | Playing L0/L2, Black Hole Phase L3, HUD/effect stress |
 | 1600×900 | authoring source | all keyframes |
 | 1920×1080 | fractional logical scale | Shift, Title, Result |
-| 2560×1440 | excess void/upscale | Playing L2, terminal L3/Result |
+| 2560×1440 | excess void/upscale | Playing L2, Black Hole Phase L3/Result |
 | non-16:9 | letterbox/input mapping | left/right or top/bottom bars |
 
 Frame profile은 viewport 크기 때문에 바뀌지 않아야 한다. Stage profile과 viewport scale을 독립 변수로 테스트한다.
@@ -95,7 +95,7 @@ Design support floor는 desktop landscape `1280×720`이다. `1024×768`은 brow
 
 다음 authoritative field와 stress payload를 사용한다.
 
-- Time, Stage Score/Target, current Stage Ball Progression 4/5개, Run Score, Pause.
+- Stage 이름, Time, Stage Score/Target, current Stage Ball Progression 세로 5칸의 reveal 1/2/5, Run Score, Pause.
 - active effect 0개/1개 expanded/3개 compact.
 - shortest/longest item name.
 - score `0`, `999`, suffix 전환 직전/직후, 최대 suffix, scientific notation 전환, NaN/Infinity fallback.
@@ -104,7 +104,7 @@ Design support floor는 desktop landscape `1280×720`이다. `1024×768`은 brow
 - effect hidden/appearing/refresh/independent expiry.
 - discrete snapshot 즉시 갱신, timer/effect countdown 최대 10Hz, 같은 값 Control rewrite 없음.
 
-Stage name, Ball Count, highest Ball을 persistent HUD에 임의로 추가하지 않는다. 4개 이상 effect가 동시에 활성 가능해지면 별도 capacity review 없이 release scope에 넣지 않는다.
+Stage name은 persistent HUD 필수다. Ball Count와 highest Ball은 persistent HUD에 임의로 추가하지 않는다. 4개 이상 effect가 동시에 활성 가능해지면 별도 capacity review 없이 release scope에 넣지 않는다.
 
 ## 8. Motion Review
 
@@ -172,7 +172,7 @@ S6-G1 Entry Gate에서 tier별 cap이 아직 비어 있으면 performance implem
 
 ## 10.1 Hybrid Screenshot Regression
 
-- fixed seed/debug fixture로 HUD, Frame, terminal L3, Pause, Result key state를 재현한다.
+- fixed seed/debug fixture로 HUD, Frame, Black Hole Phase L3 gameplay, Pause, Result key state를 재현한다.
 - HUD housing, Frame edge, focus outline, safe inset 같은 안정 영역은 screenshot diff threshold로 자동 비교한다.
 - particle, glow, Tween 중간 frame, GPU 노이즈 영역은 mask하고 motion/state sheet를 사람이 승인한다.
 - baseline 갱신은 해당 Goal의 visual change 설명과 before/after evidence가 있을 때만 허용한다.
@@ -216,12 +216,13 @@ MCP 실패만으로 게임 코드를 수정하지 않으며 CLI/native로 프로
 
 - Documentation/link review: 2026-08-11 local relative links and Markdown fence/heading structure passed.
 - Design plan review: 7개 pass와 independent design voice, blocking issue 0, final quality score 9/10.
-- Wireframe render: 최신 HUD/3-Stage/terminal L3 HTML을 system Chrome headless 1600×900으로 다시 렌더했고 PNG 1600×900과 visual clipping을 확인했다.
-- `browse` skill render는 Windows server bundle 누락으로 unavailable이어서 새 dependency를 설치하지 않고 system Chrome으로 대조했다.
+- Wireframe render: 2026-08-12 system Chrome headless로 V5 Frames/Main/Ground/Planetary/Galactic/Black Hole Phase/Pause/FX를 1600×900에, Black Hole Phase를 1280×720에 렌더했다. PNG 9개가 생성됐고, 1600 화면의 HUD/field/controls와 1280 화면의 수평 layout 및 최소 text size를 육안 확인했다.
+- 첫 Chrome 실행은 Windows GPU process 문제로 실패했으나, 별도 임시 profile + software rendering으로 같은 HTML을 성공 렌더해 목업 오류가 아닌 도구 환경 문제로 분류했다. Chrome의 Google Update registry warning은 screenshot 결과에 영향을 주지 않았다.
+- `browse` binary는 unavailable이어서 새 dependency를 설치하지 않고 system Chrome으로 대조했다.
 - Godot CLI/headless: not run — documents and design artifacts only.
 - Godot MCP: not used.
 - Web game build/browser QA: not run — no runtime implementation or release Goal change.
 - Performance: not measured; collection plan only.
-- Known contract sync: 3-Stage route, non-contiguous Stage Merge lookup, Item Box physics, HUD payload, Stage Restart를 rules/technical/slice에 반영하기 전 runtime 구현을 시작하지 않는다.
-- Eng review implementation: typed HUD/Result proposal, compact Ball Progression, `run_epoch + shift_id`, tier pool, terminal L3 fixture, hybrid screenshot, absolute+relative performance gate를 문서에 반영했다. 실제 runtime evidence는 여전히 없음.
-- V4 mockup adoption: 2026-08-11 Frozen Enamel Main/Playing/Pause, slim fixed-width bezel, Merge/Item/Milestone FX 방향을 사용자 승인으로 채택했다. 이는 visual evidence이며 Godot runtime evidence가 아니다.
+- Contract sync: 3-Stage route, non-contiguous Stage Merge lookup, 2인자 `ball_merged`, Stage 이름/세로 progressive HUD, Galactic Black Hole Phase를 rules/technical/slice에 반영했다. runtime Resource/code는 아직 최신 catalog/phase 계약을 구현하지 않았다.
+- Eng review implementation: typed HUD/Result proposal, progressive Ball Progression, `run_epoch + correlation_id`, tier pool, Black Hole Phase L3 fixture, hybrid screenshot, absolute+relative performance gate를 문서에 반영했다. 실제 runtime evidence는 여전히 없음.
+- V5 mockup adoption: 2026-08-12 Frozen Enamel Main/Playing/Pause, slim fixed-width bezel, Merge/Item/Milestone FX와 Black Hole Phase 방향을 사용자 결정에 맞춰 갱신했다. 이는 visual evidence이며 Godot runtime evidence가 아니다.

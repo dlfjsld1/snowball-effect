@@ -1,0 +1,13 @@
+{
+  "source_mockup": "~/.gstack/projects/snowball-effect/designs/design-system-20260811-v4/snowball-effect-slim-cabinet-fx-preview.html",
+  "source_plan": "docs/design/10_APPROVED_VISUAL_DIRECTION_V5.md",
+  "mode": "evolve",
+  "html_file": "docs/design/WIREFRAME_DYNAMIC_PLAYFIELD.html",
+  "pretext_tier": "design-sketch fallback (design/pretext binary unavailable)",
+  "framework": "vanilla",
+  "iterations": 1,
+  "date": "2026-08-12",
+  "screen": "snowball-effect-v5-system",
+  "branch": "ui-design",
+  "team_shared": true
+}

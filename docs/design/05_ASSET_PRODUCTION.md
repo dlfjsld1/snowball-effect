@@ -31,7 +31,7 @@ Purpose: 승인된 디자인을 Goal 순서에 맞춰 반복 제작 가능한 as
 | Slim Frame profile comparison | PNG/HTML + source | fixed-width bezel + Initial/L1/L2/L3 폭 비교 | V4 승인, Rect 수치 tuning |
 | Ball visual bible | PNG + source | 15등급 level/outline/density 규칙 | S2-G1 catalog + future Ball contract |
 | Merge FX state sheet | PNG/storyboard | Compression Bloom T1/T2 계약 | V4 승인, numeric amount는 S2-G3 계약 대기 |
-| HUD slot/reflow board | PNG + spec | Time·점수·effect strip layout | HUD Contract v1 |
+| HUD slot/reflow board | PNG + spec | Stage 이름·Time·점수·세로 5칸 progressive genealogy·effect layout | HUD Contract v1 |
 | Item Box state sheet | PNG + source | 3 rarity, crack, break, miss 상태 | S7 contract rewrite |
 | Item/Milestone FX sheet | PNG/storyboard | Salvage Burst와 Cabinet Score Lock | V4 승인, authoritative event 대기 |
 | Main/Pause/Settings board | PNG + spec | focus·confirmation·return flow | S8/new UI Goals |
@@ -103,7 +103,7 @@ Team-level ownership과 Goal-level Owned Files는 다르다. 아래 runtime fami
 | Frame/Stage World exports | S5-G4에 `assets/backgrounds/**`가 없음 | S5-G4 Owned Files에 target asset 경로 추가 |
 | Title/Result visual assets | S8-G3 runtime UI가 Content-owned | Presentation asset Goal을 추가하거나 Content가 제공받는 approved export 경로 명시 |
 | Main/Pause/Settings visual assets | 현재 Pause Goal은 toolbar 수준이고 Settings/Main 확장 Goal 없음 | Content UI Goal과 Presentation asset handoff Goal을 분리하고 UI 하위 경로 명시 |
-| Item Box/rarity/fragment assets | S7 Goal이 Paddle pickup과 effect만 소유 | Item Box Content/Core/Presentation Goal을 추가하고 `assets/sprites/items/item_box/**`와 effect 경로 명시 |
+| Item Box/rarity/fragment assets | S7 Goal에 Box visual/fragment의 Presentation Owned Files가 없음 | Item Box Content/Core/Presentation Goal을 추가하고 `assets/sprites/items/item_box/**`와 effect 경로 명시 |
 
 Goal이 갱신되지 않으면 Presentation은 `docs/design/**`의 spec/keyframe까지만 제공하고 runtime 경로에 파일을 쓰지 않는다.
 

@@ -16,7 +16,7 @@ Ball은 장식 입자가 아니라 규칙 상태다. 화면에 공이 많아져�
 
 ## 2. Ball Visual Bible Deliverable
 
-전역 Merge 성장 사슬은 0~14의 15종으로 디자인한다. 이는 production Resource 15개를 즉시 구현한다는 뜻이 아니다. S2에서는 현재 catalog 0~6과 미래 level의 무채색 proxy를 사용하고, 실제 runtime asset은 해당 Goal의 Owned Files가 승인된 뒤 제작한다.
+전역 Merge 성장 사슬은 0~14의 15종으로 디자인한다. runtime Resource 15개는 존재하지만 2026-08-12 최신 명칭/Lv14 분리 계약과 아직 일치하지 않아 S2-G1이 재검증 `PENDING`이다. 실제 runtime asset 수정은 해당 Goal의 Owned Files가 승인된 뒤 제작한다.
 
 | Global level | Concept |
 |---:|---|
@@ -34,9 +34,9 @@ Ball은 장식 입자가 아니라 규칙 상태다. 화면에 공이 많아져�
 | 11 | Galaxy Cluster |
 | 12 | Quasar |
 | 13 | Event Horizon |
-| 14 | Black Hole |
+| 14 | Final Snowball (working title) |
 
-현재 VERIFIED catalog의 Lv4 `Lunar Snowball`, Lv6 `Solar Snowball`은 각각 Moon/Sun concept의 기존 runtime 이름이다. 새 display name을 채택하더라도 global 0~6 identity와 기존 verification을 암묵적으로 바꾸지 않는다. Lv7~14의 radius, mass, score, visual key는 별도 Content Goal에서 정의한다.
+현재 runtime Resource는 이 최신 catalog와 다를 수 있으며 `docs/goals/STATUS.md`의 S2-G1 contract drift를 따른다. Lv14의 정식 이름은 미확정이지만 Black Hole과 다른 밝은 눈덩이 실루엣과 작업 visual key `final_snowball`을 사용한다. Lv14를 어두운 원형·흡입 링·중력 왜곡으로 표현하지 않는다.
 
 1. 15개 global level을 담은 1× silhouette row.
 2. dark/light stress background 위 outline comparison.
@@ -49,26 +49,17 @@ Ball은 장식 입자가 아니라 규칙 상태다. 화면에 공이 많아져�
 
 v1은 3개 Stage에 5등급씩 배치하며 Stage 경계 Ball 한 종을 공유한다.
 
-| Stage | Local grade 1→5 | `ball_global_levels` |
+| Stage | Local grade 1→5 | `local_ball_levels` |
 |---|---|---|
 | Ground | Snowflake → Snowball → Big Snowball → Giant Snowball → Moon | `[0, 1, 2, 3, 4]` |
 | Planetary | Moon → Earth → Sun → Supernova → Galaxy | `[4, 5, 6, 8, 10]` |
-| Galactic | Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole | `[10, 11, 12, 13, 14]` |
+| Galactic | Galaxy → Galaxy Cluster → Quasar → Event Horizon → Final Snowball (working title) | `[10, 11, 12, 13, 14]` |
 
 Plan 1은 13종을 기본 런에서 사용한다. `Red Giant`와 `Nebula`도 15종 visual bible에는 제작하지만 기본 StageDefinition에서는 비활성이다.
 
-### Experimental Stage Plan — Plan 2
+### Catalog Sandbox
 
-15종 전체 연결을 검증하기 위한 대체 data 구성이다. release 기본값이나 별도 UI mode가 아니다.
-
-| Stage | Ball concepts |
-|---|---|
-| Ground | Snowflake → Snowball → Big Snowball → Giant Snowball |
-| Planetary | Giant Snowball → Moon → Earth → Sun |
-| Galactic | Sun → Red Giant → Supernova → Nebula → Galaxy |
-| Black Hole experiment | Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole |
-
-StageDefinition은 진행 순서대로 정렬된 `ball_global_levels` 목록으로 활성 사슬을 정한다. 같은 local grade의 두 Ball이 합쳐지면 숫자상 `global_level + 1`이 아니라 현재 목록의 다음 항목이 결과가 된다. 따라서 Plan 1은 global 7과 9를 건너뛰고, Plan 2는 0~14를 모두 사용한다. 이는 현재 Core Merge 계약 변경이므로 S2-G3 구현 전에 slice/task/게임 규칙/API를 동기화해야 한다. 플레이테스트에서 Stage당 4~5종을 조정하더라도 global identity와 sprite key를 재번호화하지 않는다.
+Lv7 `Red Giant`와 Lv9 `Nebula`를 포함한 15종 전체 연결은 개발용 catalog sandbox에서 검토한다. 이것은 별도 Stage나 release UI mode가 아니다. 기본 Run의 StageDefinition은 진행 순서대로 정렬된 `local_ball_levels`로 활성 사슬을 정하며, 같은 local grade의 두 Ball이 합쳐지면 숫자상 `global_level + 1`이 아니라 현재 목록의 다음 항목이 결과가 된다. 플레이테스트에서 종류 수를 조정하더라도 global identity와 sprite key를 재번호화하지 않는다.
 
 ## 3. Visual Hierarchy Rules
 
@@ -133,7 +124,7 @@ S2의 2-argument `ball_merged(result_level, world_position)`으로 가능한 일
 
 ## 7. Item Box Contract and Feedback
 
-현재 `02_GAME_RULES.md`와 `03_TECHNICAL_DESIGN.md`의 Paddle pickup은 이 승인안과 충돌한다. S7 구현 전에 Core/Content/Integration 문서를 아래 계약으로 교체해야 한다.
+현재 게임 규칙의 획득 경로는 Ball 충돌 기반 `Item Ball`이다. 디자인에서는 같은 gameplay entity의 외형/표시명을 각진 `Item Box` 또는 `궤도 화물 캡슐`로 제안하며, S7 구현 전 canonical runtime 명칭과 visual key만 한 번 확정한다.
 
 ### Object and visibility
 

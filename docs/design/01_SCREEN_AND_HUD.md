@@ -21,14 +21,15 @@ Runtime ownership note: HUD는 Presentation-owned, Pause/Main/Settings runtime�
 
 | 정보 | 우선순위 | 표시 규칙 | Authoritative source |
 |---|---:|---|---|
+| `stage_display_name` | 1 | `Ground`/`Planetary`/`Galactic`을 항상 표시 | StageDefinition |
 | `stage_time_left` | 1 | 항상 표시, 10초 미만 warning state | Core Stage runtime |
 | `stage_score / clear_score` | 1 | Stage Score와 Target을 한 묶음으로 크게 표시 | Core score ledger + StageDefinition |
-| `ball_progression[]` | 2 | 현재 Stage의 4~5종을 낮은 단계부터 compact icon strip으로 표시 | StageDefinition + BallCatalog |
+| `ball_progression[]` | 2 | 현재 Stage의 5종을 낮은 단계부터 세로 5칸에 배치하고 발견된 공만 표시 | StageDefinition + BallCatalog + Core discovery event |
 | `run_score` | 2 | Stage Score보다 작고 낮은 대비로 항상 표시 | Core score ledger |
 | `active_effects[]` | 2 | 0개면 숨김, 활성 효과마다 남은 시간 표시 | Optional Item/Effect system |
 | Pause action | 3 | 작은 고정 utility button과 `Esc` cue | Content UI request |
 
-Stage 이름·index는 Stage 시작/Shift의 transient identity로 보여줄 수 있지만 persistent HUD 필수 항목은 아니다. Ball count와 최고 Ball은 debug/result 정보이며 v1 gameplay HUD에서 제외한다.
+Stage 이름은 persistent HUD 필수 항목이다. Stage index 숫자는 선택 사항이며, Ball count와 최고 Ball은 debug/result 정보로 v1 gameplay HUD에서 제외한다.
 
 ## 3. HUD Hierarchy and Placement
 
@@ -36,12 +37,13 @@ Stage 이름·index는 Stage 시작/Shift의 transient identity로 보여줄 수
 
 위에서 아래 순서:
 
-1. Time.
-2. Stage Score / Target.
-3. Current Stage Ball Progression.
-4. Run Score.
+1. Stage name.
+2. Time.
+3. Stage Score / Target.
+4. Current Stage Ball Progression — 세로 5칸.
+5. Run Score.
 
-Time과 Stage Score/Target은 같은 1차 계층이지만 역할을 구분한다. Time은 압박, Score/Target은 현재 목표다. Ball Progression은 Merge 결과를 화면을 떠나지 않고 확인하는 compact read-only strip이며, Run Score는 누적 성취로 읽히되 현재 Stage 판단보다 먼저 튀지 않는다.
+Stage name, Time, Stage Score/Target은 1차 계층 안에서 역할을 구분한다. Ball Progression은 Merge 결과를 화면을 떠나지 않고 확인하는 compact read-only vertical chain이다. 5칸 housing은 항상 같은 높이를 유지하지만 Stage 진입 시 첫 아이콘만 표시하고, 새로운 local 공을 만들 때 아래 슬롯의 아이콘과 이름을 하나씩 공개한다. 미발견 항목은 silhouette나 정답 label을 보여주지 않는다.
 
 ### Right — active state panel
 
@@ -70,6 +72,8 @@ Pause는 gameplay action보다 낮은 대비의 utility control로 유지한다.
 HUDViewState
 - run_epoch: int
 - view_revision: int
+- stage_id: StringName
+- stage_display_name: String
 - stage_time_left: float
 - stage_score: float
 - clear_score: float
@@ -82,6 +86,7 @@ BallProgressionEntry
 - display_name: String
 - icon_key: StringName
 - is_stage_top: bool
+- is_revealed: bool
 
 ActiveEffectView
 - effect_id: StringName
@@ -94,13 +99,13 @@ ActiveEffectView
 
 `HUDViewState`, `BallProgressionEntry`, `ActiveEffectView`는 runtime 저장용 Resource나 문자열 key `Dictionary`가 아니라 typed `RefCounted` read-only DTO로 구현한다. `run_epoch`가 이전이면 snapshot 전체를 거부하고 같은 epoch에서는 증가한 `view_revision`만 반영한다. `refresh_sequence`는 같은 효과 재획득을 UI가 한 번만 pulse하기 위한 correlation 값이다.
 
-HUD는 시간·점수·효과를 계산하거나 감소시키지 않고 authoritative snapshot/event만 표시한다. Ball Progression은 전달된 순서를 그대로 그리며 다음 Merge 결과를 계산하지 않는다. 숫자는 S2-G4 `format_score(value)`를 사용한다. 점수·Pause·effect add/remove·Stage 변경은 즉시 갱신하고, 연속적인 timer/effect countdown snapshot은 producer에서 최대 10Hz로 coalesce한다. HUD는 같은 text/icon 값이면 Control 속성을 다시 쓰지 않는다.
+HUD는 시간·점수·효과를 계산하거나 감소시키지 않고 authoritative snapshot/event만 표시한다. Ball Progression은 전달된 5개 순서와 `is_revealed`/`revealed_count`를 그대로 그리며 다음 Merge 결과를 계산하지 않는다. Stage 진입 시 첫 항목만 공개되고, Core의 `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)`가 증가할 때만 다음 항목을 공개한다. 숫자는 S2-G4 `format_score(value)`를 사용한다. 점수·Pause·effect add/remove·Stage 변경은 즉시 갱신하고, 연속적인 timer/effect countdown snapshot은 producer에서 최대 10Hz로 coalesce한다. HUD는 같은 text/icon 값이면 Control 속성을 다시 쓰지 않는다.
 
 ## 6. Reflow Rules
 
 - Initial/L1에서는 이름과 label을 충분히 표시한다.
 - L2에서는 label을 줄이고 숫자와 icon의 폭을 우선 보존한다.
-- L3 terminal fixture에서는 Stage Score/Target, Time, Ball Progression, effect icon/timer, Pause hit target의 frozen backdrop을 보존하고 장식 line과 긴 이름을 축소한다. L3 gameplay 상태를 만들지는 않는다.
+- L3 Black Hole Phase에서는 `Galactic` 이름, Stage Score/Target, Time, 세로 Ball Progression, effect icon/timer, Pause hit target을 실제 gameplay HUD로 유지한다. Black Hole distortion과 frame expansion이 HUD 글자나 hit target을 침범하지 않는다.
 - score formatter의 suffix/scientific boundary, NaN/Infinity fallback, 1~5자리 이상의 time overflow를 stress test한다.
 - effect strip 변화가 Stage Score panel의 위치나 Play Field edge를 밀지 않는다.
 - Frame 전환 중 `HUD REFLOW` beat에서 side housing은 폭을 보간하지 않고 `play_field_rect` edge와 함께 좌우 대칭으로 이동한다. 내부 stacking은 유지하고, responsive compact mode에서만 label 축약을 허용한다.
@@ -116,6 +121,7 @@ HUD는 시간·점수·효과를 계산하거나 감소시키지 않고 authorit
 | Paused | 값은 동결하고 전체 HUD 대비를 낮춤; Pause modal이 focus 소유 |
 | Clear locked / Settling | 입력 utility 비활성, 확정 점수 event만 표시 |
 | Shifting | 값 동결, fixed-width side housing 이동, 다음 Stage 시작 전에 갱신 |
+| Black Hole Phase transition | 값 동결, L2→L3로 housing 이동; 완료 뒤 같은 `Galactic` 값으로 gameplay 갱신 재개 |
 | Focus lost | 자동 Pause 상태 표시; 복귀만으로 재개하지 않음 |
 | Audio locked | 첫 사용자 입력 전 작은 비차단 안내 가능 |
 
@@ -138,8 +144,8 @@ HUD는 시간·점수·효과를 계산하거나 감소시키지 않고 authorit
 - `stage_score=0`, Target 직전/초과, 매우 큰 Run Score에서 panel width가 흔들리지 않는다.
 - Time `0`, `9`, `999`, `1000`, `9999`와 overflow fallback을 확인한다.
 - active effect 0/1/3개, 긴 이름, 동시 refresh, 서로 다른 expiry를 확인한다.
-- Ball Progression 4/5개, 긴 이름, top marker와 Stage 교체를 확인한다.
-- 1280×720 terminal L3 backdrop에서도 Stage Score/Target과 Time이 첫 시선 계층으로 남는다.
+- Ball Progression은 세로 5칸에서 reveal 1/2/5, 긴 이름, top marker와 Stage 교체를 확인한다.
+- 1280×720 L3 Black Hole gameplay에서도 Stage 이름, Stage Score/Target과 Time이 첫 시선 계층으로 남는다.
 - 같은 값 snapshot 반복 시 Label/Icon layout 갱신이 없고 연속 timer 갱신이 10Hz를 넘지 않는다.
 - focus·warning·rarity를 grayscale에서 shape와 pattern으로 구분한다.
 - source가 없는 placeholder가 gameplay state를 추론하거나 계산하지 않는다.
@@ -148,5 +154,5 @@ HUD는 시간·점수·효과를 계산하거나 감소시키지 않고 authorit
 
 - Runtime signal binding과 scene/script 구현.
 - 아이템 4개 이상 동시 활성화용 최종 layout.
-- Stage 이름·최고 Ball·Ball count의 persistent HUD 추가. 현재 Stage Ball Progression은 이 제외 항목에 포함되지 않는다.
+- 최고 Ball·Ball count의 persistent HUD 추가.
 - portrait/mobile 전용 UI.

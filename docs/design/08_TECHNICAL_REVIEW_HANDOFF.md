@@ -1,7 +1,7 @@
 # 08. Technical Review and Cross-lane Handoff
 
 Status: CONDITIONAL APPROVAL — Presentation plan is feasible; runtime entry is contract-gated  
-Review date: 2026-08-11  
+Review date: 2026-08-11; contract update 2026-08-12
 Planning owner: Presentation  
 Decision owners for blockers: Core, Content/Systems, Integration, Product as listed below
 
@@ -21,30 +21,30 @@ Decision owners for blockers: Core, Content/Systems, Integration, Product as lis
 
 | ID | 충돌 / 누락 | Decision owner | 승인 결과 | Blocks |
 |---|---|---|---|---|
-| H1 | `N+1` Merge와 Stage별 non-contiguous ordered chain이 충돌 | Core + Content + Product | 한 progression source와 terminal behavior를 rules/task/slice/API에 동일하게 기록 | S2-G3, S5 Ball mapping |
-| H2 | 기존 4번째 Black Hole Stage와 승인된 3-Stage + terminal L3가 충돌 | Product + Core + Integration | v1 3-Stage route, Black Hole force의 제거/실험 이동, S8 재구성 승인 | S5/S8 runtime/art |
-| H3 | `local_ball_levels`와 `ball_global_levels` 이름/의미가 병행됨 | Content + Core | global ID의 ordered Stage chain을 나타내는 canonical field 하나와 lookup failure 정책 | S3 data, HUD genealogy, Merge |
-| H4 | `ball_merged` 2-argument/3-argument 제안이 병행됨 | Core + Integration | producer/consumer, payload, exactly-once/reset 규칙이 한 signature로 수렴 | S2-G3/G5 |
+| H1 | Docs RESOLVED — `N+1` 대신 Stage별 non-contiguous ordered chain 사용 | Core + Content + Product | `StageDefinition.local_ball_levels` lookup을 rules/task/slice/API에 기록; runtime은 S5-G2에서 검증 | S5-G2 |
+| H2 | Docs RESOLVED — 3-Stage + Galactic Black Hole Phase L3 | Product + Core + Integration | Black Hole force를 Galactic 내부 기믹으로 유지하고 S8-G1/G4/G5로 분해 | S8 runtime/art |
+| H3 | Docs RESOLVED — canonical field는 `local_ball_levels` | Content + Core | ordered global ID 5개, lookup failure 정책, progressive HUD source | S3 data, S5 Merge/HUD |
+| H4 | RESOLVED — `ball_merged(result_level, world_position)` 2인자 | Core + Integration | score amount/special type을 분리하고 producer/consumer 문서 동기화 | S2-G5 fixture |
 | H5 | Item Ball/Item Box 명칭과 collision/durability 세부 규칙이 분산됨 | Product + Core + Content + Integration | canonical entity name, stable contact order, hit dedupe, break tick, miss/cleanup 계약 | S7 전 Goal |
 | H6 | Stage Restart가 여러 lane state를 되돌리지만 atomic restore protocol이 없음 | Core + Integration | prepare/restore/ack barrier, epoch, timeout/recovery 정책 | Pause final UI, S8-G4 |
 | H7 | HUD/Result에 typed authoritative producer가 없음 | Core + Content + Integration | `HUDViewState`, `ResultViewState`, fixtures, cadence, stale policy | S3-G6, Result UI |
 | H8 | S3 Integration이 기다릴 Settlement Presentation producer Goal이 없음 | Presentation + Integration | Presentation Goal, settlement identity, exactly-once/reset API | S3-G5 |
 
-V4 목업은 H4를 해결하지 않는다. `Compression Bloom`의 ring/burst와 비점수 label은 현재 2-argument `ball_merged`로 제작할 수 있지만, 목업의 `+0240`은 authoritative `amount + world_position` event가 승인될 때까지 fixture다.
+V5의 `Compression Bloom` ring/burst와 비점수 label은 확정된 2인자 `ball_merged`로 제작할 수 있다. numeric score popup은 authoritative `amount + world_position` event가 별도로 승인될 때만 사용한다.
 
 ### H1 required behavior
 
 - global Ball identity와 sprite key를 Stage 재배치 때문에 재번호화하지 않는다.
 - ordered Stage chain에 없는 level, 마지막 level, 누락된 BallDefinition 입력의 결과를 명시한다.
-- 현재 VERIFIED S2-G1의 0~6 evidence는 유지하고 7~14 extension은 별도 Content Goal/evidence로 추가한다.
+- 기존 S2-G1 Evidence는 역사 기록으로 유지하지만 최신 0~14 catalog와 Resource가 달라 STATUS를 PENDING으로 되돌렸다.
 - Presentation은 Merge 결과를 계산하지 않고 authoritative result level만 사용한다.
 
 ### H2 approved Presentation direction
 
 - v1 visual route는 Ground → Planetary → Galactic 3-Stage다.
-- Galactic top Ball은 Black Hole이며 final Clear 뒤 L3 terminal profile과 Result로 간다.
-- L3에서 spawn, timer, input을 재개하지 않는다.
-- 4번째 Stage와 moving Black Hole force 제거는 Core/Product 승인 전 확정된 runtime 변경으로 간주하지 않는다.
+- Black Hole은 Galactic 내부 최종 국면 맵 기믹이며 Lv14 Ball이 아니다.
+- 기믹 발동 시 L2→L3 `Black Hole Phase Transition`을 실행하고 같은 Galactic에서 spawn, timer, input을 재개한다.
+- Galactic top Ball은 Lv14 `Final Snowball (working title)`이며 생성 후 추가 Frame Shift 없이 Result로 간다.
 
 ### H5 deterministic Core questions
 
@@ -78,7 +78,8 @@ timeout 또는 restore 실패 시 gameplay는 paused 상태를 유지하고 Main
 ### HUD
 
 - typed `RefCounted` `HUDViewState`, `BallProgressionEntry`, `ActiveEffectView`를 소비한다.
-- Time, Stage Score/Target, ordered Ball Progression, Run Score, active effects, Pause를 표시한다.
+- Stage 이름, Time, Stage Score/Target, ordered Ball Progression, Run Score, active effects, Pause를 표시한다.
+- Ball Progression은 세로 5칸이며 reveal 1에서 시작해 새 공 최초 생성마다 2→5로 증가한다.
 - discrete state는 즉시, timer/effect countdown은 최대 10Hz로 갱신한다.
 - 같은 값은 Label/Icon 속성을 다시 쓰지 않는다.
 - `run_epoch`와 `view_revision`으로 stale/duplicate snapshot을 거부한다.
@@ -105,7 +106,7 @@ Restart/Retry는 `reset_presentation(new_epoch)`를 호출한다. Presenter와 I
 
 ### Assets and FX
 
-- V4 Frozen Enamel, slim fixed-width bezel, Compression Bloom, Salvage Burst, Cabinet Score Lock을 visual handoff 기준으로 사용한다.
+- V5 Frozen Enamel, slim fixed-width bezel, Compression Bloom, Salvage Burst, Cabinet Score Lock, Black Hole Phase를 visual handoff 기준으로 사용한다.
 - 필수 gameplay visual은 missing texture/font/key 때 code-native 또는 approved proxy fallback을 표시한다.
 - missing key warning은 key당 한 번만 기록한다.
 - `FxBudgetProfile`은 T0/T1 aggregation pool, T2 limited pool, T3/T4 reserved slot을 분리한다.
@@ -119,7 +120,7 @@ Restart/Retry는 `reset_presentation(new_epoch)`를 호출한다. Presenter와 I
 HEADLESS CONTRACT                              WEB / USER FLOW
 HUD snapshot                                  Playing HUD
 ├─ score/time boundaries                      ├─ timer 10Hz cadence
-├─ effect 0/1/3 + refresh                     ├─ Ball Progression 4/5
+├─ effect 0/1/3 + refresh                     ├─ vertical Ball Progression reveal 1/2/5
 ├─ stale epoch/revision                       └─ 1280×720 compact layout
 └─ proxy fallback
 
@@ -132,7 +133,7 @@ Pause/Result                                  Pause → Settings → Pause
 StageWorldPresenter                           Scale Shift
 ├─ child-track barrier                        ├─ L1/L2 control return
 ├─ duplicate completion                       ├─ Restart at every beat
-├─ stale run_epoch                            └─ L2 → terminal L3 → Result
+├─ stale run_epoch                            └─ L2 → Black Hole Phase L3 → gameplay → Result
 └─ proxy/missing visual key
 
 FX budget                                     Dense Web build
@@ -172,7 +173,7 @@ Handoff 문서 승인과 fixture 제작은 병렬 가능하다. Integration-owne
 - Presentation이 Merge, score, Item Box damage, Stage Restart rollback을 직접 계산하는 구현.
 - 별도 4번째 Black Hole gameplay Stage의 v1 production art.
 - Plan 2의 15종 전체 사용 실험.
-- L3 gameplay runtime/debug state.
+- Black Hole Phase의 정확한 발동 밸런스 값.
 - portrait/mobile과 1280×720 미만 정식 지원.
 - S4 측정 전 임의 FX cap 확정.
 - Reduced Effects v1 구현. 후속 항목은 [TODOS.md](TODOS.md)에 둔다.
@@ -186,6 +187,6 @@ Presentation runtime Goal entry:
 3. producer fixture와 exact payload/correlation policy가 존재함.
 4. Owned Files와 Integration lock 확인.
 
-현재 next Presentation runtime Goal은 계속 S2-G5이며 S2-G3 최종 event 계약 전에는 시작하지 않는다.
+현재 next Presentation runtime Goal은 S2-G5이며 확정된 S2-G3 2인자 event와 S2-G4 formatter를 사용한다. 사용자의 runtime 구현 승인은 별도로 필요하다.
 
 Review result: `DONE_WITH_CONCERNS`. Presentation 계획은 구현 가능하지만 H1~H8 중 해당 Goal blocker가 승인되기 전 runtime 진입은 차단한다.

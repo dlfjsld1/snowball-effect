@@ -15,16 +15,16 @@ Godot 4.x로 브라우저에서 실행 가능한 2D 액션 머지 게임 **Snowb
 3. 플레이어는 좌우 방향키로 패들의 각도를 변경한다.
 4. 이동과 회전은 동시에 가능하다.
 5. 공은 좌우 벽과 패들에 반사된다.
-6. 같은 `global_level`의 공 두 개가 접촉하면 다음 레벨 공 하나로 합쳐진다.
+6. 같은 `global_level`의 공 두 개가 접촉하면 현재 Stage의 ordered `local_ball_levels`에서 다음 공 하나로 합쳐진다.
 7. 다른 레벨 공은 MVP에서 서로 물리 충돌하지 않는다.
 8. 공이 패들 아래 점수 구역으로 떨어지면 실패가 아니라 Cashout이며, 활성 Stage에서는 해당 공의 점수와 Time Bonus를 획득한다.
 9. 점수는 2배 보존 방식이 아니라 레벨마다 100배, 1,000배 등 의도적으로 폭증하며 데이터에 직접 정의한다.
-10. 각 스테이지는 4개의 로컬 레벨을 가진다.
+10. 각 스테이지는 5개의 로컬 공을 가진다.
 11. 현재 스테이지 최고 공을 처음 만들면 `SCALE SHIFT`가 발생한다.
 12. 이전 스테이지의 최고 공은 다음 스테이지의 기본 공이 된다.
 13. 스테이지가 오를수록 기본 공 생성량이 증가한다.
 14. Ground, Planetary, Galactic의 3개 스테이지를 목표로 한다.
-15. 마지막 Galactic 스테이지에서 Lv14 `Black Hole` Snowball이 최고 공이며, 별도의 상단 Black Hole 맵 기믹은 좌우로 이동하며 공에 약한 인력을 가한다.
+15. 마지막 Galactic 스테이지의 최고 공은 Black Hole과 분리된 Lv14 최종 Snowball이며, Galactic 내부 Black Hole 최종 국면 맵 기믹은 좌우로 이동하며 공에 약한 인력을 가한다.
 16. 고레벨 합체와 회수는 강한 파티클, 점수 팝업, 화면 흔들림과 짧은 히트스톱으로 강조한다.
 17. Blizzard, Fire Core, Magnet 아이템은 이후 단계에서 추가한다.
 18. 16:9 전체가 플레이 영역이 아니다. 실제 공 시뮬레이션은 중앙의 세로형 Play Field에서만 일어난다.
@@ -39,7 +39,7 @@ Godot 4.x로 브라우저에서 실행 가능한 2D 액션 머지 게임 **Snowb
 27. Time Up 시 활성 공을 Final Settlement하며 Score만 더하고 Time Bonus는 주지 않는다.
 28. Time Up 후 final Stage score가 clear_score 이상이면 다음 Stage, 미달이면 Run End다.
 29. 성공한 Stage는 Settlement 이후 Scale Shift로 다음 Stage에 진입한다.
-30. 마지막 Galactic Stage는 Time Up 또는 Black Hole 생성 후 Final Settlement와 Result로 종료한다.
+30. 마지막 Galactic Stage는 Time Up 또는 Lv14 최종 Snowball 생성 후 Final Settlement와 Result로 종료한다. Black Hole 기믹 발동 자체는 Result가 아니라 같은 Galactic gameplay의 L3 국면으로 전환한다.
 31. Time Up은 같은 physics tick의 Merge와 Active Cashout을 먼저 반영한 뒤 판정한다. Cashout으로 시간이 양수가 되면 플레이를 계속한다.
 32. 같은 tick에서는 Top Ball Clear가 Time Up보다 우선한다.
 33. 모든 점수 이벤트는 `stage_score`와 `run_score`에 같은 amount를 한 번씩 더하며 Stage 종료 시 `run_score += stage_score`를 하지 않는다.

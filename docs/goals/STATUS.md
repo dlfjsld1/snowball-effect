@@ -32,7 +32,7 @@
 | S1-G4 최소 HUD | Presentation | VERIFIED | `score_changed`/`ball_count_changed` read-only 구독과 `reset_view()` 구현. Godot 4.7.1 자동검증 exit 0: stage/run 1회 표시, balls 1 표시, HUD reset 후 Core state 불변. Primary `godot` validate 4/4. |
 | S1-G5 Pause·Restart 요청 UI | Content/Systems | VERIFIED | `pause_requested`/`retry_requested` request-only UI와 paused label 상태 구현. Godot 4.7.1 자동검증 exit 0: input pause 1회, button retry 1회, SceneTree/gameplay 직접 변경 없음. Primary `godot` validate 4/4. |
 | S1-G6 Pause·Restart 통합 | Integration | VERIFIED | 2026-08-09 최신 clean Web release export를 사용자의 실제 Chrome 수동 플레이로 검증. Canvas, Mouse X direct 이동, Mouse Wheel 자유회전, A/D 이동, A/D release 뒤 위치 유지, 다음 실제 MouseMotion에서만 Mouse control 복귀, Paddle 이동/회전 충돌, Pause/Retry가 정상이며 browser console game error 0. |
-| S2-G1 공·점수 데이터 | Content/Systems | VERIFIED | 2026-08-11 최신 기획 카탈로그: Lv0~14의 Snowflake→Black Hole, 점수 `1`→`1e50`, 물리 반지름 `2`→`32,768`, 질량 `1`→`268,435,456`, snake_case visual key, fx tier `0/1/2/3/4`를 Resource에 반영했다. `radius_scale`은 BallDefinition에서 제거하고 StageDefinition 전용 계약으로 유지했다. Primary `godot` validate 7/7 및 Main runtime 읽기 전용 검사에서 `count=15`, 오류 0, 마지막 Black Hole `1e50`을 확인했다. ScoreFormatter는 `1.00e+15`, `1.00e+36`, `1.00e+50`을 확인했다. 지정된 Godot CLI 경로는 현재 환경에 없어 headless baseline은 실행하지 못했다. Core의 기존 S1/S2 검증은 이전 `4→8` 반지름 기대값을 가지므로 해당 Owner가 새 계약으로 회귀 검증을 갱신해야 한다. |
+| S2-G1 공·점수 데이터 | Content/Systems | PENDING | 2026-08-12 제품 계약 변경으로 재검증 필요. 2026-08-11에는 당시 계약인 Lv0~14 Snowflake→Black Hole Resource와 `count=15`, score/radius/mass/fx tier를 Primary `godot`에서 검증했으나, 최신 계약은 Lv6 Sun/Lv7 Red Giant/Lv9 Nebula/Lv10 Galaxy/Lv14 `Final Snowball (working title)`이며 Black Hole은 Ball이 아닌 Galactic 최종 국면 기믹이다. 현재 Resource는 이 최신 catalog와 아직 불일치한다. 이전 실행 Evidence는 역사 기록으로 보존하며, Content/Systems가 Owned Files에서 catalog를 맞추고 CLI/MCP/runtime을 다시 검증하기 전 `VERIFIED`로 올리지 않는다. |
 | S2-G2 같은 레벨 후보 탐색 | Core | VERIFIED | 2026-08-11 중앙 SoA의 `global_levels`와 read-only `BallCatalog` instance API를 사용한다. Primary `godot` Main runtime에서 같은 Lv0 overlap 후보 `(0,1),(0,3),(1,3)`, 다른 Lv1 제외, 반복 query 동일, index 1 deactivate 뒤 `(0,3)`만 남음을 확인했고 validate 3/3 통과. 실제 Merge commit은 S2-G3 범위. |
 | S2-G3 결정적 Merge commit | Core | VERIFIED | 2026-08-11 mass-weighted velocity를 `maximum_ball_runtime_speed=900`으로 한 번 제한한다. Primary `godot` Main runtime에서 Lv0 pair가 midpoint Lv1 하나로 합쳐지고 velocity `(50,50)`을 계승, 같은 tick의 Lv1 재합체는 없고 다음 commit에서만 발생, 2000 world units/s pair는 900으로 제한, Lv13 pair의 Lv14 생성은 `top_ball_created(14)` 1회를 확인했다. simulation/S2-G3/S2-G2/S1-G3/S1-G1 validate 5/5 통과 및 runtime error 0. |
 | S2-G4 Score formatter | Content/Systems | VERIFIED | 2026-08-10 `format_score(value)` pure API로 0, K/M/B/T 경계, 반올림 승격, `1e36` 과학 표기와 NaN/Infinity 방어를 자동 검증. Godot 4.7.1 headless exit 0, Primary `godot` MCP validate 3/3. |
@@ -63,6 +63,7 @@
 | S8-G2 최종 Stage Clear runtime | Core | PENDING | S8-G1/S3 필요 |
 | S8-G3 Title·Result·Retry UI | Content/Systems | PENDING | S8-G2 snapshot schema 필요 |
 | S8-G4 Final Result·Retry 통합 | Integration | PENDING | S8-G2/G3와 모든 reset API 필요 |
+| S8-G5 Black Hole Phase presentation | Presentation | PENDING | S5-G4 Frame/Field 계약과 S8-G1 phase signal 필요 |
 | S9-G1 Release tuning·telemetry | Content/Systems | PENDING | S6/S8 완료; S7 선택 |
 | S9-G2 Web export·browser QA | Content/Systems | PENDING | S9-G1과 통합 RC 필요 |
 | S9-G3 Public link·submission | Content/Systems | PENDING | S9-G2와 hosting 필요 |
@@ -73,6 +74,7 @@
 - S1-G1/G3/G4/G5는 기존 `VERIFIED`를 유지한다.
 - S1-G2는 Mouse/Keyboard arbitration과 large-ball direct-sweep overlap 회귀까지 `VERIFIED`다.
 - S1-G6은 최신 clean Web export의 사용자 Chrome 수동 검증까지 완료해 `VERIFIED`다. S1 Shared Skeleton이 닫혔다.
-- S2-G1 공·점수 데이터와 S2-G2 같은 레벨 후보 탐색은 `VERIFIED`다.
-- S2-G3 결정적 Merge commit도 `VERIFIED`다. 다음 가능한 기존 Goal은 Presentation의 S2-G5 Merge 표시 통합이며, Core는 S3-G1 Stage 데이터가 준비될 때 S3-G2를 시작할 수 있다.
+- S2-G1은 2026-08-12 catalog 변경으로 `PENDING`에 되돌렸다. 기존 검증은 당시 구현의 역사 Evidence이며 최신 Lv14/Black Hole 분리 계약을 증명하지 않는다.
+- S2-G2와 S2-G3의 동일 레벨 후보/결정적 commit 증거는 유지한다. `ball_merged(result_level, world_position)`는 2인자 계약이다. 비연속 Stage progression(`6→8→10`)은 S5-G2에서 현재 `StageDefinition.local_ball_levels` lookup으로 추가 검증한다.
+- 다음 가능한 Presentation Goal은 S2-G5이며, S3-G6에는 Stage 이름과 세로 5칸 progressive genealogy가 추가됐다. Black Hole Phase 전용 Presentation은 S8-G5에서 수행한다.
 - 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.

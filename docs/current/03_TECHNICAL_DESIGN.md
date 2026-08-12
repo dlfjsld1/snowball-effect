@@ -78,7 +78,7 @@ Paddle
 
 ItemManager
  ├─ 아이템 생성
- ├─ 패들 획득 판정
+ ├─ Ball 충돌·내구도 기반 획득 판정
  └─ 활성 효과/지속시간
 
 EffectManager
@@ -375,6 +375,8 @@ if positions[a].distance_squared_to(positions[b]) <= min_distance * min_distance
     request_merge(a, b)
 ```
 
+Merge commit은 현재 `StageDefinition.local_ball_levels`에서 입력 `global_level`의 index를 찾고 다음 항목을 결과 level로 사용한다. 기본 Run은 Planetary `[4, 5, 6, 8, 10]`처럼 비연속 사슬을 허용하므로 `global_level + 1`을 결과로 계산하지 않는다. 입력 level이 현재 Stage 목록에 없거나 마지막 항목이면 요청을 거부한다.
+
 ### 속도
 
 Merge 결과 velocity는 두 입력의 mass-weighted average를 사용한다.
@@ -539,7 +541,7 @@ scale shift: up to about 0.8~1.0s
 ### 획득
 
 - Item Ball과 logical Snowball의 원 충돌 후보를 중앙 simulation 위치 snapshot으로 검사
-- `local_level = ball.global_level - current_stage.base_global_level`로 계산
+- `local_level = current_stage.local_ball_levels.find(ball.global_level)`로 계산하며 `-1`은 Stage data/runtime 오류로 처리
 - `local_level >= 2`인 접촉만 유효 damage; 더 높은 단계도 같은 규칙으로 damage 가능
 - 한 contact pair는 분리되기 전까지 damage 한 번만 commit
 - 유효 hit마다 damage count를 올리고 Presentation에 균열 단계 이벤트 전달
@@ -568,7 +570,7 @@ scale shift: up to about 0.8~1.0s
 
 BackgroundManager가 시각 블랙홀과 논리 위치를 제공한다.
 
-이 블랙홀은 마지막 Galactic Stage에서만 활성화하는 맵 기믹이며, Lv14 `Black Hole` BallDefinition과 별개의 런타임 요소다.
+이 블랙홀은 마지막 Galactic Stage의 최종 국면에서만 활성화하는 맵 기믹이며 BallDefinition과 별개의 런타임 요소다. 활성화는 Stage 변경이 아니라 같은 Galactic Stage 안의 `Black Hole Phase Transition`이다.
 
 ```gdscript
 func get_black_hole_position() -> Vector2
@@ -602,7 +604,7 @@ StageDefinition
 - display_name
 - base_global_level
 - top_global_level
-- local_ball_levels (Stage별 5~6종; 이전 Stage top과 다음 Stage base 중복 허용)
+- local_ball_levels (Stage별 정확히 5종의 ordered global ID; 이전 Stage top과 다음 Stage base 중복, 비연속 ID 허용)
 - base_time
 - clear_score
 - time_bonus_by_local_level
@@ -623,9 +625,9 @@ ItemDefinition
 초기에는 `.tres` 또는 GDScript Resource를 사용한다.  
 밸런스 값이 여러 코드에 중복되지 않게 한다.
 
-초기 BallCatalog는 중복을 제외한 global 공 15종을 목표로 한다. 15는 밸런스 공식이 아니라 첫 콘텐츠 제작 범위이며, 플레이테스트 결과에 따라 데이터 수를 줄일 수 있다. Stage별 5~6종의 테마 구성과 global catalog의 연결은 `StageDefinition`에서 관리한다.
+초기 BallCatalog는 global 0~14의 15종을 유지한다. 기본 Run의 Stage chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`이며 Lv7·Lv9는 catalog에는 있으나 비활성이다. 15는 밸런스 공식이 아니라 첫 콘텐츠 제작 범위이며, 플레이테스트 결과에 따라 데이터 수를 줄일 수 있다. Stage별 구성과 global catalog의 연결은 `StageDefinition.local_ball_levels`에서 관리한다.
 
-HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallCatalog`의 visual key와 display name을 읽어 표시한다. 별도의 Merge progression 사본이나 `NEXT` Spawn queue를 만들지 않는다. `stage_changed(stage_definition)`을 받을 때 목록을 한 번 갱신하고, HUD가 Merge 결과나 Stage 데이터를 수정하지 않는다.
+HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallCatalog`의 visual key와 display name을 읽어 세로 5칸에 표시한다. Stage 진입 시 `revealed_count = 1`이고, 새 local 공이 처음 생성될 때 Core가 `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)`를 보낸다. Presentation은 앞에서부터 `revealed_count`개만 출력하고 나머지 슬롯의 아이콘·이름은 숨긴다. 별도의 Merge progression 사본이나 `NEXT` Spawn queue를 만들지 않으며 HUD가 Merge 결과나 Stage 데이터를 수정하지 않는다.
 
 현재 S1의 Lv1 Spawn speed와 runtime speed cap은 공통 physics tuning이다. Mouse position은 직접 매핑하므로 movement speed cap을 사용하지 않는다. Paddle contact impact cap, ball reflection speed cap, rotation collision tolerance와 최대 rotation substep 수는 서로 다른 tuning이며 확정 디자인값이 아니다. 향후 BallDefinition override를 추가하더라도 runtime velocity를 지속적으로 고정하는 용도로 사용하지 않는다.
 
@@ -637,7 +639,7 @@ HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallC
 
 ```gdscript
 signal cashout_completed(score_amount: float, time_bonus: float, world_position: Vector2, ball_level: int)
-signal ball_merged(new_level: int, world_position: Vector2)
+signal ball_merged(result_level: int, world_position: Vector2)
 signal highest_level_changed(new_level: int)
 signal stage_timer_changed(time_left: float)
 signal stage_time_up(stage: int)
@@ -648,6 +650,9 @@ signal stage_clear_completed(stage: int, reason: StringName)
 signal stage_failed(stage: int)
 signal stage_shift_started(from_stage: int, to_stage: int)
 signal stage_shift_completed(stage: int)
+signal stage_ball_progression_changed(stage_id: int, ordered_global_levels: PackedInt32Array, revealed_count: int)
+signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
+signal black_hole_phase_presentation_finished(phase_id: int)
 signal item_planet_damaged(item_type: int, current_hits: int, required_hits: int, world_position: Vector2)
 signal item_planet_broken(item_type: int, world_position: Vector2)
 signal item_collected(item_type: int)

@@ -23,7 +23,8 @@
 - StageDefinition의 `visual_radius_scale`로 렌더 크기 보정
 - 새 기본 레벨보다 낮은 공 정리
 - 좌우 Stage World 배경 전환
-- HUD 공 족보를 새 Stage의 local 공 5~6종으로 교체
+- HUD 공 족보를 새 Stage의 local 공 5종 세로 목록으로 교체하고 첫 공만 공개
+- Stage 이름(`Ground`/`Planetary`/`Galactic`)을 persistent HUD에 갱신
 - Retro Pixel Arcade Machine의 Stage 상태 변화
 - `SCALE SHIFT` 발표
 - Time Up Score Clear 후에도 동일한 Scale Shift 진입
@@ -37,10 +38,10 @@ Ground:
 base 0, top 4, spawn 6/s
 
 Planetary:
-base 4, top 9, spawn 15/s
+levels [4, 5, 6, 8, 10], spawn 15/s
 
 Galactic:
-base 9, top 14, spawn 35/s
+levels [10, 11, 12, 13, 14], spawn 35/s
 ```
 
 ---
@@ -55,7 +56,7 @@ base 9, top 14, spawn 35/s
 6. Stage 데이터 변경
 8. 렌더 크기 스케일 재설정
 9. 배경 전환
-10. 새 Stage 공 족보 갱신
+10. 새 Stage 이름과 공 족보 갱신; 세로 5칸에서 첫 공만 공개
 11. 새 생성량 적용
 12. 시뮬레이션 정상화
 
@@ -69,6 +70,7 @@ base 9, top 14, spawn 35/s
 - 전환 후 기존 고레벨 공 인덱스와 정의가 깨지지 않음
 - `run_score`, 통계, 최고 기록은 유지
 - 새 Stage의 `stage_score`는 0, `stage_time`은 해당 Stage의 `base_time`으로 초기화
+- 새 공을 처음 만들 때만 해당 Stage 족보의 다음 아이콘·이름을 공개하고 이미 공개된 항목은 중복 갱신하지 않음
 - 새 기본 공이 화면상 너무 커 보이지 않게 정규화
 
 ---

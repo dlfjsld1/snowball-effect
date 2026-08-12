@@ -1,6 +1,6 @@
 # 09. Approved Visual Direction V4
 
-Status: APPROVED VISUAL DIRECTION — production and runtime remain Goal-gated  
+Status: SUPERSEDED BY [V5](10_APPROVED_VISUAL_DIRECTION_V5.md) — retained as 2026-08-11 visual history
 Approved by: User  
 Approved on: 2026-08-11  
 Owner: Presentation  
@@ -8,7 +8,7 @@ Working name: **Frozen Enamel Arcade / Slim Expanding Cabinet + Gameplay FX**
 
 ## 1. Adoption Statement
 
-2026-08-11 사용자는 V4 목업을 현재 디자인 제작의 기준으로 채택했다. 이전 문서의 구조·게임 계약은 유지하되, 시각 재질과 Frame 구성, Main/Pause 표현, 핵심 FX는 이 문서가 우선한다.
+2026-08-11 사용자는 V4 목업을 당시 디자인 제작 기준으로 채택했다. 2026-08-12 Ball catalog, HUD, Black Hole Phase가 정정되어 현재 제작 판단은 [V5](10_APPROVED_VISUAL_DIRECTION_V5.md)를 우선한다. V4의 재질·Main/Pause·핵심 FX 방향은 V5가 명시적으로 바꾸지 않은 범위에서만 유효하다.
 
 채택 범위는 다음과 같다.
 
@@ -62,13 +62,13 @@ HTML preview의 interactive state와 PNG는 visual reference다. 저장소에서
 | Initial | Ground gameplay | `Rect2(500, 0, 600, 900)` | 800 | 가장 압축된 캐비닛 |
 | L1 | Planetary gameplay | `Rect2(420, 0, 760, 900)` | 800 | 두 bezel이 80px씩 이동 |
 | L2 | Galactic gameplay | `Rect2(340, 0, 920, 900)` | 800 | 두 bezel이 다시 80px씩 이동 |
-| L3 | Final Result terminal | `Rect2(260, 0, 1080, 900)` | 800 | 외곽 anchor를 남긴 terminal profile |
+| L3 | Galactic Black Hole Phase gameplay | `Rect2(260, 0, 1080, 900)` | 800 | 기믹 발동 시 확장, gameplay 재개 |
 
 위 수치는 tuning seed다. Core/Content 측정 뒤 값이 바뀌더라도 `고정 중심 + 고정 폭 bezel 이동 + Field 동시 확장` 원칙은 유지한다. V4 HTML의 `65%/75%/85.7%/96%` rig 값은 목업 비교를 위한 CSS 값이며 runtime contract가 아니다.
 
 ### HUD relation
 
-- 왼쪽 bezel: Time, Stage Score/Target, Ball Progression, Run Score.
+- 왼쪽 bezel: Stage 이름, Time, Stage Score/Target, 세로 5칸 progressive Ball Progression, Run Score.
 - 오른쪽 bezel: active effects, Pause.
 - HUD panel 폭은 Stage Shift 중 보간해 넓히거나 줄이지 않는다.
 - HUD는 bezel과 함께 이동하되, 정보 계층과 내부 padding은 유지한다.

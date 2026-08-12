@@ -268,7 +268,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - 배경 블랙홀 이동
 - 전역 인력
 - 궤도 잔상
-- Lv14 Black Hole Snowball과 최종 결과 연결
+- Black Hole과 분리된 Lv14 최종 Snowball과 최종 결과 연결
 - 후반 생성량
 - 왜곡 또는 대체 연출
 
@@ -328,7 +328,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 1. Magnet
 2. Fire의 복잡한 전파 규칙
 3. Black Hole 왜곡 셰이더
-4. Lv14 Black Hole 이후의 확장 공 콘텐츠
+4. Lv14 최종 Snowball 이후의 확장 공 콘텐츠
 5. 개별 고급 공 텍스처
 6. 추가 사운드 레이어
 

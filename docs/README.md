@@ -70,7 +70,8 @@ PLAYING
 ### 데이터와 레이어 경계
 
 - `base_time`, `clear_score`, `time_bonus_by_local_level`은 `StageDefinition` 데이터다.
-- Time Bonus 초기값은 Local Lv0~5 순서로 `0s`, `0.25s`, `0.5s`, `1s`, `2s`, `4s`다. 최고 local 공은 즉시 Clear되므로 일반 Active Cashout 보너스를 실제로 받지 않는다.
+- Time Bonus 초기값은 Stage별 5종의 Local Lv0~4 순서로 `0s`, `0.25s`, `0.5s`, `1s`, `2s`다. 최고 local 공은 즉시 Clear되므로 일반 Active Cashout 보너스를 실제로 받지 않는다.
+- 기본 Stage chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7·Lv9는 catalog에는 있지만 기본 Run에서 비활성이고, Lv14 최종 공은 Galactic 내부 Black Hole 맵 기믹과 분리한다.
 - `clear_score` 초기값은 Ground `4e6`, Planetary `2e18`이다. 각각 최고 공보다 한 단계 낮은 Cashout 가능 공인 Giant Snowball 및 Supernova 점수의 4배이며, 마지막 Galactic Stage는 이 판정을 사용하지 않는다. 이는 런타임 공식이 아닌 플레이테스트 기준값이다.
 - 초기 시간 cap은 두지 않고 실제 획득 시간과 Stage 체류 시간을 먼저 측정한다.
 - Core는 Merge, Cashout, Time Bonus, Stage Timer, Settlement, Scale Shift다.

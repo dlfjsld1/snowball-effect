@@ -8,6 +8,8 @@
 
 # Snowball Effect — Codex Context Pack v1.4
 
+> **2026-08-12 전달본 주의 — 구현 판단에 사용 금지:** 이 합본은 최신 split 문서 재생성 전의 snapshot이며 내부에 구계약 표현이 남아 있다. 재생성 전까지 Ball catalog, 세로 progressive HUD, Galactic Black Hole Phase, Lv14/Black Hole 분리, 2인자 `ball_merged`를 포함한 모든 구현·리뷰 판단은 `02_GAME_RULES.md`, `03_TECHNICAL_DESIGN.md`, `../goals/`, `../team/INTEGRATION_CONTRACTS.md`를 우선한다.
+
 Godot 4 웹 게임 **Snowball Effect**를 Codex와 단계적으로 구현하고 OpenAI GAME BUILDERS SEOUL Track 1에 제출하기 위한 기획·기술·작업·제출 문서 세트다.
 
 ## 사용 순서
@@ -1191,7 +1193,7 @@ Galaxy → Galaxy Cluster → Supercluster → Quasar → Event Horizon → Blac
 
 ## 16. 아이템
 
-아이템은 패들이 바로 받아먹는 pickup이 아니다. 아이템을 품은 행성형 `Item Ball`로 Play Field에 등장하며, 현재 Stage의 **3단계 이상 Snowball**이 충돌할 때마다 점차 깨진다.
+아이템은 아이템을 품은 행성형 `Item Ball`로 Play Field에 등장하며, 현재 Stage의 **3단계 이상 Snowball**이 충돌할 때마다 점차 깨진다.
 
 - 사람 기준 3단계 이상은 데이터의 0-based 표기로 `local_level >= 2`다.
 - Stage가 local 공 4종이든 5종이든 3단계, 4단계, 5단계 공은 모두 유효 damage를 줄 수 있다.
@@ -3310,7 +3312,7 @@ Paddle
 
 ItemManager
  ├─ 아이템 생성
- ├─ 패들 획득 판정
+ ├─ Ball 충돌·내구도 기반 획득 판정
  └─ 활성 효과/지속시간
 
 EffectManager
@@ -3858,7 +3860,7 @@ HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallC
 
 ```gdscript
 signal cashout_completed(score_amount: float, time_bonus: float, world_position: Vector2, ball_level: int)
-signal ball_merged(new_level: int, world_position: Vector2, special_type: int)
+signal ball_merged(result_level: int, world_position: Vector2)
 signal highest_level_changed(new_level: int)
 signal stage_timer_changed(time_left: float)
 signal stage_time_up(stage: int)
@@ -6694,7 +6696,7 @@ DROPPED BALLS BECOME SCORE
 
 ## Web Export 필수 확인
 
-Release export 전에 [`../../team/GODOT_MCP_SETUP.md`](../../team/GODOT_MCP_SETUP.md)의 **Web Export Hygiene / Web Export 주의사항** 절차에 따라 MCP bridge를 종료하고 이전 산출물을 clean한다. MCP가 실행 중인 상태에서 생성한 build는 release 기준 build로 사용하지 않는다.
+Release export 전에 [`../team/GODOT_MCP_SETUP.md`](../team/GODOT_MCP_SETUP.md)의 **Web Export Hygiene / Web Export 주의사항** 절차에 따라 MCP bridge를 종료하고 이전 산출물을 clean한다. MCP가 실행 중인 상태에서 생성한 build는 release 기준 build로 사용하지 않는다.
 
 - Godot Web preset
 - public static hosting

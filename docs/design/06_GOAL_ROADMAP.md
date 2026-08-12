@@ -12,7 +12,7 @@ Source of truth for actual Goal status: `docs/goals/STATUS.md`
 
 - S1 minimum loop는 repository status상 완료된 기반이다.
 - 전체 next slice는 S2 Merge & Score다.
-- 현재 next implementation Goal은 Core `S2-G2`다.
+- S2-G2/G3/G4는 VERIFIED다. 최신 Ball catalog와 현재 Resource가 달라 S2-G1은 재검증 `PENDING`이다.
 - 다음 Presentation implementation Goal은 `S2-G5`다.
 - `S2-G5`는 Core의 `S2-G3` Merge events와 `S2-G4` score formatting API에 의존한다.
 - `S2-G4`는 repository status상 VERIFIED다.
@@ -25,10 +25,10 @@ Goal lane과 별도로, 구현 전 준비할 문서/시각 산출물이다.
 | Order | Deliverable | 결과 |
 |---:|---|---|
 | D0 | Design foundations + roadmap | 현재 문서 세트 |
-| D1 | 15등급 Ball visual bible + V4 Compression Bloom sheet | S2-G5 및 후속 catalog 기준; 숫자 popup은 amount 계약 대기 |
-| D2 | HUD Information Contract v1 + reflow board | S3-G6 scope 확정 |
+| D1 | 15등급 Ball visual bible + V5 Compression Bloom sheet | Lv14/Black Hole 분리, S2-G5 및 후속 catalog 기준; 숫자 popup은 amount 계약 대기 |
+| D2 | HUD Information Contract v2 + reflow board | Stage 이름 + 세로 5칸 progressive reveal, S3-G6 scope 확정 |
 | D3 | StagePlayFieldProfile cross-lane contract | dynamic bounds 구현 범위 확정 |
-| D4 | V4 slim bezel 7-beat Shift storyboard + Frame keyframes | S5-G4 production 기준 |
+| D4 | V5 slim bezel Shift + Black Hole Phase storyboard와 4개 Frame keyframe | S5-G4/S8-G5 production 기준 |
 | D5 | V4 Merge/Item/Milestone FX tier·reduced recipe·audio cue matrix | S6-G1~G4 기준 |
 | D6 | Frozen Enamel Main/Pause/Settings/Result visual handoff | Content UI 구현 지원 |
 | D7 | Web visual QA pack | S9 release evidence 지원 |
@@ -60,13 +60,13 @@ Integration inputs:
 - pure formatting API from S2-G4.
 - `score_changed(stage_score, run_score)` for persistent values.
 
-`03_TECHNICAL_DESIGN.md`의 초안 signal에는 `special_type` 인자가 있지만 S2 slice와 `INTEGRATION_CONTRACTS.md`는 2-argument `ball_merged`를 사용한다. S2-G3를 구현하기 전에 한 signature로 동기화한다.
+`ball_merged(result_level, world_position)`는 Technical Design, S2 slice, Integration Contract에서 동일한 **2인자 계약**으로 확정했다. score amount와 `special_type`은 이 event에 추가하지 않는다.
 
 추가 계약:
 
 - Merge가 실제 점수를 지급하면 `score_event_committed(event_id, source_type, amount, world_position)`처럼 amount와 위치가 함께 있는 authoritative event를 추가한다.
 - Merge가 점수를 지급하지 않으면 numeric popup을 만들지 않고 level-up text/burst만 사용한다. result Ball의 잠재 score를 획득 점수처럼 표시하지 않는다.
-- v1 Plan 1은 global 7/9를 건너뛰므로 장기 Merge API는 `StageDefinition.ball_global_levels`의 다음 항목을 결과로 반환해야 한다. 단순 `global_level + 1` 계약을 유지하려면 Plan 1을 구현할 수 없으므로 S2-G3 전에 game rules/task/slice 중 어느 시점에 이 lookup을 도입할지 명시한다.
+- 기본 Run은 global 7/9를 건너뛰므로 S5-G2 runtime은 `StageDefinition.local_ball_levels`의 다음 항목을 결과로 반환해야 한다. 기존 S2-G3 contiguous baseline evidence는 보존하되 Planetary `6→8→10`을 S5-G2에서 추가 검증한다.
 
 Do not include Stage transition, dynamic Frame, score calculation, or runtime speed changes.
 
@@ -91,11 +91,12 @@ Do not include Stage transition, dynamic Frame, score calculation, or runtime sp
 
 ### Presentation Goal: S3-G6
 
-`HUD Information Contract v1`은 디자인 기준으로 확정됐다.
+`HUD Information Contract v2`는 디자인 기준으로 확정됐다.
 
-- 필수: Stage Time, Stage Score/Clear Target, current Stage Ball Progression, Run Score, active effects, Pause action.
-- hierarchy: 왼쪽 Time→Stage Score/Target→Ball Progression→Run Score, 오른쪽 effect strip→Pause.
-- Stage name은 Shift/Stage start transient identity이고 persistent 필수 항목이 아니다.
+- 필수: Stage name, Stage Time, Stage Score/Clear Target, current Stage Ball Progression, Run Score, active effects, Pause action.
+- hierarchy: 왼쪽 Stage name→Time→Stage Score/Target→세로 Ball Progression→Run Score, 오른쪽 effect strip→Pause.
+- Stage name은 `Ground`/`Planetary`/`Galactic`을 persistent하게 표시한다.
+- Ball Progression은 세로 5칸 housing을 유지하고 Stage 진입 시 첫 공만 표시한다. 새 local 공의 최초 생성 event마다 다음 아이콘·이름을 한 번 공개하며 미발견 항목은 출력하지 않는다.
 - Ball Count와 highest Ball은 debug/result 정보로 이동한다.
 - Core/Content/Integration은 typed `RefCounted` `HUDViewState`, `BallProgressionEntry`, `ActiveEffectView`와 동등한 read-only payload를 제공한다.
 - HUD는 score/time/effect duration을 계산하거나 gameplay state를 변경하지 않는다.
@@ -106,7 +107,7 @@ Do not include Stage transition, dynamic Frame, score calculation, or runtime sp
 Deliverables:
 
 - approved left/right side-panel layout.
-- Initial/L1/L2/L3 HUD reflow board.
+- Initial/L1/L2/L3 HUD reflow board; L3는 Galactic Black Hole gameplay 상태.
 - normal/pressure/effect refresh/pause/clear/shift states.
 - time bonus 0 edge-state visualization.
 
@@ -128,7 +129,7 @@ Owned Files include background/presentation managers, backgrounds, effects, and 
 
 현재 S5 Goal set은 Stage World와 Shift presentation을 다루지만, **Stage별 logical Play Field 폭 변경을 명시적으로 소유하는 Goal이 없다.** 이 기능은 하나의 Presentation Goal에 암묵적으로 넣으면 안 된다.
 
-또한 현재 rules/S8은 4개 Stage를 전제로 하지만 승인된 v1 디자인은 Ground/Planetary/Galactic 3개 Stage와 Final L3 profile을 사용한다. S5/S8 구현 전에 Stage 수, top Ball, terminal route를 최신 결정으로 동기화한다.
+v1은 Ground/Planetary/Galactic 3개 Stage를 사용한다. Initial/L1/L2는 Stage 진입 profile이고, L3는 Galactic 안에서 Black Hole 기믹이 발동할 때 활성화되는 gameplay profile이다. Final Result를 네 번째 Frame 전환으로 취급하지 않는다.
 
 구현 전에 다음 중 하나로 Goal을 재구성한다.
 
@@ -138,7 +139,7 @@ Owned Files include background/presentation managers, backgrounds, effects, and 
 권장 분해:
 
 - Content profile Goal: `resources/stages/**`의 `StagePlayFieldProfile.active_rect: Rect2`, `profile_id`, visual keys와 `StageDefinition.play_field_profile` reference.
-- Content Ball extension Goal: global 7~14 BallDefinition과 Plan 1/Plan 2의 `ball_global_levels` data. 현재 VERIFIED S2-G1의 0~6 evidence를 덮어쓰거나 재사용하지 않는다.
+- Content Ball alignment: S2-G1에서 global 0~14를 최신 catalog(Lv6 Sun, Lv7 Red Giant, Lv9 Nebula, Lv10 Galaxy, Lv14 Final Snowball working title)로 맞추고 다시 검증한다. Black Hole visual/name을 Lv14 Resource에 사용하지 않는다.
 - Core bounds Goal: `scripts/core/stage_runtime.gd`를 coordinator로 두고 `scripts/simulation/ball_simulation_manager.gd`, `scripts/gameplay/paddle.gd`, `tests/simulation/**`, `tests/core/**`의 prepared/active Rect를 spawn·reflection·cashout·paddle clamp·mouse mapping에 원자적으로 적용.
 - Presentation Goal: `scripts/presentation/background_manager.gd`, `scripts/presentation/presentation_manager.gd`, `scenes/backgrounds/**`, `scenes/effects/**`, 승인된 `assets/backgrounds/**`에서 Frame + displayed field animation.
 - Integration Goal and lock: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`에서 Settlement → Shift → profile activation → next Stage wiring. `project.godot` 변경이 필요하면 lock 목록에 명시.
@@ -150,7 +151,7 @@ S5-G4는 animation이 gameplay state를 직접 바꾸지 않는 원칙을 유지
 | Producer | Signal/API | Consumer | Cadence / idempotency |
 |---|---|---|---|
 | Content StagePlayFieldProfile | `active_rect: Rect2`, `profile_id: StringName` | Core, Integration, Presentation | Stage data load 시 read-only |
-| Content StageDefinition | `ball_global_levels: Array[int]`, `play_field_profile` | Core, Integration, Presentation | Stage data load 시 read-only |
+| Content StageDefinition | `local_ball_levels: Array[int]`, `play_field_profile`, Galactic `black_hole_phase_profile` | Core, Integration, Presentation | Stage data load 시 read-only |
 | Core `StageRuntime` | `prepare_play_field_rect(target_rect, run_epoch, shift_id)` | Integration | shift당 1회, duplicate id safe |
 | Presentation `StageWorldPresenter` | `play_stage_shift(run_epoch, shift_id, from_rect, to_rect, frame_visual_key, background_key)` | Integration calls | shift당 1회; same identity 재호출은 중복 animation 금지 |
 | Presentation `StageWorldPresenter` | `stage_shift_presentation_finished(run_epoch, shift_id)` | Integration | 완료 시 exactly once; stale epoch reject |
@@ -160,7 +161,7 @@ S5-G4는 animation이 gameplay state를 직접 바꾸지 않는 원칙을 유지
 
 이 표는 구현 전 `INTEGRATION_CONTRACTS.md`와 재구성한 S5 Goals에 복사·승인해야 효력이 생긴다.
 
-L1/L2 완료 뒤에는 다음 Stage를 활성화하지만 final Clear의 L3는 terminal profile만 활성화하고 spawn·timer·input을 재개하지 않는다.
+L1/L2 완료 뒤에는 다음 Stage를 활성화한다. L3는 final Clear가 아니라 Black Hole phase event로 활성화하며 transition 동안만 정지한 뒤 같은 Galactic에서 spawn·timer·input을 재개한다. Lv14 최종 공 Clear는 L3 추가 Shift 없이 Result로 간다.
 
 ## 7. S6 — Game Feel
 
@@ -186,7 +187,7 @@ L1/L2 완료 뒤에는 다음 Stage를 활성화하지만 final Clear의 L3는 t
 
 ## 8. S7 — Optional Item Layer
 
-현재 S7과 task는 “낙하 item이 Ball과 충돌하지 않고 Paddle로 획득”을 전제로 한다. 승인된 방향은 “낙하 Item Box가 Ball을 완전 반사하고 durability가 0이 되면 item 획득”이므로 기존 S7-G1~G4를 시작하기 전에 재구성한다.
+현재 규칙의 아이템 획득은 Ball 충돌 기반 `Item Ball`이다. 디자인은 이 entity를 각진 `Item Box`/화물 캡슐로 표현하고 durability가 0이면 획득하는 방향이다. S7-G1~G4를 시작하기 전에 canonical entity name, reflection/damage, event payload와 Owned Files를 동기화한다.
 
 권장 Goal 분해:
 
@@ -228,7 +229,7 @@ Fire와 optional item은 계속 Core rules와 분리한다. Item Box가 없어�
 
 ## 9. S8 — Black Hole and Final Result
 
-승인된 v1은 별도 Black Hole Stage가 아니라 Galactic Stage의 top Ball `Black Hole`과 terminal L3 profile로 끝난다. 따라서 현행 `S8_BLACK_HOLE.md`의 moving Black Hole force와 4번째 Stage 전제는 v1 필수 경로에서 제거하거나 Plan 2 experiment로 옮겨야 한다. 실제 Goal 상태를 바꾸기 전에 game rules, technical design, slice를 함께 재승인한다.
+승인된 v1에서 Black Hole은 별도 Stage나 top Ball이 아니라 Galactic 안의 최종 국면 맵 기믹이다. 발동하면 `Black Hole Phase Transition`으로 L2 `920`→L3 `1080` Frame/Play Field를 함께 확장하고 같은 Stage gameplay를 재개한다. Lv14 `Final Snowball (working title)`을 만들면 추가 Frame Shift 없이 Final Settlement와 Result로 간다. Presentation 구현은 S8-G5, logical phase/force는 S8-G1, wiring은 S8-G4가 소유한다.
 
 ### Main/Result UI expansion
 
@@ -300,12 +301,12 @@ S2-G2 candidates
   → S3 Clear/Settlement Presentation Goal 재구성
   → S3 typed HUDViewState/BallProgression fixture + current S3-G6 재구성
   → S4 density evidence
-  → S5 7~14 Ball data + 3-Stage mapping + Stage profile contract
+  → S5 최신 0~14 Ball data + non-contiguous 3-Stage mapping + Stage profile contract
   → S5-G4 Frame / Stage World / Shift
   → S6 FX tiers / cut-in / audio readability
   ├─ S7 Item Box data → physics → gateway → presentation → optional effects
   └─ Main/Pause/Settings UI + Stage Restart snapshot + Result integration
-      → run_epoch stale-event rejection + terminal L3 / typed Final Result
+      → S8 Black Hole Phase L3 gameplay + run_epoch stale-event rejection + typed Final Result
   → S9 Web visual evidence
 ```
 
@@ -319,6 +320,6 @@ S2-G2 candidates
 
 ## 13. Recommended Next Presentation Goal
 
-현재 전체 next Goal은 Core `S2-G2`다. 다음 Presentation Goal은 `S2-G5`이며 Core S2-G3의 최종 Merge/event 계약과 VERIFIED S2-G4 formatter를 확인한 다음, 사용자가 runtime 구현을 명시적으로 승인했을 때만 시작한다.
+현재 S2-G2/G3/G4는 VERIFIED이고 S2-G1은 최신 catalog 재검증이 필요하다. 다음 Presentation Goal은 `S2-G5`이며 확정된 2인자 Merge event와 VERIFIED S2-G4 formatter를 사용한다. runtime 구현은 사용자가 명시적으로 승인했을 때만 시작한다.
 
-V4 채택으로 Presentation은 keyframe/state sheet 제작을 진행할 수 있지만 runtime Goal의 의존 순서는 바뀌지 않는다. 특히 Merge numeric popup은 authoritative amount event가 없으면 제외한다.
+V5 채택으로 Presentation은 keyframe/state sheet 제작을 진행할 수 있지만 runtime Goal의 의존 순서는 바뀌지 않는다. 특히 Merge numeric popup은 authoritative amount event가 없으면 제외한다.
