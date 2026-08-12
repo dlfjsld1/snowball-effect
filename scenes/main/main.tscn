@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
-[ext_resource type="Script" path="res://scripts/core/score_ledger.gd" id="2_ledger"]
+[ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
 [ext_resource type="Script" path="res://scripts/simulation/ball_simulation_manager.gd" id="3_simulation"]
 [ext_resource type="Script" path="res://scripts/simulation/ball_renderer.gd" id="4_renderer"]
 [ext_resource type="PackedScene" path="res://scenes/gameplay/paddle.tscn" id="5_paddle"]
@@ -15,12 +15,13 @@ process_mode = 3
 script = ExtResource("1_game_manager")
 simulation_path = NodePath("../PlayField/SimulationMount/BallSimulationManager")
 paddle_path = NodePath("../PlayField/PaddleMount/Paddle")
-score_ledger_path = NodePath("../ScoreLedger")
+stage_manager_path = NodePath("../StageManager")
 hud_path = NodePath("../UI/HUDMount/HUD")
 pause_menu_path = NodePath("../UI/PauseMenu")
 
-[node name="ScoreLedger" type="Node" parent="."]
-script = ExtResource("2_ledger")
+[node name="StageManager" type="Node" parent="."]
+script = ExtResource("2_stage_manager")
+simulation_path = NodePath("../PlayField/SimulationMount/BallSimulationManager")
 
 [node name="StageWorld" type="Node2D" parent="."]
 
