@@ -345,3 +345,27 @@ Locked files: 없음
 
 - 게임 코드, Scene, Resource, 테스트와 Goal 상태는 변경하지 않았다.
 - `git diff --check`를 통과했다.
+
+## 2026-08-12 — S3-G5 Stage clear/fail integration
+
+Owner: Integration
+Branch: `codex/s3-g5-clear-fail-integration`
+Locked files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`
+
+### 변경
+
+- Main에 `StageManager`를 연결했다. StageManager가 simulation의 독립 physics process를 멈추고 Stage time decrement → simulation step → pending Cashout/Top Ball arbitration 순서로 한 tick을 소유한다.
+- 종료 요청은 Top Ball의 `CLEAR_LOCKED→SETTLING→CLEARED`, Time Up의 `TIME_UP_LOCKED→SETTLING→CLEARED/FAILED`로 즉시 중재한다. Settlement snapshot은 public simulation state에서 한 번 만들고, 정산 뒤 해당 active slots만 제거한다.
+- GameManager는 임시 ScoreLedger 직접 연결 대신 StageManager의 shared ledger를 HUD에 전달한다. Retry는 StageManager를 통해 Ground, score, timer, simulation slot을 함께 초기화한다.
+- Stage data의 Ground spawn rate를 GameManager가 Stage change signal로 읽는다. Stage shift/다음 Stage 진입, HUD stage/time label, settlement presentation은 이후 S5/S3-G6 범위로 남겼다.
+
+### 확인
+
+- Godot 4.7.1 CLI headless: S3-G5 integration/S3-G4 settlement, S1-G1, S1-G3, Paddle reflection verification scene exit 0.
+- Primary `godot` validate: StageManager, GameManager, Main scene, S3-G5 integration script/scene 5/5 valid.
+- Primary Main runtime: Ground PLAYING에서 time/score 누적, keyboard Retry 후 `retry_count=1`·score 초기화·Ground timer 재시작을 확인했다. Manual Main probes는 Lv3 pair→Lv4 Top Ball Settlement `100000000`/CLEARED/active 0, time `0.03→-0.07` without Cashout→FAILED를 확인했고 runtime error 0이다.
+
+### 다음 작업 / 주의
+
+- S3-G6 Presentation이 Stage name, time, clear target, stage/run labels와 genealogy를 HUD에 표시해야 현재 임시 `STAGE {score}` 표기가 완전히 교체된다.
+- S5-G3 이후에만 다음 Stage/Scale Shift를 자동 진행한다. S3-G5는 Clear/Fail settlement state까지만 통합한다.

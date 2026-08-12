@@ -915,7 +915,7 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 | 13 | Event Horizon | 1.0e43 | `#3A1A61` | 3 |
 | 14 | Black Hole | 1.0e50 | `#10091F` | 4 |
 
-`base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. 기존에 확정한 Lv13 `1.0e43`, Lv14 `1.0e50` 점수는 팀장 원안의 순서에 따라 각각 `Event Horizon`, `Black Hole`에 유지한다. Lv0 반지름 `2`를 기준으로 레벨마다 반지름을 2배(`radius = 2 ^ (global_level + 1)`)로 사용한다. 이에 맞춰 질량은 Lv0의 `1`을 기준으로 레벨마다 4배(`mass = 4 ^ global_level`)를 사용한다. 따라서 아직 리소스가 없는 Lv7~14에도 두 규칙을 적용한다. 화면상 크기 보정은 BallDefinition이 아니라 StageDefinition의 `visual_radius_scale`이 소유하며, 물리 `radius`와 충돌 반지름을 바꾸지 않는다. visual key는 표시 이름의 snake_case(`gas_giant`, `galaxy_cluster`, `event_horizon`, `black_hole` 등)를 사용한다. 나머지 수치는 플레이테스트용이며 데이터에서 수정한다.
+`base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. 기존에 확정한 Lv13 `1.0e43`, Lv14 `1.0e50` 점수는 각각 `Event Horizon`, `Black Hole`에 유지한다. 실제 gameplay 공의 visual/collision 반지름은 현재 Stage의 local level로 계산한다. 각 Stage의 기본공은 반지름 `4`(지름 8 logical pixel)로 다시 시작하고 같은 Stage 안에서 `4 → 8 → 16 → 32 → 64`로 성장한다. Ground 최고공 Moon은 Planetary 기본공이 될 때, Planetary 최고공 Galaxy는 Galactic 기본공이 될 때 반지름 `4`로 초기화된다. BallDefinition의 기존 `radius`는 catalog/fallback seed이며 Stage runtime 크기의 source of truth가 아니다. 질량은 전역 데이터를 유지하고 visual key는 표시 이름의 snake_case를 사용한다.
 
 `fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Galaxy(Lv9)부터 Event Horizon(Lv13)은 3, 최종 Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. 현재 Stage의 최고 공 생성은 `fx_tier`와 관계없이 Stage Clear 연출을 우선한다.
 
@@ -2794,9 +2794,9 @@ Stage Shift 후 이전 최고 공이 다음 기본 공이 된다.
 
 > 공이 작아진 것이 아니라 카메라/관측 스케일이 더 멀리 줌아웃됐다.
 
-따라서 Stage마다 `visual_radius_scale`을 별도로 적용할 수 있다.
+전환 시 gameplay visual과 collision 크기를 함께 새 Stage의 local Lv0 반지름 `4`로 재정규화하고, 같은 Stage 안에서는 `4 → 8 → 16 → 32 → 64`로 성장한다.
 
-게임 규칙의 `global_level`과 화면상 크기를 동일 개념으로 취급하지 않는다.
+`global_level`은 공의 정체성과 점수 데이터를 유지하지만 화면 및 충돌 크기는 현재 Stage의 local level이 결정한다. `visual_radius_scale`은 향후 Scale Shift 화면 연출을 위한 예약값이며 gameplay visual과 collision을 서로 다르게 만드는 용도로 사용하지 않는다.
 
 ---
 
@@ -3241,7 +3241,7 @@ pending_priority_event
 - 1600×900 기준, 비율 유지
 - 데스크톱 브라우저 60 FPS 목표
 - 최소 성능 목표: 30 FPS 이상
-- 논리 공 1,000개 이상 스트레스 테스트
+- Web 동시 활성 논리 공 500개 필수 stress와 1,000개 stretch/torture 측정
 - 장식 파티클은 논리 공과 분리
 - 긴 프레임 스파이크를 최소화
 
@@ -3677,7 +3677,7 @@ func format_score(value: float) -> String
 
 로 위계를 만든다.
 
-스테이지마다 StageDefinition의 `visual_radius_scale`로 화면상 기본 반지름을 재정규화한다. BallDefinition의 `radius`는 전역 물리·충돌 크기이며 이 보정으로 변경하지 않는다.
+gameplay 공의 runtime 반지름은 `StageDefinition.local_ball_levels`에서 global level의 local index를 찾아 `4 * 2 ^ local_level`로 계산한다. 이 값은 renderer와 collision이 함께 사용한다. 따라서 Stage가 바뀌면 새 Stage의 local Lv0는 다시 반지름 `4`가 되고, 이전 Stage top과 같은 global 공이라도 새 Stage에서는 기본 크기로 시작한다. `visual_radius_scale`는 이후 Scale Shift 화면 연출용 예약값이며 visual/collision 불일치를 만드는 용도로 사용하지 않는다.
 
 ---
 
@@ -3830,7 +3830,7 @@ StageDefinition
 - clear_score
 - time_bonus_by_local_level
 - spawn_rate
-- visual_radius_scale (현재 Stage의 화면상 공 크기 보정; BallDefinition의 물리 radius는 변경하지 않음)
+- visual_radius_scale (향후 Scale Shift 화면 연출용 예약값; gameplay visual/collision radius는 local level 계산값을 함께 사용)
 - background_id
 - global_force_scale (explicit Stage effect only; not default downward gravity)
 - black_hole_enabled
@@ -3915,8 +3915,9 @@ EffectManager와 UI는 이 신호를 구독한다.
 
 ### Phase 3
 
-- 1,000개 논리 공
-- 30 FPS 이상
+- 실제 Web build의 동시 활성 논리 공 500개에서 최저 30 FPS 이상
+- 1,000개는 stretch/torture로 FPS·allocation·병목을 기록하되 필수 통과 기준으로 사용하지 않음
+- 일반 플레이 peak는 약 300개를 초기 가정으로 두고 후반 콘텐츠 통합 뒤 telemetry로 재산정
 - 전수 비교 없음
 - 프레임 스파이크가 반복되지 않음
 
@@ -4393,7 +4394,7 @@ base_time
 clear_score
 time_bonus_by_local_level
 spawn_rate
-visual_radius_scale  # 화면상 공 크기 보정; 물리 radius에는 영향 없음
+visual_radius_scale  # 향후 Scale Shift 화면 연출용 예약값; gameplay 크기는 local level 기준
 background_scene
 black_hole_enabled
 black_hole_strength
@@ -4647,8 +4648,9 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 
 ## 성능 게이트
 
-- 논리 공 1,000개
-- 웹 또는 데스크톱에서 30 FPS 이상
+- 실제 Web build의 동시 활성 논리 공 500개에서 최저 30 FPS 이상
+- 1,000개는 stretch/torture 결과와 병목을 기록하되 필수 통과 기준으로 사용하지 않음
+- 일반 플레이 peak 약 300개는 후반 콘텐츠 통합 뒤 telemetry로 재확인
 - 전수 비교가 없음
 - 활성 수 증가 시 프레임 시간이 완만하게 증가
 
@@ -6123,21 +6125,23 @@ max_active_balls
 
 ## 스트레스 시나리오
 
-1. 합체 비활성, 기본 공 1,000개
-2. 합체 활성, 1,000개
-3. 생성량 80/s, 30초
-4. 패들 이동·회전 지속
-5. 점수 구역에서 대량 제거
-6. 재시작 후 메모리와 공 수 정상화
+1. 합체 비활성, 기본 공 100/500개
+2. 합체 활성, 500개
+3. stretch/torture: 합체 비활성/활성 1,000개
+4. 생성량 80/s, 30초
+5. 패들 이동·회전 지속
+6. 점수 구역에서 대량 제거
+7. 재시작 후 메모리와 공 수 정상화
 
 ---
 
 ## 완료 조건
 
 - 전수 비교 제거
-- 1,000개 논리 공에서 데스크톱 30 FPS 이상
-- 가능하면 60 FPS 근접
-- 웹 빌드 또는 Web Export 테스트 가능
+- 실제 Web build의 동시 활성 논리 공 500개에서 최저 30 FPS 이상
+- 500개에서 가능하면 60 FPS에 근접
+- 1,000개 stretch/torture 결과와 병목 기록(30 FPS 미달은 필수 Gate 실패로 취급하지 않음)
+- Web Export와 실제 브라우저에서 측정
 - 반복 생성·제거에서 프레임 스파이크가 지속되지 않음
 - 후보 검사 수가 N²보다 현저히 적음
 - 결과가 Task 02 규칙과 동일
@@ -6153,6 +6157,8 @@ max_active_balls
 5. 저수준 RenderingServer
 
 처음부터 5번으로 가지 않는다.
+
+현재 동시 활성 공 규모의 초기 가정은 일반 플레이 peak 약 300개, release 검증 500개다. 후반 Stage·Merge·FX·Black Hole이 실제로 연결되면 telemetry로 peak를 다시 측정하며, 이 수치는 Spawn 총량이 아니라 한 frame에 살아 있는 active ball 수를 뜻한다.
 
 ---
 
@@ -6179,8 +6185,8 @@ max_active_balls
 - 최고 공 최초 생성 시 Stage Clear; Settlement 완료 후 다음 스테이지
 - 이전 최고 공 = 다음 기본 공
 - 생성량 증가
-- 화면상 크기 정규화
-- StageDefinition의 `visual_radius_scale`로 렌더 크기 보정
+- gameplay 공 크기 재정규화: 새 Stage local Lv0의 visual/collision 반지름을 `4`로 초기화
+- 같은 Stage 안에서는 local level에 따라 visual/collision 반지름을 `4 → 8 → 16 → 32 → 64`로 사용
 - 새 기본 레벨보다 낮은 공 정리
 - 좌우 Stage World 배경 전환
 - HUD 공 족보를 새 Stage의 local 공 5~6종으로 교체
@@ -6255,8 +6261,8 @@ base 9, top 14, spawn 35/s
 - Planetary는 천체 규모의 급격한 확대
 - Galactic은 화면/계기 밀도 증가
 - 후반 기계는 과부하처럼 보여도 실제 HUD와 조작 가독성은 유지
-- 이전 최고 공의 화면상 크기는 새 Stage 기준으로 재정규화
-- 재정규화는 Stage 데이터가 소유하며 BallDefinition의 물리 반지름을 변경하지 않음
+- 이전 최고 공은 새 Stage의 local Lv0가 되며 visual/collision 반지름 모두 `4`로 재정규화
+- runtime 크기의 source of truth는 현재 Stage의 ordered `local_ball_levels`이고, BallDefinition의 전역 `radius`는 catalog/fallback seed로만 사용
 
 ---
 

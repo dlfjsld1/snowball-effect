@@ -7,7 +7,7 @@
 - 1600×900 기준, 비율 유지
 - 데스크톱 브라우저 60 FPS 목표
 - 최소 성능 목표: 30 FPS 이상
-- 논리 공 1,000개 이상 스트레스 테스트
+- Web 동시 활성 논리 공 500개 필수 stress와 1,000개 stretch/torture 측정
 - 장식 파티클은 논리 공과 분리
 - 긴 프레임 스파이크를 최소화
 
@@ -456,7 +456,7 @@ func format_score(value: float) -> String
 
 로 위계를 만든다.
 
-스테이지마다 StageDefinition의 `visual_radius_scale`로 화면상 기본 반지름을 재정규화한다. BallDefinition의 `radius`는 전역 물리·충돌 크기이며 이 보정으로 변경하지 않는다.
+게임play 공의 runtime 반지름은 `StageDefinition.local_ball_levels`에서 global level의 local index를 찾아 `4 * 2 ^ local_level`로 계산한다. 이 값은 renderer와 collision이 함께 사용한다. 따라서 Stage가 바뀌면 새 Stage의 local Lv0는 다시 반지름 `4`가 되고, 이전 Stage top과 같은 global 공이라도 새 Stage에서는 기본 크기로 시작한다. `visual_radius_scale`는 이후 Scale Shift 화면 연출용 예약값이며 visual/collision 불일치를 만드는 용도로 사용하지 않는다.
 
 ---
 
@@ -619,7 +619,7 @@ StageDefinition
 - clear_score
 - time_bonus_by_local_level
 - spawn_rate
-- visual_radius_scale (현재 Stage의 화면상 공 크기 보정; BallDefinition의 물리 radius는 변경하지 않음)
+- visual_radius_scale (향후 Scale Shift 화면 연출용 예약값; gameplay visual/collision radius는 local level 계산값을 함께 사용)
 - background_id
 - global_force_scale (explicit Stage effect only; not default downward gravity)
 - black_hole_enabled
@@ -711,8 +711,9 @@ EffectManager와 UI는 이 신호를 구독한다.
 
 ### Phase 3
 
-- 1,000개 논리 공
-- 30 FPS 이상
+- 실제 Web build의 동시 활성 논리 공 500개에서 최저 30 FPS 이상
+- 1,000개는 stretch/torture로 FPS·allocation·병목을 기록하되 필수 통과 기준으로 사용하지 않음
+- 일반 플레이 peak는 약 300개를 초기 가정으로 두고 후반 콘텐츠 통합 뒤 telemetry로 재산정
 - 전수 비교 없음
 - 프레임 스파이크가 반복되지 않음
 

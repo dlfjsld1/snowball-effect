@@ -10,6 +10,7 @@ var _failures := 0
 
 
 func _ready() -> void:
+	simulation.configure_stage_ball_levels(PackedInt32Array([0, 1, 2, 3, 4]))
 	simulation.ball_merged.connect(_on_ball_merged)
 	simulation.top_ball_created.connect(_on_top_ball_created)
 	_verify_deterministic_merge_commit()
@@ -41,7 +42,7 @@ func _verify_deterministic_merge_commit() -> void:
 	if merged_index >= 0:
 		_expect(simulation.positions[merged_index].is_equal_approx(Vector2(103.0, 100.0)), "Merge output must use the midpoint of its two inputs.")
 		_expect(simulation.velocities[merged_index].is_equal_approx(Vector2(50.0, 50.0)), "Equal-mass inputs must produce their velocity average.")
-		_expect(is_equal_approx(simulation.radii[merged_index], 8.0), "Merge output must use the next BallDefinition radius.")
+		_expect(is_equal_approx(simulation.radii[merged_index], 8.0), "Merge output must use the next Stage-local radius.")
 
 	_expect(simulation.commit_merge_candidates() == 1, "The next tick may merge the deferred Lv1 pair exactly once.")
 	_expect(_merged_events.size() == 2, "The deferred merge must emit exactly one additional event.")

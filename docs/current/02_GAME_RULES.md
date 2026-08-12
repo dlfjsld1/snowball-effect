@@ -174,7 +174,7 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 | 13 | Event Horizon | 1.0e43 | `#3A1A61` | 3 |
 | 14 | Black Hole | 1.0e50 | `#10091F` | 4 |
 
-`base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. Lv0 반지름 `2`를 기준으로 레벨마다 반지름을 2배(`radius = 2 ^ (global_level + 1)`)로 사용한다. 이에 맞춰 질량은 Lv0의 `1`을 기준으로 레벨마다 4배(`mass = 4 ^ global_level`)를 사용한다. 화면상 크기 보정은 BallDefinition이 아니라 StageDefinition의 `visual_radius_scale`이 소유하며, 물리 `radius`와 충돌 반지름을 바꾸지 않는다. 나머지 수치는 플레이테스트용이며 데이터에서 수정한다.
+`base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. 실제 gameplay 공의 visual/collision 반지름은 현재 Stage의 local level로 계산한다. 각 Stage의 기본공은 반지름 `4`(지름 8 logical pixel)로 다시 시작하고, 같은 Stage 안에서 `4 → 8 → 16 → 32 → 64`로 2배씩 성장한다. 따라서 Ground의 최고공 Moon은 Ground에서 반지름 `64`지만 Planetary의 기본공으로 다시 등장할 때는 반지름 `4`이며, Planetary 최고공 Galaxy도 Galactic 진입 시 같은 방식으로 초기화된다. 화면과 충돌 반지름은 항상 같은 값을 사용한다. BallDefinition의 기존 `radius`는 catalog/fallback seed이며 Stage runtime 크기의 source of truth가 아니다. 질량은 전역 BallDefinition 데이터를 유지한다.
 
 `fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Nebula(Lv9)부터 Event Horizon(Lv13)은 3, Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. Ground/Planetary 최고 공은 Stage Clear 연출을, Galactic Lv14는 Black Hole Phase 전환 연출을 우선한다.
 

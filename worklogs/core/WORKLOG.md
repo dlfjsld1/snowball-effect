@@ -395,3 +395,136 @@ Branch: `codex/s3-g2-stage-runtime`
 
 - 다음 Core Goal은 S3-G3 tick 종료 중재다. 시간 차감, Merge/Top Ball, Cashout, Time Up 우선순위는 그 Goal에서 simulation과 연결한다.
 - S3-G2는 기존 Main cashout wiring을 변경하지 않았다. StageManager/HUD wiring은 Integration/Presentation 소유 Goal에서 수행한다.
+
+## 2026-08-12 — S3-G3 tick-end arbitration
+
+Owner: Core
+Branch: `codex/s3-g3-tick-arbitration`
+
+### 변경
+
+- `StageRuntime.process_tick(delta, top_ball_created, cashouts)`에 Stage time decrement 뒤 pending Cashout 반영, Top Ball 우선, Time Up 순서와 1회 `end_decision_requested(reason)` lock을 구현했다.
+- Stage 전환은 end lock을 초기화하므로 Integration StageManager가 settlement/shift 뒤 다음 Stage를 다시 시작할 수 있다.
+- Simulation Cashout signal의 두 번째 값은 임시 local level이 아니라 실제 `global_level`로 바꿨고, 첫 값은 임시 `base_cashout_score`가 아니라 BallDefinition의 base `score_value`로 바꿨다. StageRuntime이 현재 Stage의 local level을 계산하는 단일 책임을 유지한다.
+- Catalog 전체 최종 level이 아니라 StageRuntime의 `current_stage.top_global_level`로 현재 Stage Top Ball을 판단한다. GameManager/StageManager/HUD wiring은 변경하지 않았다.
+
+### 확인
+
+- Godot 4.7.1 CLI headless: S3-G3, S3-G2, S1-G3 verification scenes 모두 exit 0.
+- Primary `godot` validate: StageRuntime, simulation, S3-G3/S3-G2/S1-G3 verification artifacts 6/6 valid.
+- Primary runtime: `0.03 - 0.1 + 1.0 = 0.93s` Cashout recovery는 종료 요청 없이 PLAYING, Top Ball+expired time은 `TOP_BALL_CLEAR` 한 번, 이후 tick은 lock으로 무시됨을 확인했다. Lv3 Cashout은 score `1000000`, global level `3`, active count `0`, Main runtime error 0이다.
+
+### 다음 작업 / 주의
+
+- 다음 Core Goal은 S3-G4 Snapshot Settlement다. settlement 중복 방지와 base score-only 계산은 그 Goal에 남았다.
+- S3-G5 Integration이 simulation Cashout/merge 이벤트를 StageRuntime에 연결해야 실제 Main의 임시 1점 Ledger/HUD를 Stage 계약으로 교체할 수 있다.
+
+## 2026-08-12 — S3-G4 snapshot settlement
+
+Owner: Core
+Branch: `codex/s3-g4-snapshot-settlement`
+
+### 변경
+
+- `SettlementService`를 추가했다. `settle(snapshot)`은 각 snapshot entry의 `global_level`에서 BallCatalog base `score_value`만 읽고, snapshot에 포함된 cashout modifier나 임의 score 값은 사용하지 않는다.
+- 정산 직전에 `settlement_applied`를 잠가 중첩/재호출을 막고 `final_settlement_started(amount)` → score ledger 1회 반영 → `final_settlement_finished(amount)` 순서로 signal을 제공한다.
+- `reset_for_stage()`만 다음 Stage의 새 정산을 허용한다. 공 snapshot 확보·reserved/deactivate·제거는 Integration S3-G5가 simulation 경계에서 수행한다.
+
+### 확인
+
+- Godot 4.7.1 CLI headless: S3-G4, S3-G3, S3-G2 verification scenes exit 0.
+- Primary `godot` validate: SettlementService, Ledger, S3-G4 verification script/scene, S3-G3/G2 verification 6/6 valid.
+- Primary runtime: Lv0+Lv1+Lv4 snapshot은 base total `100000101`, 기존 score 10 뒤 stage/run 각각 `100000111`, 두 번째 call `0`, lifecycle signal 각 1회였다. Main runtime error 0.
+
+### 다음 작업 / 주의
+
+- 다음 가능 Goal은 Integration S3-G5 Clear·Fail 상태 통합이다. StageManager/GameManager/Main이 StageRuntime·SettlementService·simulation snapshot을 연결해야 실제 플레이에 Stage Timer, Clear/Fail, settlement이 나타난다.
+- Presentation S3-G6 Stage HUD는 S3-G2 signals를 소비해 병렬로 시작할 수 있다.
+
+## 2026-08-12 — S4-G1 Spatial Grid
+
+Owner: Core
+Branch: `codex/s2-g5-merge-presentation`
+
+### 변경
+
+- global level별 Uniform Spatial Grid를 추가하고 Merge 후보 탐색의 active-ball 전수 pair 비교를 제거했다.
+- 공 반지름과 같은 level의 최대 반지름으로 필요한 인접 cell 범위를 계산해 큰 공도 누락하지 않는다.
+- 후보 pair는 마지막에 index 순으로 정렬해 S2의 결정적 tie-break를 유지한다.
+- simulation은 read-only `candidate_count`와 `grid_cell_count` metric을 제공한다.
+
+### 확인
+
+- Primary `godot` validate 7/7.
+- Main runtime에서 기존 S2 후보 결과, 다른 level 분리, radius 64 다중-cell overlap, sparse 200공 검증을 통과했다.
+- 1,000공 단일 query에서 전수 499,500 pair 대신 candidate 2,760회, grid cell 440개, 2,942µs를 관찰했고 runtime error는 0이었다. 이 수치는 S4-G3 FPS 검증을 대신하지 않는다.
+- CLI/headless는 기존 환경의 `user://logs` open failure 뒤 Godot signal 11로 종료되어 Evidence에서 제외했다.
+
+### 다음 작업 / 주의
+
+- 다음 Core Goal은 S4-G2 슬롯 재사용·allocation 점검이다. Grid Dictionary/Array buffer 재사용과 physics hot path allocation은 그 Goal에서 측정·개선한다.
+
+## 2026-08-12 — S4-G2 슬롯 재사용·allocation 점검
+
+Owner: Core
+Branch: `codex/s2-g5-merge-presentation`
+
+### 변경
+
+- Spatial Grid의 level/cell bucket Array를 유지하고 매 rebuild에는 내용을 clear해 stable occupancy에서 재사용한다.
+- simulation hot path의 Merge candidate/plan/consumed flag, Cashout index/position, render snapshot buffer를 persistent buffer로 교체했다.
+- `simulation_metrics_updated(metrics)`와 read-only snapshot에 active/slot/free/grid candidate/cell/bucket 지표를 제공한다.
+- logical ball은 기존 중앙 SoA slot만 사용하며 FX/Node 생성을 추가하지 않았다.
+
+### 확인
+
+- 256공 deactivate 후 256공 respawn에서 slot capacity가 256으로 유지됐다.
+- 300공 stable occupancy를 120 physics step 반복한 뒤 grid bucket capacity가 증가하지 않았고 `grid_new_buckets=0`이었다.
+- Main runtime에서 active 300, per-ball child Node 0, 기존 S2 후보 3개와 Merge 1회 결과 유지, runtime error 0을 확인했다.
+- Primary `godot` validate 10/10. Godot 4.7.1 native headless에서 S4-G2/G1, S2-G2/G3, S1-G1/G3 회귀 6개 모두 exit 0.
+
+### 다음 작업 / 주의
+
+- 다음은 S4-G3 1,000공 stress다. FPS/physics time/allocation과 Desktop/Web 결과는 그 Goal에서 별도로 측정하며 이번 buffer 안정성 결과로 대신하지 않는다.
+
+## 2026-08-12 — S4-G3 1,000공 stress
+
+Owner: Core
+Branch: `codex/s2-g5-merge-presentation`
+
+### 변경
+
+- 100/500/1,000공과 Merge OFF/ON 시나리오를 같은 조건으로 반복 측정하는 `stress_test_scene`을 추가했다.
+- 결과 schema는 average/min FPS, average physics ms, candidate checks, merges, max active, memory delta, grid bucket growth다.
+- stress 전용 `merge_enabled` switch와 per-step `merges` metric을 Core simulation에 추가했다. 일반 gameplay 기본값은 ON이다.
+- Merge ON은 실제 Stage 밖 무한 global 성장으로 측정이 오염되지 않도록 Galactic `[10,11,12,13,14]` local radius 범위에서 측정했다.
+
+### 결과
+
+- Desktop: 100 OFF `60.0/60.0 FPS, 0.32ms`; 500 OFF `60.0/60.0, 1.70ms`; 1,000 OFF `58.7/55.0, 3.22ms`; 1,000 ON `35.8/34.0, 14.84ms`.
+- Web actual browser: 100 OFF `60.0/60.0 FPS, 0.58ms`; 500 OFF `52.1/38.6, 2.18ms`; 1,000 OFF `27.4/20.9, 4.39ms`; 1,000 ON `19.9/15.3, 19.57ms`.
+- Web Canvas 1280×720 focus 정상, console warning/error 0. Browser의 static memory monitor는 0을 반환해 allocation evidence는 Desktop delta와 S4-G2 bucket 안정성 기록을 사용한다.
+
+### 판정 / 다음 작업
+
+- Desktop 30 FPS 기준은 통과했지만 Web 1,000공이 기준 미달이라 S4-G3은 `IMPLEMENTED`로 유지한다.
+- Merge OFF physics는 4.39ms인데 전체 평균 frame은 약 36.5ms이므로 주요 병목 후보는 `BallRenderer`의 공별 `draw_circle` 1,000회다.
+- S5-G1을 시작하지 않는다. 현재 Goal 구조에는 renderer 최적화 Goal이 명시돼 있지 않으므로 계약 보완 또는 담당 범위 지시가 필요하다.
+
+## 2026-08-12 — S4-G3 performance Gate 재기준화
+
+Owner: Core
+Branch: `codex/s2-g5-merge-presentation`
+
+### 계약 변경과 판정
+
+- 승인된 공 크기와 예상 동시 활성 규모를 반영해 필수 release Gate를 실제 Web 500개 최저 30 FPS 이상으로 재설정했다.
+- 1,000개 측정은 삭제하지 않고 stretch/torture test로 유지하며, FPS·allocation·병목을 계속 기록한다.
+- 기존 clean Web 실측에서 500공은 평균 `52.1`, 최저 `38.6 FPS`, physics `2.18ms`, console warning/error 0으로 새 필수 Gate를 통과했다.
+- 1,000공 Web OFF `27.4/20.9 FPS`, ON `19.9/15.3 FPS`는 stretch 병목 evidence로 보존한다. 첫 후보는 공별 `draw_circle` 렌더 경로다.
+- S4-G3과 Q-S4를 `VERIFIED`로 닫았고 S4 Exit Gate가 충족되어 S5-G1 dependency가 열렸다.
+
+### 후속
+
+- 일반 플레이 peak 약 300개는 초기 가정이다. 후반 Stage·FX·Black Hole 통합 후 active-ball telemetry로 다시 확인한다.
+- 렌더 배치 등 추가 최적화 계약은 별도 기술 조사 결과가 들어오면 갱신하며 이번 재판정에서 runtime 구현은 변경하지 않았다.

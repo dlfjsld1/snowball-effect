@@ -310,7 +310,7 @@ base_time
 clear_score
 time_bonus_by_local_level
 spawn_rate
-visual_radius_scale  # 화면상 공 크기 보정; 물리 radius에는 영향 없음
+visual_radius_scale  # 향후 Scale Shift 화면 연출용 예약값; gameplay 크기는 local level 기준
 background_scene
 black_hole_enabled
 black_hole_strength

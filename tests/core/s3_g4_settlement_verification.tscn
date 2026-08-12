@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://tests/core/s3_g4_settlement_verification.gd" id="1_runner"]
+[ext_resource type="Script" path="res://scripts/core/score_ledger.gd" id="2_ledger"]
+[ext_resource type="Script" path="res://scripts/core/settlement_service.gd" id="3_settlement"]
+
+[node name="S3G4SettlementVerification" type="Node"]
+script = ExtResource("1_runner")
+
+[node name="ScoreLedger" type="Node" parent="."]
+script = ExtResource("2_ledger")
+
+[node name="SettlementService" type="Node" parent="."]
+script = ExtResource("3_settlement")

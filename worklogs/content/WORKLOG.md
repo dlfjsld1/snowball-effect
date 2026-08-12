@@ -242,3 +242,25 @@ Branch: `main` working tree
 
 - Core는 이제 read-only `StageCatalog.get_stage(index)`를 소비해 S3-G2 `enter_stage(definition)`와 stage-local Cashout/Time Bonus 처리를 구현할 수 있다.
 - 비연속 Planetary merge progression은 Stage runtime/Core가 `local_ball_levels` lookup으로 처리하는 후속 범위이며, 이 Goal에서는 StageManager나 runtime을 수정하지 않았다.
+
+## 2026-08-12 — S5-G1 Stage 콘텐츠 매핑
+
+Owner: Content/Systems/Release
+Branch: `codex/s2-g5-merge-presentation`
+
+### 변경
+
+- 기존 Stage/Ball Resource가 최신 S5 계약을 이미 충족하므로 balance 값이나 runtime 코드는 변경하지 않았다.
+- S5 전용 content verification을 추가해 세 Stage의 ordered 5종 chain, 이전 top/다음 base, spawn rate, neutral presentation scale, background key를 한 번에 검사한다.
+- Lv7 `Red Giant`와 Lv9 `Nebula`가 BallCatalog에는 남지만 기본 Run chain에는 없고, Lv14가 `Black Hole`/`black_hole`인지 함께 검사한다.
+
+### 확인
+
+- Godot 4.7.1 native headless S5-G1 verification scene exit 0.
+- Primary `godot` validate: S5-G1 script/scene과 S3-G1/S2-G1 regression scene 4/4 valid.
+- Primary Main runtime data query: Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`; spawn `6/15/35`; background `ground/planetary/galactic`; scale `1`; Lv7/Lv9 catalog 존재; Lv14 Black Hole을 확인했다. runtime error 0.
+
+### 다음 작업
+
+- 다음 순차 Core Goal은 S5-G2 Stage re-baselining runtime이다. Planetary 비연속 progression `6→8→10`, Stage별 base spawn, reset 누출 방지는 그 Goal에서 구현·검증한다.
+- Presentation S5-G4는 S5-G1 background key와 기존 Shift signal 계약을 소비해 병렬 진행할 수 있다.

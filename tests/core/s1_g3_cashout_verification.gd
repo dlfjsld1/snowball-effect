@@ -45,9 +45,9 @@ func _run_verification() -> void:
 	get_tree().quit(_failures)
 
 
-func _on_cashout_completed(_score_amount: float, local_level: int, _world_position: Vector2) -> void:
+func _on_cashout_completed(_score_amount: float, global_level: int, _world_position: Vector2) -> void:
 	_cashout_count += 1
-	_expect(local_level == 0, "S1 cashout local level must be zero.")
+	_expect(global_level == 0, "S1 cashout must report the ball's global level.")
 
 
 func _expect(condition: bool, message: String) -> void:

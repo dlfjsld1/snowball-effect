@@ -18,7 +18,7 @@
 | S1 | 생성→낙하→패들 반사→Active Cashout이 플레이 가능하다 | S0 | Task 01 |
 | S2 | 같은 레벨 공이 결정적으로 합체하고 데이터 점수가 반영된다 | S1 | Task 02 |
 | S3 | Stage Timer, Time Bonus, Clear, Settlement 계약이 동작한다 | S2 | Task 02.5 |
-| S4 | Spatial Grid 기반으로 논리 공 1,000개를 감당한다 | S2 | Task 03 |
+| S4 | Spatial Grid 기반으로 Web 동시 활성 500개 필수 부하를 감당하고 1,000개 stretch 병목을 측정한다 | S2 | Task 03 |
 | S5 | Ground→Planetary→Galactic Scale Shift가 완주 가능하다 | S3, S4 | Task 04 |
 | S6 | 이벤트 중요도에 맞는 읽기 쉬운 효과와 사운드가 적용된다 | S5 | Task 05 |
 | S7 | Optional Item Layer가 코어 계약을 바꾸지 않고 동작한다 | S5 | Task 06 |
