@@ -111,7 +111,7 @@
 - 스테이지 기본 단위 승격
 - 바닥 도달의 의미
 - Stage 구조
-- Black Hole 전역 인력
+- 마지막 Galactic Stage의 Black Hole 맵 기믹 전역 인력
 - 저레벨 공의 데이터 중심 처리
 
 ---

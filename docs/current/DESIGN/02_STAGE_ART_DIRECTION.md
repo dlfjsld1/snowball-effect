@@ -39,6 +39,7 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 - Snowball
 - Big Snowball
 - Giant Snowball
+- Moon
 
 눈송이는 몇 픽셀 수준의 작은 조각으로 시작한다.
 
@@ -66,10 +67,12 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 공
 
-- Giant Snowball
-- Lunar Snowball
-- Earth Snowball
-- Solar Snowball
+- Moon
+- Earth
+- Gas Giant
+- Sun
+- Supernova
+- Galaxy
 
 ---
 
@@ -96,16 +99,18 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 공
 
-- Solar Snowball
-- Nebula Snowball
-- Galaxy Snowball
-- Black Hole Snowball
+- Galaxy
+- Galaxy Cluster
+- Supercluster
+- Quasar
+- Event Horizon
+- Black Hole
 
 이 단계부터 파티클 포화가 눈에 띄게 증가한다.
 
 ---
 
-# Stage 3 — Black Hole
+## Galactic 최종 국면 — Black Hole 맵 기믹
 
 ## 목표 감정
 
@@ -121,7 +126,7 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 게임플레이
 
-블랙홀은 단순 배경이 아니다.
+블랙홀은 Lv14 `Black Hole` Snowball과 별개인 맵 기믹이며, 단순 배경이 아니다.
 
 - 좌우로 움직임
 - 실제 공 궤도를 약하게 끌어당김
@@ -136,10 +141,12 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 공
 
-- Black Hole Snowball
-- Big Bang Snowball
-- Universe Snowball
-- Multiverse Snowball
+- Galaxy
+- Galaxy Cluster
+- Supercluster
+- Quasar
+- Event Horizon
+- Black Hole
 
 ---
 

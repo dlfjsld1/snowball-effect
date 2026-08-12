@@ -47,7 +47,7 @@ These are deliberate product decisions and must not be changed without an explic
 - Creating a Stage's top ball immediately decides that the Stage is cleared; `SCALE SHIFT` occurs only after Final Settlement
 - The previous stage's top ball becomes the next stage's default falling ball
 - Spawn density increases as scale rises
-- Black Hole stage bends trajectories using a moving global attraction source
+- In the final Galactic Stage, a moving Black Hole map gimmick bends trajectories; it is separate from the Lv14 Black Hole Snowball
 - Gameplay balls and decorative particles are separate systems
 
 ---
@@ -91,7 +91,7 @@ These are core game rules.
 - Final Settlement uses one active-ball snapshot and must be idempotent.
 - After Time Up, advance only if the final Stage score meets that Stage's `clear_score`.
 - If the score target is not met, the run ends.
-- On the final Black Hole Stage, Time Up leads to the final result instead of another score-gated Stage.
+- On the final Galactic Stage, Time Up leads to the final result instead of another score-gated Stage.
 - `SCALE SHIFT` happens after a successful Stage clear and settlement.
 - The previous Stage's top ball becomes the next Stage's default falling ball.
 - On Stage entry, reset `stage_score` to 0 and `stage_time` to that Stage's `base_time`; preserve `run_score`, statistics, and records.

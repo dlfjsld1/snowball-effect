@@ -291,7 +291,6 @@ resources/balls/ball_00_snowflake.tres
 global_level
 display_name
 score_value
-radius_scale
 base_color
 texture
 fx_tier
@@ -311,6 +310,7 @@ base_time
 clear_score
 time_bonus_by_local_level
 spawn_rate
+visual_radius_scale  # 화면상 공 크기 보정; 물리 radius에는 영향 없음
 background_scene
 black_hole_enabled
 black_hole_strength

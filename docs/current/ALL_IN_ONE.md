@@ -1,6 +1,6 @@
 # Snowball Effect — Current Context (Generated)
 
-> Generated from the split documents in this directory on 2026-08-09. The split documents and repository `docs/goals/` remain authoritative.
+> Generated from the split documents in this directory on 2026-08-11. The split documents and repository `docs/goals/` remain authoritative.
 
 ---
 
@@ -94,7 +94,7 @@ These are deliberate product decisions and must not be changed without an explic
 - Creating a Stage's top ball immediately decides that the Stage is cleared; `SCALE SHIFT` occurs only after Final Settlement
 - The previous stage's top ball becomes the next stage's default falling ball
 - Spawn density increases as scale rises
-- Black Hole stage bends trajectories using a moving global attraction source
+- In the final Galactic Stage, a moving Black Hole map gimmick bends trajectories; it is separate from the Lv14 Black Hole Snowball
 - Gameplay balls and decorative particles are separate systems
 
 ---
@@ -138,7 +138,7 @@ These are core game rules.
 - Final Settlement uses one active-ball snapshot and must be idempotent.
 - After Time Up, advance only if the final Stage score meets that Stage's `clear_score`.
 - If the score target is not met, the run ends.
-- On the final Black Hole Stage, Time Up leads to the final result instead of another score-gated Stage.
+- On the final Galactic Stage, Time Up leads to the final result instead of another score-gated Stage.
 - `SCALE SHIFT` happens after a successful Stage clear and settlement.
 - The previous Stage's top ball becomes the next Stage's default falling ball.
 - On Stage entry, reset `stage_score` to 0 and `stage_time` to that Stage's `base_time`; preserve `run_score`, statistics, and records.
@@ -376,7 +376,7 @@ If the collaboration log was not updated, the task is not complete.
 - 점수는 단계마다 100배, 1,000배 등 의도적으로 폭증
 - 이전 스테이지 최고 공은 다음 스테이지 기본 공
 - 스테이지가 오를수록 기본 공 생성량 증가
-- 블랙홀 스테이지에서는 이동하는 블랙홀이 공의 궤도를 휨
+- 마지막 Galactic 스테이지에서는 Lv14 Black Hole Snowball과 별개인 이동 블랙홀 맵 기믹이 공의 궤도를 휨
 - 이펙트는 뱀파이어 서바이버처럼 포화되되, 중요한 이벤트가 묻히지 않게 계층화
 - 게임 규칙 공은 CPU 데이터, 장식 파티클은 GPU 파티클
 - 화면은 중앙의 세로 Play Field + 좌우 Stage World/기계 프레임 구조
@@ -576,7 +576,7 @@ Final Stage Score
 
 `Final Stage Score >= clear_score`면 성공.
 
-마지막 Black Hole Stage는 다음 Stage가 없으므로 Time Up 후 최종 결과로 이동한다.
+마지막 Galactic Stage는 다음 Stage가 없으므로 Time Up 후 최종 결과로 이동한다.
 
 ---
 
@@ -609,21 +609,18 @@ Snowball Effect라는 제목을 직접 체감시키는 핵심 장치다.
 ## 7. Stage 구성
 
 ### Ground
-Snowflake → Snowball → Big Snowball → Giant Snowball
+Snowflake → Snowball → Big Snowball → Giant Snowball → Moon
 
 ### Planetary
-Giant → Lunar → Earth → Solar
+Moon → Earth → Gas Giant → Sun → Supernova → Galaxy
 
 ### Galactic
-Solar → Nebula → Galaxy → Black Hole
-
-### Black Hole
-Black Hole → Big Bang → Universe → Multiverse
+Galaxy → Galaxy Cluster → supercluster → Quasar → Event Horizon → Black Hole
 
 초기 Spawn 테스트 방향:
 
 ```text
-6/s → 15/s → 35/s → 80/s
+6/s → 15/s → 35/s
 ```
 
 정확한 Stage 시간, `clear_score`, `time_bonus`는 플레이테스트 데이터로 조정한다.
@@ -784,6 +781,35 @@ Final Settlement:
 
 ---
 
+## 1.1 HUD와 일시정지
+
+플레이 중 HUD의 기본 정보는 다음과 같다.
+
+- 점수
+- 남은 시간
+- 현재 활성 아이템
+- 일시정지 진입 버튼
+- 현재 Stage 공 족보
+
+점수 영역 안에서 Stage Score와 Run Score를 어떻게 병기할지는 UI 튜닝 대상으로 두되, HUD의 최상위 정보 종류를 불필요하게 늘리지 않는다. 활성 아이템이 없을 때는 빈 슬롯 또는 비활성 상태로 표시한다.
+
+공 족보는 수박게임의 진화표처럼 현재 Stage의 local 공 5~6종을 낮은 단계부터 최고 단계까지 순서대로 보여준다. 플레이어가 같은 공 두 개를 합치면 다음에 어떤 공이 되는지 화면을 떠나지 않고 확인할 수 있어야 한다.
+
+- `local Lv0 → Lv1 → Lv2 → ... → Stage Top` 순서를 아이콘으로 표시한다.
+- 현재 Stage에 포함된 공만 표시하고 Scale Shift 시 다음 Stage 족보로 교체한다.
+- 족보는 Ball/Stage 데이터의 read-only 표현이며 Merge 결과를 직접 계산하거나 변경하지 않는다.
+
+일시정지는 게임 화면 위에 modal로 열리며 다음 행동을 제공한다.
+
+- 재개
+- 다시 시작
+- 설정
+- 메인 화면
+
+메인 화면은 기존 Title 화면 계획과 같은 진입 화면으로 취급한다. 정확한 Settings 항목과 Main 이동 시 Run 폐기 확인 방식은 해당 UI 구현 전에 확정한다. 현재 S1의 최소 Pause/Retry 구현이 이 확장 메뉴까지 완료된 것으로 간주하지 않는다.
+
+---
+
 ## 2. 조작
 
 | 키 | 기능 |
@@ -794,7 +820,13 @@ Final Settlement:
 | `→` | 패들 시계 방향 회전 |
 | `Esc` | 일시정지 |
 
-이동과 회전을 동시에 사용할 수 있다.
+마우스 A/B 플레이테스트에서는 가장 최근 Mouse X를 Viewport/Canvas transform을 통해 Play Field의 logical X로 변환하고, physics tick의 현재 Paddle X에 즉시 반영한 뒤 field clamp한다. Mouse 조작에는 target 추적 speed cap을 두지 않는다. Keyboard fallback은 기존 속도 기반 이동을 유지할 수 있으며, 입력 source와 Paddle simulation transform 계약을 분리한다.
+
+Mouse 직접 위치 반영은 무제한 타격 강도를 뜻하지 않는다. 반사에는 Mouse delta가 아니라 이전 physics tick의 Paddle transform과 이번 tick에 확정한 transform의 실제 변화로 계산한 simulation velocity를 사용하고, contact impact에는 별도 cap/tuning을 적용한다. 따라서 control responsiveness와 impact strength는 독립적이다.
+
+Mouse Wheel Up/Down은 각각 shared Paddle angle을 증가/감소시킨다. Wheel과 `←/→`는 같은 angle state를 변경하며, 회전 각도에는 최소/최대 clamp가 없다. 표현상 동등한 각도로 정규화할 수 있으나 플레이어는 양방향으로 계속 회전할 수 있다.
+
+`A/D`와 `←/→`는 비교용 fallback으로 유지한다. 키보드 이동과 회전은 동시에 사용할 수 있고, 마우스 이동과 Wheel 회전도 동시에 사용할 수 있다. 이 A/B 테스트는 최종 조작 체계를 확정하지 않는다.
 
 플레이어는 공을 받지 않고 일부러 지나가게 만들어 Cashout할 수도 있다.
 
@@ -803,11 +835,33 @@ Final Settlement:
 ## 3. 공 이동 / 반사
 
 - 현재 Stage의 기본 공이 Play Field 상단에서 생성된다.
-- 중력이 적용된다.
-- 좌우 벽에 반사된다.
-- 패들에 닿으면 패들 각도, 충돌 위치, 패들 이동의 영향을 받아 위쪽으로 반사된다.
+- 기본 공에는 지속적인 아래 방향 중력이 없으며 `gravity = 0`이다.
+- Spawn 시 아래쪽 반구를 향하는 초기 velocity를 받는다. 완전한 수직 하강일 필요는 없으며 좌우 성분의 범위와 분포는 tuning 대상이다.
+- 충돌이나 명시적인 gameplay effect가 없으면 현재 velocity의 방향과 speed를 유지한다.
+- 좌측·우측·상단 벽은 닫힌 반사 경계다. 해당 충돌 규칙이 별도로 speed를 바꾸지 않으면 충돌 전 speed를 유지한다.
+- 하단은 벽이 없는 열린 경계다. 아래 방향으로 통과한 공은 Active Cashout/제거 경로로 들어간다.
+- 공이 아래로 빠지는 이유는 중력이 아니라 Spawn 방향과 열린 하단 경계 때문이다.
+- Paddle은 양면 모두 유효한 충돌면이다. 어느 면이든 실제 접촉 normal과 상대속도를 기준으로 접근 중일 때만 반사한다.
+- 충돌은 현재 OBB 한 장의 overlap만 보지 않고, 한 physics tick의 이전/현재 Paddle transform과 공 trajectory 사이에서 가장 이른 연속 접촉을 찾는다.
+- 패들에 닿으면 패들 각도, 충돌 위치, Paddle 중심 이동속도와 회전에 따른 접촉점 표면속도의 영향을 받아 새로운 방향과 runtime speed를 얻을 수 있다.
+- Paddle hit은 공을 가속할 수 있지만 반복 타격의 무한 가속은 speed cap 또는 동등한 안전장치로 막는다. boost, min/max speed와 계산식은 tuning 대상이다.
 - 반사 결과는 현실 물리보다 예측 가능성을 우선한다.
-- 너무 느리거나 빠른 속도는 레벨별 범위로 제한한다.
+
+### Spawn speed와 runtime speed
+
+- `base_speed` 또는 Spawn speed는 생성 시 초기 speed를 정해 초기 방향과 velocity를 만드는 기준값이다.
+- 현재 Lv1 Shared Skeleton의 Spawn/base speed는 플레이테스트에서 너무 느린 것으로 확인되어 조정 대상이다. 일반적인 눈송이 낙하속도 약 `1.0 m/s`는 움직임의 현실 design reference일 뿐 Godot world unit과 직접 환산하지 않는다.
+- 공간은 `1 world unit = 1 logical pixel`, 시간은 second, 게임 속도는 world units/s로 다룬다. Lv1의 `spawn_speed_world_units_per_second`는 한 곳에서 조정하는 게임-space tuning 값이며, 현재 첫 플레이테스트 값은 `160 world units/s`다. 이 값은 viewport 높이·화면 통과시간·전역 meter scale에서 계산하지 않는다.
+- runtime velocity와 speed는 Paddle, 접촉 위치, 벽 규칙, Merge, Stage effect, Item, 특수 상태에 의해 달라질 수 있다.
+- 같은 등급의 공도 플레이 과정에 따라 서로 다른 runtime speed를 가질 수 있다.
+- 현재 버전은 `global_level`별 base speed 차이를 사용하지 않고 공통 Spawn tuning을 사용한다.
+- 향후 등급별 `base_speed`를 도입할 수 있지만 이는 생성 기준일 뿐 runtime speed 고정값이 아니다.
+
+### Lv1 크기와 초반 압박
+
+- Lv1은 거의 `.`처럼 읽히는 매우 작은 저해상도 픽셀 눈알갱이다. visual diameter와 simulation/collision diameter는 같은 값으로 시작한다.
+- 현재 Lv1 Shared Skeleton의 승인된 기본 크기는 약 8 logical pixel 직경이며, visual/collision 크기는 같은 값으로 유지한다. 이후 크기 변경은 별도 플레이테스트 결정으로만 수행한다.
+- 초반 압박은 거대한 Lv1 몇 개가 아니라 작은 공의 물량과 Paddle 이후 생길 수 있는 runtime speed 변화에서 온다.
 
 ---
 
@@ -825,7 +879,7 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 
 - 두 입력 공 제거
 - 중간 위치에 상위 공 생성
-- 평균 속도 방향을 기반으로 새 속도 계산
+- 결과 velocity의 방향·speed·계승 방식은 S2 Merge velocity 계약에서 별도로 확정
 - 다음 물리 프레임부터 재머지 가능
 - 점수 가치와 비주얼 레벨 상승
 - Stage 최고 공 여부 확인
@@ -841,23 +895,27 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 
 초기 예:
 
-| global_level | 이름 | score_value |
-|---:|---|---:|
-| 0 | Snowflake | 1 |
-| 1 | Snowball | 100 |
-| 2 | Big Snowball | 10,000 |
-| 3 | Giant Snowball | 1,000,000 |
-| 4 | Lunar Snowball | 100,000,000 |
-| 5 | Earth Snowball | 50,000,000,000 |
-| 6 | Solar Snowball | 10,000,000,000,000 |
-| 7 | Nebula Snowball | 1.0e15 |
-| 8 | Galaxy Snowball | 5.0e17 |
-| 9 | Black Hole Snowball | 1.0e21 |
-| 10 | Big Bang Snowball | 1.0e25 |
-| 11 | Universe Snowball | 1.0e30 |
-| 12 | Multiverse Snowball | 1.0e36 |
+| global_level | 이름 | score_value | `base_color` seed | `fx_tier` |
+|---:|---|---:|---|---:|
+| 0 | Snowflake | 1 | `#F4FCFF` | 0 |
+| 1 | Snowball | 100 | `#EAF8FF` | 1 |
+| 2 | Big Snowball | 10,000 | `#72D8FF` | 1 |
+| 3 | Giant Snowball | 1,000,000 | `#3A8DFF` | 1 |
+| 4 | Moon | 100,000,000 | `#C8C9D8` | 2 |
+| 5 | Earth | 50,000,000,000 | `#2878D4` | 2 |
+| 6 | Gas Giant | 10,000,000,000,000 | `#D79A57` | 2 |
+| 7 | Sun | 1.0e15 | `#FFC247` | 2 |
+| 8 | Supernova | 5.0e17 | `#FF6B35` | 2 |
+| 9 | Galaxy | 1.0e21 | `#4D42B8` | 3 |
+| 10 | Galaxy Cluster | 1.0e25 | `#805CFF` | 3 |
+| 11 | Supercluster | 1.0e30 | `#5E75F2` | 3 |
+| 12 | Quasar | 1.0e36 | `#E8E6FF` | 3 |
+| 13 | Event Horizon | 1.0e43 | `#3A1A61` | 3 |
+| 14 | Black Hole | 1.0e50 | `#10091F` | 4 |
 
-수치는 플레이테스트용이며 데이터에서 수정한다.
+`base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. 기존에 확정한 Lv13 `1.0e43`, Lv14 `1.0e50` 점수는 팀장 원안의 순서에 따라 각각 `Event Horizon`, `Black Hole`에 유지한다. Lv0 반지름 `2`를 기준으로 레벨마다 반지름을 2배(`radius = 2 ^ (global_level + 1)`)로 사용한다. 이에 맞춰 질량은 Lv0의 `1`을 기준으로 레벨마다 4배(`mass = 4 ^ global_level`)를 사용한다. 따라서 아직 리소스가 없는 Lv7~14에도 두 규칙을 적용한다. 화면상 크기 보정은 BallDefinition이 아니라 StageDefinition의 `visual_radius_scale`이 소유하며, 물리 `radius`와 충돌 반지름을 바꾸지 않는다. visual key는 표시 이름의 snake_case(`gas_giant`, `galaxy_cluster`, `event_horizon`, `black_hole` 등)를 사용한다. 나머지 수치는 플레이테스트용이며 데이터에서 수정한다.
+
+`fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Galaxy(Lv9)부터 Event Horizon(Lv13)은 3, 최종 Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. 현재 Stage의 최고 공 생성은 `fx_tier`와 관계없이 Stage Clear 연출을 우선한다.
 
 ---
 
@@ -900,16 +958,18 @@ Time Bonus를 BallDefinition의 고정값으로 저장하지 않는다.
 
 점수와 달리 시간은 완만하게 증가한다.
 
-초기 방향:
+초기값:
 
 | Stage 내 상대 등급 | time_bonus |
 |---|---:|
 | Base / Local Lv0 | 0s |
-| Local Lv1 | 소량 |
-| Local Lv2 | 의미 있는 시간 |
-| Local Lv3 | Stage Clear |
+| Local Lv1 | +0.25s |
+| Local Lv2 | +0.5s |
+| Local Lv3 | +1s |
+| Local Lv4 | +2s |
+| Local Lv5 | +4s |
 
-정확한 값은 플레이테스트한다.
+최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 따라서 Ground의 Moon(Local Lv4), Planetary의 Galaxy(Local Lv5), Galactic의 Black Hole(Local Lv5)은 표에는 있으나 일반 Cashout 대상이 아니다.
 
 목표:
 
@@ -960,7 +1020,6 @@ spawn_rate
 1. Ground
 2. Planetary
 3. Galactic
-4. Black Hole
 
 ---
 
@@ -972,9 +1031,9 @@ spawn_rate
 
 ```text
 Ground
-Snowflake → Snowball → Big → Giant
+Snowflake → Snowball → Big Snowball → Giant Snowball → Moon
 
-Giant Snowball Created
+Moon Created
 → STAGE CLEAR
 ```
 
@@ -1072,55 +1131,45 @@ Stage 성공 후 Settlement가 끝나면 Scale Shift.
 
 ## 14. Stage 구성
 
+각 Stage는 해당 세계관에 맞는 local 공 5~6종을 사용한다. 전체 Run의 초기 콘텐츠 목표는 중복을 제외한 global 공 15종이다. 이전 Stage의 최고 공이 다음 Stage의 기본 공으로 재사용되므로, Stage별 개수를 단순 합산한 값과 global 공 종류 수는 다를 수 있다.
+
+아래 이름은 현재 테마와 Scale Shift 연결을 보여주는 seed다. 최종 15종의 정확한 Stage 배분, 명칭, 반지름과 점수는 `BallDefinition`/`StageDefinition` 데이터로 확정하며 플레이테스트에서 종류가 과도하다는 피드백이 나오면 축소할 수 있다.
+
 ### Ground
 
 ```text
-Snowflake
-→ Snowball
-→ Big Snowball
-→ Giant Snowball
+Snowflake → Snowball → Big Snowball → Giant Snowball → Moon
 ```
 
 초기 Spawn: 약 `6/s`
 
+초기 `clear_score`: `4e6` (Giant Snowball 4개 Cashout 상당)
+
 ### Planetary
 
 ```text
-Giant
-→ Lunar
-→ Earth
-→ Solar
+Moon → Earth → Gas Giant → Sun → Supernova → Galaxy
 ```
 
 초기 Spawn: 약 `15/s`
 
+초기 `clear_score`: `2e18` (Supernova 4개 Cashout 상당)
+
 ### Galactic
 
 ```text
-Solar
-→ Nebula
-→ Galaxy
-→ Black Hole
+Galaxy → Galaxy Cluster → Supercluster → Quasar → Event Horizon → Black Hole
 ```
 
 초기 Spawn: 약 `35/s`
 
-### Black Hole
-
-```text
-Black Hole
-→ Big Bang
-→ Universe
-→ Multiverse
-```
-
-초기 Spawn: 약 `80/s`
+마지막 Stage이므로 `clear_score` 판정을 사용하지 않는다. 데이터 기본값은 `0`이다.
 
 정확한 Stage 제한 시간과 `clear_score`는 밸런스 데이터에서 정한다.
 
 ---
 
-## 15. Black Hole Stage
+## 15. Galactic 최종 Black Hole 기믹
 
 - 거대한 블랙홀이 좌우로 움직임
 - 모든 공에 약한 인력을 적용
@@ -1128,9 +1177,9 @@ Black Hole
 - 패들 조작의 의미를 없애지 않음
 - 공을 모아 연쇄 머지를 유도할 수도 있음
 
-마지막 Stage이므로:
+이 기믹은 Lv14 `Black Hole` Snowball과 별개의 맵 요소다. 마지막 Galactic Stage의 최고 공은 Lv14 `Black Hole` Snowball이며, 생성 시 다음 Stage 없이 Final Settlement와 Result로 진행한다.
 
-### Multiverse 생성
+### Black Hole 생성
 `MAX SCALE / PERFECT CLEAR → Final Settlement → Result`
 
 ### Time Up
@@ -1142,7 +1191,19 @@ Black Hole
 
 ## 16. 아이템
 
-아이템은 상단에서 떨어지고 패들이 직접 획득한다.
+아이템은 패들이 바로 받아먹는 pickup이 아니다. 아이템을 품은 행성형 `Item Ball`로 Play Field에 등장하며, 현재 Stage의 **3단계 이상 Snowball**이 충돌할 때마다 점차 깨진다.
+
+- 사람 기준 3단계 이상은 데이터의 0-based 표기로 `local_level >= 2`다.
+- Stage가 local 공 4종이든 5종이든 3단계, 4단계, 5단계 공은 모두 유효 damage를 줄 수 있다.
+- 유효 충돌 한 번당 파괴 hit를 한 번만 반영하고, 같은 접촉의 frame 중복 damage를 막는다.
+- hit가 누적될수록 균열·픽셀 파편 등 단계적인 damage 표현을 보여준다.
+- 필요한 hit 수는 `ItemDefinition`의 플레이테스트 tuning 값이다.
+- 마지막 hit에서 Item Ball 파괴와 아이템 획득을 한 번만 확정하고 CUT-IN을 요청한다.
+- CUT-IN의 activation cue에 맞춰 효과를 시작하되, 연출 실패가 아이템 유실이나 중복 적용을 만들지 않게 한다.
+- 1~2단계 공과 Paddle은 Item Ball을 즉시 획득하거나 파괴하지 않는다.
+- Item Ball은 일반 Snowball Merge 대상이 아니다.
+- Item Ball을 놓치면 효과 없이 제거한다.
+- 아이템 효과는 Optional Item Layer에 남으며 Core Merge/Settlement 계약을 바꾸지 않는다.
 
 ### Blizzard
 일정 시간 Spawn Rate 증가.
@@ -1221,6 +1282,66 @@ Cashout으로 얻는 평균 추가 시간이 소비 시간보다 너무 커서 �
 
 ### Endgame Chaos
 후반 자동 연쇄가 늘어도 실제 공과 패들이 읽히는가?
+
+### Known balancing observation — Vertical Paddle Keep strategy
+
+> **향후 플레이테스트 관찰용 메모이며 확정 게임 계약 또는 구현 지시가 아니다. Merge와 높은 Spawn density가 들어온 뒤 재검토한다.**
+
+현재 `gravity = 0`, 자유회전, 양면 Paddle 물리에서 다음 emergent play가 관찰됐다.
+
+```text
+Paddle을 거의 세로로 세움
++
+Mouse X로 좌우로 빠르게 흔듦
+→ Snowball들이 거의 수평으로 반사
+→ 일부는 조금씩 위로 이동
+→ Bottom Cashout을 상당히 오래 방지 가능
+```
+
+현재는 버그로 확정하지 않는다. Merge와 높은 Spawn density가 들어오면 공을 유지해 Merge를 노리는 숙련 KEEP 전략인지, KEEP vs CASHOUT 선택에 의미를 주는지, 또는 공 축적 위험이라는 trade-off가 생기는지를 먼저 플레이테스트한다.
+
+이후 `Vertical Paddle + 좌우 흔들기`가 대부분 상황에서 거의 무위험 최적해가 되면 dominant strategy / balancing issue로 재검토한다. 그 전에는 이를 막기 위해 gravity, minimum Y velocity, 수평 반사 금지, 세로 Paddle 페널티, 인위적인 downward bias를 추가하지 않는다.
+
+**상태: Known balancing observation / revisit after Merge + higher density.**
+
+### Future Stage Modifier candidate — Snowstorm / Wind Stage
+
+> **향후 후보 메모이며 확정 게임 계약, Stage Task, 구현 승인이 아니다.**
+
+후보 개념은 공통 Stage wind state가 Ball의 X축 운동에 영향을 주고, 바람 방향과 세기가 시간에 따라 변하는 Snowstorm / Blizzard Stage다. normal gravity는 계속 `0`으로 둔다. 바람은 주로 수평 운동에 영향을 주는 Stage effect로만 검토한다.
+
+매 physics frame마다 완전 랜덤한 값을 생성하지 않고, 몇 초 동안 유지·전환되는 gust interval을 후보로 둔다.
+
+```text
+calm
+→ weak right
+→ strong right
+→ fade
+→ left
+→ strong gust
+```
+
+향후 Presentation은 snow particle 방향, Stage World 효과, 배경/환경 움직임을 같은 wind state에 맞출 수 있다.
+
+Ball 크기/레벨별 영향 차이, 정확한 wind acceleration, gust 지속시간, Stage 번호·등장 위치, 난이도 보정, Merge와의 상호작용은 아직 결정하지 않는다.
+
+**상태: Future Stage Modifier candidate. 구현 승인 아님.**
+
+### Future Core Mechanic candidate — Paddle Charge / Spring Launch
+
+> **향후 후보 메모이며 확정 게임 계약, Task, 구현 승인이 아니다. Merge 및 Vertical Paddle Keep의 밸런스를 본 뒤 구현 여부를 결정한다.**
+
+후보 조작은 Paddle을 아래로 당겼다가 놓아 기준 Y로 실제 spring-back시키는 Charge / Spring Launch다.
+
+```text
+Mouse: paddle click + downward drag + release
+Keyboard: ↓ hold + release
+release → Paddle이 기준 Y로 실제 spring-back
+```
+
+강타는 기존 Paddle의 실제 transform 변화에서 나온 contact velocity와 continuous collision으로만 발생시킨다. 공에 별도의 직접 가속 보너스를 부여하지 않는다.
+
+**상태: Future Core Mechanic candidate. 구현 승인 아님.**
 
 ---
 
@@ -1461,7 +1582,6 @@ Score Only
 1. Ground
 2. Planetary
 3. Galactic
-4. Black Hole
 
 각 Stage에는:
 
@@ -1495,6 +1615,7 @@ Snowflake
 → Snowball
 → Big Snowball
 → Giant Snowball
+→ Moon
 
 Giant Snowball 생성
 → STAGE CLEAR
@@ -1666,10 +1787,12 @@ Spawn:
 ## Stage 1 — Planetary
 
 ```text
-Giant Snowball
-→ Lunar Snowball
-→ Earth Snowball
-→ Solar Snowball
+Moon
+→ Earth
+→ Gas Giant
+→ Sun
+→ Supernova
+→ Galaxy
 ```
 
 배경:
@@ -1688,10 +1811,12 @@ Spawn:
 ## Stage 2 — Galactic
 
 ```text
-Solar Snowball
-→ Nebula Snowball
-→ Galaxy Snowball
-→ Black Hole Snowball
+Galaxy
+→ Galaxy Cluster
+→ Supercluster
+→ Quasar
+→ Event Horizon
+→ Black Hole
 ```
 
 배경:
@@ -1711,49 +1836,27 @@ Spawn:
 - 경고등
 - 일부 글리치
 
----
+맵 기믹:
 
-## Stage 3 — Black Hole
-
-```text
-Black Hole Snowball
-→ Big Bang Snowball
-→ Universe Snowball
-→ Multiverse Snowball
-```
-
-배경:
-
-- 거대한 블랙홀
-- 회전 링
-- 별 왜곡
-
-Spawn:
-
-- 초기 약 80/s
-
-물리:
-
-- 이동하는 블랙홀이 공을 약하게 끌어당김
-
-기계:
-
-- 우주급 현상을 더 이상 감당하지 못하는 느낌
+- 상단의 이동하는 Black Hole은 Lv14 Snowball과 별개인 맵 요소다.
+- 모든 활성 공에 약한 인력을 적용하되, 패들 조작과 Cashout 경로를 막지 않는다.
 
 ---
 
-# 12. Black Hole Stage 종료
+Stage 2가 마지막 Stage이므로 다음 Stage는 없다.
 
-마지막 Stage이므로 다음 Stage는 없다.
+# 12. Galactic Stage 종료
 
-## Multiverse 완성
+## Black Hole 완성
 
 ```text
-Multiverse Snowball
+Black Hole
 → PERFECT / MAX SCALE CLEAR
 → Final Settlement
 → Result
 ```
+
+여기서 완성되는 `Black Hole`은 Lv14 Snowball이다. 상단의 Black Hole은 마지막 Galactic Stage 동안 궤적에 간섭하는 맵 기믹이며, 별도 Stage나 별도 공 등급이 아니다.
 
 ## Time Up
 
@@ -1900,7 +2003,7 @@ Planetary:
 Earth Snowball
 → CUT-IN 가능
 
-Solar Snowball
+Galaxy
 → SCALE SHIFT
 ```
 
@@ -1910,8 +2013,8 @@ Galactic:
 Galaxy Snowball
 → CUT-IN 가능
 
-Black Hole Snowball
-→ SCALE SHIFT
+Black Hole
+→ FINAL RESULT 연출
 ```
 
 ---
@@ -2129,8 +2232,8 @@ Snowball Effect의 시각/프레젠테이션 설계.
 
 > 90년대 픽셀 아케이드 실험기계 안에서 작은 눈덩이의 규모가 우주까지 폭주하는 게임.
 
-초반에는 소박하고 약간 장난감 같은 실험 장치처럼 보이고,
-후반에는 그 장치가 감당할 수 없는 우주 현상을 억지로 처리하는 느낌까지 간다.
+초반에는 어둑한 옛날 실험 아케이드 기계 안에서 작은 눈알갱이를 다루는 것처럼 보이고,
+후반에는 그 낡은 장치가 감당할 수 없는 우주 현상을 억지로 처리하는 느낌까지 간다.
 
 ---
 
@@ -2148,6 +2251,9 @@ Snowball Effect의 시각/프레젠테이션 설계.
 - readable
 - escalating
 - absurd
+- dark retro arcade
+- dim CRT machine
+- low-resolution pixel texture
 
 피함:
 
@@ -2157,6 +2263,9 @@ Snowball Effect의 시각/프레젠테이션 설계.
 - 전체를 검정/빨강으로 칠한 액션게임 스타일
 - 고해상도 캐릭터 일러스트 중심 UI
 - 얇고 섬세한 벡터 선 중심 디자인
+- 밝고 귀여운 캐주얼 퍼즐풍 또는 파스텔 중심 화면
+- soft bloom을 넓게 깐 연기·마법형 이펙트
+- 둥글고 매끈한 모바일 버튼 UI
 
 ---
 
@@ -2240,7 +2349,14 @@ Snowball Effect의 시각/프레젠테이션 설계.
 
 ## 5. 색과 재질
 
-정확한 팔레트는 아트 제작 단계에서 정하지만 재질 방향은 확정한다.
+정확한 팔레트는 아트 제작 단계에서 정하지만, 기본 화면은 밝고 산뜻한 모바일 게임이 아니라 어두운 기계 내부처럼 눌린 톤을 유지한다. 공과 핵심 이벤트만 이 어둠 위에서 또렷하게 읽혀야 한다.
+
+기본 배경과 기계 재질은 짙은 남청, 어두운 청록, 회청색, 검은 보라, 낡은 금속색을 우선한다. 강조색은 제한적으로만 사용한다.
+
+- Snowball: 밝은 회백 또는 푸른 흰색
+- 점수와 가독성 강조: 노랑
+- 경고·강한 충돌·고조 순간: 주황에서 빨강
+- UI 발광과 기계 계기: 청록 CRT 계열
 
 기계 프레임:
 
@@ -2259,10 +2375,12 @@ Play Field:
 
 스테이지 배경:
 
-- Ground는 밝고 평화로움
+- Ground도 밝은 모바일풍이 아니라 가장 절제된 남청·회청 기반의 어두운 초기 기계실로 시작
 - Planetary부터 색온도와 스케일이 달라짐
 - Galactic은 별/성운으로 밀도 증가
-- Black Hole은 어두운 중심과 강한 링 대비
+- Black Hole은 어두운 중심과 제한적인 강한 링 대비
+
+후반이 화려해져도 화면 전체를 밝게 씻어내지 않는다. 모든 Stage는 레트로 픽셀 아케이드의 거친 재질과 낮은 해상도 감각을 유지한다.
 
 ---
 
@@ -2274,6 +2392,7 @@ Play Field:
 - UI와 기계 프레임도 같은 픽셀 계열을 사용한다.
 - 고레벨 오브젝트는 해상도만 올리는 대신 내부 패턴, 링, 후광, 잔상으로 위계를 만든다.
 - 픽셀 크기와 필터링이 씬마다 제각각 보이지 않게 일관성을 유지한다.
+- 강한 glow는 고등급 순간을 읽히게 하는 짧은 보조 효과로만 사용하며, 픽셀 실루엣을 흐리게 만드는 soft bloom의 대체물이 되지 않는다.
 
 ---
 
@@ -2298,7 +2417,7 @@ Play Field:
 
 플레이 시작:
 
-> 귀여운 눈덩이 실험 아케이드
+> 침침한 픽셀 실험기계 안의 작은 눈알갱이 아케이드
 
 플레이 중반:
 
@@ -2333,6 +2452,8 @@ Play Field:
 ```
 
 좌우 공간은 단순 빈 여백이 아니라 **현재 Stage 세계와 아케이드 기계 본체**다.
+
+전체 화면은 짙은 남청·청록·회청·검은 보라와 낡은 금속색을 기본으로 한 어두운 픽셀 기계 내부처럼 보인다. 중앙 Play Field는 주변보다 한 단계 더 눌린 톤으로 두고, Snowball·점수·경고·핵심 충돌만 제한적인 밝은 회백, 노랑, 주황~빨강, 청록 CRT 발광으로 읽힌다.
 
 ---
 
@@ -2438,6 +2559,8 @@ Play Field 주변은 두꺼운 픽셀 기계 프레임을 둔다.
 모든 정보를 채우지 않는다.
 장식 계기판과 실제 HUD를 구분한다.
 
+프레임과 HUD는 깨끗한 flat panel이나 둥근 모바일 카드가 아니라 old terminal / CRT / arcade machine의 일부처럼 보인다. 작은 픽셀 테두리, 제한된 청록 계기 발광, 7-segment 또는 거친 레트로 숫자를 사용하되 HUD의 실제 정보 가독성을 희생하지 않는다.
+
 ---
 
 ## 7. HUD 위치
@@ -2450,13 +2573,17 @@ HUD는 중앙 Play Field를 최소한으로 침범한다.
 
 - SCORE
 - TIME
-- SCALE / STAGE
+- PAUSE
 
 프레임 또는 외곽:
 
-- 최고 공
-- 활성 아이템
-- 작은 계기
+- 현재 활성 아이템
+- 현재 Stage 공 족보
+- 작은 장식 계기
+
+HUD의 기본 정보 계약은 점수, 시간, 현재 아이템, 일시정지, 공 족보다. Stage 이름, 최고 공, Clear Target 같은 추가 정보가 필요하면 이 항목들의 가독성을 해치지 않는 보조 표시로만 검토한다.
+
+공 족보는 현재 Stage의 local 공 5~6종을 작은 픽셀 아이콘으로 낮은 단계부터 높은 단계까지 한 줄 또는 한 열로 배열한다. 인접한 아이콘의 순서만으로 `같은 공 2개 → 다음 공` 관계가 읽혀야 하며, 예시 이미지처럼 별도의 `NEXT` Spawn 예고 영역은 두지 않는다. Play Field를 가리지 않도록 Stage World 또는 기계 프레임 공간에 배치한다.
 
 중앙 위:
 
@@ -2478,6 +2605,7 @@ Stage World:
 
 - 멋있어도 중앙보다 시각적 우선순위가 낮음
 - 강한 움직임은 중요 이벤트 때만
+- 밝은 파스텔 배경이나 넓은 soft bloom으로 중앙 공의 대비를 빼앗지 않음
 
 프레임:
 
@@ -2543,6 +2671,7 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 - Snowball
 - Big Snowball
 - Giant Snowball
+- Moon
 
 눈송이는 몇 픽셀 수준의 작은 조각으로 시작한다.
 
@@ -2570,10 +2699,12 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 공
 
-- Giant Snowball
-- Lunar Snowball
-- Earth Snowball
-- Solar Snowball
+- Moon
+- Earth
+- Gas Giant
+- Sun
+- Supernova
+- Galaxy
 
 ---
 
@@ -2600,16 +2731,18 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 공
 
-- Solar Snowball
-- Nebula Snowball
-- Galaxy Snowball
-- Black Hole Snowball
+- Galaxy
+- Galaxy Cluster
+- Supercluster
+- Quasar
+- Event Horizon
+- Black Hole
 
 이 단계부터 파티클 포화가 눈에 띄게 증가한다.
 
 ---
 
-# Stage 3 — Black Hole
+## Galactic 최종 국면 — Black Hole 맵 기믹
 
 ## 목표 감정
 
@@ -2625,7 +2758,7 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 게임플레이
 
-블랙홀은 단순 배경이 아니다.
+블랙홀은 Lv14 `Black Hole` Snowball과 별개인 맵 기믹이며, 단순 배경이 아니다.
 
 - 좌우로 움직임
 - 실제 공 궤도를 약하게 끌어당김
@@ -2640,10 +2773,12 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 공
 
-- Black Hole Snowball
-- Big Bang Snowball
-- Universe Snowball
-- Multiverse Snowball
+- Galaxy
+- Galaxy Cluster
+- Supercluster
+- Quasar
+- Event Horizon
+- Black Hole
 
 ---
 
@@ -2690,6 +2825,8 @@ Stage Shift 후 이전 최고 공이 다음 기본 공이 된다.
 
 파티클 “양”만 늘리는 것이 아니라 이벤트 위계를 설계한다.
 
+모든 이벤트는 부드러운 현대 모바일 파티클보다 각진 픽셀 파편, 도트 조각, 사각형 스파크를 우선한다. 화려함은 허용하지만 재질감은 끝까지 레트로 픽셀 아케이드풍을 유지한다.
+
 ---
 
 ## 2. 레이어 위계
@@ -2709,6 +2846,9 @@ Stage Shift 후 이전 최고 공이 다음 기본 공이 된다.
 - 낮은 불투명도
 - 공보다 작은 시각적 우선순위
 - 충돌/머지와 무관
+- soft round particle보다 chunky pixel particle 우선
+- 1px / 2px / 3px 크기의 사각형 파편을 혼합 가능
+- 강한 blur의 연기형, 마법형, 반짝이형 질감은 피함
 
 ### Score Popups
 
@@ -2726,7 +2866,7 @@ Stage Shift 후 이전 최고 공이 다음 기본 공이 된다.
 
 ### Tier 0 — Low Merge
 
-- 작은 눈가루
+- 작은 각진 눈·얼음 도트
 - 작은 플래시
 - 짧은 소리
 - 작은 숫자 또는 생략
@@ -2735,16 +2875,16 @@ Stage Shift 후 이전 최고 공이 다음 기본 공이 된다.
 
 ### Tier 1 — Mid Merge
 
-- 얼음 파편
-- 얇은 링
+- 더 많은 사각형 얼음 파편
+- 얇고 각진 픽셀 링
 - 작은 잔상
 - 더 큰 숫자
 - 아주 약한 카메라 반응
 
 ### Tier 2 — High Merge
 
-- 큰 파티클 폭발
-- 강한 원형 충격파
+- 더 큰 각진 픽셀 burst
+- 짧은 flash와 제한적인 glow
 - 큰 숫자
 - 화면 흔들림
 - 저역이 추가된 효과음
@@ -2768,6 +2908,12 @@ Stage Shift 후 이전 최고 공이 다음 기본 공이 된다.
 - 전체 스케일 변화
 
 일반 CUT-IN보다 강하고 길 수 있다.
+
+### Cashout / Settlement 질감
+
+- Cashout은 공이 하단으로 빠지거나 빨려 들어가며 작은 도트 스파크를 남긴다.
+- 일반 Cashout은 큰 연기 구름이나 매끈한 마법 폭발보다 짧은 픽셀 파편과 점수 정보가 우선한다.
+- 고등급 Cashout과 중요 이벤트는 burst의 크기·수·짧은 flash를 키울 수 있지만, blur를 늘려 재질을 바꾸지 않는다.
 
 ---
 
@@ -3285,14 +3431,35 @@ enum BallSpecial {
 
 ---
 
+## 4.1 Arcade velocity 계약
+
+기본 공 적분에는 지속적인 아래 방향 acceleration을 더하지 않는다.
+
+```text
+default gravity = 0
+position += velocity * delta
+```
+
+Spawn은 아래쪽 반구 안의 방향과 공통 Spawn speed tuning을 결합해 초기 velocity를 만든다. 각도 범위, 분포, 초기 speed의 최소·최대값은 플레이테스트 대상이다.
+
+현재 Lv1의 physical/design reference는 일반적인 눈송이 낙하속도 약 `1.0 m/s`다. 이는 현실의 움직임 인상을 위한 reference이며 Godot world unit과 직접 변환하지 않는다. 공간은 `1 world unit = 1 logical pixel`, 시간은 second, runtime velocity는 world units/s로 관리한다. `GameManager`의 `lv1_spawn_speed_world_units_per_second`는 한 곳에서 조정하는 게임-space tuning 값이고, 현재 첫 플레이테스트 값은 `160 world units/s`다. 현재 구현 전 component range `x = -50~50`, `y = 40~100 world units/s`의 speed magnitude는 약 `40~112 world units/s`였으므로 새 Lv1 Spawn은 이를 낮추지 않는다.
+
+Lv1 radius는 visual과 collision이 같은 `4 world units`(diameter 8)를 사용한다. 이는 현재 Shared Skeleton의 승인된 기본 크기다. `160 world units/s` Spawn speed와 Paddle max speed cap은 별도 플레이테스트 tuning으로 유지한다.
+
+`base_speed` 또는 Spawn speed는 초기 velocity의 기준이다. runtime velocity를 매 tick 해당 값으로 정규화하거나 덮어쓰지 않는다. Paddle, 명시적인 벽 규칙, Merge, Stage effect, Item, 특수 상태는 runtime direction과 speed를 바꿀 수 있다.
+
+현재 버전은 `global_level`별 base speed 차이를 사용하지 않는다. 향후 `BallDefinition`에 등급별 base speed를 도입할 수 있지만, 그 값도 Spawn 기준이며 runtime speed 고정값이 아니다.
+
+---
+
 ## 5. 시뮬레이션 순서
 
 권장 `_physics_process(delta)` 순서:
 
 1. 게임 상태 확인
-2. 스테이지/아이템 전역 힘 계산
+2. 명시적으로 활성화된 스테이지/아이템 전역 힘 계산 — 기본 공에는 지속 중력 없음
 3. 공 이동 적분
-4. 벽·상단 경계 처리
+4. 좌·우·상단 반사 경계 처리
 5. 패들 후보 공 판정 및 반사
 6. 점수 구역 처리
 7. 공간 그리드 재구축
@@ -3304,6 +3471,8 @@ enum BallSpecial {
 
 합체 탐색 중 배열을 즉시 크게 변경하지 않는다.  
 합체 요청을 큐에 모은 뒤 검사 종료 후 적용한다.
+
+하단에는 반사 벽을 만들지 않는다. 아래 방향으로 열린 경계를 통과한 공만 Active Cashout command에 넣는다.
 
 ---
 
@@ -3360,27 +3529,69 @@ grids_by_level[level][cell] -> indices
 
 ## 7. 패들 충돌
 
-공이 수천 개일 수 있으므로 모든 공에 복잡한 다각형 충돌을 하지 않는다.
+### 조작 입력
+
+Mouse 입력은 Viewport의 raw pixel을 world X로 그대로 사용하지 않는다. 가장 최근 Mouse position을 Canvas/world 좌표로 변환한 뒤 Play Field 기준 logical X를 구하고, physics tick 시작 시 현재 Paddle center X에 직접 반영한 다음 회전된 Paddle extent를 고려해 field clamp한다. Mouse target 추적 speed cap은 폐기한다.
+
+Paddle simulation은 매 physics tick에 다음 두 transform을 가진다.
+
+```text
+previous_transform = 직전 physics tick에서 확정된 Paddle transform
+current_transform  = 이번 tick의 Mouse/Keyboard/rotation 입력을 적용해 확정한 transform
+```
+
+Mouse는 `current_transform.position.x`를 직접 정한다. Keyboard fallback은 기존 속도 적분으로 current transform을 정해도 된다. 이후 collision system은 입력 source가 아니라 동일한 previous/current transform만 소비한다.
+
+Paddle 중심 선형속도는 `(current_position - previous_position) / physics_delta`로 계산한다. 각속도는 이번 tick에 실제 적용된 signed angle displacement를 `physics_delta`로 나눈다. angle을 `-PI..PI` 등가 범위로 정규화하더라도 ±PI 경계를 넘은 정규화 결과만 빼서 각속도를 계산하지 않는다. 정규화 전 signed displacement 또는 동등한 unwrapped angle을 사용한다.
+
+Mouse Wheel은 tuning 가능한 `mouse_wheel_step_degrees`만큼 기존 Paddle angle state를 변경한다. `←/→`도 같은 angle state를 변경하며 angle min/max clamp는 두지 않는다. 구현은 표현상 동일한 범위로 angle을 정규화할 수 있지만 연속 회전 입력을 멈추지 않는다. `A/D`와 `←/→` 키보드 조작은 A/B 비교용 fallback으로 유지한다. 별도의 마우스 반사 경로나 별도의 rotation state를 만들지 않는다.
+
+공이 수천 개일 수 있으므로 모든 공에 Node/PhysicsBody를 만들지 않고 중앙 `BallSimulationManager` 배열에서 Paddle 하나와 각 활성 공의 후보를 검사한다. Paddle 대 공 검사는 O(N)이며 공 쌍 O(N²) 구조를 만들지 않는다.
 
 ### Broad Phase
 
-- 공이 패들 Y 범위 근처인지 검사
-- 공 X가 패들 AABB 범위 근처인지 검사
+- previous/current Paddle transform 사이의 보수적인 swept bound를 만든다.
+- 공의 이번 tick trajectory가 ball radius만큼 확장한 swept bound와 겹치는 경우만 narrow phase 후보로 둔다.
 
 ### Narrow Phase
 
-패들을 회전된 선분 또는 얇은 OBB로 간주한다.
+패들은 양면 회전 OBB다. 권장 최소 continuous collision 방식은 **translation relative sweep + rotation adaptive substep**의 혼합이다.
 
-간단한 구현 순서:
+1. 공의 tick 시작 위치와 velocity로 ball trajectory를 만든다.
+2. Paddle previous/current transform을 준비한다.
+3. Paddle 회전량을 signed/unwrapped angle로 보간한다. 회전 substep 수는 Paddle 끝점의 회전 이동량이 collision tolerance를 넘지 않도록 정한다.
+4. 각 회전 구간 안에서는 Paddle translation과 ball trajectory의 상대운동을 연속 sweep으로 계산한다. circle을 ball radius만큼 확장한 OBB에 대한 segment/TOI query와 동등한 방법을 사용한다.
+5. 모든 구간에서 가장 이른 유효 TOI를 선택하고 그 시점의 interpolated Paddle transform, contact point, 양면 outward normal을 사용한다.
+6. 시작/끝 overlap과 Paddle 내부에서 시작한 공도 fallback contact로 처리해 penetration 상태를 탈출시킨다.
+7. TOI까지 이동한 뒤 반사하고 남은 tick 시간을 새 velocity로 진행한다.
 
-1. 공 중심을 패들 로컬 좌표로 변환
-2. 로컬 X를 패들 절반 폭으로 clamp
-3. 선분과 공 중심의 가장 가까운 점 계산
-4. 거리 <= 공 반지름 + 패들 두께이면 충돌
-5. 공이 아래쪽에서 위로 통과하는 중복 충돌 방지
-6. 패들 법선 방향으로 반사
+translation 거리를 작은 고정 step으로만 나누는 방식은 Mouse 직접 매핑 시 지나치게 많은 substep을 요구하므로 기본안으로 사용하지 않는다. 반대로 current-frame OBB overlap만 사용하는 방식도 작은 Lv1 공에서 translation/rotation tunneling을 놓치므로 폐기한다. 회전만 adaptive substep하고 각 구간의 translation은 sweep으로 처리하면 현재 해커톤 규모에서 정확도와 Web 비용을 함께 통제할 수 있다.
 
-충돌 후 공을 패들 표면 바깥으로 밀어내어 다음 프레임 재충돌을 방지한다.
+같은 Paddle sweep에서 한 공의 가장 이른 접촉을 한 번만 commit한다. 반사 후 contact normal 방향으로 separation epsilon을 적용하고, 공이 해당 면에서 분리되기 전에는 같은 접촉을 다시 반사하지 않는다. 이는 양면에 동일하게 적용한다.
+
+### 회전 접촉점 속도
+
+TOI 시점의 Paddle center에서 contact point까지의 world-space 벡터를 `r`이라 하고, signed angular velocity를 `omega`라 한다.
+
+```text
+linear_velocity = (current_center - previous_center) / physics_delta
+angular_velocity = signed_angle_displacement / physics_delta
+angular_contact_velocity = omega * Vector2(-r.y, r.x)
+raw_contact_velocity = linear_velocity + angular_contact_velocity
+impact_velocity = clamp_length(raw_contact_velocity, maximum_impact_velocity)
+```
+
+Godot 2D의 회전 부호와 화면 좌표계에 맞춰 동일한 cross-product 결과를 사용한다. Paddle 끝은 중심보다 `|r|`가 크므로 같은 angular velocity에서도 더 큰 표면속도를 갖고, 회전 방향이 바뀌면 angular contribution 방향도 바뀐다. Wheel event delta 자체를 impact로 사용하지 않고 physics tick에 실제 적용된 angle displacement로만 계산한다.
+
+impact cap은 linear/angular contribution을 각각 자른 뒤 더하는 방식이 아니라 **합산한 raw contact velocity에 한 번** 적용한다. 이후 순서는 다음과 같다.
+
+1. capped `impact_velocity`로 ball relative velocity 계산
+2. TOI contact normal을 향해 접근 중인지 판정
+3. relative velocity 반사
+4. capped impact velocity와 contact-position shaping을 기존 반사 계약에 따라 반영
+5. 마지막에 ball runtime speed cap 적용
+
+어떤 반사 항에서도 uncapped linear/angular velocity를 다시 더하지 않는다. Mouse 직접 위치 반영으로 center velocity가 커져도 impact와 최종 ball speed는 별도 tuning으로 제한된다. `base_speed`로 되돌리지는 않는다.
 
 ---
 
@@ -3396,17 +3607,7 @@ if positions[a].distance_squared_to(positions[b]) <= min_distance * min_distance
 
 ### 속도
 
-```text
-new_velocity = (velocity_a + velocity_b) * 0.5
-```
-
-너무 느리면:
-
-- 평균 진행 방향 유지
-- 약간 위쪽 방향 추가
-- 레벨별 최소 속도로 정규화
-
-너무 빠르면 최대 속도로 제한한다.
+Merge 결과 velocity는 아직 확정하지 않는다. 두 입력 speed의 평균/최대/별도 계산, 새 등급의 base speed 사용 여부, 방향 결정과 cap을 S2 Merge velocity 계약에서 함께 정한 뒤 구현한다.
 
 ### 연쇄 합체
 
@@ -3474,7 +3675,7 @@ func format_score(value: float) -> String
 
 로 위계를 만든다.
 
-스테이지마다 화면상 기본 반지름을 재정규화한다.
+스테이지마다 StageDefinition의 `visual_radius_scale`로 화면상 기본 반지름을 재정규화한다. BallDefinition의 `radius`는 전역 물리·충돌 크기이며 이 보정으로 변경하지 않는다.
 
 ---
 
@@ -3554,13 +3755,19 @@ scale shift: up to about 0.8~1.0s
 
 ## 12. 아이템 기술
 
-아이템 수는 적으므로 개별 `Area2D` 또는 단순 Node2D 사용 가능하다.
+아이템 행성 수는 적으므로 개별 `Area2D` 또는 단순 Node2D 사용 가능하다. 논리 공 배열에 섞지 않는다.
 
 ### 획득
 
-- 패들 AABB 또는 선분과 아이템 원의 충돌
-- 획득 시 ItemManager가 효과 시작
-- 아이템 Node 제거 또는 풀 반환
+- Item Ball과 logical Snowball의 원 충돌 후보를 중앙 simulation 위치 snapshot으로 검사
+- `local_level = ball.global_level - current_stage.base_global_level`로 계산
+- `local_level >= 2`인 접촉만 유효 damage; 더 높은 단계도 같은 규칙으로 damage 가능
+- 한 contact pair는 분리되기 전까지 damage 한 번만 commit
+- 유효 hit마다 damage count를 올리고 Presentation에 균열 단계 이벤트 전달
+- `required_break_hits` 도달 시 broken/acquired lock과 pending activation을 한 번만 확정
+- CUT-IN activation cue에서 ItemManager가 효과를 시작하며, cue가 실패하거나 skip되면 안전한 fallback으로 한 번 적용
+- Item Ball 제거 또는 풀 반환은 논리 획득 확정 뒤 수행
+- 획득·재획득·만료·Retry 때 read-only active item snapshot을 HUD에 전달
 
 ### Blizzard
 
@@ -3581,6 +3788,8 @@ scale shift: up to about 0.8~1.0s
 ## 13. 블랙홀 기술
 
 BackgroundManager가 시각 블랙홀과 논리 위치를 제공한다.
+
+이 블랙홀은 마지막 Galactic Stage에서만 활성화하는 맵 기믹이며, Lv14 `Black Hole` BallDefinition과 별개의 런타임 요소다.
 
 ```gdscript
 func get_black_hole_position() -> Vector2
@@ -3604,24 +3813,24 @@ BallDefinition
 - global_level
 - display_name
 - score_value
-- radius_scale
 - color
 - texture
 - fx_tier
-- minimum_speed
-- maximum_speed
+- base_speed_override (future/optional; current version does not use per-level differences)
 
 StageDefinition
 - stage_index
 - display_name
 - base_global_level
 - top_global_level
+- local_ball_levels (Stage별 5~6종; 이전 Stage top과 다음 Stage base 중복 허용)
 - base_time
 - clear_score
 - time_bonus_by_local_level
 - spawn_rate
+- visual_radius_scale (현재 Stage의 화면상 공 크기 보정; BallDefinition의 물리 radius는 변경하지 않음)
 - background_id
-- gravity_scale
+- global_force_scale (explicit Stage effect only; not default downward gravity)
 - black_hole_enabled
 
 ItemDefinition
@@ -3629,10 +3838,17 @@ ItemDefinition
 - spawn_weight
 - duration
 - magnitude
+- required_break_hits
 ```
 
 초기에는 `.tres` 또는 GDScript Resource를 사용한다.  
 밸런스 값이 여러 코드에 중복되지 않게 한다.
+
+초기 BallCatalog는 중복을 제외한 global 공 15종을 목표로 한다. 15는 밸런스 공식이 아니라 첫 콘텐츠 제작 범위이며, 플레이테스트 결과에 따라 데이터 수를 줄일 수 있다. Stage별 5~6종의 테마 구성과 global catalog의 연결은 `StageDefinition`에서 관리한다.
+
+HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallCatalog`의 visual key와 display name을 읽어 표시한다. 별도의 Merge progression 사본이나 `NEXT` Spawn queue를 만들지 않는다. `stage_changed(stage_definition)`을 받을 때 목록을 한 번 갱신하고, HUD가 Merge 결과나 Stage 데이터를 수정하지 않는다.
+
+현재 S1의 Lv1 Spawn speed와 runtime speed cap은 공통 physics tuning이다. Mouse position은 직접 매핑하므로 movement speed cap을 사용하지 않는다. Paddle contact impact cap, ball reflection speed cap, rotation collision tolerance와 최대 rotation substep 수는 서로 다른 tuning이며 확정 디자인값이 아니다. 향후 BallDefinition override를 추가하더라도 runtime velocity를 지속적으로 고정하는 용도로 사용하지 않는다.
 
 ---
 
@@ -3653,7 +3869,13 @@ signal stage_clear_completed(stage: int, reason: StringName)
 signal stage_failed(stage: int)
 signal stage_shift_started(from_stage: int, to_stage: int)
 signal stage_shift_completed(stage: int)
+signal item_planet_damaged(item_type: int, current_hits: int, required_hits: int, world_position: Vector2)
+signal item_planet_broken(item_type: int, world_position: Vector2)
 signal item_collected(item_type: int)
+signal active_items_changed(items: Array)
+signal resume_requested()
+signal settings_requested()
+signal main_menu_requested()
 signal game_finished(result: Dictionary)
 ```
 
@@ -4150,13 +4372,13 @@ resources/balls/ball_00_snowflake.tres
 global_level
 display_name
 score_value
-radius_scale
 base_color
 texture
 fx_tier
-minimum_speed
-maximum_speed
+base_speed_override  # future/optional; current version uses shared Spawn tuning
 ```
+
+현재 등급별 base speed 차이는 사용하지 않는다. 향후 override를 도입해도 생성 시 초기 기준일 뿐 runtime speed를 고정하지 않는다. 공통 Spawn speed 범위와 runtime cap은 simulation physics tuning에서 관리한다.
 
 ### StageDefinition
 
@@ -4169,6 +4391,7 @@ base_time
 clear_score
 time_bonus_by_local_level
 spawn_rate
+visual_radius_scale  # 화면상 공 크기 보정; 물리 radius에는 영향 없음
 background_scene
 black_hole_enabled
 black_hole_strength
@@ -4332,8 +4555,8 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 ## 구현
 
 - 상단에서 기본 공 생성
-- 공의 중력 이동
-- 좌우 벽 반사
+- 아래쪽 반구 초기 velocity로 지속 이동 — 기본 gravity 0
+- 좌우·상단 벽 반사와 열린 하단 Cashout
 - `A/D` 패들 이동
 - `←/→` 패들 회전
 - 패들 반사
@@ -4347,6 +4570,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - 공 100개가 안정적으로 움직임
 - 이동과 각도를 동시에 조작 가능
 - 반사 방향이 눈으로 학습 가능
+- Paddle hit으로 runtime speed가 변할 수 있고 cap으로 폭주하지 않음
 - 놓친 공은 점수로 바뀜
 - 재시작 가능
 
@@ -4499,7 +4723,8 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 
 ## 완료 조건
 
-- 아이템은 패들이 먹음
+- 아이템은 현재 Stage의 3단계 이상 Snowball(`local_level >= 2`)이 Item Ball을 여러 번 깨뜨려 획득
+- hit 누적 균열/파편 뒤 최종 파괴 시 CUT-IN과 1회 activation
 - 놓치면 사라짐
 - 지속 시간이 HUD에 표시
 - 같은 아이템 재획득 시 갱신
@@ -4508,17 +4733,17 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 
 ---
 
-# Phase 7 — Black Hole 스테이지
+# Phase 7 — Galactic Black Hole 국면
 
 상세: `tasks/07_black_hole.md`
 
 ## 구현
 
-- Black Hole Stage
+- 마지막 Galactic 스테이지의 Black Hole 맵 기믹
 - 배경 블랙홀 이동
 - 전역 인력
 - 궤도 잔상
-- Black Hole 이상의 공
+- Lv14 Black Hole Snowball과 최종 결과 연결
 - 후반 생성량
 - 왜곡 또는 대체 연출
 
@@ -4578,7 +4803,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 1. Magnet
 2. Fire의 복잡한 전파 규칙
 3. Black Hole 왜곡 셰이더
-4. Black Hole 이후 Multiverse 콘텐츠
+4. Lv14 Black Hole 이후의 확장 공 콘텐츠
 5. 개별 고급 공 텍스처
 6. 추가 사운드 레이어
 
@@ -4760,7 +4985,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - 스테이지 기본 단위 승격
 - 바닥 도달의 의미
 - Stage 구조
-- Black Hole 전역 인력
+- 마지막 Galactic Stage의 Black Hole 맵 기믹 전역 인력
 - 저레벨 공의 데이터 중심 처리
 
 ---
@@ -4947,8 +5172,8 @@ Godot 4.x로 브라우저에서 실행 가능한 2D 액션 머지 게임 **Snowb
 11. 현재 스테이지 최고 공을 처음 만들면 `SCALE SHIFT`가 발생한다.
 12. 이전 스테이지의 최고 공은 다음 스테이지의 기본 공이 된다.
 13. 스테이지가 오를수록 기본 공 생성량이 증가한다.
-14. Ground, Planetary, Galactic, Black Hole 스테이지를 목표로 한다.
-15. Black Hole 스테이지에서는 상단 블랙홀이 좌우로 이동하며 공에 약한 인력을 가한다.
+14. Ground, Planetary, Galactic의 3개 스테이지를 목표로 한다.
+15. 마지막 Galactic 스테이지에서 Lv14 `Black Hole` Snowball이 최고 공이며, 별도의 상단 Black Hole 맵 기믹은 좌우로 이동하며 공에 약한 인력을 가한다.
 16. 고레벨 합체와 회수는 강한 파티클, 점수 팝업, 화면 흔들림과 짧은 히트스톱으로 강조한다.
 17. Blizzard, Fire Core, Magnet 아이템은 이후 단계에서 추가한다.
 18. 16:9 전체가 플레이 영역이 아니다. 실제 공 시뮬레이션은 중앙의 세로형 Play Field에서만 일어난다.
@@ -4963,7 +5188,7 @@ Godot 4.x로 브라우저에서 실행 가능한 2D 액션 머지 게임 **Snowb
 27. Time Up 시 활성 공을 Final Settlement하며 Score만 더하고 Time Bonus는 주지 않는다.
 28. Time Up 후 final Stage score가 clear_score 이상이면 다음 Stage, 미달이면 Run End다.
 29. 성공한 Stage는 Settlement 이후 Scale Shift로 다음 Stage에 진입한다.
-30. 마지막 Black Hole Stage는 Time Up 또는 Multiverse 생성 후 Final Settlement와 Result로 종료한다.
+30. 마지막 Galactic Stage는 Time Up 또는 Black Hole 생성 후 Final Settlement와 Result로 종료한다.
 31. Time Up은 같은 physics tick의 Merge와 Active Cashout을 먼저 반영한 뒤 판정한다. Cashout으로 시간이 양수가 되면 플레이를 계속한다.
 32. 같은 tick에서는 Top Ball Clear가 Time Up보다 우선한다.
 33. 모든 점수 이벤트는 `stage_score`와 `run_score`에 같은 amount를 한 번씩 더하며 Stage 종료 시 `run_score += stage_score`를 하지 않는다.
@@ -5247,7 +5472,7 @@ Snowball Effect is submission-ready only when all are true:
 회색 원과 단순 패들만으로 게임의 가장 작은 플레이 루프를 완성한다.
 
 ```text
-공 생성 → 낙하 → 패들 반사 → 다시 낙하 → 바닥 회수 → 점수
+공 생성 → 아래쪽 초기 velocity → 벽/패들 반사 → 열린 하단 Cashout → 점수
 ```
 
 합체와 Stage는 아직 구현하지 않는다.
@@ -5266,8 +5491,9 @@ Snowball Effect is submission-ready only when all are true:
 - BallRenderer
 - HUD
 - 기본 공 생성
-- 중력
-- 좌우 벽 반사
+- 지속 중력 없는 velocity 이동
+- 좌우·상단 벽 반사
+- 열린 하단 경계
 - 패들 충돌과 반사
 - 점수 구역
 - 점수 증가
@@ -5292,6 +5518,8 @@ Snowball Effect is submission-ready only when all are true:
 
 - `A/D`: 패들 이동
 - `←/→`: 패들 회전
+- `Mouse X`: Play Field logical X로 변환 후 Paddle X에 직접 반영하고 field clamp
+- `Mouse Wheel`: 패들 회전 (한 칸당 `mouse_wheel_step_degrees` tuning)
 - `R`: 개발용 즉시 재시작
 - `Esc`: 일시정지
 
@@ -5314,28 +5542,41 @@ restart_game
 viewport: 1600×900
 play_field_width: 전체 폭의 약 40~50%에서 프로토타입 시작(확정값 아님)
 spawn_rate: 6/s
-gravity: 260 px/s²
-initial_velocity_y: 40~100 px/s
-initial_velocity_x: -50~50 px/s
-paddle_speed: 460 px/s
+gravity: 0
+spawn_direction: 아래쪽 반구 안에서 tuning
+lv1_physical_design_reference: 일반 눈발 약 1.0 m/s (runtime 환산 없음)
+lv1_spawn_speed: 160 world units/s (첫 플레이테스트 tuning)
+runtime_speed_min/max: Paddle 반복 타격 폭주 방지용 tuning
+paddle_keyboard_speed: 460 px/s
+paddle_mouse_position: direct logical-X mapping (no tracking speed cap)
+paddle_contact_impact_velocity_cap: separate playtest tuning
+paddle_ball_runtime_speed_cap: separate playtest tuning
 paddle_rotation_speed: 150 deg/s
-paddle_max_angle: ±40°
+paddle_angle: unlimited rotation (equivalent-angle normalization allowed)
+mouse_wheel_step_degrees: 5°/step
 paddle_width: 240 px
-ball_radius: 4~6 px
+lv1_ball_radius: 4 world units (visual/collision diameter 8; approved Shared Skeleton base size)
 ```
 
 수치는 한 파일 또는 export 변수에서 쉽게 수정 가능해야 한다.
+
+공간은 `1 world unit = 1 logical pixel`, 시간은 second, 속도는 world units/s다. Lv1 `1.0 m/s`는 physical/design reference이며 runtime value로 직접 환산하지 않는다. 화면 높이 또는 통과시간으로 physical speed를 정의하지 않는다. Spawn/base speed는 초기 velocity를 만드는 기준이며 runtime speed 고정값이 아니다. 현재는 등급별 base speed 차이를 사용하지 않지만 향후 도입은 허용한다.
 
 ---
 
 ## 패들 반사 완료 조건
 
-- 공이 패들 위쪽에서 접근할 때만 반사
+- Paddle 앞면과 뒷면 모두에서 실제 접촉 normal을 기준으로 반사
 - 공을 패들 표면 밖으로 보정
 - 패들 각도에 따라 반사 방향이 명확히 달라짐
 - 충돌 위치에 따라 약간의 좌우 편차
 - 패들 이동 방향이 소량 반영
-- 반사 후 최소 위쪽 속도 보장
+- Mouse 직접 위치 반영과 contact impact velocity cap이 분리됨
+- 이전/현재 Paddle transform과 ball trajectory의 continuous contact로 translation/rotation tunneling을 방지
+- 접촉점 속도에 Paddle 중심 선형속도와 angular contribution이 함께 반영됨
+- Paddle hit으로 runtime speed가 변할 수 있음
+- tuning 가능한 speed cap으로 반복 타격의 무한 가속 방지
+- 반사 후 중력이 상승 속도를 감소시키지 않음
 - 같은 공이 패들 안에서 연속 반사되지 않음
 
 ---
@@ -5382,6 +5623,8 @@ Task 01에서는 Spatial Grid가 필요하지 않다.
 - A/D 이동 정상
 - 방향키 회전 정상
 - 동시 입력 정상
+- Mouse X가 지연 없이 logical Paddle X에 반영되고, Wheel 회전과 동시에 사용 가능
+- 실제 previous/current transform에서 계산한 center/angular velocity가 contact point impact에 반영됨
 - 반사 예측 가능
 - 바닥 도달 시 점수 증가
 - Pause/Restart 정상
@@ -5395,10 +5638,15 @@ Task 01에서는 Spatial Grid가 필요하지 않다.
 2. 왼쪽으로 기울여 왼쪽 궤도가 증가하는지 확인
 3. 오른쪽으로 기울여 오른쪽 궤도가 증가하는지 확인
 4. 이동 중 공을 맞혀 미세한 이동 보너스 확인
-5. 패들을 공 아래에서 치워 점수가 증가하는지 확인
-6. 100개 이상 공에서 FPS 확인
-7. 일시정지 중 타이머와 공이 정지하는지 확인
-8. 재시작 시 배열, 점수, 타이머가 초기화되는지 확인
+5. 상호작용이 없는 공의 velocity/speed가 지속 중력 없이 유지되는지 확인
+6. 상단 벽에서 speed를 유지하며 반사되는지 확인
+7. Paddle hit이 runtime speed를 바꿀 수 있고 cap을 넘지 않는지 확인
+8. 빠른 Mouse translation과 360° 연속 회전 sweep에서 Lv1 공이 Paddle을 통과하지 않는지 확인
+9. Paddle 중심/끝 접촉에서 angular contribution 방향과 크기 차이를 확인
+10. 패들을 공 아래에서 치워 열린 하단 Cashout으로 점수가 증가하는지 확인
+11. 100개 이상 공에서 FPS 확인
+12. 일시정지 중 타이머와 공이 정지하는지 확인
+13. 재시작 시 previous/current transform, 접촉 잠금, 배열, 점수, 타이머가 초기화되는지 확인
 
 ---
 
@@ -5457,19 +5705,25 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 
 ---
 
-## 초기 공 정의
+## 초기 공 카탈로그
 
-최소 global_level 0~6을 데이터로 만든다.
+초기 콘텐츠 목표는 `global_level 0~14`의 총 15종이다. Ground(5종) → Planetary(6종) → Galactic(6종)으로 구성하며, 이전 Stage의 최고 공을 다음 Stage의 기본 공으로 공유한다. Lv13은 `Event Horizon`(1.0e43), Lv14는 최종 Clear 공 `Black Hole`(1.0e50)로 확정한다. 정확한 목록과 배분은 `01_PRODUCT_BRIEF.md` §7 및 Content 데이터에서 관리한다.
+
+아래 값은 점수 곡선과 초기 테마를 잡기 위한 seed이며 전체 15종의 확정 목록이 아니다.
 
 ```text
 0 Snowflake       1
 1 Snowball        100
 2 Big Snowball    10,000
 3 Giant Snowball  1,000,000
-4 Lunar Snowball  100,000,000
-5 Earth Snowball  50,000,000,000
-6 Solar Snowball  10,000,000,000,000
+4 Moon            100,000,000
+5 Earth           50,000,000,000
+6 Gas Giant       10,000,000,000,000
 ```
+
+나머지 global level도 Ground / Planetary / Galactic 콘셉트가 읽히도록 이름, visual key, 반지름과 점수를 데이터로 정의한다. 값은 코드에 하드코딩하지 않는다.
+
+일반 Merge/Cashout 연출용 `fx_tier`는 전역 BallDefinition 값이다. Lv0 = 0, Lv1~3 = 1, Lv4~8 = 2, Lv9~13 = 3, Lv14 Black Hole = 4를 사용한다. Moon(Lv4)과 Galaxy(Lv9)가 다음 Stage의 기본 공으로 재사용되어도 전역 tier는 변하지 않는다. Stage 최고 공 생성은 기본 `fx_tier`와 별도로 Stage Clear 연출을 우선한다.
 
 ---
 
@@ -5487,13 +5741,7 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 (position_a + position_b) / 2
 ```
 
-합체 속도:
-
-```text
-(velocity_a + velocity_b) / 2
-```
-
-최소 속도와 약한 위쪽 보정 적용.
+합체 결과 velocity는 아직 미정이다. 두 입력 speed의 평균/최대/별도 계산, 새 등급의 base speed 사용 여부, 방향과 cap을 S2의 별도 Merge velocity 계약에서 확정한 뒤 구현한다.
 
 ---
 
@@ -5575,17 +5823,21 @@ time_bonus_by_local_level
 
 같은 global ball이 Stage에 따라 다른 local level이 되므로 Time Bonus를 BallDefinition에 저장하지 않는다.
 
-초기 방향:
+초기값:
 
 ```text
-Local Lv0 = 0
-Local Lv1 = 소량
-Local Lv2 = 의미 있는 시간
-Local Lv3 = Stage Clear
+Local Lv0 = +0s
+Local Lv1 = +0.25s
+Local Lv2 = +0.5s
+Local Lv3 = +1s
+Local Lv4 = +2s
+Local Lv5 = +4s
 ```
 
-초기 `base_time` 테스트 seed는 Ground 45초, Planetary 40초, Galactic 35초, Black Hole 30초다.
-`clear_score`는 Stage별 데이터이며 Local Lv2 점수의 약 4배를 초기 seed로만 사용할 수 있다.
+최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 따라서 실제 Cashout 보너스 최대치는 Ground에서 +1s, Planetary와 Galactic에서 +2s다.
+
+초기 `base_time` 테스트 seed는 Ground 45초, Planetary 40초, Galactic 35초다. Black Hole은 별도 Stage가 아니라 마지막 Galactic Stage의 Lv14 Snowball 및 맵 기믹이다.
+`clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. 최고 공은 생성 즉시 Clear되므로, 최고 공보다 한 단계 낮은 Cashout 가능 공 점수의 4배를 초기값으로 사용한다. Ground는 Giant Snowball(`1e6`) 기준 `4e6`, Planetary는 Supernova(`5e17`) 기준 `2e18`이다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
 둘 다 플레이테스트 전 확정값이 아니다.
 
 초기 구현에는 Stage 시간 cap을 넣지 않는다.
@@ -5807,6 +6059,7 @@ settlement_applied = false
 - 변경 파일
 - Codex collaboration log 업데이트
 
+
 ---
 
 ## FILE: tasks/03_mass_simulation.md
@@ -5917,9 +6170,6 @@ max_active_balls
 2. Planetary
 3. Galactic
 
-Black Hole은 Task 07.
-
----
 
 ## 필수 규칙
 
@@ -5928,8 +6178,10 @@ Black Hole은 Task 07.
 - 이전 최고 공 = 다음 기본 공
 - 생성량 증가
 - 화면상 크기 정규화
+- StageDefinition의 `visual_radius_scale`로 렌더 크기 보정
 - 새 기본 레벨보다 낮은 공 정리
 - 좌우 Stage World 배경 전환
+- HUD 공 족보를 새 Stage의 local 공 5~6종으로 교체
 - Retro Pixel Arcade Machine의 Stage 상태 변화
 - `SCALE SHIFT` 발표
 - Time Up Score Clear 후에도 동일한 Scale Shift 진입
@@ -5940,13 +6192,13 @@ Black Hole은 Task 07.
 
 ```text
 Ground:
-base 0, top 3, spawn 6/s
+base 0, top 4, spawn 6/s
 
 Planetary:
-base 3, top 6, spawn 15/s
+base 4, top 9, spawn 15/s
 
 Galactic:
-base 6, top 9, spawn 35/s
+base 9, top 14, spawn 35/s
 ```
 
 ---
@@ -5961,8 +6213,9 @@ base 6, top 9, spawn 35/s
 6. Stage 데이터 변경
 8. 렌더 크기 스케일 재설정
 9. 배경 전환
-10. 새 생성량 적용
-11. 시뮬레이션 정상화
+10. 새 Stage 공 족보 갱신
+11. 새 생성량 적용
+12. 시뮬레이션 정상화
 
 ---
 
@@ -6001,6 +6254,7 @@ base 6, top 9, spawn 35/s
 - Galactic은 화면/계기 밀도 증가
 - 후반 기계는 과부하처럼 보여도 실제 HUD와 조작 가독성은 유지
 - 이전 최고 공의 화면상 크기는 새 Stage 기준으로 재정규화
+- 재정규화는 Stage 데이터가 소유하며 BallDefinition의 물리 반지름을 변경하지 않음
 
 ---
 
@@ -6159,19 +6413,27 @@ Stage 최고 공은 일반 CUT-IN보다 Stage Clear / Scale Shift 연출을 우�
 
 ## 목적
 
-패들이 직접 먹는 아이템으로 짧은 폭발 구간과 뇌절 변형을 만든다.
+현재 Stage의 3단계 이상 Snowball로 아이템 행성을 여러 번 깨뜨려 획득하는 짧은 폭발 구간과 뇌절 변형을 만든다.
 
 ---
 
 ## 공통 규칙
 
-- 아이템은 상단에서 낙하
-- 공과 충돌하지 않음
-- 패들과 충돌하면 획득
+- 아이템은 작은 행성 형태의 `Item Ball`에 담겨 Play Field에 등장
+- Item Ball은 일반 Snowball Merge 대상이 아님
+- 현재 Stage의 3단계 이상 공만 파괴 damage를 줄 수 있음
+- 데이터 기준으로 `local_level >= 2`; 그보다 높은 local level도 모두 유효
+- 유효 Snowball 충돌마다 damage 1회와 균열/픽셀 파편 단계 갱신
+- 동일 contact가 여러 physics frame에 걸쳐도 분리 전에는 중복 damage 없음
+- `required_break_hits` 도달 시 파괴·획득 lock을 한 번만 확정
+- 파괴 CUT-IN의 activation cue에서 아이템 효과 시작
+- CUT-IN 실패/skip 시에도 확정된 아이템은 안전하게 한 번 적용
+- 1~2단계 공과 Paddle은 즉시 획득 또는 파괴하지 않음
 - 놓치면 제거
 - 지속 효과는 HUD 표시
 - 같은 효과 재획득 시 지속시간 갱신
 - 다른 효과 동시 유지 가능
+- 파괴 연출 실패나 지연이 실제 아이템 적용을 중복시키지 않음
 
 ---
 
@@ -6242,7 +6504,7 @@ duration: 7s
 
 ---
 
-## 아이템 스폰
+## 아이템 행성 스폰
 
 초기:
 
@@ -6252,6 +6514,8 @@ duration: 7s
 ```
 
 Stage가 오르면 약간 자주 나올 수 있다.
+
+행성의 정확한 `required_break_hits`, 낮은 단계 공과의 물리 반응, 등장 궤적은 아직 확정하지 않는다. 파괴 가능 여부는 고정 global level이 아니라 현재 Stage 기준 `local_level >= 2`로 계산한다.
 
 ---
 
@@ -6282,11 +6546,11 @@ CASHOUT ×10
 
 ## FILE: tasks/07_black_hole.md
 
-# Task 07 — Black Hole Stage
+# Task 07 — Galactic Black Hole Map Gimmick
 
 ## 목적
 
-후반에 물리 규칙을 바꿔 기존 조준법을 흔든다.
+마지막 Galactic Stage의 물리 규칙을 바꿔 기존 조준법을 흔든다. 이 Task의 이동 블랙홀은 Lv14 `Black Hole` Snowball과 별개의 맵 기믹이다.
 
 ---
 
@@ -6294,19 +6558,23 @@ CASHOUT ×10
 
 ```text
 base_global_level: 9
-top_global_level: 12
-spawn_rate: 80/s
+top_global_level: 14
+spawn_rate: 35/s
 black_hole_enabled: true
 ```
 
 공:
 
 ```text
-Black Hole Snowball
-Big Bang Snowball
-Universe Snowball
-Multiverse Snowball
+Galaxy
+Galaxy Cluster
+Supercluster
+Quasar
+Event Horizon
+Black Hole
 ```
+
+`Black Hole`은 이 Stage의 Lv14 최고 Snowball이다. `black_hole_enabled`는 상단 이동 블랙홀 맵 기믹의 활성 여부를 뜻하며, Snowball의 생성·등급과는 별개다.
 
 ---
 
@@ -6362,8 +6630,8 @@ Multiverse Snowball
 - 블랙홀 위치에 따라 공 궤도가 명확히 변함
 - 중력이 강해도 게임이 계속 진행
 - 공이 블랙홀에 영구 고정되지 않음
-- 80/s 생성량에서 성능 확인
-- Black Hole Stage 진입과 결과 화면 정상
+- Galactic 최종 국면의 생성량에서 성능 확인
+- Black Hole 생성과 결과 화면 정상
 
 
 ---
@@ -6425,6 +6693,8 @@ DROPPED BALLS BECOME SCORE
 ---
 
 ## Web Export 필수 확인
+
+Release export 전에 [`../../team/GODOT_MCP_SETUP.md`](../../team/GODOT_MCP_SETUP.md)의 **Web Export Hygiene / Web Export 주의사항** 절차에 따라 MCP bridge를 종료하고 이전 산출물을 clean한다. MCP가 실행 중인 상태에서 생성한 build는 release 기준 build로 사용하지 않는다.
 
 - Godot Web preset
 - public static hosting
@@ -6807,7 +7077,7 @@ Structure:
 
 ## Presentation / Visual Identity
 
-발표와 영상에서는 초반 Ground와 후반 Galactic/Black Hole을 반드시 대비시킨다.
+발표와 영상에서는 초반 Ground와, Lv14 Black Hole Snowball 및 이동 블랙홀 맵 기믹이 있는 후반 Galactic을 반드시 대비시킨다.
 
 시각 한 줄:
 
@@ -7518,3 +7788,5 @@ Success gate: RC can be submitted today if necessary.
 - submit before the last-minute window
 
 No feature development on submission day unless it fixes a blocker.
+
+---

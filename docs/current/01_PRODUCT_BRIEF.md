@@ -103,7 +103,7 @@ Final Stage Score
 
 `Final Stage Score >= clear_score`면 성공.
 
-마지막 Black Hole Stage는 다음 Stage가 없으므로 Time Up 후 최종 결과로 이동한다.
+마지막 Galactic Stage는 다음 Stage가 없으므로 Time Up 후 최종 결과로 이동한다.
 
 ---
 
@@ -136,21 +136,18 @@ Snowball Effect라는 제목을 직접 체감시키는 핵심 장치다.
 ## 7. Stage 구성
 
 ### Ground
-Snowflake → Snowball → Big Snowball → Giant Snowball
+Snowflake → Snowball → Big Snowball → Giant Snowball → Moon
 
 ### Planetary
-Giant → Lunar → Earth → Solar
+Moon → Earth → Gas Giant → Sun → Supernova → Galaxy
 
 ### Galactic
-Solar → Nebula → Galaxy → Black Hole
-
-### Black Hole
-Black Hole → Big Bang → Universe → Multiverse
+Galaxy → Galaxy Cluster → supercluster → Quasar → Event Horizon → Black Hole
 
 초기 Spawn 테스트 방향:
 
 ```text
-6/s → 15/s → 35/s → 80/s
+6/s → 15/s → 35/s
 ```
 
 정확한 Stage 시간, `clear_score`, `time_bonus`는 플레이테스트 데이터로 조정한다.

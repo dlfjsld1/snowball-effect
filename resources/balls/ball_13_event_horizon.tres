@@ -4,12 +4,11 @@
 
 [resource]
 script = ExtResource("1_definition")
-global_level = 8
-display_name = "Nebula Snowball"
-score_value = 2.5e18
-radius = 1024.0
-mass = 65536.0
-radius_scale = 128.0
-visual_key = &"nebula_snowball"
-base_color = Color(0.7, 0.36, 0.92, 1)
+global_level = 13
+display_name = "Event Horizon"
+score_value = 1.0e43
+radius = 16384.0
+mass = 67108864.0
+visual_key = &"event_horizon"
+base_color = Color(0.22745098, 0.10196078, 0.38039216, 1)
 fx_tier = 3

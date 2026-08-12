@@ -4,7 +4,7 @@
 
 ## 결과
 
-Black Hole 최종 Stage가 플레이 가능하고 Clear 후 Final Result와 완전한 Retry로 끝난다.
+마지막 Galactic Stage의 이동 Black Hole 맵 기믹과 Lv14 `Black Hole` Snowball이 함께 동작하고, 최고 Snowball Clear 후 Final Result와 완전한 Retry로 끝난다.
 
 ## Goals
 
