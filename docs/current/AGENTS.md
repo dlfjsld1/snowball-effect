@@ -47,7 +47,7 @@ These are deliberate product decisions and must not be changed without an explic
 - Creating a Stage's top ball immediately decides that the Stage is cleared; `SCALE SHIFT` occurs only after Final Settlement
 - The previous stage's top ball becomes the next stage's default falling ball
 - Spawn density increases as scale rises
-- In the final Galactic Stage, a moving Black Hole map gimmick bends trajectories; it is separate from the Lv14 Black Hole Snowball
+- In the final Galactic Stage, Lv14 is the `Black Hole` ball; a separate moving Black Hole map gimmick bends trajectories as an in-stage final phase
 - Gameplay balls and decorative particles are separate systems
 
 ---

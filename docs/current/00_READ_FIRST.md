@@ -57,7 +57,7 @@
 - 점수는 단계마다 100배, 1,000배 등 의도적으로 폭증
 - 이전 스테이지 최고 공은 다음 스테이지 기본 공
 - 스테이지가 오를수록 기본 공 생성량 증가
-- 마지막 Galactic 스테이지에서는 Lv14 Black Hole Snowball과 별개인 이동 블랙홀 맵 기믹이 공의 궤도를 휨
+- 마지막 Galactic 스테이지에서는 이동 Black Hole 최종 국면 맵 기믹이 공의 궤도를 휘며, 동명인 Lv14 `Black Hole` Ball은 별도 BallDefinition이자 Stage top임
 - 이펙트는 뱀파이어 서바이버처럼 포화되되, 중요한 이벤트가 묻히지 않게 계층화
 - 게임 규칙 공은 CPU 데이터, 장식 파티클은 GPU 파티클
 - 화면은 중앙의 세로 Play Field + 좌우 Stage World/기계 프레임 구조

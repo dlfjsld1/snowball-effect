@@ -268,7 +268,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - 배경 블랙홀 이동
 - 전역 인력
 - 궤도 잔상
-- Lv14 Black Hole Snowball과 최종 결과 연결
+- Lv14 Black Hole Ball과 최종 결과 연결; 동명 이동 Black Hole 맵 기믹은 별도 Stage effect로 유지
 - 후반 생성량
 - 왜곡 또는 대체 연출
 

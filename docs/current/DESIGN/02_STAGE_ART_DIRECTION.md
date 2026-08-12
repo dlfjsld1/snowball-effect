@@ -69,7 +69,6 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 - Moon
 - Earth
-- Gas Giant
 - Sun
 - Supernova
 - Galaxy
@@ -101,10 +100,9 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 - Galaxy
 - Galaxy Cluster
-- Supercluster
 - Quasar
 - Event Horizon
-- Black Hole
+- Black Hole Ball (Lv14)
 
 이 단계부터 파티클 포화가 눈에 띄게 증가한다.
 
@@ -126,7 +124,7 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 게임플레이
 
-블랙홀은 Lv14 `Black Hole` Snowball과 별개인 맵 기믹이며, 단순 배경이 아니다.
+블랙홀은 별도 Stage나 Ball이 아닌 Galactic 내부 최종 국면 맵 기믹이며, 단순 배경이 아니다.
 
 - 좌우로 움직임
 - 실제 공 궤도를 약하게 끌어당김
@@ -143,10 +141,11 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 - Galaxy
 - Galaxy Cluster
-- Supercluster
 - Quasar
 - Event Horizon
-- Black Hole
+- Black Hole Ball (Lv14)
+
+기믹 발동 시 Frame과 실제 Play Field가 L2에서 L3로 함께 확장되고, 전환 뒤 같은 Galactic gameplay를 재개한다. Lv14 Black Hole Ball은 작은 gameplay silhouette·공 전용 outline·compact accretion ring으로, 거대한 이동 Black Hole 맵 기믹은 field distortion·grid lensing·환경 scale로 구분한다.
 
 ---
 

@@ -46,12 +46,11 @@ Local Lv1 = +0.25s
 Local Lv2 = +0.5s
 Local Lv3 = +1s
 Local Lv4 = +2s
-Local Lv5 = +4s
 ```
 
-최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 따라서 실제 Cashout 보너스 최대치는 Ground에서 +1s, Planetary와 Galactic에서 +2s다.
+최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 세 Stage가 모두 5종이므로 실제 Cashout 보너스 최대치는 Local Lv3의 `+1s`다.
 
-초기 `base_time` 테스트 seed는 Ground 45초, Planetary 40초, Galactic 35초다. Black Hole은 별도 Stage가 아니라 마지막 Galactic Stage의 Lv14 Snowball 및 맵 기믹이다.
+초기 `base_time` 테스트 seed는 Ground 45초, Planetary 40초, Galactic 35초다. Lv14 Black Hole은 Galactic top Ball이다. 이와 별개의 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아니라 마지막 Galactic Stage 안에서 발동하는 Stage effect다.
 `clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. 최고 공은 생성 즉시 Clear되므로, 최고 공보다 한 단계 낮은 Cashout 가능 공 점수의 4배를 초기값으로 사용한다. Ground는 Giant Snowball(`1e6`) 기준 `4e6`, Planetary는 Supernova(`5e17`) 기준 `2e18`이다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
 둘 다 플레이테스트 전 확정값이 아니다.
 
@@ -81,7 +80,7 @@ Stage 종료 시 `run_score += stage_score`를 다시 수행하지 않는다.
 
 ```text
 cashout_score = calculate_cashout_score(ball)
-local_level = ball.global_level - stage.base_global_level
+local_level = stage.local_ball_levels.find(ball.global_level)
 time_bonus = stage.time_bonus_by_local_level[local_level]
 
 stage_score += cashout_score
@@ -92,6 +91,7 @@ remove_ball_without_settlement()
 
 Active Cashout 전용 item modifier는 `calculate_cashout_score()`에서만 적용한다.
 Time Bonus 계산과 섞지 않는다.
+`local_level == -1`이면 현재 Stage 밖의 잘못된 공이므로 보너스를 추측하지 않고 data/runtime 오류로 처리한다.
 
 UI 예:
 

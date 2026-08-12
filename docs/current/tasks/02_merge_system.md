@@ -42,7 +42,7 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 
 ## 초기 공 카탈로그
 
-초기 콘텐츠 목표는 `global_level 0~14`의 총 15종이다. Ground(5종) → Planetary(6종) → Galactic(6종)으로 구성하며, 이전 Stage의 최고 공을 다음 Stage의 기본 공으로 공유한다. Lv13은 `Event Horizon`(1.0e43), Lv14는 최종 Clear 공 `Black Hole`(1.0e50)로 확정한다. 정확한 목록과 배분은 `01_PRODUCT_BRIEF.md` §7 및 Content 데이터에서 관리한다.
+초기 visual catalog는 `global_level 0~14`의 총 15종이다. 각 Stage는 5종을 사용하고 이전 Stage의 최고 공을 다음 Stage의 기본 공으로 공유한다. 기본 Run은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`를 사용한다. Lv7 `Red Giant`와 Lv9 `Nebula`는 catalog에는 남지만 기본 Run에서 비활성이다. Lv14는 Galactic의 최종 Clear 공 `Black Hole`이다.
 
 아래 값은 구현과 첫 플레이테스트를 위한 데이터 seed다. 이름, 점수, 반지름, mass, visual key와 Stage별 배분은 Content/Systems가 플레이테스트에 따라 교체하거나 축소할 수 있다.
 
@@ -53,18 +53,27 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 3 Giant Snowball  1,000,000
 4 Moon            100,000,000
 5 Earth           50,000,000,000
-6 Gas Giant       10,000,000,000,000
+6 Sun             10,000,000,000,000
+7 Red Giant       1.0e15
+8 Supernova       5.0e17
+9 Nebula          1.0e21
+10 Galaxy         1.0e25
+11 Galaxy Cluster 1.0e30
+12 Quasar         1.0e36
+13 Event Horizon  1.0e43
+14 Black Hole      1.0e50
 ```
 
 나머지 global level도 Ground / Planetary / Galactic 콘셉트가 읽히도록 이름, visual key, 반지름과 점수를 데이터로 정의한다. 값은 코드에 하드코딩하지 않는다.
 
-일반 Merge/Cashout 연출용 `fx_tier`는 전역 BallDefinition 값이다. Lv0 = 0, Lv1~3 = 1, Lv4~8 = 2, Lv9~13 = 3, Lv14 Black Hole = 4를 사용한다. Moon(Lv4)과 Galaxy(Lv9)가 다음 Stage의 기본 공으로 재사용되어도 전역 tier는 변하지 않는다. Stage 최고 공 생성은 기본 `fx_tier`와 별도로 Stage Clear 연출을 우선한다.
+일반 Merge/Cashout 연출용 `fx_tier`는 전역 BallDefinition 값이다. Lv0 = 0, Lv1~3 = 1, Lv4~8 = 2, Lv9~13 = 3, Lv14 = 4를 사용한다. Moon(Lv4)과 Galaxy(Lv10)가 다음 Stage의 기본 공으로 재사용되어도 전역 tier는 변하지 않는다. Stage 최고 공 생성은 기본 `fx_tier`와 별도로 Stage Clear 연출을 우선한다.
 
 ---
 
 ## 합체 규칙
 
 - 같은 global_level만 합체
+- 결과 level은 현재 `StageDefinition.local_ball_levels`에서 입력 level의 다음 항목으로 정함; `global_level + 1`을 가정하지 않음
 - 다른 special_type은 Task 02에서 NORMAL뿐
 - 같은 프레임에 한 공이 두 합체에 참여 금지
 - 결과 레벨 정의가 없으면 더 합체하지 않음
@@ -116,6 +125,8 @@ result_velocity = clamp_length(result_velocity, maximum_ball_runtime_speed)
 
 - Lv0 두 개 → Lv1
 - Lv1 두 개 → Lv2
+- Planetary에서 Lv6 두 개 → Lv8, Lv8 두 개 → Lv10
+- 기본 Stage chain에서 Lv7·Lv9가 Merge 결과로 생성되지 않음
 - Lv0 + Lv1 → 합체 안 함
 - 세 개가 동시에 겹쳐도 하나의 합체만 발생
 - 새 공이 즉시 같은 프레임 재합체하지 않음

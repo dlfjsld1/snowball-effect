@@ -139,10 +139,14 @@ Snowball Effect라는 제목을 직접 체감시키는 핵심 장치다.
 Snowflake → Snowball → Big Snowball → Giant Snowball → Moon
 
 ### Planetary
-Moon → Earth → Gas Giant → Sun → Supernova → Galaxy
+Moon → Earth → Sun → Supernova → Galaxy
 
 ### Galactic
-Galaxy → Galaxy Cluster → supercluster → Quasar → Event Horizon → Black Hole
+Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole
+
+전역 Ball catalog는 `global_level 0~14`의 15종을 유지한다. 기본 Run의 Stage별 ordered chain은 Ground `[0, 1, 2, 3, 4]`, Planetary `[4, 5, 6, 8, 10]`, Galactic `[10, 11, 12, 13, 14]`이며, Lv7 `Red Giant`와 Lv9 `Nebula`는 visual catalog에는 남지만 기본 Stage chain에서는 사용하지 않는다.
+
+Lv14 최종 공의 이름은 `Black Hole`이다. 이 BallDefinition과 별개로 Galactic 안에는 이동 Black Hole 최종 국면 맵 기믹이 있으며, 이 기믹은 별도 Stage나 BallDefinition이 아니다. 기믹 발동 시 네 번째 Frame profile인 `Black Hole Phase`로 확장된 뒤 같은 Galactic gameplay가 계속된다.
 
 초기 Spawn 테스트 방향:
 

@@ -35,10 +35,10 @@
 | Q-S2 | 동일 레벨만 Merge, 입력 둘 제거·출력 하나 생성, 한 쌍 한 번 처리 |
 | Q-S3 | Cashout 시간 구조, Top Ball 우선순위, 중복 Settlement, score source-of-truth 회귀 테스트 |
 | Q-S4 | release path에 전수 O(N²) 없음, 1,000 논리 공 FPS와 allocation 관찰 기록 |
-| Q-S5 | Stage별 reset/preserve, top-ball lock, settlement 후 shift, 세 Stage 연속 완주 |
+| Q-S5 | ordered Stage chain(`6→8→10`)과 5종 세로 progressive HUD, Stage별 reset/preserve, top-ball lock, settlement 후 shift, 세 Stage 연속 완주 |
 | Q-S6 | burst에서도 패들·공 가독성, FX budget 작동, 중요한 이벤트 우선 |
 | Q-S7 | 아이템 비활성화 시 Core 결과 동일, Fire modifier가 Settlement에 침투하지 않음 |
-| Q-S8 | Black Hole force 안정성, 마지막 Clear가 Shift 없이 Result로 이동, Retry 완전 초기화 |
+| Q-S8 | Galactic 내부 Black Hole Phase에서 L2→L3 Frame/Play Field 동기 확장 후 gameplay 재개, force 안정성, Lv14 Black Hole Ball Clear가 추가 Shift 없이 Result로 이동, Retry 완전 초기화 |
 | Q-S9 | 공개 URL incognito 완주, Chrome/Edge, console, resize, 오디오 활성화 확인 |
 
 ## S3 필수 회귀 시나리오

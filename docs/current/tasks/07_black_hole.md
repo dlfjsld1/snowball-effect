@@ -2,17 +2,18 @@
 
 ## 목적
 
-마지막 Galactic Stage의 물리 규칙을 바꿔 기존 조준법을 흔든다. 이 Task의 이동 블랙홀은 Lv14 `Black Hole` Snowball과 별개의 맵 기믹이다.
+마지막 Galactic Stage의 최종 국면에서 물리 규칙을 바꿔 기존 조준법을 흔든다. 이 Task의 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아니라 Galactic 안에서 발동하는 Stage effect다.
 
 ---
 
 ## 스테이지 데이터
 
 ```text
-base_global_level: 9
+base_global_level: 10
 top_global_level: 14
+local_ball_levels: [10, 11, 12, 13, 14]
 spawn_rate: 35/s
-black_hole_enabled: true
+black_hole_phase_enabled: true
 ```
 
 공:
@@ -20,13 +21,20 @@ black_hole_enabled: true
 ```text
 Galaxy
 Galaxy Cluster
-Supercluster
 Quasar
 Event Horizon
-Black Hole
+Black Hole Ball (Lv14)
 ```
 
-`Black Hole`은 이 Stage의 Lv14 최고 Snowball이다. `black_hole_enabled`는 상단 이동 블랙홀 맵 기믹의 활성 여부를 뜻하며, Snowball의 생성·등급과는 별개다.
+Lv14 `Black Hole` Ball과 이동 Black Hole 맵 기믹은 같은 이름과 motif를 쓰지만 별도 gameplay entity다. `black_hole_phase_enabled`는 Ball의 생성·등급이 아니라 Galactic 안에서 동명 맵 기믹 최종 국면을 활성화할 수 있는지를 뜻하며, 정확한 발동 조건은 S8 데이터 계약에서 확정한다.
+
+## Black Hole Phase Transition
+
+- 발동 시 Stage는 바뀌지 않고 `Galactic`을 유지한다.
+- spawn·timer·input을 전환 중에만 잠근다.
+- Frame과 실제 Play Field가 L2 `920`에서 L3 `1080`으로 함께 좌우 대칭 확장한다.
+- Presentation 완료와 동일한 `phase_id`를 확인한 뒤 새 logical Rect를 활성화하고 gameplay를 재개한다.
+- 이 전환은 terminal presentation이 아니며 Final Result로 직접 이동하지 않는다.
 
 ---
 
@@ -83,7 +91,8 @@ Black Hole
 - 중력이 강해도 게임이 계속 진행
 - 공이 블랙홀에 영구 고정되지 않음
 - Galactic 최종 국면의 생성량에서 성능 확인
-- Black Hole 생성과 결과 화면 정상
+- Lv14 Black Hole Ball 생성과 결과 화면 정상
+- Black Hole Phase 발동 후 L3 Frame/Play Field에서 Galactic gameplay가 정상적으로 재개됨
 
 
 ---

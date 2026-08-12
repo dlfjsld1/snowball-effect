@@ -43,14 +43,18 @@
 - 남은 시간
 - 현재 활성 아이템
 - 일시정지 진입 버튼
+- 현재 Stage 이름 (`Ground` / `Planetary` / `Galactic`)
 - 현재 Stage 공 족보
 
 점수 영역 안에서 Stage Score와 Run Score를 어떻게 병기할지는 UI 튜닝 대상으로 두되, HUD의 최상위 정보 종류를 불필요하게 늘리지 않는다. 활성 아이템이 없을 때는 빈 슬롯 또는 비활성 상태로 표시한다.
 
-공 족보는 수박게임의 진화표처럼 현재 Stage의 local 공 5~6종을 낮은 단계부터 최고 단계까지 순서대로 보여준다. 플레이어가 같은 공 두 개를 합치면 다음에 어떤 공이 되는지 화면을 떠나지 않고 확인할 수 있어야 한다.
+공 족보는 수박게임의 진화표처럼 현재 Stage의 local 공 5종을 낮은 단계부터 최고 단계까지 **세로 방향**으로 보여준다. 플레이어가 같은 공 두 개를 합치면 다음에 어떤 공이 되는지 화면을 떠나지 않고 확인할 수 있어야 한다.
 
 - `local Lv0 → Lv1 → Lv2 → ... → Stage Top` 순서를 아이콘으로 표시한다.
 - 현재 Stage에 포함된 공만 표시하고 Scale Shift 시 다음 Stage 족보로 교체한다.
+- Stage 진입 시 첫 공만 표시하고, 해당 Stage에서 새 local 공을 처음 만들 때 대응 아이콘과 이름을 아래쪽 슬롯에 한 번씩 공개한다.
+- 레이아웃 이동을 막기 위해 5칸 세로 housing은 고정하되, 미발견 공의 아이콘·이름은 출력하지 않는다.
+- 정상적인 Scale Shift에서는 새 Stage의 첫 공만 공개된 상태로 시작한다.
 - 족보는 Ball/Stage 데이터의 read-only 표현이며 Merge 결과를 직접 계산하거나 변경하지 않는다.
 
 일시정지는 게임 화면 위에 modal로 열리며 다음 행동을 제공한다.
@@ -121,11 +125,14 @@ Mouse Wheel Up/Down은 각각 shared Paddle angle을 증가/감소시킨다. Whe
 
 ## 4. 머지
 
-같은 `global_level`의 활성 공 두 개가 접촉하면:
+같은 `global_level`의 활성 공 두 개가 접촉하면 현재 Stage의 ordered chain에서 다음 공으로 합쳐진다.
 
 ```text
-Level N + Level N → Level N+1
+current_stage.local_ball_levels[i] + same
+→ current_stage.local_ball_levels[i + 1]
 ```
+
+따라서 기본 Run의 Planetary에서는 Lv6 두 개가 Lv8로, Lv8 두 개가 Lv10으로 합쳐진다. 전역 ID가 연속이라는 가정으로 `global_level + 1`을 사용하지 않는다. 현재 Stage chain에 다음 항목이 없으면 더 합체하지 않는다.
 
 MVP에서 다른 레벨 공은 서로 통과 가능하다.
 
@@ -157,19 +164,19 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 | 3 | Giant Snowball | 1,000,000 | `#3A8DFF` | 1 |
 | 4 | Moon | 100,000,000 | `#C8C9D8` | 2 |
 | 5 | Earth | 50,000,000,000 | `#2878D4` | 2 |
-| 6 | Gas Giant | 10,000,000,000,000 | `#D79A57` | 2 |
-| 7 | Sun | 1.0e15 | `#FFC247` | 2 |
+| 6 | Sun | 10,000,000,000,000 | `#FFC247` | 2 |
+| 7 | Red Giant | 1.0e15 | `#D94B36` | 2 |
 | 8 | Supernova | 5.0e17 | `#FF6B35` | 2 |
-| 9 | Galaxy | 1.0e21 | `#4D42B8` | 3 |
-| 10 | Galaxy Cluster | 1.0e25 | `#805CFF` | 3 |
-| 11 | Supercluster | 1.0e30 | `#5E75F2` | 3 |
+| 9 | Nebula | 1.0e21 | `#B464C8` | 3 |
+| 10 | Galaxy | 1.0e25 | `#4D42B8` | 3 |
+| 11 | Galaxy Cluster | 1.0e30 | `#805CFF` | 3 |
 | 12 | Quasar | 1.0e36 | `#E8E6FF` | 3 |
 | 13 | Event Horizon | 1.0e43 | `#3A1A61` | 3 |
 | 14 | Black Hole | 1.0e50 | `#10091F` | 4 |
 
-`base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. 기존에 확정한 Lv13 `1.0e43`, Lv14 `1.0e50` 점수는 팀장 원안의 순서에 따라 각각 `Event Horizon`, `Black Hole`에 유지한다. Lv0 반지름 `2`를 기준으로 레벨마다 반지름을 2배(`radius = 2 ^ (global_level + 1)`)로 사용한다. 이에 맞춰 질량은 Lv0의 `1`을 기준으로 레벨마다 4배(`mass = 4 ^ global_level`)를 사용한다. 따라서 아직 리소스가 없는 Lv7~14에도 두 규칙을 적용한다. 화면상 크기 보정은 BallDefinition이 아니라 StageDefinition의 `visual_radius_scale`이 소유하며, 물리 `radius`와 충돌 반지름을 바꾸지 않는다. visual key는 표시 이름의 snake_case(`gas_giant`, `galaxy_cluster`, `event_horizon`, `black_hole` 등)를 사용한다. 나머지 수치는 플레이테스트용이며 데이터에서 수정한다.
+`base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. Lv0 반지름 `2`를 기준으로 레벨마다 반지름을 2배(`radius = 2 ^ (global_level + 1)`)로 사용한다. 이에 맞춰 질량은 Lv0의 `1`을 기준으로 레벨마다 4배(`mass = 4 ^ global_level`)를 사용한다. 화면상 크기 보정은 BallDefinition이 아니라 StageDefinition의 `visual_radius_scale`이 소유하며, 물리 `radius`와 충돌 반지름을 바꾸지 않는다. 나머지 수치는 플레이테스트용이며 데이터에서 수정한다.
 
-`fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Galaxy(Lv9)부터 Event Horizon(Lv13)은 3, 최종 Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. 현재 Stage의 최고 공 생성은 `fx_tier`와 관계없이 Stage Clear 연출을 우선한다.
+`fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Nebula(Lv9)부터 Event Horizon(Lv13)은 3, Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. 현재 Stage의 최고 공 생성은 `fx_tier`와 관계없이 Stage Clear 연출을 우선한다.
 
 ---
 
@@ -221,9 +228,8 @@ Time Bonus를 BallDefinition의 고정값으로 저장하지 않는다.
 | Local Lv2 | +0.5s |
 | Local Lv3 | +1s |
 | Local Lv4 | +2s |
-| Local Lv5 | +4s |
 
-최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 따라서 Ground의 Moon(Local Lv4), Planetary의 Galaxy(Local Lv5), Galactic의 Black Hole(Local Lv5)은 표에는 있으나 일반 Cashout 대상이 아니다.
+최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 세 Stage가 모두 5종이므로 Ground의 Moon, Planetary의 Galaxy, Galactic의 Lv14 Black Hole은 모두 Local Lv4이며 일반 Cashout 대상이 아니다.
 
 목표:
 
@@ -385,7 +391,17 @@ Stage 성공 후 Settlement가 끝나면 Scale Shift.
 
 ## 14. Stage 구성
 
-각 Stage는 해당 세계관에 맞는 local 공 5~6종을 사용한다. 전체 Run의 초기 콘텐츠 목표는 중복을 제외한 global 공 15종이다. 이전 Stage의 최고 공이 다음 Stage의 기본 공으로 재사용되므로, Stage별 개수를 단순 합산한 값과 global 공 종류 수는 다를 수 있다.
+각 Stage는 해당 세계관에 맞는 local 공 5종을 사용한다. 전체 visual catalog는 global 공 15종이며, 기본 Run에서는 Stage 경계 공을 공유하고 Lv7·Lv9를 건너뛰므로 13종이 활성된다.
+
+기본 Run의 ordered `local_ball_levels`는 다음과 같다.
+
+| Stage | Global level chain |
+| --- | --- |
+| Ground | `[0, 1, 2, 3, 4]` |
+| Planetary | `[4, 5, 6, 8, 10]` |
+| Galactic | `[10, 11, 12, 13, 14]` |
+
+Lv7과 Lv9는 15종 visual catalog에는 남지만 기본 Run의 Stage chain에서는 사용하지 않는다.
 
 아래 이름은 현재 테마와 Scale Shift 연결을 보여주는 seed다. 최종 15종의 정확한 Stage 배분, 명칭, 반지름과 점수는 `BallDefinition`/`StageDefinition` 데이터로 확정하며 플레이테스트에서 종류가 과도하다는 피드백이 나오면 축소할 수 있다.
 
@@ -402,7 +418,7 @@ Snowflake → Snowball → Big Snowball → Giant Snowball → Moon
 ### Planetary
 
 ```text
-Moon → Earth → Gas Giant → Sun → Supernova → Galaxy
+Moon → Earth → Sun → Supernova → Galaxy
 ```
 
 초기 Spawn: 약 `15/s`
@@ -412,7 +428,7 @@ Moon → Earth → Gas Giant → Sun → Supernova → Galaxy
 ### Galactic
 
 ```text
-Galaxy → Galaxy Cluster → Supercluster → Quasar → Event Horizon → Black Hole
+Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole
 ```
 
 초기 Spawn: 약 `35/s`
@@ -423,7 +439,7 @@ Galaxy → Galaxy Cluster → Supercluster → Quasar → Event Horizon → Blac
 
 ---
 
-## 15. Galactic 최종 Black Hole 기믹
+## 15. Galactic 최종 Black Hole 국면
 
 - 거대한 블랙홀이 좌우로 움직임
 - 모든 공에 약한 인력을 적용
@@ -431,9 +447,11 @@ Galaxy → Galaxy Cluster → Supercluster → Quasar → Event Horizon → Blac
 - 패들 조작의 의미를 없애지 않음
 - 공을 모아 연쇄 머지를 유도할 수도 있음
 
-이 기믹은 Lv14 `Black Hole` Snowball과 별개의 맵 요소다. 마지막 Galactic Stage의 최고 공은 Lv14 `Black Hole` Snowball이며, 생성 시 다음 Stage 없이 Final Settlement와 Result로 진행한다.
+이 절의 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아니라 Galactic 안에서 발동하는 Stage effect다. 발동 조건은 S8 Core/Content 계약에서 데이터 기반으로 확정한다. 발동 시 `Black Hole Phase Transition`으로 Frame과 실제 Play Field가 L2 `920`에서 L3 `1080`으로 함께 확장되고, 전환 중에만 spawn·timer·input을 잠근 뒤 같은 Galactic Stage gameplay를 재개한다.
 
-### Black Hole 생성
+Lv14 `Black Hole` Ball과 이동 Black Hole 맵 기믹은 이름과 motif를 공유하지만 서로 다른 gameplay entity다. Ball은 `BallDefinition(global_level=14)`과 일반 Merge/Clear 규칙을 따르고, 맵 기믹은 global level이 없는 Stage effect다. Lv14 Black Hole Ball을 만들면 다음 Stage 없이 Final Settlement와 Result로 진행한다.
+
+### 최종 공 생성
 `MAX SCALE / PERFECT CLEAR → Final Settlement → Result`
 
 ### Time Up
@@ -445,10 +463,10 @@ Galaxy → Galaxy Cluster → Supercluster → Quasar → Event Horizon → Blac
 
 ## 16. 아이템
 
-아이템은 패들이 바로 받아먹는 pickup이 아니다. 아이템을 품은 행성형 `Item Ball`로 Play Field에 등장하며, 현재 Stage의 **3단계 이상 Snowball**이 충돌할 때마다 점차 깨진다.
+아이템은 아이템을 품은 행성형 `Item Ball`로 Play Field에 등장하며, 현재 Stage의 **3단계 이상 Snowball**이 충돌할 때마다 점차 깨진다.
 
 - 사람 기준 3단계 이상은 데이터의 0-based 표기로 `local_level >= 2`다.
-- Stage가 local 공 4종이든 5종이든 3단계, 4단계, 5단계 공은 모두 유효 damage를 줄 수 있다.
+- Stage의 local 5종 중 3단계, 4단계, 5단계 공은 모두 유효 damage를 줄 수 있다.
 - 유효 충돌 한 번당 파괴 hit를 한 번만 반영하고, 같은 접촉의 frame 중복 damage를 막는다.
 - hit가 누적될수록 균열·픽셀 파편 등 단계적인 damage 표현을 보여준다.
 - 필요한 hit 수는 `ItemDefinition`의 플레이테스트 tuning 값이다.

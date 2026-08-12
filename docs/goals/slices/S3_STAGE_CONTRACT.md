@@ -14,7 +14,7 @@ Stage Timer, Time Bonus, Top Ball, Time Up, Final Settlement가 확정 계약대
 - Owned Files: `scripts/data/stage_definition.gd`, `resources/stages/**`, `tests/content/**`
 - Integration Point: read-only `StageCatalog.get_stage(index)` API와 `StageDefinition` schema.
 - Dependencies: S2-G1 BallCatalog; Core가 runtime 필드를 확정.
-- Verification: `base_time`, `clear_score`, `time_bonus_by_local_level`, level range, spawn rate, `visual_radius_scale` 로드; 초기 seed는 데이터일 뿐 공식이 아님.
+- Verification: `base_time`, `clear_score`, 5개 `time_bonus_by_local_level`, ordered `local_ball_levels`, spawn rate, `visual_radius_scale` 로드; Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`; 초기 seed는 데이터일 뿐 공식이 아님.
 - Do Not Modify: Stage runtime와 StageManager.
 
 ### S3-G2 Stage 진입과 Cashout 점수·시간
@@ -57,9 +57,9 @@ Stage Timer, Time Bonus, Top Ball, Time Up, Final Settlement가 확정 계약대
 
 - Owner: Presentation
 - Owned Files: `scripts/ui/hud.gd`, `scenes/ui/hud.tscn`, `tests/presentation/**`
-- Integration Point: `stage_time_changed`, `score_changed`, `stage_changed`, `stage_clear_decided` 구독.
+- Integration Point: `stage_time_changed`, `score_changed`, `stage_changed`, `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)`, `stage_clear_decided` 구독.
 - Dependencies: S3-G2 signal signature와 S3-G1 display data.
-- Verification: Stage Time/Stage Score/Run Score/Clear Target/Stage 이름 표시; Time Bonus 0이면 time popup 없음; HUD가 규칙 state를 변경하지 않음.
+- Verification: Stage Time/Stage Score/Run Score/Clear Target과 Stage 이름(`Ground`/`Planetary`/`Galactic`)을 지속 표시; 현재 Stage의 공 족보는 고정 세로 5칸 housing에 배치하고 Stage 진입 시 첫 공만 표시; 새 공을 처음 만들 때 대응 아이콘·이름이 순서대로 정확히 한 번 공개되며 미발견 공은 출력되지 않음; Time Bonus 0이면 time popup 없음; HUD가 Merge 결과나 규칙 state를 변경하지 않음.
 - Do Not Modify: Stage runtime, StageManager, resource 값.
 
 ## Exit Gate

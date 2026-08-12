@@ -12,9 +12,9 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 
 - Owner: Content/Systems
 - Owned Files: `resources/stages/**`, `resources/balls/**`, `tests/content/**`
-- Integration Point: StageCatalog가 local ball level 목록, global ball 범위, spawn rate, `visual_radius_scale`, background key를 제공.
+- Integration Point: StageCatalog가 ordered `local_ball_levels`, spawn rate, `visual_radius_scale`, background key를 제공.
 - Dependencies: S3-G1과 S4 완료.
-- Verification: Ground/Planetary/Galactic의 level 범위가 연속이며 이전 top이 다음 base와 동일; 값은 runtime 공식이 아닌 데이터.
+- Verification: Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`가 각각 5종이고 이전 top이 다음 base와 동일; Lv7·Lv9는 catalog에는 있으나 기본 chain에서 비활성; Lv14는 `Black Hole` 최종 공; 값은 runtime 공식이 아닌 데이터.
 - Do Not Modify: Stage runtime, StageManager, background scene.
 
 ### S5-G2 Stage re-baselining runtime
@@ -23,7 +23,7 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 - Owned Files: `scripts/core/stage_runtime.gd`, `scripts/simulation/ball_simulation_manager.gd`, `tests/core/**`
 - Integration Point: `apply_stage_definition(definition)`과 stage snapshot을 Integration에 제공.
 - Dependencies: S5-G1 data와 S3 계약.
-- Verification: base global level과 spawn rate 전환, 새 Stage에 이전 배열/시간/점수 잠금이 누출되지 않음.
+- Verification: base global level과 spawn rate 전환, Merge가 현재 ordered chain의 다음 항목을 사용해 Planetary `6→8→10`을 만들고 `global_level + 1`을 가정하지 않음, 새 Stage에 이전 배열/시간/점수 잠금이 누출되지 않음.
 - Do Not Modify: StageManager, resource 값, Stage World.
 
 ### S5-G3 Scale Shift 상태 통합
@@ -41,7 +41,7 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 - Owned Files: `scripts/presentation/background_manager.gd`, `scripts/presentation/presentation_manager.gd`, `scripts/ui/hud.gd`, `scenes/ui/hud.tscn`, `scenes/backgrounds/**`, `scenes/effects/**`, `tests/presentation/**`
 - Integration Point: `stage_changed`, `stage_shift_started` 구독; `stage_shift_presentation_finished` 반환.
 - Dependencies: S5-G1 background key와 `INTEGRATION_CONTRACTS.md`의 Shift signal 계약.
-- Verification: Stage World 전환, 현재 Stage local 공 5~6종의 족보가 순서대로 표시되고 Shift 후 새 목록으로 한 번 교체됨, `NEXT` Spawn 예고 없음, Shift 완료 신호 한 번, animation/HUD가 gameplay state를 직접 변경하지 않음.
+- Verification: Stage World 전환, Stage 이름을 persistent HUD에 갱신, 현재 Stage 5종 족보를 세로로 배치하고 공개된 항목만 표시, Shift 후 새 목록과 `revealed_count=1`이 한 번 적용됨, 새 공 최초 생성마다 한 항목만 공개, `NEXT` Spawn 예고 없음, Shift 완료 신호 한 번, animation/HUD가 gameplay state를 직접 변경하지 않음.
 - Do Not Modify: StageManager와 resource level mapping.
 
 ### S5-G5 3-Stage 통합 완주

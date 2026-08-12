@@ -9,7 +9,8 @@
 | Core Stage runtime | `stage_time_changed(time_left)` | Presentation HUD | 남은 시간 표시 |
 | Core score ledger | `score_changed(stage_score, run_score)` | Presentation HUD | 점수 표시 |
 | Core simulation | `cashout_completed(score_amount, local_level, world_position)` | Presentation, Integration | popup과 Stage Time Bonus 반영 |
-| Core simulation | `ball_merged(result_level, world_position)` | Presentation | Merge FX |
+| Core simulation | `ball_merged(result_level, world_position)` — 2 arguments only | Presentation | Merge FX; score amount와 special type은 포함하지 않음 |
+| Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration | Clear 표시와 상태 잠금 |
 | Core Settlement | `final_settlement_started/finished(amount)` | Presentation, Integration | 정산 연출과 완료 중재 |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation | data 적용과 Stage World 변경 |
@@ -18,6 +19,8 @@
 | Content ItemManager | `item_planet_broken(item_type, world_position)` | Presentation, Integration | 최종 파괴 FX, CUT-IN과 1회 activation 중재 |
 | Content ItemManager | `active_items_changed(read_only_snapshot)` | Presentation HUD | 현재 활성 아이템 표시 |
 | Presentation | `stage_shift_presentation_finished` | Integration StageManager | 다음 Stage 진입 허용 |
+| Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | Galactic 내부 L2→L3 국면 전환 시작; 새 Stage가 아님 |
+| Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용 |
 
 ## Integration Goal 조건
 
