@@ -528,3 +528,27 @@ Branch: `codex/s2-g5-merge-presentation`
 
 - 일반 플레이 peak 약 300개는 초기 가정이다. 후반 Stage·FX·Black Hole 통합 후 active-ball telemetry로 다시 확인한다.
 - 렌더 배치 등 추가 최적화 계약은 별도 기술 조사 결과가 들어오면 갱신하며 이번 재판정에서 runtime 구현은 변경하지 않았다.
+
+## 2026-08-12 — S5-G2 Stage re-baselining runtime
+
+Owner: Core
+Branch: `codex/s5-g2-stage-rebaseline`
+
+### 변경
+
+- StageRuntime과 BallSimulationManager에 `apply_stage_definition(definition)` 및 read-only stage snapshot을 제공했다.
+- Stage 적용 시 simulation 배열, Stage score/time, 종료 잠금을 초기화하고 run score만 보존한다.
+- Merge 결과를 `global_level + 1` 대신 현재 Stage의 ordered `local_ball_levels` 다음 항목에서 구한다. 입력이 chain 밖이거나 top이면 Merge하지 않는다.
+- S2-G3 catalog-top 회귀는 전체 catalog를 ordered chain으로 명시해 기존 contiguous baseline의 의미를 보존했다.
+
+### 확인
+
+- S5-G2 전용 검증에서 Planetary base/spawn `4/15`, `6→8→10`, local radius `16→32→64`, Galactic base/spawn `10/35`, Lv10 radius `64→4` 재기준화를 확인했다.
+- Stage 변경 뒤 이전 active 배열 0, stage score 0, time 40, 종료 잠금 해제, run score 25 보존을 확인했다.
+- Godot 4.7.1 native headless: S5-G2, S2-G3, S3-G2/G3/G4, S4-G1/G2 총 7개 verification scene 모두 exit 0.
+- Primary Main runtime: Ground, base Lv0, spawn 6/s, runtime radius 4, PLAYING, active balls 정상 증가, runtime error 0.
+
+### 제외 / 다음 작업
+
+- StageManager/GameManager/Main 연결과 실제 Shift 상태 전이는 S5-G3 Integration 범위라 수정하지 않았다.
+- Stage World, Shift animation, 완료 signal은 S5-G4 Presentation 범위다.

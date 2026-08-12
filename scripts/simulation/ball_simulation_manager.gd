@@ -31,6 +31,10 @@ var _paddle_collision_provider: Node
 var _ball_catalog = BallCatalogScript.new()
 var _spatial_grid = SpatialGridScript.new()
 var _stage_ball_levels := PackedInt32Array()
+var _stage_index := -1
+var _stage_base_global_level := 0
+var _stage_top_global_level := -1
+var _stage_spawn_rate := 0.0
 var _last_candidate_count := 0
 var _last_grid_cell_count := 0
 var _last_merge_count := 0
@@ -123,6 +127,26 @@ func configure_stage_ball_levels(ordered_global_levels: PackedInt32Array) -> voi
 	_stage_ball_levels = ordered_global_levels.duplicate()
 
 
+func apply_stage_definition(definition: StageDefinition) -> void:
+	assert(definition != null, "Simulation Stage apply requires a StageDefinition.")
+	reset_runtime()
+	_stage_index = definition.stage_index
+	_stage_base_global_level = definition.base_global_level
+	_stage_top_global_level = definition.top_global_level
+	_stage_spawn_rate = definition.spawn_rate
+	configure_stage_ball_levels(definition.local_ball_levels)
+
+
+func get_stage_snapshot() -> Dictionary:
+	return {
+		"stage_index": _stage_index,
+		"base_global_level": _stage_base_global_level,
+		"top_global_level": _stage_top_global_level,
+		"local_ball_levels": _stage_ball_levels.duplicate(),
+		"spawn_rate": _stage_spawn_rate,
+	}
+
+
 func get_runtime_radius_for_level(global_level: int) -> float:
 	var local_level := _stage_ball_levels.find(global_level)
 	if local_level >= 0:
@@ -178,8 +202,8 @@ func commit_merge_candidates() -> int:
 		if not is_ball_active(first_index) or not is_ball_active(second_index):
 			continue
 
-		var result_level := global_levels[first_index] + 1
-		if not _ball_catalog.has_definition(result_level):
+		var result_level := _get_next_stage_global_level(global_levels[first_index])
+		if result_level < 0:
 			continue
 
 		_consumed_merge_flags[first_index] = 1
@@ -205,6 +229,14 @@ func commit_merge_candidates() -> int:
 
 	_last_merge_count = _merge_plans.size()
 	return _last_merge_count
+
+
+func _get_next_stage_global_level(global_level: int) -> int:
+	var local_level := _stage_ball_levels.find(global_level)
+	if local_level < 0 or local_level + 1 >= _stage_ball_levels.size():
+		return -1
+	var result_level := _stage_ball_levels[local_level + 1]
+	return result_level if _ball_catalog.has_definition(result_level) else -1
 
 
 func set_paddle_collision_provider(provider: Node) -> void:
