@@ -153,17 +153,9 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 공의 크기 재정규화
 
-Stage Shift 후 이전 최고 공이 다음 기본 공이 된다.
+Stage Shift 후 이전 최고 공은 다음 Stage의 기본 공이 된다. 전환 시 gameplay visual과 collision 크기를 함께 새 Stage의 local Lv0 반지름 `4`로 재정규화한다. 같은 Stage 안에서는 local level에 따라 `4 → 8 → 16 → 32 → 64`로 성장한다.
 
-그러므로 화면상 공 크기를 그대로 유지하면 안 된다.
-
-표현 의도:
-
-> 공이 작아진 것이 아니라 카메라/관측 스케일이 더 멀리 줌아웃됐다.
-
-따라서 Stage마다 `visual_radius_scale`을 별도로 적용할 수 있다.
-
-게임 규칙의 `global_level`과 화면상 크기를 동일 개념으로 취급하지 않는다.
+표현상으로는 공 자체가 줄어든 것이 아니라 관측 스케일이 더 멀리 이동한 것으로 연출한다. `global_level`은 공의 정체성과 점수 데이터를 유지하지만 화면 및 충돌 크기는 현재 Stage의 local level이 결정한다. `visual_radius_scale`은 향후 Scale Shift 화면 연출을 위한 예약값이며 gameplay visual과 collision을 서로 다르게 만드는 용도로 사용하지 않는다.
 
 ---
 

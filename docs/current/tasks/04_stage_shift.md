@@ -19,8 +19,8 @@
 - 최고 공 최초 생성 시 Stage Clear; Settlement 완료 후 다음 스테이지
 - 이전 최고 공 = 다음 기본 공
 - 생성량 증가
-- 화면상 크기 정규화
-- StageDefinition의 `visual_radius_scale`로 렌더 크기 보정
+- gameplay 공 크기 재정규화: 새 Stage local Lv0의 visual/collision 반지름을 `4`로 초기화
+- 같은 Stage 안에서는 local level에 따라 visual/collision 반지름을 `4 → 8 → 16 → 32 → 64`로 사용
 - 새 기본 레벨보다 낮은 공 정리
 - 좌우 Stage World 배경 전환
 - HUD 공 족보를 새 Stage의 local 공 5종 세로 목록으로 교체하고 첫 공만 공개
@@ -97,5 +97,5 @@ levels [10, 11, 12, 13, 14], spawn 35/s
 - Planetary는 천체 규모의 급격한 확대
 - Galactic은 화면/계기 밀도 증가
 - 후반 기계는 과부하처럼 보여도 실제 HUD와 조작 가독성은 유지
-- 이전 최고 공의 화면상 크기는 새 Stage 기준으로 재정규화
-- 재정규화는 Stage 데이터가 소유하며 BallDefinition의 물리 반지름을 변경하지 않음
+- 이전 최고 공은 새 Stage의 local Lv0가 되며 visual/collision 반지름 모두 `4`로 재정규화
+- runtime 크기의 source of truth는 현재 Stage의 ordered `local_ball_levels`이고, BallDefinition의 전역 `radius`는 catalog/fallback seed로만 사용

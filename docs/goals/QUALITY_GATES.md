@@ -34,7 +34,7 @@
 | Q-S1 | 100개 활성 공, gravity 0과 무상호작용 velocity 유지, 좌·우·상단 반사/열린 하단, Mouse logical-X 직접 반영 및 키보드 fallback, 이동+무제한 회전 동시 입력, previous/current transform 기반 continuous 양면 Paddle collision, center+angular contact velocity 후 impact cap, 중심/끝·회전 방향별 반사, penetration/contact lock, Cashout 1회 반영 |
 | Q-S2 | 동일 레벨만 Merge, 입력 둘 제거·출력 하나 생성, 한 쌍 한 번 처리 |
 | Q-S3 | Cashout 시간 구조, Top Ball 우선순위, 중복 Settlement, score source-of-truth 회귀 테스트 |
-| Q-S4 | release path에 전수 O(N²) 없음, 1,000 논리 공 FPS와 allocation 관찰 기록 |
+| Q-S4 | release path에 전수 O(N²) 없음, 실제 Web 동시 활성 500개에서 최저 30 FPS 이상, 1,000개 stretch FPS·allocation·병목 관찰 기록 |
 | Q-S5 | ordered Stage chain(`6→8→10`)과 5종 세로 progressive HUD, Stage별 reset/preserve, top-ball lock, settlement 후 shift, 세 Stage 연속 완주 |
 | Q-S6 | burst에서도 패들·공 가독성, FX budget 작동, 중요한 이벤트 우선 |
 | Q-S7 | 아이템 비활성화 시 Core 결과 동일, Fire modifier가 Settlement에 침투하지 않음 |

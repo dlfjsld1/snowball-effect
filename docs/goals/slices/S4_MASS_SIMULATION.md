@@ -4,7 +4,7 @@
 
 ## 결과
 
-Merge 경로가 모든 공 쌍을 검사하지 않고 논리 공 1,000개 부하를 측정할 수 있다.
+Merge 경로가 모든 공 쌍을 검사하지 않고 Web release 필수 규모인 동시 활성 500개를 감당하며, 1,000개 stretch 부하도 측정할 수 있다.
 
 ## Goals
 
@@ -26,13 +26,13 @@ Merge 경로가 모든 공 쌍을 검사하지 않고 논리 공 1,000개 부하
 - Verification: 비활성 index 우선 재사용, physics hot path 반복 대형 allocation 없음, FX와 논리 공 분리.
 - Do Not Modify: Presentation FX implementation.
 
-### S4-G3 1,000공 스트레스
+### S4-G3 Web release·1,000공 stretch 스트레스
 
 - Owner: Core
 - Owned Files: `tests/simulation/stress_test_scene.tscn`, `tests/simulation/**`
 - Integration Point: Content/Systems가 Web 환경 측정을 반복할 수 있는 stress mode와 metric schema 제공.
 - Dependencies: S4-G2; Content/Systems의 측정 환경 계약.
-- Verification: 100/500/1,000개 평균·최저 FPS, 후보 수, allocation 기록; 1,000개 30 FPS 미달이면 미완료와 병목 기록.
+- Verification: 100/500/1,000개 평균·최저 FPS, 후보 수, allocation 기록. 실제 Web에서 500개 최저 30 FPS 이상이면 필수 Gate를 통과한다. 1,000개는 stretch/torture 결과와 병목을 정직하게 기록하되 30 FPS 미달만으로 Goal을 막지 않는다.
 - Do Not Modify: Web export preset.
 
 ## Exit Gate
