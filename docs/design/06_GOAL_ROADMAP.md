@@ -181,7 +181,7 @@ L1/L2 완료 뒤에는 다음 Stage를 활성화한다. L3는 첫 Lv14의 Black 
 
 ### S6-G4 Sound Tier and Readability
 
-- S6-G3 Content audio catalog 소비.
+- Owner: Content/Systems. S6-G3 Content audio catalog 소비.
 - priority/polyphony와 Web first-input audio 상태.
 - late density에서 Paddle/Ball/HUD 가독성 확인.
 

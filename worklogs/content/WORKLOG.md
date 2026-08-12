@@ -264,3 +264,24 @@ Branch: `codex/s2-g5-merge-presentation`
 
 - 다음 순차 Core Goal은 S5-G2 Stage re-baselining runtime이다. Planetary 비연속 progression `6→8→10`, Stage별 base spawn, reset 누출 방지는 그 Goal에서 구현·검증한다.
 - Presentation S5-G4는 S5-G1 background key와 기존 Shift signal 계약을 소비해 병렬 진행할 수 있다.
+
+## 2026-08-12 — S6 audio 담당 통합 계약
+
+Owner: Content/Systems/Release
+Branch: `main`
+
+### 변경
+
+- 팀 결정에 따라 S6-G3 Audio 콘텐츠와 S6-G4 사운드 계층·가독성을 Content/Systems가 함께 소유하도록 문서 계약을 재배정했다.
+- `assets/audio/**`, `resources/audio/**`, `scripts/presentation/audio_manager.gd`, `tests/content/**`를 S6 audio 범위로 명시했다.
+- Presentation은 S6-G1의 시각 FX event tier만 확정하고, Content가 audio catalog, 재생 priority/polyphony, Web 첫 입력 audio 활성화를 담당하도록 소유권과 read-only event 소비 계약을 정리했다.
+
+### 확인
+
+- 문서 전용 변경이며 runtime 파일은 수정하지 않았다.
+- `git diff --check` 통과.
+
+### 다음 작업 / 주의
+
+- S6-G1 event tier가 아직 PENDING이므로 S6-G3/G4는 PENDING으로 유지한다.
+- S6-G1의 확정 event tier를 받은 뒤에만 필수 audio key와 실제 asset catalog를 확정한다.

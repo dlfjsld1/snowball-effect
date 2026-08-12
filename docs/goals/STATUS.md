@@ -54,7 +54,7 @@
 | S6-G1 이벤트 등급·FX budget | Presentation | PENDING | S5 완료 필요 |
 | S6-G2 CUT-IN·화면 연출 | Presentation | PENDING | S6-G1/S5 상태 계약 필요 |
 | S6-G3 Audio 콘텐츠 | Content/Systems | PENDING | S6-G1 event tier 필요 |
-| S6-G4 사운드 계층·가독성 | Presentation | PENDING | S6-G1/G3 필요 |
+| S6-G4 사운드 계층·가독성 | Content/Systems | PENDING | S6-G1/G3 필요 |
 | S7-G1 Item gateway 통합 | Integration | PENDING | S5 완료와 Core/Content API 필요; 선택 |
 | S7-G2 Blizzard | Content/Systems | PENDING | S7-G1 필요; 선택 |
 | S7-G3 Fire Core | Content/Systems | PENDING | S7-G1/S3 회귀 필요; 선택 |
@@ -81,4 +81,5 @@
 - S4-G1~G3은 모두 `VERIFIED`다. 필수 Web release Gate는 동시 활성 500개 최저 30 FPS이며 실측 최저 `38.6 FPS`로 통과했다. Web 1,000공은 stretch에서 30 FPS 미달이고 공별 `draw_circle` 렌더 경로가 첫 병목 후보지만 S4 완료를 막지 않는다. S5-G1 dependency가 충족되어 다음 작업으로 열려 있다.
 - S5-G1은 기존 Stage/Ball Resource mapping을 전용 검증으로 재확인해 `VERIFIED`다. 다음 순차 Core Goal은 S5-G2 Stage re-baselining runtime이며, Presentation S5-G4도 S5-G1 background key와 기존 Shift signal 계약을 바탕으로 작업 가능하다.
 - S5-G2는 ordered Merge와 Stage apply/reset snapshot까지 `VERIFIED`다. 다음 순차 작업은 Presentation S5-G4가 Shift 완료 signal을 제공한 뒤 Integration S5-G3에서 StageManager/GameManager/Main에 연결하는 것이다.
+- S6의 audio asset·catalog·재생/priority/polyphony·Web 첫 입력 검증은 Content/Systems가 S6-G3과 S6-G4에서 함께 소유한다. Presentation은 S6-G1의 시각 FX event tier를 확정해 전달한다.
 - 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.

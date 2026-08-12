@@ -8,12 +8,12 @@
 |---|---|---|---|
 | Core Stage runtime | `stage_time_changed(time_left)` | Presentation HUD | 남은 시간 표시 |
 | Core score ledger | `score_changed(stage_score, run_score)` | Presentation HUD | 점수 표시 |
-| Core simulation | `cashout_completed(score_amount, global_level, world_position)` | Presentation, Integration | popup과 StageRuntime의 local Time Bonus 반영 |
-| Core simulation | `ball_merged(result_level, world_position)` — 2 arguments only | Presentation | Merge FX; score amount와 special type은 포함하지 않음 |
+| Core simulation | `cashout_completed(score_amount, global_level, world_position)` | Presentation, Integration, Content AudioManager | popup·StageRuntime local Time Bonus·audio event 선택 |
+| Core simulation | `ball_merged(result_level, world_position)` — 2 arguments only | Presentation, Content AudioManager | Merge FX와 audio event 선택; score amount와 special type은 포함하지 않음 |
 | Core simulation | `simulation_metrics_updated(metrics)` — read-only `active_balls/slot_capacity/free_slots/candidate_count/grid_cell_count/grid_bucket_capacity/grid_new_buckets/merges` | Presentation, Content/Systems | 성능 HUD와 release stress 측정; simulation state 수정 금지 |
 | Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
-| Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration | Clear 표시와 상태 잠금 |
-| Core Settlement | `final_settlement_started(amount)`, `final_settlement_finished(amount)` | Presentation, Integration | 정산 연출과 완료 중재 |
+| Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration, Content AudioManager | Clear 표시·상태 잠금·audio event 선택 |
+| Core Settlement | `final_settlement_started(amount)`, `final_settlement_finished(amount)` | Presentation, Integration, Content AudioManager | 정산 연출·완료 중재·audio event 선택 |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation | data 적용과 Stage World 변경 |
 | Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager | 시작, Pause modal 행동과 화면 전환 요청 |
 | Content ItemManager | `item_planet_damaged(item_type, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |
@@ -23,6 +23,13 @@
 | Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | 첫 Lv14→Black Hole 전환과 Galactic 내부 L2→L3 국면 시작; 새 Stage가 아님 |
 | Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용 |
 | Core simulation | Black Hole finale event + read-only contact snapshot (exact signature: S8-G2) | Integration, Presentation | 두 Black Hole 접촉을 한 번 잠그고 mutual orbit·폭발·타이틀 Run End 시작 |
+
+## S6 audio ownership
+
+- Content/Systems는 S6-G3과 S6-G4를 함께 소유한다. `assets/audio/**`, `resources/audio/**`, `scripts/presentation/audio_manager.gd`가 대상이다.
+- Content AudioManager는 기존 gameplay event를 read-only로 구독하고 S6-G3 catalog의 event key를 재생한다. 점수·타이머·Stage 상태를 변경하거나 새 gameplay signal을 만들지 않는다.
+- Presentation은 S6-G1에서 시각 FX의 event tier만 확정한다. tier-to-audio-key 매핑, priority/polyphony, Web 첫 입력 이후 audio 활성화는 Content가 구현한다.
+- S6-G1이 완료되기 전에는 필수 audio key 목록을 확정하거나 S6-G3/G4를 `IN PROGRESS` 또는 완료로 변경하지 않는다.
 
 ## Integration Goal 조건
 

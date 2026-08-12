@@ -31,7 +31,7 @@
 |---|---:|---|
 | Core | 1 | gameplay rule, simulation, physics, runtime 계산 |
 | Presentation | 1 | HUD, 배경, FX, CUT-IN, 화면 표현 |
-| Content/Systems | 1 | data, 화면 시스템, audio, release |
+| Content/Systems | 1 | data, 화면 시스템, audio asset/catalog·재생 정책, release |
 | Integration | 1 | 공동 접점 파일, Signal wiring, 상태 흐름 통합 |
 
 Core/Presentation/Content의 세 Goal은 선행 조건과 Integration 계약이 충족되면 병렬로 진행할 수 있다. Integration은 별도 lane이며 준비된 결과를 공동 접점에 합칠 때 사용한다.

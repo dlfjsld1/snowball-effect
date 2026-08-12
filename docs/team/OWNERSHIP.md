@@ -48,6 +48,8 @@ assets/shaders/**
 tests/presentation/**
 ```
 
+예외: `scripts/presentation/audio_manager.gd`는 S6-G4에 한해 Content/Systems-owned다. Presentation은 S6-G1에서 시각 FX event tier만 확정해 제공하며, AudioManager·재생 정책·Web audio 활성화는 수정하지 않는다.
+
 ## Content/Systems-owned
 
 ```text
@@ -62,6 +64,8 @@ scenes/ui/title*.tscn
 scenes/ui/pause*.tscn
 scenes/ui/result*.tscn
 assets/audio/**
+resources/audio/**
+scripts/presentation/audio_manager.gd  # S6-G4 audio ownership exception
 export_presets.cfg
 tests/content/**
 tests/release/**
