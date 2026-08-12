@@ -124,11 +124,13 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 ## 게임플레이
 
-블랙홀은 별도 Stage나 Ball이 아닌 Galactic 내부 최종 국면 맵 기믹이며, 단순 배경이 아니다.
+블랙홀은 별도 Stage가 아니다. 첫 Lv14 Black Hole Ball이 이동 runtime 기믹으로 전환되며 단순 배경이 아니라 실제 gameplay entity가 된다.
 
-- 좌우로 움직임
+- Play Field 안을 3단계 공 정도의 gameplay footprint로 이동
 - 실제 공 궤도를 약하게 끌어당김
-- 합체를 방해하기도 하고 몰아주기도 함
+- 3단계 이하 공 흡수
+- 하단에서 반사하며 성장·Merge하지 않음
+- 두 번째 Black Hole과 충돌하면 서로 회전·폭발하며 최종 타이틀 연출로 연결
 
 ## 기계 상태
 
@@ -145,7 +147,7 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 - Event Horizon
 - Black Hole Ball (Lv14)
 
-기믹 발동 시 Frame과 실제 Play Field가 L2에서 L3로 함께 확장되고, 전환 뒤 같은 Galactic gameplay를 재개한다. Lv14 Black Hole Ball은 작은 gameplay silhouette·공 전용 outline·compact accretion ring으로, 거대한 이동 Black Hole 맵 기믹은 field distortion·grid lensing·환경 scale로 구분한다.
+첫 Lv14 생성 시 Frame과 실제 Play Field가 L2에서 L3로 함께 확장되고, 전환 뒤 같은 Galactic gameplay를 재개한다. 전환된 Black Hole은 compact accretion ring과 고대비 outline을 유지하되 주변 field distortion·grid lensing으로 일반 공과 구분한다. 두 Black Hole의 최종 폭발 뒤 gameplay HUD/UI를 제거하고 `SNOWBALL EFFECT` 제목을 화면의 최종 초점으로 사용한다. 제목 아래에는 `CLEAR SCORE`와 최종 run score를 표시하고 그 아래 `MAIN MENU` 버튼을 둔다.
 
 ---
 

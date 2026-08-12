@@ -135,7 +135,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - StageDefinition `base_time`, `clear_score`, `time_bonus_by_local_level`
 - Stage별 타이머
 - 일반 Cashout = Score + Time Bonus
-- 최고 공 즉시 Stage Clear
+- Ground/Planetary 최고 공 즉시 Stage Clear와 Galactic Black Hole 예외
 - Time Up 처리
 - Final Settlement = Score Only
 - Settlement snapshot / 중복 잠금
@@ -150,7 +150,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - Final Settlement에서는 시간이 증가하지 않음
 - Final Settlement에서는 Active Cashout 전용 modifier가 적용되지 않음
 - Settlement 재호출 시 점수가 중복되지 않음
-- 최고 공 제작 시 즉시 성공 상태
+- Ground/Planetary 최고 공 제작 시 즉시 성공 상태
 - Time Up 후 점수컷 판정
 - 실패 시 Run End
 - 성공 시 다음 Stage 준비
@@ -264,11 +264,13 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 
 ## 구현
 
-- 마지막 Galactic 스테이지의 Black Hole 맵 기믹
-- 배경 블랙홀 이동
-- 전역 인력
+- 첫 Lv14 Ball을 이동 Black Hole runtime entity로 전환하며 L2→L3 확장
+- Black Hole 이동, 저등급 공 흡수와 주변 궤도 인력
+- Black Hole 하단 반사, 비성장·일반 Merge 제외
+- 흡수 공 Cashout 상당 점수 차감과 run score 0 Game Over
 - 궤도 잔상
-- Lv14 Black Hole Ball과 최종 결과 연결; 동명 이동 Black Hole 맵 기믹은 별도 Stage effect로 유지
+- 두 번째 Black Hole 생성 후 두 Black Hole 충돌로 최종 회전·폭발·타이틀 Run End 연결
+- 타이틀 아래 Clear Score와 Main Menu 표시
 - 후반 생성량
 - 왜곡 또는 대체 연출
 
@@ -276,7 +278,8 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 
 - 블랙홀 위치에 따라 궤도가 확실히 달라짐
 - 플레이가 어려워지지만 불가능하지 않음
-- 공이 영구적으로 갇히지 않음
+- Black Hole이 하단 Cashout되지 않음
+- 두 Black Hole terminal sequence가 한 번만 발생
 - 후반 물량과 연출을 켠 웹 빌드가 실행됨
 
 ---
@@ -313,7 +316,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - 점수 폭증
 - Stage local level별 Time Bonus
 - Stage별 제한 시간
-- 최고 공 즉시 Clear
+- Ground/Planetary 최고 공 즉시 Clear; Galactic은 Black Hole finale
 - Time Up Final Settlement
 - Score Clear / Run Fail
 - Ground → Planetary → Galactic

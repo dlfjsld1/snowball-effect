@@ -19,8 +19,9 @@
 | Content ItemManager | `item_planet_broken(item_type, world_position)` | Presentation, Integration | 최종 파괴 FX, CUT-IN과 1회 activation 중재 |
 | Content ItemManager | `active_items_changed(read_only_snapshot)` | Presentation HUD | 현재 활성 아이템 표시 |
 | Presentation | `stage_shift_presentation_finished` | Integration StageManager | 다음 Stage 진입 허용 |
-| Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | Galactic 내부 L2→L3 국면 전환 시작; 새 Stage가 아님 |
+| Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | 첫 Lv14→Black Hole 전환과 Galactic 내부 L2→L3 국면 시작; 새 Stage가 아님 |
 | Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용 |
+| Core simulation | Black Hole finale event + read-only contact snapshot (exact signature: S8-G2) | Integration, Presentation | 두 Black Hole 접촉을 한 번 잠그고 mutual orbit·폭발·타이틀 Run End 시작 |
 
 ## Integration Goal 조건
 

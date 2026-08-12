@@ -568,20 +568,30 @@ scale shift: up to about 0.8~1.0s
 
 ## 13. 블랙홀 기술
 
-BackgroundManager가 시각 블랙홀과 논리 위치를 제공한다.
+첫 Lv14 Black Hole Ball 생성은 일반 Top Ball Clear를 요청하지 않는다. Core simulation은 해당 Ball slot을 일반 Merge/Cashout 집합에서 제거하고, 그 위치와 운동 상태를 이어받는 Black Hole runtime entity로 전환한다. 두 번째 Lv14도 같은 방식으로 두 번째 Black Hole entity가 되며, 둘의 접촉은 일반 Merge보다 우선하는 terminal event다.
 
-이 블랙홀은 마지막 Galactic Stage의 최종 국면에서만 활성화하는 맵 기믹이며 BallDefinition과 별개의 런타임 요소다. 활성화는 Stage 변경이 아니라 같은 Galactic Stage 안의 `Black Hole Phase Transition`이다.
+Black Hole gameplay state와 force/absorption 계산은 Core가 소유하고, BackgroundManager는 read-only 위치 snapshot을 받아 시각 중심을 맞춘다. 활성화는 Stage 변경이 아니라 같은 Galactic Stage 안의 `Black Hole Phase Transition`이다.
 
 ```gdscript
 func get_black_hole_position() -> Vector2
 func get_black_hole_pull(position: Vector2) -> Vector2
 ```
 
-논리 인력은 BallSimulationManager에서 적용한다.  
+논리 인력과 `local_level <= 2` 공 흡수는 BallSimulationManager에서 적용한다. Black Hole 자체는 일반 Merge와 하단 Cashout scan에서 제외하고, Play Field 하단을 전용 반사 경계로 사용한다. Black Hole은 흡수로 radius·mass·force를 키우지 않는다.
 배경 셰이더와 논리 좌표가 크게 어긋나지 않아야 한다.
 
 성능상 공마다 `sqrt`를 줄이고 싶다면 거리 제곱 기반 완만한 함수 사용 가능하다.  
 다만 조작감이 우선이며 실제 측정 후 최적화한다.
+
+초기 force seed는 영향 반경 `240 world units`, 최대 가속도 `300 world units/s²`다. 반경 안의 normalized distance `t = clamp(distance / 240, 0, 1)`에 대해 `(1 - t)²` falloff를 사용하고 반경 밖은 0으로 둔다. delta를 곱해 velocity에 적용한 뒤 기존 final Ball speed cap을 유지한다. 중심 거리 `epsilon` 이하에서는 영벡터를 normalize하지 않아 NaN을 막는다. 수치는 Stage tuning data로 교체 가능해야 한다.
+
+일반 공에 대한 다중 Black Hole force는 각 source의 vector를 먼저 합한 뒤 `600 world units/s²`로 한 번 제한한다. 같은 방향의 힘은 더해지고 반대 방향은 자연스럽게 상쇄되므로 Black Hole 수를 단순 scalar 배수로 적용하지 않는다. 그 뒤 delta를 곱하고 기존 Ball runtime speed cap을 적용한다.
+
+Black Hole entity끼리는 일반 공용 force/absorption loop와 분리해 상대 Black Hole 방향으로 최대 `450 world units/s²`의 mutual acceleration을 적용한다. 이 값은 접근을 유도하는 gameplay seed이며, 접촉 확정 이후에는 force 적분을 멈추고 terminal presentation이 회전·폭발 transform을 소유한다.
+
+흡수 contact가 확정되면 일반 Cashout commit 전에 해당 공을 한 번 소비한다. `calculate_cashout_score(ball)`을 read-only로 계산한 값을 stage/run score에서 각각 차감한다. `stage_score`는 0에서 clamp하고, 계산 결과 `run_score <= 0`이면 `run_score = 0`으로 고정한 뒤 즉시 failure lock과 Run End를 요청한다. Time Bonus, Cashout 전용 popup, Merge, Settlement 중복 반영은 없다.
+
+두 Black Hole의 earliest contact가 확정되면 terminal lock을 한 번만 세우고 이후 공 simulation 결과를 더 commit하지 않는다. Presentation은 두 중심의 상호 인력·회전·폭발을 재생하며 gameplay HUD를 숨기고 `SNOWBALL EFFECT` 타이틀, 그 아래 `CLEAR SCORE` 최종 run score와 `MAIN MENU` 버튼을 표시한다.
 
 ---
 
@@ -613,6 +623,10 @@ StageDefinition
 - background_id
 - global_force_scale (explicit Stage effect only; not default downward gravity)
 - black_hole_enabled
+- black_hole_influence_radius (initial seed: 240 world units)
+- black_hole_max_pull_acceleration (initial seed: 300 world units/s²)
+- black_hole_total_pull_cap (initial seed: 600 world units/s²)
+- black_hole_mutual_pull_acceleration (initial seed: 450 world units/s²)
 
 ItemDefinition
 - item_type

@@ -60,9 +60,9 @@
 | S7-G3 Fire Core | Content/Systems | PENDING | S7-G1/S3 회귀 필요; 선택 |
 | S7-G4 Magnet | Content/Systems | PENDING | S7-G1/S4 metric 필요; 선택 |
 | S8-G1 Black Hole force | Core | PENDING | S5/S4 baseline 필요 |
-| S8-G2 최종 Stage Clear runtime | Core | PENDING | S8-G1/S3 필요 |
-| S8-G3 Title·Result·Retry UI | Content/Systems | PENDING | S8-G2 snapshot schema 필요 |
-| S8-G4 Final Result·Retry 통합 | Integration | PENDING | S8-G2/G3와 모든 reset API 필요 |
+| S8-G2 두 Black Hole 최종 충돌 runtime | Core | PENDING | S8-G1/S3 필요 |
+| S8-G3 Title·Main·Terminal UI | Content/Systems | PENDING | S8-G2 terminal snapshot schema 필요 |
+| S8-G4 Black Hole Finale·Retry 통합 | Integration | PENDING | S8-G2/G3와 모든 reset API 필요 |
 | S8-G5 Black Hole Phase presentation | Presentation | PENDING | S5-G4 Frame/Field 계약과 S8-G1 phase signal 필요 |
 | S9-G1 Release tuning·telemetry | Content/Systems | PENDING | S6/S8 완료; S7 선택 |
 | S9-G2 Web export·browser QA | Content/Systems | PENDING | S9-G1과 통합 RC 필요 |

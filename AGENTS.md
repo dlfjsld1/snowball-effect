@@ -220,7 +220,9 @@ Native 또는 MCP에서만 성공하고 Browser에서 확인하지 못한 Web �
 * 한 physics tick은 시간 차감 → 이동/충돌/Merge → Merge 확정/Top Ball 확인 → Active Cashout 반영 → 종료 판정 순서다.
 * 같은 tick의 Cashout 보너스로 `stage_time`이 다시 양수가 되면 Time Up을 취소한다.
 * 같은 tick에 Top Ball과 Time Up 조건이 함께 생기면 Top Ball 성공이 우선한다.
-* Top Ball은 즉시 논리적 Clear를 잠그지만 Scale Shift는 Final Settlement 뒤에만 실행한다.
+* Ground/Planetary Top Ball은 즉시 논리적 Clear를 잠그지만 Scale Shift는 Final Settlement 뒤에만 실행한다.
+* 마지막 Galactic의 첫 Lv14 Black Hole은 Top Ball Clear 예외다. 이동 Black Hole 기믹으로 전환하고 L3 국면을 활성화하며, 두 번째 Black Hole과 충돌할 때 최종 Run End를 잠근다.
+* 이동 Black Hole은 하단에서 반사하고 성장·일반 Merge하지 않는다. `local_level <= 2` 공 흡수 시 Cashout 상당 점수를 차감하며 `run_score`가 0이 되면 즉시 Run End다.
 * Final Settlement는 active ball snapshot의 base `score_value`만 한 번 반영하고 Time Bonus, Cashout 전용 modifier, 추가 Merge를 적용하지 않는다.
 * Settlement는 중복 호출에 안전해야 한다.
 * Core와 Optional Item Layer를 분리하며 Fire가 없어져도 코어 규칙이 바뀌지 않게 한다.

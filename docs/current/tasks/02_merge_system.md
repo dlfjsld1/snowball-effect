@@ -42,7 +42,7 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 
 ## 초기 공 카탈로그
 
-초기 visual catalog는 `global_level 0~14`의 총 15종이다. 각 Stage는 5종을 사용하고 이전 Stage의 최고 공을 다음 Stage의 기본 공으로 공유한다. 기본 Run은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`를 사용한다. Lv7 `Red Giant`와 Lv9 `Nebula`는 catalog에는 남지만 기본 Run에서 비활성이다. Lv14는 Galactic의 최종 Clear 공 `Black Hole`이다.
+초기 visual catalog는 `global_level 0~14`의 총 15종이다. 각 Stage는 5종을 사용하고 이전 Stage의 최고 공을 다음 Stage의 기본 공으로 공유한다. 기본 Run은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`를 사용한다. Lv7 `Red Giant`와 Lv9 `Nebula`는 catalog에는 남지만 기본 Run에서 비활성이다. Lv14는 Galactic의 최종 공 `Black Hole`이며 첫 생성 시 일반 Clear 대신 이동 Black Hole runtime 기믹으로 전환된다.
 
 아래 값은 구현과 첫 플레이테스트를 위한 데이터 seed다. 이름, 점수, 반지름, mass, visual key와 Stage별 배분은 Content/Systems가 플레이테스트에 따라 교체하거나 축소할 수 있다.
 
@@ -66,7 +66,7 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 
 나머지 global level도 Ground / Planetary / Galactic 콘셉트가 읽히도록 이름, visual key, 반지름과 점수를 데이터로 정의한다. 값은 코드에 하드코딩하지 않는다.
 
-일반 Merge/Cashout 연출용 `fx_tier`는 전역 BallDefinition 값이다. Lv0 = 0, Lv1~3 = 1, Lv4~8 = 2, Lv9~13 = 3, Lv14 = 4를 사용한다. Moon(Lv4)과 Galaxy(Lv10)가 다음 Stage의 기본 공으로 재사용되어도 전역 tier는 변하지 않는다. Stage 최고 공 생성은 기본 `fx_tier`와 별도로 Stage Clear 연출을 우선한다.
+일반 Merge/Cashout 연출용 `fx_tier`는 전역 BallDefinition 값이다. Lv0 = 0, Lv1~3 = 1, Lv4~8 = 2, Lv9~13 = 3, Lv14 = 4를 사용한다. Moon(Lv4)과 Galaxy(Lv10)가 다음 Stage의 기본 공으로 재사용되어도 전역 tier는 변하지 않는다. Ground/Planetary 최고 공은 Stage Clear 연출을 우선하고, Galactic Lv14는 Black Hole Phase 전환 연출을 우선한다.
 
 ---
 

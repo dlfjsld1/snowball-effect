@@ -255,7 +255,7 @@ Stage를 통과하는 방법은 두 가지다.
 
 ## 7.1 최고 공 제작 — 즉시 Clear
 
-현재 Stage의 최고 공을 만들면 즉시 Stage Clear.
+Ground와 Planetary는 현재 Stage의 최고 공을 만들면 즉시 Stage Clear한다. Galactic 첫 Lv14는 Black Hole 최종 국면으로 전환하는 예외다.
 
 예:
 
@@ -485,10 +485,13 @@ Spawn:
 - 경고등
 - 일부 글리치
 
-맵 기믹:
+최종 국면 기믹:
 
-- 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아닌 Galactic 내부 최종 국면 Stage effect다.
-- 모든 활성 공에 약한 인력을 적용하되, 패들 조작과 Cashout 경로를 막지 않는다.
+- 첫 Lv14 Black Hole Ball은 일반 Clear 대신 이동 Black Hole runtime entity로 전환된다.
+- Black Hole Phase에서 Play Field가 마지막으로 한 단계 확장되고 Galactic gameplay를 재개한다.
+- Black Hole은 주변 공의 궤도를 휘게 하며 사람 기준 3단계 이하 공을 흡수한다.
+- 흡수 공의 Cashout 상당 점수를 차감하며 run score가 0이면 즉시 Game Over한다.
+- Black Hole 자체는 하단 Cashout되지 않고 하단에서 반사하며, 성장하거나 일반 Merge하지 않는다.
 
 ---
 
@@ -496,16 +499,32 @@ Stage 2가 마지막 Stage이므로 다음 Stage는 없다.
 
 # 12. Galactic Stage 종료
 
-## Lv14 Black Hole 완성
+## 첫 번째 Lv14 Black Hole 완성
 
 ```text
 Black Hole Ball (Lv14)
-→ PERFECT / MAX SCALE CLEAR
-→ Final Settlement
-→ Result
+→ MOVING BLACK HOLE GIMMICK
+→ L2 → L3 FIELD EXPANSION
+→ GALACTIC GAMEPLAY CONTINUES
 ```
 
-여기서 완성되는 공은 Lv14 `Black Hole` Ball이다. 이 BallDefinition과 별개의 이동 Black Hole 맵 기믹은 Galactic Stage의 최종 국면에서 궤적에 간섭하며, 발동 시 L3 Frame/Play Field로 확장한 뒤 gameplay가 계속된다.
+첫 Lv14는 일반 Snowball 상태에서 이동 Black Hole 기믹으로 전환된다. gameplay footprint는 Galactic 사람 기준 3단계 공 크기를 기준으로 하며, 주변 저등급 공을 흡수하고 다른 공의 궤도를 휘게 한다.
+
+## 두 번째 Lv14 Black Hole 완성
+
+```text
+Second Black Hole Created
+→ TWO BLACK HOLES CONTACT
+→ MUTUAL PULL / ORBIT
+→ FINALE EXPLOSION
+→ GAMEPLAY UI HIDE
+→ SNOWBALL EFFECT
+→ CLEAR SCORE
+→ MAIN MENU
+→ RUN END
+```
+
+두 Black Hole 접촉이 최종 성공 조건이다. 첫 Lv14 생성 즉시 Final Result로 이동하던 이전 흐름은 사용하지 않는다.
 
 ## Time Up
 
@@ -662,8 +681,8 @@ Galactic:
 Galaxy Snowball
 → CUT-IN 가능
 
-Black Hole Ball
-→ FINAL RESULT 연출
+Two Black Holes Contact
+→ FINAL ORBIT / EXPLOSION / TITLE 연출
 ```
 
 ---
@@ -803,7 +822,7 @@ Stage가 사실상 끝나지 않는다.
 - Cashout
 - Stage local level별 Time Bonus
 - Time Up Final Settlement
-- 최고 공 즉시 Stage Clear
+- Ground/Planetary 최고 공 즉시 Stage Clear; Galactic은 두 Black Hole 충돌로 종료
 - Score Cut Stage Clear
 - Scale Shift
 - 이전 최고 → 다음 기본

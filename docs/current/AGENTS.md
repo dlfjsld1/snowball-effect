@@ -44,10 +44,10 @@ These are deliberate product decisions and must not be changed without an explic
 - Balls with the same `global_level` merge
 - Falling below the paddle is an intentional cash-out, not a life loss; during active Stage play it grants Score + the current Stage local-level Time Bonus
 - Score values intentionally explode by roughly 100x, 1000x, or other hand-tuned jumps; do not replace them with a conserved `2^level` formula
-- Creating a Stage's top ball immediately decides that the Stage is cleared; `SCALE SHIFT` occurs only after Final Settlement
+- Creating Ground/Planetary's top ball immediately decides that the Stage is cleared; `SCALE SHIFT` occurs only after Final Settlement
 - The previous stage's top ball becomes the next stage's default falling ball
 - Spawn density increases as scale rises
-- In the final Galactic Stage, Lv14 is the `Black Hole` ball; a separate moving Black Hole map gimmick bends trajectories as an in-stage final phase
+- In the final Galactic Stage, the first Lv14 `Black Hole` ball converts into the moving Black Hole gimmick; it reflects at the bottom, never grows or normally merges, and contact with a second Black Hole triggers the terminal finale
 - Gameplay balls and decorative particles are separate systems
 
 ---
@@ -83,7 +83,7 @@ These are core game rules.
   - the current Stage local-level Time Bonus
 - `time_bonus_by_local_level` belongs to StageDefinition; Local Lv0 starts at 0 and time grows much more slowly than score.
 - A player may intentionally miss a high-grade ball to convert it into Score + Time.
-- Creating the current Stage's top ball immediately clears that Stage.
+- Creating the current Ground/Planetary Stage's top ball immediately clears that Stage; Galactic's first Lv14 is the Black Hole phase exception.
 - If the Stage timer reaches zero first, perform `FINAL SETTLEMENT`.
 - Final Settlement converts all active gameplay balls into **Score only**.
 - Final Settlement never grants Time Bonus.
@@ -98,7 +98,7 @@ These are core game rules.
 - Every score event adds the same amount once to `stage_score` and `run_score`. Never add `stage_score` to `run_score` again at Stage end.
 - Evaluate Time Up only after the current physics tick's merges and Active Cashouts have been committed.
 - A same-tick Cashout may restore positive time and keep the Stage in PLAYING.
-- If Top Ball creation and Time Up occur in the same tick, Top Ball Clear wins.
+- If Ground/Planetary Top Ball creation and Time Up occur in the same tick, Top Ball Clear wins. Galactic Black Hole phase timing is governed by the S8 contract.
 
 Do not restore the old design where the whole run uses one fixed 180-second timer.
 Do not make surviving balls grant Time Bonus during Final Settlement.

@@ -24,7 +24,7 @@ Godot 4.x로 브라우저에서 실행 가능한 2D 액션 머지 게임 **Snowb
 12. 이전 스테이지의 최고 공은 다음 스테이지의 기본 공이 된다.
 13. 스테이지가 오를수록 기본 공 생성량이 증가한다.
 14. Ground, Planetary, Galactic의 3개 스테이지를 목표로 한다.
-15. 마지막 Galactic 스테이지의 최고 공은 Lv14 `Black Hole`이며, 별개의 동명 Black Hole 최종 국면 맵 기믹은 좌우로 이동하며 공에 약한 인력을 가한다.
+15. 마지막 Galactic 스테이지의 최고 공은 Lv14 `Black Hole`이며, 첫 Lv14는 이동 Black Hole 최종 국면 기믹으로 전환되어 공에 약한 인력을 가한다.
 16. 고레벨 합체와 회수는 강한 파티클, 점수 팝업, 화면 흔들림과 짧은 히트스톱으로 강조한다.
 17. Blizzard, Fire Core, Magnet 아이템은 이후 단계에서 추가한다.
 18. 16:9 전체가 플레이 영역이 아니다. 실제 공 시뮬레이션은 중앙의 세로형 Play Field에서만 일어난다.
@@ -35,11 +35,11 @@ Godot 4.x로 브라우저에서 실행 가능한 2D 액션 머지 게임 **Snowb
 23. SCALE SHIFT는 일반 CUT-IN과 별도이며 Stage 세계, 생성량, 기본 공, visual scale이 실제로 변경되는 더 높은 우선순위 이벤트다.
 24. 각 Stage는 독립적인 제한 시간 라운드다. 하나의 전역 180초 타이머로 구현하지 않는다.
 25. 일반 Cashout은 Score + 현재 Stage local level의 time_bonus다. Local Lv0는 0초에서 시작한다.
-26. 현재 Stage 최고 공 생성은 즉시 Stage Clear다.
+26. Ground/Planetary 최고 공 생성은 즉시 Stage Clear다. Galactic 첫 Lv14는 이동 Black Hole 국면으로 전환한다.
 27. Time Up 시 활성 공을 Final Settlement하며 Score만 더하고 Time Bonus는 주지 않는다.
 28. Time Up 후 final Stage score가 clear_score 이상이면 다음 Stage, 미달이면 Run End다.
 29. 성공한 Stage는 Settlement 이후 Scale Shift로 다음 Stage에 진입한다.
-30. 마지막 Galactic Stage는 Time Up 또는 Lv14 Black Hole Ball 생성 후 Final Settlement와 Result로 종료한다. 이동 Black Hole 맵 기믹 발동 자체는 Result가 아니라 같은 Galactic gameplay의 L3 국면으로 전환한다.
+30. 마지막 Galactic Stage는 Time Up 또는 두 Black Hole의 충돌로 종료한다. 첫 Lv14 Black Hole Ball은 이동 기믹으로 전환하며 같은 Galactic gameplay의 L3 국면을 활성화한다.
 31. Time Up은 같은 physics tick의 Merge와 Active Cashout을 먼저 반영한 뒤 판정한다. Cashout으로 시간이 양수가 되면 플레이를 계속한다.
 32. 같은 tick에서는 Top Ball Clear가 Time Up보다 우선한다.
 33. 모든 점수 이벤트는 `stage_score`와 `run_score`에 같은 amount를 한 번씩 더하며 Stage 종료 시 `run_score += stage_score`를 하지 않는다.
