@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="StageDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/stage_definition.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+stage_index = 0
+display_name = "Ground"
+base_global_level = 0
+top_global_level = 4
+local_ball_levels = PackedInt32Array(0, 1, 2, 3, 4)
+base_time = 45.0
+clear_score = 4000000.0
+time_bonus_by_local_level = PackedFloat64Array(0, 0.25, 0.5, 1, 2)
+spawn_rate = 6.0
+visual_radius_scale = 1.0
+background_id = &"ground"

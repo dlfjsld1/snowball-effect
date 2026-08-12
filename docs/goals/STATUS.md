@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Core | 없음 | 팀 리드/Core 담당 | available |
 | Presentation | 없음 | 팀원 A | available |
-| Content/Systems | 없음 | 팀원 B | available |
+| Content/Systems | 없음 | 본인/Content·Systems·Release 담당 | available |
 | Integration | 없음 | 팀 리드/Integration 담당 | available |
 
 각 lane은 `IN PROGRESS`를 최대 하나만 가진다. 서로 다른 lane은 Dependencies와 Integration Point가 충족되면 병렬 진행할 수 있다.
@@ -37,7 +37,7 @@
 | S2-G3 결정적 Merge commit | Core | VERIFIED | 2026-08-11 mass-weighted velocity를 `maximum_ball_runtime_speed=900`으로 한 번 제한한다. Primary `godot` Main runtime에서 Lv0 pair가 midpoint Lv1 하나로 합쳐지고 velocity `(50,50)`을 계승, 같은 tick의 Lv1 재합체는 없고 다음 commit에서만 발생, 2000 world units/s pair는 900으로 제한, Lv13 pair의 Lv14 생성은 `top_ball_created(14)` 1회를 확인했다. simulation/S2-G3/S2-G2/S1-G3/S1-G1 validate 5/5 통과 및 runtime error 0. |
 | S2-G4 Score formatter | Content/Systems | VERIFIED | 2026-08-10 `format_score(value)` pure API로 0, K/M/B/T 경계, 반올림 승격, `1e36` 과학 표기와 NaN/Infinity 방어를 자동 검증. Godot 4.7.1 headless exit 0, Primary `godot` MCP validate 3/3. |
 | S2-G5 Merge 표시 통합 | Presentation | PENDING | S2-G3/G4 계약 필요 |
-| S3-G1 Stage 데이터 | Content/Systems | PENDING | S2-G1 필요 |
+| S3-G1 Stage 데이터 | Content/Systems | VERIFIED | 2026-08-12 `StageDefinition`/read-only `StageCatalog.get_stage(index)`와 Ground(0–4), Planetary(4–9), Galactic(9–14) Resource seed를 추가했다. base time `45/40/35`, clear score `4e6/2e18/0`, spawn `6/15/35`, stage-local Time Bonus, neutral render-only `visual_radius_scale=1.0`, background ID를 검증한다. Primary `godot` validate: schema/catalog/S3-G1 test/scene 및 S2-G1 regression 5/5 valid. S3-G1 test Scene은 의도된 `quit(0)`으로 MCP bridge 준비 전 정상 종료해 runtime stdout 수집은 제한됐고, CLI executable은 현재 경로를 확인할 수 없어 headless baseline을 실행하지 못함. |
 | S3-G2 Stage 진입·Cashout 점수/시간 | Core | PENDING | S3-G1/S1-G3 필요 |
 | S3-G3 Tick 종료 중재 | Core | PENDING | S3-G2/S2-G3 필요 |
 | S3-G4 Snapshot Settlement | Core | PENDING | S3-G3 필요 |
@@ -74,5 +74,5 @@
 - S1-G2는 Mouse/Keyboard arbitration과 large-ball direct-sweep overlap 회귀까지 `VERIFIED`다.
 - S1-G6은 최신 clean Web export의 사용자 Chrome 수동 검증까지 완료해 `VERIFIED`다. S1 Shared Skeleton이 닫혔다.
 - S2-G1 공·점수 데이터와 S2-G2 같은 레벨 후보 탐색은 `VERIFIED`다.
-- S2-G3 결정적 Merge commit도 `VERIFIED`다. 다음 가능한 기존 Goal은 Presentation의 S2-G5 Merge 표시 통합이며, Core는 S3-G1 Stage 데이터가 준비될 때 S3-G2를 시작할 수 있다.
+- S2-G3 결정적 Merge commit도 `VERIFIED`다. S3-G1 Stage 데이터가 `VERIFIED`되어 Core는 S3-G2 Stage 진입·Cashout 점수/시간을 시작할 수 있다.
 - 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.
