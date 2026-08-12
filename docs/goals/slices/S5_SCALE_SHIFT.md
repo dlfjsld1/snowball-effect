@@ -44,6 +44,12 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 - Verification: Stage World 전환, Stage 이름을 persistent HUD에 갱신, 현재 Stage 5종 족보를 세로로 배치하고 공개된 항목만 표시, Shift 후 새 목록과 `revealed_count=1`이 한 번 적용됨, 새 공 최초 생성마다 한 항목만 공개, `NEXT` Spawn 예고 없음, Shift 완료 신호 한 번, animation/HUD가 gameplay state를 직접 변경하지 않음.
 - Do Not Modify: StageManager와 resource level mapping.
 
+#### S5-G3 handoff — Presentation 구현 전제
+
+S5-G3는 S5-G4가 실제 Shift presentation을 제공한다는 전제에서 먼저 통합됐다. 현재 Main의 `auto_complete_shift_presentation`은 화면 연출을 대체하는 임시 adapter일 뿐이며, S5-G4 완료 조건이 아니다.
+
+Presentation은 `stage_shift_started(next_definition, shift_id)`를 받은 뒤에만 Stage World/HUD 전환을 시작하고, 완료 시 같은 `shift_id`로 `stage_shift_presentation_finished(shift_id)`를 정확히 한 번 반환한다. Presentation은 `StageManager` state·timer·spawn·Stage data를 직접 변경하지 않는다. S5-G4 연결 시 Integration이 Main의 임시 adapter를 제거한다; Presentation은 adapter와 별도 자동 전이를 추가하지 않는다.
+
 ### S5-G5 3-Stage 통합 완주
 
 - Owner: Integration

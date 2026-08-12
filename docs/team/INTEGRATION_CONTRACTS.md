@@ -20,7 +20,7 @@
 | Content ItemManager | `item_planet_broken(item_type, world_position)` | Presentation, Integration | 최종 파괴 FX, CUT-IN과 1회 activation 중재 |
 | Content ItemManager | `active_items_changed(read_only_snapshot)` | Presentation HUD | 현재 활성 아이템 표시 |
 | Integration StageManager | `stage_shift_started(next_definition, shift_id)` | Presentation | `SHIFTING` 진입 뒤 Stage World/HUD 연출 시작 요청. Presentation은 gameplay state를 직접 변경하지 않는다. |
-| Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시한다. S5-G4 전 Main의 임시 adapter가 같은 API를 deferred 한 번 호출한다. |
+| Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시한다. S5-G3는 이 Presentation 완료 계약을 전제로 먼저 구현됐다. S5-G4 전 Main의 임시 adapter가 같은 API를 deferred 한 번 호출하며, Presentation 연결 시 Integration이 adapter를 제거한다. |
 | Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | 첫 Lv14→Black Hole 전환과 Galactic 내부 L2→L3 국면 시작; 새 Stage가 아님 |
 | Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용 |
 | Core simulation | Black Hole finale event + read-only contact snapshot (exact signature: S8-G2) | Integration, Presentation | 두 Black Hole 접촉을 한 번 잠그고 mutual orbit·폭발·타이틀 Run End 시작 |

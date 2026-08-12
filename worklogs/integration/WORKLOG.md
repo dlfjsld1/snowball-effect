@@ -393,3 +393,18 @@ Locked files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `
 ### 다음 작업 / 주의
 
 - Presentation S5-G4가 `stage_shift_started`를 구독하고 화면 전환 뒤 `stage_shift_presentation_finished(shift_id)`를 Integration API에 연결하면 Main의 임시 adapter를 제거한다.
+
+## 2026-08-12 — S5-G4 presentation handoff documented
+
+Owner: Integration
+Branch: `codex/s5-g4-presentation-handoff`
+Locked files: 없음
+
+### 변경
+
+- S5-G3의 임시 자동 완료 adapter가 S5-G4 Presentation 구현을 전제로 한 stopgap임을 S5 Slice와 Integration Contract에 명시했다.
+- Presentation이 시작/완료에 사용할 `shift_id`와 state 변경 금지 경계를 적고, 실제 Presentation 연결 시 Integration이 adapter를 제거하는 책임을 기록했다.
+
+### 확인
+
+- 문서 변경만 수행했고 runtime 파일·Goal 상태는 바꾸지 않았다.
