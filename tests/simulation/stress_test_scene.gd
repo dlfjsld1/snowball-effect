@@ -6,6 +6,7 @@ const FIXED_DELTA := 1.0 / 60.0
 const SCENARIOS := [
 	{"balls": 100, "merge": false},
 	{"balls": 500, "merge": false},
+	{"balls": 500, "merge": true},
 	{"balls": 1000, "merge": false},
 	{"balls": 1000, "merge": true},
 ]
@@ -74,11 +75,8 @@ func _start_next_scenario() -> void:
 	simulation.reset_runtime()
 	simulation.merge_enabled = scenario["merge"]
 	simulation.cashout_enabled = false
-	if scenario["merge"]:
-		simulation.configure_stage_ball_levels(PackedInt32Array([10, 11, 12, 13, 14]))
-	else:
-		simulation.configure_stage_ball_levels(PackedInt32Array([0, 1, 2, 3, 4]))
-	_spawn_stress_balls(scenario["balls"])
+	simulation.configure_stage_ball_levels(PackedInt32Array([0, 1, 2, 3, 4]))
+	_spawn_stress_balls(scenario["balls"], scenario["merge"])
 	_scenario_frame = 0
 	_sample_elapsed = 0.0
 	_sample_physics_usec = 0
@@ -110,7 +108,7 @@ func _finish_scenario() -> void:
 	})
 
 
-func _spawn_stress_balls(count: int) -> void:
+func _spawn_stress_balls(count: int, merge_enabled: bool) -> void:
 	const COLUMNS := 40
 	for index in range(count):
 		var column := index % COLUMNS
@@ -118,8 +116,23 @@ func _spawn_stress_balls(count: int) -> void:
 		var position := Vector2(520.0 + column * 14.0, 30.0 + row * 24.0)
 		var direction := Vector2(-1.0 if index % 2 == 0 else 1.0, -1.0 if index % 3 == 0 else 1.0)
 		var velocity := direction.normalized() * (20.0 + float(index % 7))
-		var global_level := (13 if index % 5 == 0 else 14) if simulation.merge_enabled else index % 5
-		simulation.spawn_ball(position, velocity, 4.0, global_level)
+		var global_level := index % 5
+		if merge_enabled:
+			global_level = _get_merge_distribution_level(index % 100)
+		var radius := simulation.get_runtime_radius_for_level(global_level)
+		simulation.spawn_ball(position, velocity, radius, global_level)
+
+
+func _get_merge_distribution_level(roll: int) -> int:
+	if roll >= 99:
+		return 4
+	if roll >= 97:
+		return 3
+	if roll >= 92:
+		return 2
+	if roll >= 80:
+		return 1
+	return 0
 
 
 func _show_results() -> void:

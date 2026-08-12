@@ -194,6 +194,14 @@ V4 `Salvage Burst`의 1000ms keyframe seed를 채택한다. 파편 50% 감소·�
 
 모든 duration은 tuning 상태다. 중요한 연출도 플레이를 오래 빼앗지 않으며, repeated event가 hit-stop을 중첩하지 않는다.
 
+### Future candidate — Black Hole tidal deformation
+
+Black Hole force로 궤도가 휘는 일반 Snowball은 향후 Black Hole 방향으로 늘어나고 직교 축으로 눌리는 transient deformation을 사용할 수 있다. 이는 일반 Snowball의 MultiMesh 본체에서 instance transform 또는 shared shader custom data로 표현하는 Presentation 후보이며, Item Ball과 Black Hole 본체의 전용 렌더러에는 같은 계약을 강제하지 않는다.
+
+Gameplay collision은 nominal 원형 radius를 유지한다. deformation은 Merge/Paddle/벽/흡수 판정을 바꾸지 않고, Core의 read-only Black Hole 위치·영향 상태를 시각화하기만 한다. 정확한 비율·falloff·두 Black Hole 합성·흡수 직전 과장 정도는 S8/S6 플레이테스트 전까지 미결정이다.
+
+**STATUS: FUTURE PRESENTATION CANDIDATE — IMPLEMENTATION NOT APPROVED.**
+
 ## 9. Density Degradation
 
 공 수와 event burst가 증가하면 다음 순서로 품질을 낮춘다.

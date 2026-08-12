@@ -552,3 +552,27 @@ Branch: `codex/s5-g2-stage-rebaseline`
 
 - StageManager/GameManager/Main 연결과 실제 Shift 상태 전이는 S5-G3 Integration 범위라 수정하지 않았다.
 - Stage World, Shift animation, 완료 signal은 S5-G4 Presentation 범위다.
+
+## 2026-08-12 — S4-G4 일반 Snowball MultiMesh renderer
+
+Owner: Core
+
+### 변경
+
+- `BallSimulationManager` render snapshot에 read-only `global_levels`를 추가했다.
+- `BallRenderer`는 일반 Lv0~13을 global-level별 reusable `MultiMeshInstance2D` batch로 묶고, runtime position/radius를 instance transform에 반영한다.
+- Lv14 Black Hole은 기존 special fallback draw path로 남겼다. Item Ball/전환된 Black Hole runtime entity와 FX는 이 Goal 범위 밖이다.
+- batch capacity는 필요할 때만 확장하고 reset 뒤 visible instance를 0으로 만든다. Stage re-baselining은 global catalog radius가 아니라 snapshot의 runtime radius를 사용한다.
+- 기존 stress scene의 Merge ON 분기가 공을 생성하지 않던 문제를 고치고, Ground의 stage-local radius와 `80/12/5/2/1%` level 분포로 실제 Merge ON stress를 수행하게 했다.
+
+### 확인
+
+- Native headless `S4-G4` verification exit 0: 일반/특수 경로 분리, position/radius transform, reset stale-instance 제거, later-stage level 재사용을 확인했다.
+- Native headless S1-G1, S2-G2/G3, S4-G1/G2 회귀 5개 모두 exit 0.
+- Primary `godot` Main runtime에서 active 31개가 standard 31/fallback 0으로 batch에 들어가고 원형으로 표시되며 runtime error 0을 확인했다.
+- MCP 종료 후 임시 복제본 clean Web release를 실제 in-app browser로 열었다. 500 Merge ON은 `60.0/60.0 FPS`, physics `1.44ms`, merges `0.95/frame`; 1,000 Merge ON은 `60.0/60.0 FPS`, physics `2.67ms`, merges `1.97/frame`; browser console warning/error 0이었다.
+
+### 다음 작업 / 주의
+
+- 이 수치는 현 개발 PC/in-app browser의 일반 공 렌더 기준이다. HUD·Stage World·대표 FX를 함께 켠 저사양 Web 결과는 S6/S9 telemetry에서 다시 확인한다.
+- Presentation은 최종 global-level Texture2D/머티리얼을 batch binding으로 제공할 수 있다. 일반 공 본체를 개별 Node/Sprite로 되돌리지 않는다.

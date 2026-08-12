@@ -61,6 +61,7 @@ func _run_verification() -> void:
 	_expect(snapshot["count"] == BALL_COUNT, "Render snapshot must include every active ball.")
 	_expect(snapshot["positions"].size() == BALL_COUNT, "Snapshot positions must match active count.")
 	_expect(snapshot["radii"].size() == BALL_COUNT, "Snapshot radii must match active count.")
+	_expect(snapshot["global_levels"].size() == BALL_COUNT, "Snapshot global levels must match active count.")
 	_expect(_arrays_have_equal_capacity(), "All structure-of-arrays buffers must share capacity.")
 	_expect(_all_active_values_are_finite(), "Active positions and velocities must remain finite.")
 

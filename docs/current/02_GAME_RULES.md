@@ -676,3 +676,20 @@ release → Paddle이 기준 Y로 실제 spring-back
 강타는 기존 Paddle의 실제 transform 변화에서 나온 contact velocity와 continuous collision으로만 발생시킨다. 공에 별도의 직접 가속 보너스를 부여하지 않는다.
 
 **상태: Future Core Mechanic candidate. 구현 승인 아님.**
+
+### Future Presentation candidate — Black Hole tidal Snowball deformation
+
+> **향후 시각 후보 메모이며 현재 S8 구현 계약, 충돌 규칙 또는 shader 구현 승인이 아니다.**
+
+Black Hole의 인력 범위 안에서 궤도가 휘는 일반 Snowball을 Black Hole 방향으로 늘이거나 반대 축으로 눌러, tidal force를 시각적으로 강조하는 표현을 후보로 둔다. 일반 Snowball 본체가 MultiMesh로 렌더되더라도 instance별 비균일 scale/회전 또는 shared shader custom data로 표현할 수 있다.
+
+이 후보가 채택되어도 gameplay 판정은 nominal 원형을 유지한다.
+
+- Core 위치와 velocity가 실제 궤도를 결정한다.
+- Merge, Paddle, 벽, Black Hole contact는 공 중심과 기존 nominal collision radius를 사용한다.
+- Presentation deformation은 collision shape, mass, score, 흡수 조건을 변경하지 않는다.
+- 흡수 commit 뒤의 과장된 늘어남·축소는 logical ball과 분리된 terminal FX로만 검토한다.
+
+정확한 stretch ratio, 면적 보존 여부, 영향 falloff, 두 Black Hole 사이의 합성 방식과 reduced-effects 표현은 아직 결정하지 않는다. 시각과 원형 collision이 지나치게 어긋나지 않는 범위에서 S8/S6 통합 플레이테스트 후 채택 여부를 판단한다.
+
+**상태: Future Presentation candidate. 구현 승인 아님.**

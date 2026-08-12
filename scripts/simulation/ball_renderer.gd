@@ -2,35 +2,183 @@ class_name BallRenderer
 extends Node2D
 
 const SimulationManager = preload("res://scripts/simulation/ball_simulation_manager.gd")
+const BallCatalogScript = preload("res://scripts/data/ball_catalog.gd")
+
+const FIRST_STANDARD_GLOBAL_LEVEL := 0
+const LAST_STANDARD_GLOBAL_LEVEL := 13
+const BLACK_HOLE_GLOBAL_LEVEL := 14
+const STANDARD_BATCH_COUNT := LAST_STANDARD_GLOBAL_LEVEL + 1
+
+const CIRCLE_SHADER := preload("res://scripts/simulation/ball_renderer_circle.gdshader")
 
 @export var simulation_path: NodePath
 @export var ball_color := Color(0.86, 0.92, 1.0, 1.0)
 
 var _simulation: SimulationManager
+var _ball_catalog = BallCatalogScript.new()
+var _batches: Array[MultiMeshInstance2D] = []
+var _multimeshes: Array[MultiMesh] = []
+var _batch_transform_cache: Array = []
+var _batch_capacities := PackedInt32Array()
+var _level_counts := PackedInt32Array()
+var _level_offsets := PackedInt32Array()
+var _level_cursors := PackedInt32Array()
+var _ordered_snapshot_indices := PackedInt32Array()
+var _special_positions := PackedVector2Array()
+var _special_radii := PackedFloat32Array()
+var _special_levels := PackedInt32Array()
 
 
 func _ready() -> void:
+	_create_standard_batches()
 	if not simulation_path.is_empty():
 		set_simulation_manager(get_node_or_null(simulation_path) as SimulationManager)
 
 
 func _process(_delta: float) -> void:
-	if is_instance_valid(_simulation):
-		queue_redraw()
+	refresh_render_snapshot()
 
 
 func _draw() -> void:
+	for index in range(_special_positions.size()):
+		var definition = _ball_catalog.get_definition(_special_levels[index])
+		var color: Color = definition.base_color if definition != null else ball_color
+		draw_circle(_special_positions[index], _special_radii[index], color)
+
+
+func set_simulation_manager(simulation: SimulationManager) -> void:
+	_simulation = simulation
+	refresh_render_snapshot()
+
+
+func refresh_render_snapshot() -> void:
 	if not is_instance_valid(_simulation):
 		return
 
 	var snapshot: Dictionary = _simulation.get_render_snapshot()
 	var snapshot_positions: PackedVector2Array = snapshot["positions"]
 	var snapshot_radii: PackedFloat32Array = snapshot["radii"]
+	var snapshot_global_levels: PackedInt32Array = snapshot["global_levels"]
 	var snapshot_count: int = snapshot["count"]
-	for index in range(snapshot_count):
-		draw_circle(snapshot_positions[index], snapshot_radii[index], ball_color)
-
-
-func set_simulation_manager(simulation: SimulationManager) -> void:
-	_simulation = simulation
+	_prepare_level_buckets(snapshot_count, snapshot_global_levels)
+	_update_standard_batches(snapshot_positions, snapshot_radii)
+	_update_special_fallback(snapshot_positions, snapshot_radii, snapshot_global_levels)
 	queue_redraw()
+
+
+func get_render_metrics() -> Dictionary:
+	return {
+		"standard_ball_count": _ordered_snapshot_indices.size(),
+		"special_fallback_count": _special_positions.size(),
+		"batch_visible_counts": _level_counts.duplicate(),
+		"batch_capacities": _batch_capacities.duplicate(),
+	}
+
+
+func get_batch_instance_transform(global_level: int, instance_index: int) -> Transform2D:
+	if not _is_standard_global_level(global_level):
+		return Transform2D.IDENTITY
+	if instance_index < 0 or instance_index >= _level_counts[global_level]:
+		return Transform2D.IDENTITY
+	return _batch_transform_cache[global_level][instance_index]
+
+
+func _create_standard_batches() -> void:
+	_batch_capacities.resize(STANDARD_BATCH_COUNT)
+	_level_counts.resize(STANDARD_BATCH_COUNT)
+	_level_offsets.resize(STANDARD_BATCH_COUNT)
+	_level_cursors.resize(STANDARD_BATCH_COUNT)
+	for global_level in range(FIRST_STANDARD_GLOBAL_LEVEL, LAST_STANDARD_GLOBAL_LEVEL + 1):
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_2D
+		multimesh.use_colors = true
+		multimesh.mesh = _create_circle_mesh()
+
+		var batch := MultiMeshInstance2D.new()
+		batch.name = "LevelBatch%d" % global_level
+		batch.multimesh = multimesh
+		batch.material = _create_circle_material()
+		add_child(batch)
+		_batches.append(batch)
+		_multimeshes.append(multimesh)
+		_batch_transform_cache.append([])
+
+
+func _create_circle_mesh() -> QuadMesh:
+	var mesh := QuadMesh.new()
+	mesh.size = Vector2(2.0, 2.0)
+	return mesh
+
+
+func _create_circle_material() -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = CIRCLE_SHADER
+	return material
+
+
+func _prepare_level_buckets(snapshot_count: int, snapshot_global_levels: PackedInt32Array) -> void:
+	_level_counts.fill(0)
+	_special_positions.clear()
+	_special_radii.clear()
+	_special_levels.clear()
+	for snapshot_index in range(snapshot_count):
+		var global_level := snapshot_global_levels[snapshot_index]
+		if _is_standard_global_level(global_level):
+			_level_counts[global_level] += 1
+
+	var standard_count := 0
+	for global_level in range(STANDARD_BATCH_COUNT):
+		_level_offsets[global_level] = standard_count
+		_level_cursors[global_level] = standard_count
+		standard_count += _level_counts[global_level]
+		_ensure_batch_capacity(global_level, _level_counts[global_level])
+		_batches[global_level].visible = _level_counts[global_level] > 0
+		_multimeshes[global_level].visible_instance_count = _level_counts[global_level]
+
+	_ordered_snapshot_indices.resize(standard_count)
+	for snapshot_index in range(snapshot_count):
+		var global_level := snapshot_global_levels[snapshot_index]
+		if _is_standard_global_level(global_level):
+			var write_index := _level_cursors[global_level]
+			_ordered_snapshot_indices[write_index] = snapshot_index
+			_level_cursors[global_level] += 1
+
+
+func _update_standard_batches(snapshot_positions: PackedVector2Array, snapshot_radii: PackedFloat32Array) -> void:
+	for global_level in range(STANDARD_BATCH_COUNT):
+		var count := _level_counts[global_level]
+		var offset := _level_offsets[global_level]
+		for instance_index in range(count):
+			var snapshot_index := _ordered_snapshot_indices[offset + instance_index]
+			var radius := snapshot_radii[snapshot_index]
+			var instance_transform := Transform2D(Vector2(radius, 0.0), Vector2(0.0, radius), snapshot_positions[snapshot_index])
+			_multimeshes[global_level].set_instance_transform_2d(instance_index, instance_transform)
+			_batch_transform_cache[global_level][instance_index] = instance_transform
+
+
+func _update_special_fallback(snapshot_positions: PackedVector2Array, snapshot_radii: PackedFloat32Array, snapshot_global_levels: PackedInt32Array) -> void:
+	for snapshot_index in range(snapshot_global_levels.size()):
+		var global_level := snapshot_global_levels[snapshot_index]
+		if _is_standard_global_level(global_level):
+			continue
+		_special_positions.append(snapshot_positions[snapshot_index])
+		_special_radii.append(snapshot_radii[snapshot_index])
+		_special_levels.append(global_level)
+
+
+func _ensure_batch_capacity(global_level: int, required_count: int) -> void:
+	if required_count <= _batch_capacities[global_level]:
+		return
+	var new_capacity := maxi(8, _batch_capacities[global_level] * 2)
+	new_capacity = maxi(new_capacity, required_count)
+	_batch_capacities[global_level] = new_capacity
+	_multimeshes[global_level].instance_count = new_capacity
+	_batch_transform_cache[global_level].resize(new_capacity)
+	var definition = _ball_catalog.get_definition(global_level)
+	var color: Color = definition.base_color if definition != null else ball_color
+	for instance_index in range(new_capacity):
+		_multimeshes[global_level].set_instance_color(instance_index, color)
+
+
+func _is_standard_global_level(global_level: int) -> bool:
+	return global_level >= FIRST_STANDARD_GLOBAL_LEVEL and global_level <= LAST_STANDARD_GLOBAL_LEVEL

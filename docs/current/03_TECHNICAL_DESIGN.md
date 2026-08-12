@@ -422,7 +422,7 @@ func format_score(value: float) -> String
 
 ## 10. 렌더링 전략
 
-### 10.1 MVP
+### 10.1 현재 기준선
 
 하나의 `Node2D`가 `_draw()`로 활성 공을 그린다.
 
@@ -430,20 +430,29 @@ func format_score(value: float) -> String
 - 높은 레벨: 색상, 외곽선, 내부 무늬를 레벨 데이터로 구분
 - 매 프레임 `queue_redraw()`
 
-이 방식으로 성능을 먼저 측정한다.
+이 방식으로 S4 Web 기준선을 측정했다. 현재 경로는 동작 기준선과 A/B fallback으로 유지하되, 일반 Snowball의 production 목표 렌더러로는 사용하지 않는다.
 
-### 10.2 최적화 후보
+### 10.2 승인된 일반 Snowball MultiMesh 계획
 
-병목이 확인될 때만 다음으로 내린다.
+일반 Snowball 본체는 `MultiMeshInstance2D` 기반의 레벨별 batch로 전환한다. 이 결정은 렌더링 전용이며 중앙 SoA simulation, collision radius, Merge, Cashout과 slot reuse 계약을 변경하지 않는다.
 
-- `MultiMeshInstance2D`
-- `RenderingServer.canvas_item_add_circle` 계열 저수준 호출
-- 레벨별 별도 일괄 버퍼
-- 화면 밖 렌더 생략
+- 현재 Stage에서 활성인 일반 `global_level`마다 재사용 가능한 MultiMesh batch 하나를 둔다. 서로 다른 텍스처/머티리얼을 한 batch에 억지로 섞지 않는다.
+- 위치, 회전, runtime radius 기반 scale, tint/alpha와 필요한 최소 presentation custom data만 instance 데이터로 갱신한다.
+- Stage 전환에서는 현재 Stage의 ordered level과 텍스처 binding을 교체하고 batch/buffer를 재사용한다.
+- 공 이미지가 완성되기 전에는 중앙이 정렬된 procedural placeholder 또는 임시 투명 Texture2D로 구현·검증할 수 있다. 최종 Texture2D의 source pixel 크기는 gameplay radius의 source of truth가 아니다.
+- 일반 Snowball의 후광·Merge burst·Cashout debris 같은 일시적 효과는 공 본체 batch에 합치지 않고 기존 FX/pool 계층에서 처리한다.
 
-추측으로 처음부터 복잡한 렌더 구조를 만들지 않는다.
+적용 대상은 Item Ball과 Lv14 Black Hole Ball/전환된 Black Hole runtime entity를 제외한 일반 Snowball이다. Item Ball은 균열·파괴 상태를, Black Hole은 고유 ring/왜곡/흡수 표현을 가지므로 전용 렌더러를 유지한다. Galactic에서는 일반 Lv10~13 batch와 Black Hole 전용 렌더러가 함께 존재한다.
 
-### 10.3 고레벨 표현
+Core는 render snapshot을 읽어 batch를 구성하고 gameplay state를 변경하지 않는다. Presentation은 level별 Texture2D와 머티리얼 표현을 제공할 수 있지만 simulation 내부 배열을 직접 읽거나 수정하지 않는다. 최종 asset atlas는 필수 선행 조건이 아니며 별도 텍스처 방식으로 먼저 연결할 수 있다.
+
+### 10.3 구현·검증 경계
+
+정식 구현은 별도 활성 Goal에서 수행한다. 기존 `_draw()/draw_circle` 경로와 동일한 위치·크기·가시 개수를 먼저 비교하고, 실제 Web에서 500개 Merge ON 필수 부하와 1,000개 stretch를 측정한다. HUD·Stage World·대표 FX를 켠 통합 측정 전에는 저사양 Web 보장을 선언하지 않는다.
+
+2026-08-12 local-only Web prototype에서는 실제 Stage 피라미드 분포(`80/12/5/2/1%`)와 Merge ON 조건에서 500개는 기존 draw와 MultiMesh 모두 평균/최저 60 FPS였고, 1,000개는 기존 draw 평균 `54.9`/최저 `36.9 FPS`, MultiMesh 평균/최저 `60 FPS`였다. 이는 방향 선택 근거이며 공용 Quality Gate Evidence나 구현 완료 증거가 아니다.
+
+### 10.4 고레벨 표현
 
 고레벨 공은 크기만 무한히 키우지 않는다.
 
@@ -455,6 +464,8 @@ func format_score(value: float) -> String
 - 색 대비
 
 로 위계를 만든다.
+
+일반 고레벨 Snowball도 본체는 MultiMesh에 남길 수 있으며, 특별한 후광·링·꼬리는 별도 overlay/FX로 결합한다. 일반 본체 전체를 개별 Sprite/Node로 되돌리는 방식은 기본안으로 사용하지 않는다.
 
 게임play 공의 runtime 반지름은 `StageDefinition.local_ball_levels`에서 global level의 local index를 찾아 `4 * 2 ^ local_level`로 계산한다. 이 값은 renderer와 collision이 함께 사용한다. 따라서 Stage가 바뀌면 새 Stage의 local Lv0는 다시 반지름 `4`가 되고, 이전 Stage top과 같은 global 공이라도 새 Stage에서는 기본 크기로 시작한다. `visual_radius_scale`는 이후 Scale Shift 화면 연출용 예약값이며 visual/collision 불일치를 만드는 용도로 사용하지 않는다.
 
@@ -588,6 +599,8 @@ func get_black_hole_pull(position: Vector2) -> Vector2
 일반 공에 대한 다중 Black Hole force는 각 source의 vector를 먼저 합한 뒤 `600 world units/s²`로 한 번 제한한다. 같은 방향의 힘은 더해지고 반대 방향은 자연스럽게 상쇄되므로 Black Hole 수를 단순 scalar 배수로 적용하지 않는다. 그 뒤 delta를 곱하고 기존 Ball runtime speed cap을 적용한다.
 
 Black Hole entity끼리는 일반 공용 force/absorption loop와 분리해 상대 Black Hole 방향으로 최대 `450 world units/s²`의 mutual acceleration을 적용한다. 이 값은 접근을 유도하는 gameplay seed이며, 접촉 확정 이후에는 force 적분을 멈추고 terminal presentation이 회전·폭발 transform을 소유한다.
+
+향후 Presentation 후보인 Black Hole 주변 일반 공의 tidal deformation은 일반 Snowball MultiMesh와 양립한다. Core가 제공하는 read-only Black Hole 위치/영향 snapshot과 공의 nominal transform을 바탕으로 instance의 비균일 scale·회전 또는 shared shader custom data만 바꿀 수 있다. 이 시각 변형이 도입되더라도 Core의 공 중심, nominal radius, 원형 Merge/Paddle/벽 충돌은 그대로 유지하고 궤도 변화는 기존 force 계산만이 소유한다. 정확한 변형 강도·falloff·최대 비율은 아직 구현 계약이 아니다.
 
 흡수 contact가 확정되면 일반 Cashout commit 전에 해당 공을 한 번 소비한다. `calculate_cashout_score(ball)`을 read-only로 계산한 값을 stage/run score에서 각각 차감한다. `stage_score`는 0에서 clamp하고, 계산 결과 `run_score <= 0`이면 `run_score = 0`으로 고정한 뒤 즉시 failure lock과 Run End를 요청한다. Time Bonus, Cashout 전용 popup, Merge, Settlement 중복 반영은 없다.
 

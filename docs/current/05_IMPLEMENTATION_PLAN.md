@@ -166,7 +166,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - Uniform Grid / Spatial Hash
 - 후보 검사 수 디버그
 - 스트레스 테스트 씬
-- 저레벨 렌더 일괄화
+- Item Ball·Black Hole을 제외한 일반 Snowball의 레벨별 `MultiMeshInstance2D` 일괄 렌더 follow-up
 
 ## 성능 게이트
 
@@ -177,6 +177,8 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - 활성 수 증가 시 프레임 시간이 완만하게 증가
 
 성능이 이미 충분하면 과도한 저수준 최적화를 하지 않는다.
+
+MultiMesh follow-up은 simulation 구조를 바꾸지 않고 render snapshot consumer만 교체한다. 최종 Ball 이미지가 없어도 procedural placeholder 또는 임시 Texture2D로 구현할 수 있고, Presentation asset은 global level별 binding으로 나중에 교체한다. Merge/Cashout particle, Item Ball, Black Hole 본체는 이 batch에 포함하지 않는다.
 
 ---
 

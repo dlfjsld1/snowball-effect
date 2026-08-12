@@ -45,9 +45,11 @@ var _pending_cashout_indices: Array[int] = []
 var _pending_cashout_positions := PackedVector2Array()
 var _render_snapshot_positions := PackedVector2Array()
 var _render_snapshot_radii := PackedFloat32Array()
+var _render_snapshot_global_levels := PackedInt32Array()
 var _render_snapshot := {
 	"positions": _render_snapshot_positions,
 	"radii": _render_snapshot_radii,
+	"global_levels": _render_snapshot_global_levels,
 	"count": 0,
 }
 var _simulation_metrics := {
@@ -263,6 +265,7 @@ func reset_runtime() -> void:
 	_pending_cashout_positions.clear()
 	_render_snapshot_positions.clear()
 	_render_snapshot_radii.clear()
+	_render_snapshot_global_levels.clear()
 	_update_simulation_metrics()
 	ball_count_changed.emit(0)
 
@@ -338,14 +341,17 @@ func get_render_snapshot() -> Dictionary:
 	var active_count := active_indices.size()
 	_render_snapshot_positions.resize(active_count)
 	_render_snapshot_radii.resize(active_count)
+	_render_snapshot_global_levels.resize(active_count)
 
 	for snapshot_index in range(active_count):
 		var ball_index := active_indices[snapshot_index]
 		_render_snapshot_positions[snapshot_index] = positions[ball_index]
 		_render_snapshot_radii[snapshot_index] = radii[ball_index]
+		_render_snapshot_global_levels[snapshot_index] = global_levels[ball_index]
 
 	_render_snapshot["positions"] = _render_snapshot_positions
 	_render_snapshot["radii"] = _render_snapshot_radii
+	_render_snapshot["global_levels"] = _render_snapshot_global_levels
 	_render_snapshot["count"] = active_count
 	return _render_snapshot
 

@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://tests/simulation/s4_g4_multimesh_renderer_verification.gd" id="1_runner"]
+[ext_resource type="Script" path="res://scripts/simulation/ball_simulation_manager.gd" id="2_simulation"]
+[ext_resource type="Script" path="res://scripts/simulation/ball_renderer.gd" id="3_renderer"]
+
+[node name="S4G4MultiMeshRendererVerification" type="Node"]
+script = ExtResource("1_runner")
+
+[node name="BallSimulationManager" type="Node" parent="."]
+script = ExtResource("2_simulation")
+cashout_enabled = false
+merge_enabled = false
+
+[node name="BallRenderer" type="Node2D" parent="."]
+script = ExtResource("3_renderer")
+simulation_path = NodePath("../BallSimulationManager")
