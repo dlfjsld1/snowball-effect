@@ -57,6 +57,7 @@ func _verify_deterministic_merge_commit() -> void:
 
 func _verify_catalog_top_event() -> void:
 	simulation.reset_runtime()
+	simulation.configure_stage_ball_levels(PackedInt32Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]))
 	_merged_events.clear()
 	_top_levels.clear()
 	var first_index := simulation.spawn_ball(Vector2(100.0, 100.0), Vector2.ZERO, 4.0, 13)

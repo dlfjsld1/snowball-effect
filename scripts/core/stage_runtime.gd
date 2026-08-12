@@ -25,6 +25,26 @@ func enter_stage(definition: StageDefinition) -> void:
 	stage_entered.emit(definition)
 
 
+func apply_stage_definition(definition: StageDefinition) -> void:
+	enter_stage(definition)
+
+
+func get_stage_snapshot() -> Dictionary:
+	if current_stage == null:
+		return {}
+	return {
+		"stage_index": current_stage.stage_index,
+		"base_global_level": current_stage.base_global_level,
+		"top_global_level": current_stage.top_global_level,
+		"local_ball_levels": current_stage.local_ball_levels.duplicate(),
+		"spawn_rate": current_stage.spawn_rate,
+		"stage_time_left": stage_time_left,
+		"stage_score": score_ledger.stage_score,
+		"run_score": score_ledger.run_score,
+		"end_decision_locked": _end_decision_locked,
+	}
+
+
 func apply_active_cashout(score_amount: float, global_level: int) -> float:
 	assert(current_stage != null, "Active Cashout requires an entered Stage.")
 	assert(score_amount >= 0.0, "Cashout score must not be negative.")
