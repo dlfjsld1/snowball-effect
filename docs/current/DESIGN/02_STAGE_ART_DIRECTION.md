@@ -102,7 +102,7 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 - Galaxy Cluster
 - Quasar
 - Event Horizon
-- Final Snowball (working title)
+- Black Hole Ball (Lv14)
 
 이 단계부터 파티클 포화가 눈에 띄게 증가한다.
 
@@ -143,9 +143,9 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 - Galaxy Cluster
 - Quasar
 - Event Horizon
-- Final Snowball (working title)
+- Black Hole Ball (Lv14)
 
-기믹 발동 시 Frame과 실제 Play Field가 L2에서 L3로 함께 확장되고, 전환 뒤 같은 Galactic gameplay를 재개한다. Lv14 최종 공은 밝은 얼음/눈덩이 계열로 표현해 Black Hole의 어두운 중심·중력 링과 구분한다.
+기믹 발동 시 Frame과 실제 Play Field가 L2에서 L3로 함께 확장되고, 전환 뒤 같은 Galactic gameplay를 재개한다. Lv14 Black Hole Ball은 작은 gameplay silhouette·공 전용 outline·compact accretion ring으로, 거대한 이동 Black Hole 맵 기믹은 field distortion·grid lensing·환경 scale로 구분한다.
 
 ---
 

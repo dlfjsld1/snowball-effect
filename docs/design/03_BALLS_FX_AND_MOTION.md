@@ -16,7 +16,7 @@ Ball은 장식 입자가 아니라 규칙 상태다. 화면에 공이 많아져�
 
 ## 2. Ball Visual Bible Deliverable
 
-전역 Merge 성장 사슬은 0~14의 15종으로 디자인한다. runtime Resource 15개는 존재하지만 2026-08-12 최신 명칭/Lv14 분리 계약과 아직 일치하지 않아 S2-G1이 재검증 `PENDING`이다. 실제 runtime asset 수정은 해당 Goal의 Owned Files가 승인된 뒤 제작한다.
+전역 Merge 성장 사슬은 0~14의 15종으로 디자인한다. runtime Resource 15개는 존재하고 Lv14 Black Hole은 일치하지만, 2026-08-12 최신 Lv6/Lv7/Lv9/Lv10 명칭과 아직 일치하지 않아 S2-G1이 재검증 `PENDING`이다. 실제 runtime asset 수정은 해당 Goal의 Owned Files가 승인된 뒤 제작한다.
 
 | Global level | Concept |
 |---:|---|
@@ -34,9 +34,9 @@ Ball은 장식 입자가 아니라 규칙 상태다. 화면에 공이 많아져�
 | 11 | Galaxy Cluster |
 | 12 | Quasar |
 | 13 | Event Horizon |
-| 14 | Final Snowball (working title) |
+| 14 | Black Hole |
 
-현재 runtime Resource는 이 최신 catalog와 다를 수 있으며 `docs/goals/STATUS.md`의 S2-G1 contract drift를 따른다. Lv14의 정식 이름은 미확정이지만 Black Hole과 다른 밝은 눈덩이 실루엣과 작업 visual key `final_snowball`을 사용한다. Lv14를 어두운 원형·흡입 링·중력 왜곡으로 표현하지 않는다.
+현재 runtime Resource는 Lv14 `Black Hole`/`black_hole`에는 이미 맞지만 Lv6/Lv7/Lv9/Lv10이 최신 catalog와 다르며 `docs/goals/STATUS.md`의 S2-G1 contract drift를 따른다. Lv14 Ball은 어두운 중심과 compact accretion ring을 사용하되 gameplay outline과 작은 이동 object 크기를 유지한다. 이동 Black Hole 맵 기믹은 화면 규모의 lensing·field grid distortion·환경 label로 구분한다.
 
 1. 15개 global level을 담은 1× silhouette row.
 2. dark/light stress background 위 outline comparison.
@@ -53,7 +53,7 @@ v1은 3개 Stage에 5등급씩 배치하며 Stage 경계 Ball 한 종을 공유�
 |---|---|---|
 | Ground | Snowflake → Snowball → Big Snowball → Giant Snowball → Moon | `[0, 1, 2, 3, 4]` |
 | Planetary | Moon → Earth → Sun → Supernova → Galaxy | `[4, 5, 6, 8, 10]` |
-| Galactic | Galaxy → Galaxy Cluster → Quasar → Event Horizon → Final Snowball (working title) | `[10, 11, 12, 13, 14]` |
+| Galactic | Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole | `[10, 11, 12, 13, 14]` |
 
 Plan 1은 13종을 기본 런에서 사용한다. `Red Giant`와 `Nebula`도 15종 visual bible에는 제작하지만 기본 StageDefinition에서는 비활성이다.
 

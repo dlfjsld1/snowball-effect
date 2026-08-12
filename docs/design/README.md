@@ -22,7 +22,7 @@ Mode: Builder
 | 15등급 Ball 디자인과 3×5 기본 배치 | APPROVED DIRECTION | User | 2026-08-12 | Ground 0–4, Planetary `[4,5,6,8,10]`, Galactic 10–14; Lv7/9 비활성 |
 | Presentation 기술 경계와 검증 구조 | CONDITIONAL APPROVAL | User | 2026-08-11 | typed snapshots, epoch correlation, contract+Web tests; Core/Integration handoff 필요 |
 | V4 Frozen Enamel Arcade 목업 | APPROVED VISUAL DIRECTION | User | 2026-08-11 | slim fixed-width bezel, Main/Pause 재질, Merge/Item/Milestone FX 채택 |
-| V5 Black Hole Phase/HUD revision | APPROVED VISUAL DIRECTION | User | 2026-08-12 | L3는 Galactic gameplay, Lv14와 Black Hole 분리, Stage 이름·세로 progressive HUD |
+| V5 Black Hole Phase/HUD revision | APPROVED VISUAL DIRECTION | User | 2026-08-12 | L3는 Galactic gameplay, Lv14 Black Hole Ball/동명 맵 기믹 식별, Stage 이름·세로 progressive HUD |
 | 전체 문서 세트 | APPROVED | User | 2026-08-10 | open Decision Gate는 각 Goal 전에 별도 확정 |
 
 ## Problem Statement
@@ -75,7 +75,7 @@ Snowball Effect에는 최소 플레이 루프와 규칙·Goal 계약이 있지�
 10. V4 `Frozen Enamel Arcade`를 제작 기준으로 사용한다.
 11. Main은 우주의 동결된 arcade cabinet, Pause는 단일 maintenance hatch로 표현한다.
 12. Merge, Item Box break, Score Milestone의 V4 FX 문법을 유지하고 V5 Black Hole Phase 전환을 추가한다.
-13. Black Hole은 별도 Stage나 Lv14 Ball이 아니라 Galactic 최종 국면 맵 기믹이다.
+13. Lv14 `Black Hole`은 Galactic top Ball이며, 동명 이동 Black Hole 맵 기믹은 별도 Stage가 아닌 Galactic 최종 국면 Stage effect다.
 
 ### 튜닝 시작값
 
@@ -164,7 +164,7 @@ Approach B를 사용한다. 구조적 계약을 먼저 고정하되 아트 주�
 - HUD의 authoritative 값과 아이템 수가 바뀌어도 Frame·Play Field·Stage World 구조를 다시 설계하지 않는다.
 - Merge/Cashout/Clear feedback이 대량 공 상황에서도 핵심 오브젝트를 가리지 않는다.
 - Item Box의 희귀도·내구도·획득·놓침 상태가 색 없이도 구분된다.
-- 15개 Ball을 크기·outline·motif로 정렬할 수 있고 기본 13종 배치가 Stage마다 이어지며, Lv14 최종 공과 Black Hole 맵 기믹이 서로 다른 것으로 읽힌다.
+- 15개 Ball을 크기·outline·motif로 정렬할 수 있고 기본 13종 배치가 Stage마다 이어지며, Lv14 Black Hole Ball과 동명 이동 Black Hole 맵 기믹이 서로 다른 runtime entity로 읽힌다.
 - 1600×900, 1280×720, 1366×768, 1920×1080에서 필수 텍스트와 조작 대상이 읽힌다.
 - 각 산출물에 Owner, dependency, verification, 의도적 제외 범위가 기록된다.
 

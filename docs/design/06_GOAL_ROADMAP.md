@@ -25,7 +25,7 @@ Goal lane과 별도로, 구현 전 준비할 문서/시각 산출물이다.
 | Order | Deliverable | 결과 |
 |---:|---|---|
 | D0 | Design foundations + roadmap | 현재 문서 세트 |
-| D1 | 15등급 Ball visual bible + V5 Compression Bloom sheet | Lv14/Black Hole 분리, S2-G5 및 후속 catalog 기준; 숫자 popup은 amount 계약 대기 |
+| D1 | 15등급 Ball visual bible + V5 Compression Bloom sheet | Lv14 Black Hole Ball/동명 맵 기믹 식별, S2-G5 및 후속 catalog 기준; 숫자 popup은 amount 계약 대기 |
 | D2 | HUD Information Contract v2 + reflow board | Stage 이름 + 세로 5칸 progressive reveal, S3-G6 scope 확정 |
 | D3 | StagePlayFieldProfile cross-lane contract | dynamic bounds 구현 범위 확정 |
 | D4 | V5 slim bezel Shift + Black Hole Phase storyboard와 4개 Frame keyframe | S5-G4/S8-G5 production 기준 |
@@ -139,7 +139,7 @@ v1은 Ground/Planetary/Galactic 3개 Stage를 사용한다. Initial/L1/L2는 Sta
 권장 분해:
 
 - Content profile Goal: `resources/stages/**`의 `StagePlayFieldProfile.active_rect: Rect2`, `profile_id`, visual keys와 `StageDefinition.play_field_profile` reference.
-- Content Ball alignment: S2-G1에서 global 0~14를 최신 catalog(Lv6 Sun, Lv7 Red Giant, Lv9 Nebula, Lv10 Galaxy, Lv14 Final Snowball working title)로 맞추고 다시 검증한다. Black Hole visual/name을 Lv14 Resource에 사용하지 않는다.
+- Content Ball alignment: S2-G1에서 global 0~14를 최신 catalog(Lv6 Sun, Lv7 Red Giant, Lv9 Nebula, Lv10 Galaxy, Lv14 Black Hole)로 맞추고 다시 검증한다. 기존 Lv14 `Black Hole`/`black_hole` Resource는 유지하되 나머지 drift를 수정한다.
 - Core bounds Goal: `scripts/core/stage_runtime.gd`를 coordinator로 두고 `scripts/simulation/ball_simulation_manager.gd`, `scripts/gameplay/paddle.gd`, `tests/simulation/**`, `tests/core/**`의 prepared/active Rect를 spawn·reflection·cashout·paddle clamp·mouse mapping에 원자적으로 적용.
 - Presentation Goal: `scripts/presentation/background_manager.gd`, `scripts/presentation/presentation_manager.gd`, `scenes/backgrounds/**`, `scenes/effects/**`, 승인된 `assets/backgrounds/**`에서 Frame + displayed field animation.
 - Integration Goal and lock: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`에서 Settlement → Shift → profile activation → next Stage wiring. `project.godot` 변경이 필요하면 lock 목록에 명시.
@@ -229,7 +229,7 @@ Fire와 optional item은 계속 Core rules와 분리한다. Item Box가 없어�
 
 ## 9. S8 — Black Hole and Final Result
 
-승인된 v1에서 Black Hole은 별도 Stage나 top Ball이 아니라 Galactic 안의 최종 국면 맵 기믹이다. 발동하면 `Black Hole Phase Transition`으로 L2 `920`→L3 `1080` Frame/Play Field를 함께 확장하고 같은 Stage gameplay를 재개한다. Lv14 `Final Snowball (working title)`을 만들면 추가 Frame Shift 없이 Final Settlement와 Result로 간다. Presentation 구현은 S8-G5, logical phase/force는 S8-G1, wiring은 S8-G4가 소유한다.
+Lv14 `Black Hole`은 Galactic top Ball이다. 이와 별개의 동명 Black Hole 맵 기믹은 Galactic 안의 최종 국면 Stage effect이며, 발동하면 `Black Hole Phase Transition`으로 L2 `920`→L3 `1080` Frame/Play Field를 함께 확장하고 같은 Stage gameplay를 재개한다. Lv14 Black Hole Ball을 만들면 추가 Frame Shift 없이 Final Settlement와 Result로 간다. Presentation 구현은 S8-G5, logical phase/force는 S8-G1, wiring은 S8-G4가 소유한다.
 
 ### Main/Result UI expansion
 

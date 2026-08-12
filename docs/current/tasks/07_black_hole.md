@@ -2,7 +2,7 @@
 
 ## 목적
 
-마지막 Galactic Stage의 최종 국면에서 물리 규칙을 바꿔 기존 조준법을 흔든다. Black Hole은 별도 Stage나 Ball이 아니라 Galactic 안에서 발동하는 이동 맵 기믹이다.
+마지막 Galactic Stage의 최종 국면에서 물리 규칙을 바꿔 기존 조준법을 흔든다. 이 Task의 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아니라 Galactic 안에서 발동하는 Stage effect다.
 
 ---
 
@@ -23,10 +23,10 @@ Galaxy
 Galaxy Cluster
 Quasar
 Event Horizon
-Final Snowball (working title)
+Black Hole Ball (Lv14)
 ```
 
-Lv14 최종 공은 Black Hole 기믹과 다른 눈덩이 계열 공이다. `black_hole_phase_enabled`는 Galactic 안에서 최종 국면을 활성화할 수 있는지를 뜻하며, 정확한 발동 조건은 S8 데이터 계약에서 확정한다.
+Lv14 `Black Hole` Ball과 이동 Black Hole 맵 기믹은 같은 이름과 motif를 쓰지만 별도 gameplay entity다. `black_hole_phase_enabled`는 Ball의 생성·등급이 아니라 Galactic 안에서 동명 맵 기믹 최종 국면을 활성화할 수 있는지를 뜻하며, 정확한 발동 조건은 S8 데이터 계약에서 확정한다.
 
 ## Black Hole Phase Transition
 
@@ -91,7 +91,7 @@ Lv14 최종 공은 Black Hole 기믹과 다른 눈덩이 계열 공이다. `blac
 - 중력이 강해도 게임이 계속 진행
 - 공이 블랙홀에 영구 고정되지 않음
 - Galactic 최종 국면의 생성량에서 성능 확인
-- Lv14 최종 공 생성과 결과 화면 정상
+- Lv14 Black Hole Ball 생성과 결과 화면 정상
 - Black Hole Phase 발동 후 L3 Frame/Play Field에서 Galactic gameplay가 정상적으로 재개됨
 
 

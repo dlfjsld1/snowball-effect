@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Snowball Effect — Approved V5 Mockup</title>
+  <title>Snowball Effect — Approved V5.1 Mockup</title>
   <style>
     :root {
       --void: #050709;
@@ -270,11 +270,13 @@
       border: 10px solid #173941;
       box-shadow: 0 0 0 5px var(--cyan), 0 0 0 13px #214f5988, 0 0 70px #48ddec88;
     }
-    .black-hole::before { content: "MAP GIMMICK"; position: absolute; left: -26px; right: -26px; bottom: -40px; color: var(--cyan); font: 14px var(--font-data); text-align: center; }
+    .black-hole::before { content: "BLACK HOLE FIELD · MAP GIMMICK"; position: absolute; left: -70px; right: -70px; bottom: -40px; color: var(--cyan); font: 14px var(--font-data); text-align: center; }
     .black-hole::after { content: ""; position: absolute; inset: 88px -35px; border-block: 5px solid var(--amber); transform: rotate(-12deg); }
     .phase-field { background: radial-gradient(circle at 76% 24%, #030405 0 85px, #133039 88px 98px, transparent 100px), radial-gradient(circle at 50% 60%, #132932, #05090c 70%); }
-    .final-ball { width: 108px; height: 108px; left: 26%; top: 46%; background: radial-gradient(circle at 35% 28%, #fff, var(--ice) 28%, #5cb9c0 70%); border: 5px solid #fff; box-shadow: 0 0 0 5px #48ddec, 0 0 30px #c9f3f5; }
-    .final-label { position: absolute; left: 10%; top: calc(46% + 126px); color: var(--ice); font: 16px var(--font-data); }
+    .black-hole-ball { width: 96px; height: 96px; left: 27%; top: 47%; background: radial-gradient(circle, #000 0 38%, #10091f 40% 62%, #26454d 64% 72%, #050709 74%); border: 5px solid var(--paper); box-shadow: 0 0 0 5px var(--cyan), 0 0 26px #48ddec99; }
+    .black-hole-ball::before { content: ""; position: absolute; inset: 30px -24px; border: 5px solid var(--amber); border-inline-color: transparent; border-radius: 50%; transform: rotate(-14deg); }
+    .black-hole-ball-label { position: absolute; left: 12%; top: calc(47% + 116px); color: var(--ice); font: 16px var(--font-data); }
+    .gene-icon.black-hole-ball-icon { background: #10091f; border-color: var(--paper); box-shadow: inset 0 0 0 4px #000, 0 0 0 2px var(--cyan); }
 
     /* Main screen */
     .main-stage { width: min(100%, 1200px); min-height: 640px; margin: auto; display: grid; place-items: center; position: relative; }
@@ -356,7 +358,7 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand"><strong>SNOWBALL EFFECT</strong><span>APPROVED MOCKUP / V5</span></div>
+      <div class="brand"><strong>SNOWBALL EFFECT</strong><span>APPROVED MOCKUP / V5.1</span></div>
       <nav class="view-nav" aria-label="목업 화면 선택">
         <button type="button" data-target="frames" aria-pressed="true">FRAMES</button>
         <button type="button" data-target="main">MAIN</button>
@@ -403,7 +405,7 @@
 
       <section class="view" data-view="black-hole" aria-labelledby="black-hole-title">
         <div class="view-heading"><h1 id="black-hole-title">BLACK HOLE PHASE / FRAME LEVEL 3</h1><p>Same Galactic Stage · gameplay resumes after transition</p></div>
-        <div class="game-wrap"><div class="rig" style="--field-width:1080px"><aside class="side"><div class="hud-section"><span class="hud-label">Stage</span><strong class="hud-value stage-name">GALACTIC</strong></div><div class="hud-section"><span class="hud-label">Phase</span><strong class="hud-value time-warning">BLACK HOLE</strong></div><div class="hud-section"><span class="hud-label">Time</span><strong class="hud-value">00:19</strong></div><div class="hud-section"><span class="hud-label">Ball Genealogy · 5/5</span><div class="genealogy"><div class="gene-slot revealed"><i class="gene-icon" style="--ball-color:#4d42b8"></i><span class="gene-copy">Galaxy<small>LV 10</small></span></div><div class="gene-slot revealed"><i class="gene-icon" style="--ball-color:#805cff"></i><span class="gene-copy">Galaxy Cluster<small>LV 11</small></span></div><div class="gene-slot revealed"><i class="gene-icon" style="--ball-color:#e8e6ff"></i><span class="gene-copy">Quasar<small>LV 12</small></span></div><div class="gene-slot revealed"><i class="gene-icon" style="--ball-color:#3a1a61"></i><span class="gene-copy">Event Horizon<small>LV 13</small></span></div><div class="gene-slot revealed"><i class="gene-icon" style="--ball-color:#c9f3f5"></i><span class="gene-copy">Final Snowball<small>LV 14 · WORKING</small></span></div></div></div></aside><div class="field phase-field"><span class="field-grid-label">FIELD 1080 · BLACK HOLE FORCE ACTIVE</span><i class="black-hole"></i><i class="ball final-ball"></i><span class="final-label">LV14 FINAL SNOWBALL ≠ BLACK HOLE</span><i class="ball a" style="--ball-color:#805cff"></i><i class="ball b" style="--ball-color:#e8e6ff"></i><i class="paddle"></i></div><aside class="side right"><div class="hud-section"><span class="hud-label">Stage Score</span><strong class="hud-value">8.32E43</strong></div><div class="hud-section"><span class="hud-label">Current Item</span><div class="effect-slot"><strong>FIRE CORE</strong><span>05.1 SEC</span><div class="timer-bar"><i style="width:42%;background:#ff554d"></i></div></div></div><p class="phase-meter">DISTORTION · ACTIVE</p><button type="button" class="pause-btn">PAUSE · ESC</button></aside></div></div>
+        <div class="game-wrap"><div class="rig" style="--field-width:1080px"><aside class="side"><div class="hud-section"><span class="hud-label">Stage</span><strong class="hud-value stage-name">GALACTIC</strong></div><div class="hud-section"><span class="hud-label">Phase</span><strong class="hud-value time-warning">BLACK HOLE FIELD</strong></div><div class="hud-section"><span class="hud-label">Time</span><strong class="hud-value">00:19</strong></div><div class="hud-section"><span class="hud-label">Ball Genealogy · 5/5</span><div class="genealogy"><div class="gene-slot revealed"><i class="gene-icon" style="--ball-color:#4d42b8"></i><span class="gene-copy">Galaxy<small>LV 10</small></span></div><div class="gene-slot revealed"><i class="gene-icon" style="--ball-color:#805cff"></i><span class="gene-copy">Galaxy Cluster<small>LV 11</small></span></div><div class="gene-slot revealed"><i class="gene-icon" style="--ball-color:#e8e6ff"></i><span class="gene-copy">Quasar<small>LV 12</small></span></div><div class="gene-slot revealed"><i class="gene-icon" style="--ball-color:#3a1a61"></i><span class="gene-copy">Event Horizon<small>LV 13</small></span></div><div class="gene-slot revealed"><i class="gene-icon black-hole-ball-icon"></i><span class="gene-copy">Black Hole<small>LV 14 · BALL</small></span></div></div></div></aside><div class="field phase-field"><span class="field-grid-label">FIELD 1080 · BLACK HOLE FIELD FORCE ACTIVE</span><i class="black-hole"></i><i class="ball black-hole-ball"></i><span class="black-hole-ball-label">LV14 BLACK HOLE BALL</span><i class="ball a" style="--ball-color:#805cff"></i><i class="ball b" style="--ball-color:#e8e6ff"></i><i class="paddle"></i></div><aside class="side right"><div class="hud-section"><span class="hud-label">Stage Score</span><strong class="hud-value">8.32E43</strong></div><div class="hud-section"><span class="hud-label">Current Item</span><div class="effect-slot"><strong>FIRE CORE</strong><span>05.1 SEC</span><div class="timer-bar"><i style="width:42%;background:#ff554d"></i></div></div></div><p class="phase-meter">DISTORTION · ACTIVE</p><button type="button" class="pause-btn">PAUSE · ESC</button></aside></div></div>
       </section>
 
       <section class="view" data-view="pause" aria-labelledby="pause-title">
@@ -428,13 +430,14 @@
       const safeName = views.some((view) => view.dataset.view === name) ? name : 'frames';
       for (const view of views) view.classList.toggle('active', view.dataset.view === safeName);
       for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.target === safeName));
-      document.title = `Snowball Effect V5 — ${safeName}`;
+      document.title = `Snowball Effect V5.1 — ${safeName}`;
       if (updateHash) history.replaceState(null, '', `#${safeName}`);
     }
 
     for (const button of buttons) button.addEventListener('click', () => showView(button.dataset.target));
     window.addEventListener('hashchange', () => showView(location.hash.slice(1), false));
-    showView(location.hash.slice(1) || 'frames', false);
+    const requestedView = new URLSearchParams(location.search).get('view') || location.hash.slice(1) || 'frames';
+    showView(requestedView, false);
   </script>
 </body>
 </html>

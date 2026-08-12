@@ -176,7 +176,7 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 
 `base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. Lv0 반지름 `2`를 기준으로 레벨마다 반지름을 2배(`radius = 2 ^ (global_level + 1)`)로 사용한다. 이에 맞춰 질량은 Lv0의 `1`을 기준으로 레벨마다 4배(`mass = 4 ^ global_level`)를 사용한다. 화면상 크기 보정은 BallDefinition이 아니라 StageDefinition의 `visual_radius_scale`이 소유하며, 물리 `radius`와 충돌 반지름을 바꾸지 않는다. 나머지 수치는 플레이테스트용이며 데이터에서 수정한다.
 
-`fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Nebula(Lv9)부터 Event Horizon(Lv13)은 3, 최종 공(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. 현재 Stage의 최고 공 생성은 `fx_tier`와 관계없이 Stage Clear 연출을 우선한다.
+`fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Nebula(Lv9)부터 Event Horizon(Lv13)은 3, Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. 현재 Stage의 최고 공 생성은 `fx_tier`와 관계없이 Stage Clear 연출을 우선한다.
 
 ---
 
@@ -229,7 +229,7 @@ Time Bonus를 BallDefinition의 고정값으로 저장하지 않는다.
 | Local Lv3 | +1s |
 | Local Lv4 | +2s |
 
-최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 세 Stage가 모두 5종이므로 Ground의 Moon, Planetary의 Galaxy, Galactic의 Lv14 최종 공은 모두 Local Lv4이며 일반 Cashout 대상이 아니다.
+최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 세 Stage가 모두 5종이므로 Ground의 Moon, Planetary의 Galaxy, Galactic의 Lv14 Black Hole은 모두 Local Lv4이며 일반 Cashout 대상이 아니다.
 
 목표:
 
@@ -428,7 +428,7 @@ Moon → Earth → Sun → Supernova → Galaxy
 ### Galactic
 
 ```text
-Galaxy → Galaxy Cluster → Quasar → Event Horizon → Final Snowball (working title)
+Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole
 ```
 
 초기 Spawn: 약 `35/s`
@@ -447,9 +447,9 @@ Galaxy → Galaxy Cluster → Quasar → Event Horizon → Final Snowball (worki
 - 패들 조작의 의미를 없애지 않음
 - 공을 모아 연쇄 머지를 유도할 수도 있음
 
-Black Hole은 별도 Stage나 BallDefinition이 아니라 Galactic 안에서 발동하는 맵 기믹이다. 발동 조건은 S8 Core/Content 계약에서 데이터 기반으로 확정한다. 발동 시 `Black Hole Phase Transition`으로 Frame과 실제 Play Field가 L2 `920`에서 L3 `1080`으로 함께 확장되고, 전환 중에만 spawn·timer·input을 잠근 뒤 같은 Galactic Stage gameplay를 재개한다.
+이 절의 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아니라 Galactic 안에서 발동하는 Stage effect다. 발동 조건은 S8 Core/Content 계약에서 데이터 기반으로 확정한다. 발동 시 `Black Hole Phase Transition`으로 Frame과 실제 Play Field가 L2 `920`에서 L3 `1080`으로 함께 확장되고, 전환 중에만 spawn·timer·input을 잠근 뒤 같은 Galactic Stage gameplay를 재개한다.
 
-Lv14 최종 공은 Black Hole 기믹과 다른 눈덩이 계열 공이다. 이 공을 만들면 다음 Stage 없이 Final Settlement와 Result로 진행한다.
+Lv14 `Black Hole` Ball과 이동 Black Hole 맵 기믹은 이름과 motif를 공유하지만 서로 다른 gameplay entity다. Ball은 `BallDefinition(global_level=14)`과 일반 Merge/Clear 규칙을 따르고, 맵 기믹은 global level이 없는 Stage effect다. Lv14 Black Hole Ball을 만들면 다음 Stage 없이 Final Settlement와 Result로 진행한다.
 
 ### 최종 공 생성
 `MAX SCALE / PERFECT CLEAR → Final Settlement → Result`

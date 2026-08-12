@@ -14,7 +14,7 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 - Owned Files: `resources/stages/**`, `resources/balls/**`, `tests/content/**`
 - Integration Point: StageCatalog가 ordered `local_ball_levels`, spawn rate, `visual_radius_scale`, background key를 제공.
 - Dependencies: S3-G1과 S4 완료.
-- Verification: Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`가 각각 5종이고 이전 top이 다음 base와 동일; Lv7·Lv9는 catalog에는 있으나 기본 chain에서 비활성; Lv14는 Black Hole이 아닌 최종 공; 값은 runtime 공식이 아닌 데이터.
+- Verification: Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`가 각각 5종이고 이전 top이 다음 base와 동일; Lv7·Lv9는 catalog에는 있으나 기본 chain에서 비활성; Lv14는 `Black Hole` 최종 공; 값은 runtime 공식이 아닌 데이터.
 - Do Not Modify: Stage runtime, StageManager, background scene.
 
 ### S5-G2 Stage re-baselining runtime

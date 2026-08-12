@@ -121,7 +121,7 @@ Stage World는 “밝은 풍경 네 장”의 교체가 아니라 동일한 arca
 - Scale history layer: 이전 Stage의 흔적을 작은 단위나 panel marking으로 남길 수 있다.
 - Event layer: Shift, Clear, failure 동안만 나타나는 transient lighting.
 
-v1의 Ground/Planetary/Galactic progression을 사용하되 meadow·우주사진·검은 소용돌이 같은 직설적 배경에 묶이지 않는다. Black Hole은 별도 네 번째 Stage나 최종 Ball이 아니라 Galactic L3 gameplay phase의 dominant map motif로 사용한다.
+v1의 Ground/Planetary/Galactic progression을 사용하되 meadow·우주사진·검은 소용돌이 같은 직설적 배경에 묶이지 않는다. 이동 Black Hole 맵 기믹은 별도 네 번째 Stage가 아니라 Galactic L3 gameplay phase의 dominant map motif로 사용한다. Lv14 Black Hole Ball은 별도 gameplay object로 존재한다.
 
 ## 8. Balance and Input Dependencies
 

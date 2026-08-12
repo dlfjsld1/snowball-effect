@@ -5,9 +5,9 @@
   "html_file": "docs/design/WIREFRAME_DYNAMIC_PLAYFIELD.html",
   "pretext_tier": "design-sketch fallback (design/pretext binary unavailable)",
   "framework": "vanilla",
-  "iterations": 1,
+  "iterations": 2,
   "date": "2026-08-12",
-  "screen": "snowball-effect-v5-system",
+  "screen": "snowball-effect-v5.1-system",
   "branch": "ui-design",
   "team_shared": true
 }

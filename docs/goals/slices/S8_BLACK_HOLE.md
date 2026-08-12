@@ -4,7 +4,7 @@
 
 ## 결과
 
-마지막 Galactic Stage 안에서 이동 Black Hole 최종 국면이 발동하고 L3 Frame/Play Field로 확장된 gameplay를 거친 뒤, Black Hole과 분리된 Lv14 최종 Snowball Clear로 Final Result와 완전한 Retry에 도달한다.
+마지막 Galactic Stage 안에서 이동 Black Hole 최종 국면 맵 기믹이 발동하고 L3 Frame/Play Field로 확장된 gameplay를 거친 뒤, 별도 BallDefinition인 Lv14 `Black Hole` Clear로 Final Result와 완전한 Retry에 도달한다.
 
 ## Goals
 
@@ -41,7 +41,7 @@
 - Owned Files: `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`
 - Integration Point: Core result snapshot, Content UI의 `retry_requested/main_menu_requested`, 모든 Owner의 reset API 연결.
 - Dependencies: S8-G2, S8-G3, S8-G5, Presentation reset API.
-- Verification: matching `phase_id`에서 L2→L3 logical Rect 활성화 후 같은 Galactic gameplay 재개; run score/highest stage/highest ball 표시; Lv14 최종 공 `CLEARED→Result`에서 추가 Shift 없음; Retry가 배열·점수·타이머·settlement/shift/phase/item/presentation lock 완전 초기화; Main 이동은 Run state를 안전하게 종료하고 Title/Main 화면으로 돌아감.
+- Verification: matching `phase_id`에서 L2→L3 logical Rect 활성화 후 같은 Galactic gameplay 재개; run score/highest stage/highest ball 표시; Lv14 Black Hole Ball `CLEARED→Result`에서 추가 Shift 없음; Retry가 배열·점수·타이머·settlement/shift/phase/item/presentation lock 완전 초기화; Main 이동은 Run state를 안전하게 종료하고 Title/Main 화면으로 돌아감.
 - Do Not Modify: Result UI 내부와 각 Owner reset 내부.
 
 ### S8-G5 Black Hole Phase presentation

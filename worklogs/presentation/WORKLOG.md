@@ -75,3 +75,24 @@ Branch: `ui-design` working tree
 - S2-G1 runtime Resource는 최신 catalog와 달라 `PENDING` 재검증이 필요하다.
 - Black Hole Phase의 정확한 발동 조건은 S8 Core/Content 계약에서 확정해야 한다.
 - Pause Stage Restart 계약은 이번 변경에서 수정하지 않았다.
+
+## 2026-08-12 — V5.1 Lv14 Black Hole 명칭 복원
+
+Owner: Presentation
+Branch: `ui-design` working tree
+
+### 작업
+
+- 사용자 최신 결정을 우선해 Lv14 Ball의 이름과 visual key를 `Black Hole`/`black_hole`로 확정했다.
+- 동명인 Lv14 BallDefinition과 Galactic 이동 Black Hole 맵 기믹을 별도 gameplay entity로 문서·Goal·목업에서 구분했다.
+
+### 변경
+
+- `Final Snowball (working title)` 및 `final_snowball` 구계약을 active split 문서에서 제거했다.
+- Black Hole Phase 목업에서 작은 `LV14 BLACK HOLE BALL`과 거대한 `BLACK HOLE FIELD · MAP GIMMICK`을 scale·outline·field distortion으로 구분했다.
+- S2-G1은 Lv14 Resource가 이미 최신 계약과 일치함을 기록하되, Lv6/Lv7/Lv9/Lv10 catalog drift 때문에 `PENDING`을 유지했다.
+
+### 확인
+
+- Godot runtime Scene/Script/Resource는 수정하지 않았다. 기존 `ball_14_black_hole.tres`의 display name, visual key, score를 read-only로 확인했다.
+- V5.1 HTML과 Black Hole Phase PNG를 system Chrome headless로 1600×900/1280×720 재렌더하고, 작은 Ball과 큰 맵 기믹의 label·scale·outline 구분을 육안 검증했다.

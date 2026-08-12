@@ -42,7 +42,7 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 
 ## 초기 공 카탈로그
 
-초기 visual catalog는 `global_level 0~14`의 총 15종이다. 각 Stage는 5종을 사용하고 이전 Stage의 최고 공을 다음 Stage의 기본 공으로 공유한다. 기본 Run은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`를 사용한다. Lv7 `Red Giant`와 Lv9 `Nebula`는 catalog에는 남지만 기본 Run에서 비활성이다. Lv14는 최종 Clear 공이지만 Black Hole이 아니며 정식 명칭 전까지 `Final Snowball (working title)`로 둔다.
+초기 visual catalog는 `global_level 0~14`의 총 15종이다. 각 Stage는 5종을 사용하고 이전 Stage의 최고 공을 다음 Stage의 기본 공으로 공유한다. 기본 Run은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`를 사용한다. Lv7 `Red Giant`와 Lv9 `Nebula`는 catalog에는 남지만 기본 Run에서 비활성이다. Lv14는 Galactic의 최종 Clear 공 `Black Hole`이다.
 
 아래 값은 구현과 첫 플레이테스트를 위한 데이터 seed다. 이름, 점수, 반지름, mass, visual key와 Stage별 배분은 Content/Systems가 플레이테스트에 따라 교체하거나 축소할 수 있다.
 
@@ -61,7 +61,7 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 11 Galaxy Cluster 1.0e30
 12 Quasar         1.0e36
 13 Event Horizon  1.0e43
-14 Final Snowball 1.0e50 (working title)
+14 Black Hole      1.0e50
 ```
 
 나머지 global level도 Ground / Planetary / Galactic 콘셉트가 읽히도록 이름, visual key, 반지름과 점수를 데이터로 정의한다. 값은 코드에 하드코딩하지 않는다.

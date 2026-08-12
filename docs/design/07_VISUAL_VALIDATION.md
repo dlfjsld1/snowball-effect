@@ -43,7 +43,7 @@ Purpose: “예뻐 보인다”를 반복 가능한 evidence로 바꾼다.
 
 관찰자 5명 중 최소 4명이 질문 1(Paddle), 2(Cashout 방향), 4(폭 확장)를 모두 맞히고, 전체 응답 정확도가 80% 이상이어야 hierarchy를 승인한다. 오답은 색을 더하기 전에 size, position, silhouette, spacing으로 먼저 수정한다.
 
-Ball ordering test는 15개 silhouette을 무작위 배열한 뒤 성장 순서와 Stage grouping을 맞히게 한다. 참가자의 80% 이상이 전체 성장 방향을 맞히고, 각 Stage에서 인접 등급 혼동 쌍이 2개 이하여야 한다. 기본 Run의 3×5 chain과 Lv7 Red Giant/Lv9 Nebula를 포함한 catalog sandbox를 별도 sheet로 테스트한다. Lv14 최종 공을 Black Hole 맵 기믹으로 오인하면 실패다.
+Ball ordering test는 15개 silhouette을 무작위 배열한 뒤 성장 순서와 Stage grouping을 맞히게 한다. 참가자의 80% 이상이 전체 성장 방향을 맞히고, 각 Stage에서 인접 등급 혼동 쌍이 2개 이하여야 한다. 기본 Run의 3×5 chain과 Lv7 Red Giant/Lv9 Nebula를 포함한 catalog sandbox를 별도 sheet로 테스트한다. 참가자가 Lv14 Black Hole Ball과 이동 Black Hole 맵 기믹을 같은 runtime entity로 오인하면 실패다.
 
 Item Box test는 label 없이 Common/Rare/Epic의 상대 희귀도, 손상 진행, 파괴/놓침 결과를 묻는다. 색을 제거해도 border notch, core shape, crack 수로 세 rarity의 순서가 읽혀야 한다.
 

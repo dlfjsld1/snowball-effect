@@ -1,5 +1,7 @@
 # 10. Approved Visual Direction V5
 
+Revision: V5.1 — 2026-08-12 Lv14 `Black Hole` 명칭 복원
+
 Status: APPROVED VISUAL DIRECTION — production and runtime remain Goal-gated
 Approved by: User
 Approved on: 2026-08-12
@@ -32,13 +34,13 @@ V5는 V4의 Frozen Enamel 재질, slim fixed-width bezel, Main/Pause 구성과 M
 | 11 | Galaxy Cluster | Galactic |
 | 12 | Quasar | Galactic |
 | 13 | Event Horizon | Galactic |
-| 14 | Final Snowball (working title) | Galactic top |
+| 14 | Black Hole | Galactic top |
 
-기본 ordered chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7과 Lv9는 15종 visual bible에는 포함하지만 기본 Run에서는 사용하지 않는다. Lv14는 밝은 얼음/눈덩이 계열의 최종 silhouette이며, 검은 중심·흡입 링·중력 왜곡을 사용하지 않는다.
+기본 ordered chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7과 Lv9는 15종 visual bible에는 포함하지만 기본 Run에서는 사용하지 않는다. Lv14 Black Hole Ball은 작은 gameplay silhouette, 공 전용 고대비 outline, compact accretion ring을 사용한다. 이동 Black Hole 맵 기믹은 훨씬 큰 환경 scale, field grid lensing, `MAP GIMMICK` label로 구분한다.
 
 ## 3. Black Hole Phase
 
-Black Hole은 별도 Stage나 Ball이 아니라 Galactic 안에서 발동하는 최종 국면 맵 기믹이다. 정확한 발동 조건은 S8 Core/Content 계약에서 정한다.
+Lv14 `Black Hole`은 BallDefinition이다. 이와 별개의 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아니라 Galactic 안에서 발동하는 최종 국면 Stage effect다. 정확한 발동 조건은 S8 Core/Content 계약에서 정한다.
 
 | Profile | Gameplay role | Active Rect seed |
 |---|---|---|
@@ -78,7 +80,7 @@ Stage 진입 시 첫 공만 표시한다. 새 local 공을 처음 만들면 다�
 - Merge numeric score popup: 별도 authoritative `amount + world_position` event가 없으면 사용하지 않는다.
 - Item Box: Ball impact → crack → break → item reveal의 `Salvage Burst`.
 - Score milestone: gameplay를 멈추지 않는 `Cabinet Score Lock`.
-- Black Hole Phase: cyan rail charge → L2/L3 edge separation → dark lens reveal → HUD 안정화 → control return. 최종 Snowball과 Black Hole의 silhouette를 겹치지 않는다.
+- Black Hole Phase: cyan rail charge → L2/L3 edge separation → dark lens reveal → HUD 안정화 → control return. Lv14 Black Hole Ball과 이동 Black Hole 맵 기믹은 이름/motif를 공유하되 scale·outline·field distortion으로 즉시 구분한다.
 
 ## 7. Team Artifact
 
@@ -90,7 +92,7 @@ HTML의 screen selector로 Main, Ground, Planetary, Galactic, Black Hole Phase, 
 
 ## 8. Implementation Handoff
 
-- S2-G1: 최신 15종 Resource와 Lv14/Black Hole 분리 재검증.
+- S2-G1: 최신 15종 Resource를 재검증하되 기존 Lv14 `Black Hole`/`black_hole`은 유지.
 - S2-G5: 2인자 Merge FX.
 - S3-G6: Stage 이름 + 세로 5칸 progressive HUD.
 - S5-G1/G2/G4: non-contiguous chain, Stage profile, Initial/L1/L2.

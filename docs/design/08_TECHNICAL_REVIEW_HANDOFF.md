@@ -42,9 +42,9 @@ V5의 `Compression Bloom` ring/burst와 비점수 label은 확정된 2인자 `ba
 ### H2 approved Presentation direction
 
 - v1 visual route는 Ground → Planetary → Galactic 3-Stage다.
-- Black Hole은 Galactic 내부 최종 국면 맵 기믹이며 Lv14 Ball이 아니다.
+- Lv14 `Black Hole`은 Galactic top Ball이고, 이동 Black Hole 최종 국면 맵 기믹은 동명 concept이지만 별도 Stage effect다.
 - 기믹 발동 시 L2→L3 `Black Hole Phase Transition`을 실행하고 같은 Galactic에서 spawn, timer, input을 재개한다.
-- Galactic top Ball은 Lv14 `Final Snowball (working title)`이며 생성 후 추가 Frame Shift 없이 Result로 간다.
+- Galactic top Ball은 Lv14 `Black Hole`이며 생성 후 추가 Frame Shift 없이 Result로 간다.
 
 ### H5 deterministic Core questions
 

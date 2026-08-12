@@ -8,7 +8,7 @@
 
 # Snowball Effect — Codex Context Pack v1.4
 
-> **2026-08-12 전달본 주의 — 구현 판단에 사용 금지:** 이 합본은 최신 split 문서 재생성 전의 snapshot이며 내부에 구계약 표현이 남아 있다. 재생성 전까지 Ball catalog, 세로 progressive HUD, Galactic Black Hole Phase, Lv14/Black Hole 분리, 2인자 `ball_merged`를 포함한 모든 구현·리뷰 판단은 `02_GAME_RULES.md`, `03_TECHNICAL_DESIGN.md`, `../goals/`, `../team/INTEGRATION_CONTRACTS.md`를 우선한다.
+> **2026-08-12 전달본 주의 — 구현 판단에 사용 금지:** 이 합본은 최신 split 문서 재생성 전의 snapshot이며 내부에 구계약 표현이 남아 있다. 재생성 전까지 Ball catalog, 세로 progressive HUD, Galactic Black Hole Phase, 동명 Lv14 Black Hole Ball/맵 기믹 구분, 2인자 `ball_merged`를 포함한 모든 구현·리뷰 판단은 `02_GAME_RULES.md`, `03_TECHNICAL_DESIGN.md`, `../goals/`, `../team/INTEGRATION_CONTRACTS.md`를 우선한다.
 
 Godot 4 웹 게임 **Snowball Effect**를 Codex와 단계적으로 구현하고 OpenAI GAME BUILDERS SEOUL Track 1에 제출하기 위한 기획·기술·작업·제출 문서 세트다.
 

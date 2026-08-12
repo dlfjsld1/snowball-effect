@@ -76,7 +76,7 @@ Snowball Effect는 공을 합쳐 더 큰 공을 만들고, Ground/Planetary Clea
 
 - 2026-08-11: V4 목업을 제작 기준으로 채택했다.
 - 2026-08-12: V5 정정으로 Black Hole을 Galactic 내부 최종 국면 기믹으로 확정하고, L3를 gameplay profile로 변경했다.
-- 2026-08-12: Lv14 Ball을 Black Hole과 분리해 `Final Snowball (working title)`로 두고, HUD에 Stage 이름과 세로 5칸 progressive genealogy를 추가했다.
+- 2026-08-12: Lv14 Ball은 `Black Hole`로 확정했다. 동일 이름의 Lv14 BallDefinition과 Galactic의 이동 Black Hole 맵 기믹은 서로 다른 gameplay entity로 구분하고, HUD에는 Stage 이름과 세로 5칸 progressive genealogy를 사용한다.
 - 넓은 고정 side frame을 폐기하고, 얇은 고정 폭 베젤이 Play Field와 함께 바깥으로 이동하는 구조를 채택했다.
 - “고철”은 형태와 제작 흔적으로 표현하되 녹을 주재료로 사용하지 않는다.
 - Main은 우주 공간의 동결된 레트로 캐비닛, Pause는 에나멜 maintenance hatch로 표현한다.

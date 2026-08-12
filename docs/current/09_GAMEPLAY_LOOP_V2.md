@@ -465,7 +465,7 @@ Galaxy
 → Galaxy Cluster
 → Quasar
 → Event Horizon
-→ Final Snowball (working title)
+→ Black Hole
 ```
 
 배경:
@@ -487,7 +487,7 @@ Spawn:
 
 맵 기믹:
 
-- 이동하는 Black Hole은 별도 Stage나 Ball이 아닌 Galactic 내부 최종 국면 맵 요소다.
+- 이동 Black Hole 맵 기믹은 별도 Stage나 BallDefinition이 아닌 Galactic 내부 최종 국면 Stage effect다.
 - 모든 활성 공에 약한 인력을 적용하되, 패들 조작과 Cashout 경로를 막지 않는다.
 
 ---
@@ -496,16 +496,16 @@ Stage 2가 마지막 Stage이므로 다음 Stage는 없다.
 
 # 12. Galactic Stage 종료
 
-## 최종 Snowball 완성
+## Lv14 Black Hole 완성
 
 ```text
-Final Snowball (working title)
+Black Hole Ball (Lv14)
 → PERFECT / MAX SCALE CLEAR
 → Final Settlement
 → Result
 ```
 
-여기서 완성되는 공은 Black Hole과 분리된 Lv14 최종 Snowball이다. Black Hole은 Galactic Stage의 최종 국면에서 궤적에 간섭하는 맵 기믹이며, 발동 시 L3 Frame/Play Field로 확장한 뒤 gameplay가 계속된다.
+여기서 완성되는 공은 Lv14 `Black Hole` Ball이다. 이 BallDefinition과 별개의 이동 Black Hole 맵 기믹은 Galactic Stage의 최종 국면에서 궤적에 간섭하며, 발동 시 L3 Frame/Play Field로 확장한 뒤 gameplay가 계속된다.
 
 ## Time Up
 
@@ -662,7 +662,7 @@ Galactic:
 Galaxy Snowball
 → CUT-IN 가능
 
-Final Snowball
+Black Hole Ball
 → FINAL RESULT 연출
 ```
 
