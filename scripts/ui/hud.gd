@@ -10,6 +10,7 @@ const ScoreFormatter = preload("res://scripts/utils/score_formatter.gd")
 @onready var run_score_label: Label = $Readout/RunScoreLabel
 @onready var clear_target_label: Label = $Readout/ClearTargetLabel
 @onready var ball_count_label: Label = $Readout/BallCountLabel
+@onready var effect_manager: EffectManager = $EffectManager
 @onready var genealogy_slots: Array[Label] = [
 	$Genealogy/Content/Slots/Slot0,
 	$Genealogy/Content/Slots/Slot1,
@@ -38,6 +39,7 @@ func bind_sources(score_source: Node, ball_source: Node, stage_source: Node = nu
 		_ball_source.ball_count_changed.connect(_on_ball_count_changed)
 		_ball_source.ball_merged.connect(_on_ball_merged)
 		_on_ball_count_changed(_ball_source.get_active_count())
+	effect_manager.set_simulation_source(_ball_source)
 	if is_instance_valid(_stage_source):
 		_stage_source.stage_changed.connect(_on_stage_changed)
 		_on_stage_changed(_stage_source.get_current_stage())
@@ -112,6 +114,7 @@ func _bind_main_stage_source() -> void:
 
 
 func _unbind_sources() -> void:
+	effect_manager.set_simulation_source(null)
 	if is_instance_valid(_score_source) and _score_source.score_changed.is_connected(_on_score_changed):
 		_score_source.score_changed.disconnect(_on_score_changed)
 	if is_instance_valid(_ball_source) and _ball_source.ball_count_changed.is_connected(_on_ball_count_changed):
