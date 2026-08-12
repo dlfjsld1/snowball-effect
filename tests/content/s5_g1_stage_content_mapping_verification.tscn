@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/content/s5_g1_stage_content_mapping_verification.gd" id="1_runner"]
+
+[node name="S5G1StageContentMappingVerification" type="Node"]
+script = ExtResource("1_runner")

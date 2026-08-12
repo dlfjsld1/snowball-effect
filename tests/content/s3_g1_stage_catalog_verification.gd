@@ -44,7 +44,7 @@ func _ready() -> void:
 		_expect(is_equal_approx(stage.clear_score, EXPECTED_CLEAR_SCORES[index]), "Clear score must match the stage seed.")
 		_expect(is_equal_approx(stage.spawn_rate, EXPECTED_SPAWN_RATES[index]), "Spawn rate must match the stage seed.")
 		_expect(_matches_time_bonuses(stage.time_bonus_by_local_level, EXPECTED_TIME_BONUSES[index]), "Time Bonus must be stage-local data.")
-		_expect(is_equal_approx(stage.visual_radius_scale, 1.0), "Initial visual radius scale must remain render-only neutral.")
+		_expect(is_equal_approx(stage.visual_radius_scale, 1.0), "Initial Scale Shift presentation value must remain neutral.")
 		_expect(stage.background_id == EXPECTED_BACKGROUND_IDS[index], "Background ID must match the stage seed.")
 
 	var ground = catalog.get_stage(0)
