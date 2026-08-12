@@ -51,6 +51,7 @@ Local Lv4 = +2s
 최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 세 Stage가 모두 5종이므로 실제 Cashout 보너스 최대치는 Local Lv3의 `+1s`다.
 
 초기 `base_time` 테스트 seed는 Ground 45초, Planetary 40초, Galactic 35초다. Lv14 Black Hole은 Galactic top Ball이며, 첫 Lv14는 마지막 Galactic Stage 안의 이동 Black Hole runtime 기믹으로 전환된다.
+기본 Run의 ordered Stage chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7 `Red Giant`와 Lv9 `Nebula`는 15종 BallCatalog에 보존하지만, 최근 팀 합의에 따라 기본 Run에서는 의도적으로 제외한다. 이는 누락이나 Resource drift가 아니며 Stage별 정확히 5종의 족보를 유지하기 위한 콘텐츠 배치다.
 `clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. 최고 공은 생성 즉시 Clear되므로, 최고 공보다 한 단계 낮은 Cashout 가능 공 점수의 4배를 초기값으로 사용한다. Ground는 Giant Snowball(`1e6`) 기준 `4e6`, Planetary는 Supernova(`5e17`) 기준 `2e18`이다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
 둘 다 플레이테스트 전 확정값이 아니다.
 

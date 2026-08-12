@@ -14,7 +14,7 @@ Stage Timer, Time Bonus, Top Ball, Time Up, Final Settlement가 확정 계약대
 - Owned Files: `scripts/data/stage_definition.gd`, `resources/stages/**`, `tests/content/**`
 - Integration Point: read-only `StageCatalog.get_stage(index)` API와 `StageDefinition` schema.
 - Dependencies: S2-G1 BallCatalog; Core가 runtime 필드를 확정.
-- Verification: `base_time`, `clear_score`, 5개 `time_bonus_by_local_level`, ordered `local_ball_levels`, spawn rate, `visual_radius_scale` 로드; Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`; 초기 seed는 데이터일 뿐 공식이 아님.
+- Verification: `base_time`, `clear_score`, 5개 `time_bonus_by_local_level`, ordered `local_ball_levels`, spawn rate, `visual_radius_scale` 로드; Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`; Lv7 `Red Giant`와 Lv9 `Nebula`는 15종 BallCatalog에는 유지하되, 합의된 기본 Run의 어느 Stage chain에도 넣지 않음; 초기 seed는 데이터일 뿐 공식이 아님.
 - Do Not Modify: Stage runtime와 StageManager.
 
 ### S3-G2 Stage 진입과 Cashout 점수·시간

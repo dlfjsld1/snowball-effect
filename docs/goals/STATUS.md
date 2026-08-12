@@ -37,7 +37,7 @@
 | S2-G3 결정적 Merge commit | Core | VERIFIED | 2026-08-11 mass-weighted velocity를 `maximum_ball_runtime_speed=900`으로 한 번 제한한다. Primary `godot` Main runtime에서 Lv0 pair가 midpoint Lv1 하나로 합쳐지고 velocity `(50,50)`을 계승, 같은 tick의 Lv1 재합체는 없고 다음 commit에서만 발생, 2000 world units/s pair는 900으로 제한, Lv13 pair의 Lv14 생성은 `top_ball_created(14)` 1회를 확인했다. simulation/S2-G3/S2-G2/S1-G3/S1-G1 validate 5/5 통과 및 runtime error 0. |
 | S2-G4 Score formatter | Content/Systems | VERIFIED | 2026-08-10 `format_score(value)` pure API로 0, K/M/B/T 경계, 반올림 승격, `1e36` 과학 표기와 NaN/Infinity 방어를 자동 검증. Godot 4.7.1 headless exit 0, Primary `godot` MCP validate 3/3. |
 | S2-G5 Merge 표시 통합 | Presentation | PENDING | S2-G3/G4 계약 필요 |
-| S3-G1 Stage 데이터 | Content/Systems | VERIFIED | 2026-08-12 Stage resource와 content verification을 Stage당 5종 계약으로 재정렬했다: Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`. 세 Stage의 Time Bonus는 `[0,0.25,0.5,1,2]`, Lv7·Lv9는 기본 Run에서 제외하며 Galactic만 `black_hole_enabled=true`다. Primary `godot` validate로 schema/catalog/S3 test script/test scene/S2 regression/Main scene 6/6 valid, Main runtime에서 세 resource를 직접 조회했고 runtime error 0. 이 환경에는 CLI executable을 신뢰성 있게 찾을 수 없어 MCP headless validation을 baseline으로 기록한다. |
+| S3-G1 Stage 데이터 | Content/Systems | VERIFIED | 2026-08-12 Stage resource와 content verification을 Stage당 5종 계약으로 재정렬했다: Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`. 세 Stage의 Time Bonus는 `[0,0.25,0.5,1,2]`, Galactic만 `black_hole_enabled=true`다. 최근 팀 검토로 Lv7 `Red Giant`와 Lv9 `Nebula`를 15종 catalog에는 보존하되 기본 Run에서 제외하는 배치가 의도된 계약임을 재확인했다. Primary `godot` validate로 schema/catalog/S3 test script/test scene/S2 regression/Main scene 6/6 valid, Main runtime에서 세 resource를 직접 조회했고 runtime error 0. 이 환경에는 CLI executable을 신뢰성 있게 찾을 수 없어 MCP headless validation을 baseline으로 기록한다. |
 | S3-G2 Stage 진입·Cashout 점수/시간 | Core | PENDING | S3-G1/S1-G3 필요 |
 | S3-G3 Tick 종료 중재 | Core | PENDING | S3-G2/S2-G3 필요 |
 | S3-G4 Snapshot Settlement | Core | PENDING | S3-G3 필요 |
@@ -74,8 +74,8 @@
 - S1-G1/G3/G4/G5는 기존 `VERIFIED`를 유지한다.
 - S1-G2는 Mouse/Keyboard arbitration과 large-ball direct-sweep overlap 회귀까지 `VERIFIED`다.
 - S1-G6은 최신 clean Web export의 사용자 Chrome 수동 검증까지 완료해 `VERIFIED`다. S1 Shared Skeleton이 닫혔다.
-- S2-G1은 2026-08-12 catalog 변경으로 `PENDING`에 되돌렸다. 기존 Lv14 Black Hole Resource는 유지하지만 Lv6/Lv7/Lv9/Lv10 drift를 수정하고 다시 검증해야 한다.
+- S2-G1은 최신 catalog 계약에 맞춰 재정렬·재검증되어 `VERIFIED`다. Lv6 Sun/Lv7 Red Giant/Lv9 Nebula/Lv10 Galaxy와 Lv14 Black Hole Resource를 유지한다.
 - S2-G2와 S2-G3의 동일 레벨 후보/결정적 commit 증거는 유지한다. `ball_merged(result_level, world_position)`는 2인자 계약이다. 비연속 Stage progression(`6→8→10`)은 S5-G2에서 현재 `StageDefinition.local_ball_levels` lookup으로 추가 검증한다.
-- main의 S3-G1 구현과 실행 Evidence는 병합했지만 최신 5종·비연속 Stage chain과 달라 S3-G1은 `PENDING`이다. 따라서 Core S3-G2는 아직 시작하지 않는다.
+- S3-G1은 최신 5종·비연속 Stage chain으로 재정렬·재검증되어 `VERIFIED`다. Lv7 Red Giant와 Lv9 Nebula는 catalog에는 남지만, 팀 합의에 따라 기본 Run에는 의도적으로 포함하지 않는다. Core S3-G2는 이 Stage data를 소비해 시작할 수 있다.
 - 다음 가능한 Presentation Goal은 S2-G5이며, S3-G6에는 Stage 이름과 세로 5칸 progressive genealogy가 추가됐다. Black Hole Phase 전용 Presentation은 S8-G5에서 수행한다.
 - 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.

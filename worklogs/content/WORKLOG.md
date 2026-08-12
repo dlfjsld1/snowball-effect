@@ -206,6 +206,20 @@ Branch: `main` working tree
 - Resource filename은 기존 path를 보존한다. Core/Presentation이 소비하는 계약은 runtime `display_name`과 `visual_key`다.
 - S3-G1은 별도의 Stage당 5레벨 chain 재정렬이 필요한 다음 Content/Systems 작업이다.
 
+## 2026-08-12 — S3-G1 기본 Run 제외 의도 명시
+
+Owner: Content/Systems/Release
+
+### 변경
+
+- 최근 팀 검토 결과를 Stage Contract, Cashout/Stage Task, Goal Status에 기록했다.
+- Lv7 `Red Giant`와 Lv9 `Nebula`는 15종 BallCatalog에 남지만 Ground/Planetary/Galactic 기본 Run chain에는 의도적으로 포함하지 않는다.
+- 이 배치는 Resource drift나 누락이 아니라 각 Stage를 정확히 5종의 ordered genealogy로 유지하기 위한 확정 콘텐츠 계약이다.
+
+### 확인
+
+- 문서 정합성만 갱신했다. Stage Resource, Ball Resource, runtime code, Goal 구현 상태는 변경하지 않았다.
+
 ## 2026-08-12 — S3-G1 Stage당 5종 계약 재정렬
 
 Owner: Content/Systems/Release
