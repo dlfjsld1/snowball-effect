@@ -4,7 +4,7 @@ extends Node
 const BallCatalogScript = preload("res://scripts/data/ball_catalog.gd")
 
 signal ball_count_changed(active_count: int)
-signal cashout_completed(score_amount: float, local_level: int, world_position: Vector2)
+signal cashout_completed(score_amount: float, global_level: int, world_position: Vector2)
 signal ball_merged(result_level: int, world_position: Vector2)
 signal top_ball_created(global_level: int)
 
@@ -148,8 +148,7 @@ func commit_merge_candidates() -> int:
 		var result_position: Vector2 = plan["position"]
 		spawn_ball(result_position, plan["velocity"], result_definition.radius, result_level)
 		ball_merged.emit(result_level, result_position)
-		if not _ball_catalog.has_definition(result_level + 1):
-			top_ball_created.emit(result_level)
+		top_ball_created.emit(result_level)
 
 	return merge_plans.size()
 
@@ -224,7 +223,9 @@ func step_simulation(delta: float) -> void:
 	for cashout in pending_cashouts:
 		var ball_index: int = cashout["index"]
 		if deactivate_ball(ball_index):
-			cashout_completed.emit(base_cashout_score, 0, cashout["position"])
+			var global_level := global_levels[ball_index]
+			var definition = _ball_catalog.get_definition(global_level)
+			cashout_completed.emit(definition.score_value, global_level, cashout["position"])
 
 
 func get_render_snapshot() -> Dictionary:

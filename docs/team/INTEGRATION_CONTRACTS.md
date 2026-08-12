@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Core Stage runtime | `stage_time_changed(time_left)` | Presentation HUD | 남은 시간 표시 |
 | Core score ledger | `score_changed(stage_score, run_score)` | Presentation HUD | 점수 표시 |
-| Core simulation | `cashout_completed(score_amount, local_level, world_position)` | Presentation, Integration | popup과 Stage Time Bonus 반영 |
+| Core simulation | `cashout_completed(score_amount, global_level, world_position)` | Presentation, Integration | popup과 StageRuntime의 local Time Bonus 반영 |
 | Core simulation | `ball_merged(result_level, world_position)` — 2 arguments only | Presentation | Merge FX; score amount와 special type은 포함하지 않음 |
 | Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration | Clear 표시와 상태 잠금 |

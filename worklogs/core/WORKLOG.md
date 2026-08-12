@@ -395,3 +395,26 @@ Branch: `codex/s3-g2-stage-runtime`
 
 - 다음 Core Goal은 S3-G3 tick 종료 중재다. 시간 차감, Merge/Top Ball, Cashout, Time Up 우선순위는 그 Goal에서 simulation과 연결한다.
 - S3-G2는 기존 Main cashout wiring을 변경하지 않았다. StageManager/HUD wiring은 Integration/Presentation 소유 Goal에서 수행한다.
+
+## 2026-08-12 — S3-G3 tick-end arbitration
+
+Owner: Core
+Branch: `codex/s3-g3-tick-arbitration`
+
+### 변경
+
+- `StageRuntime.process_tick(delta, top_ball_created, cashouts)`에 Stage time decrement 뒤 pending Cashout 반영, Top Ball 우선, Time Up 순서와 1회 `end_decision_requested(reason)` lock을 구현했다.
+- Stage 전환은 end lock을 초기화하므로 Integration StageManager가 settlement/shift 뒤 다음 Stage를 다시 시작할 수 있다.
+- Simulation Cashout signal의 두 번째 값은 임시 local level이 아니라 실제 `global_level`로 바꿨고, 첫 값은 임시 `base_cashout_score`가 아니라 BallDefinition의 base `score_value`로 바꿨다. StageRuntime이 현재 Stage의 local level을 계산하는 단일 책임을 유지한다.
+- Catalog 전체 최종 level이 아니라 StageRuntime의 `current_stage.top_global_level`로 현재 Stage Top Ball을 판단한다. GameManager/StageManager/HUD wiring은 변경하지 않았다.
+
+### 확인
+
+- Godot 4.7.1 CLI headless: S3-G3, S3-G2, S1-G3 verification scenes 모두 exit 0.
+- Primary `godot` validate: StageRuntime, simulation, S3-G3/S3-G2/S1-G3 verification artifacts 6/6 valid.
+- Primary runtime: `0.03 - 0.1 + 1.0 = 0.93s` Cashout recovery는 종료 요청 없이 PLAYING, Top Ball+expired time은 `TOP_BALL_CLEAR` 한 번, 이후 tick은 lock으로 무시됨을 확인했다. Lv3 Cashout은 score `1000000`, global level `3`, active count `0`, Main runtime error 0이다.
+
+### 다음 작업 / 주의
+
+- 다음 Core Goal은 S3-G4 Snapshot Settlement다. settlement 중복 방지와 base score-only 계산은 그 Goal에 남았다.
+- S3-G5 Integration이 simulation Cashout/merge 이벤트를 StageRuntime에 연결해야 실제 Main의 임시 1점 Ledger/HUD를 Stage 계약으로 교체할 수 있다.

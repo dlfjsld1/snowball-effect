@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://tests/core/s3_g3_tick_arbitration_verification.gd" id="1_runner"]
+[ext_resource type="Script" path="res://scripts/core/stage_runtime.gd" id="2_stage_runtime"]
+
+[node name="S3G3TickArbitrationVerification" type="Node"]
+script = ExtResource("1_runner")
+
+[node name="StageRuntime" type="Node" parent="."]
+script = ExtResource("2_stage_runtime")
