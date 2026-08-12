@@ -40,6 +40,7 @@ func _ready() -> void:
 
 
 func _initialize_runtime() -> void:
+	_simulation.stage_base_ball_radius = lv1_ball_radius
 	_simulation.set_paddle_collision_provider(_paddle)
 	_stage_manager.stage_changed.connect(_on_stage_changed)
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation)
@@ -90,15 +91,18 @@ func _on_stage_changed(definition: StageDefinition) -> void:
 
 
 func _spawn_ball() -> void:
+	var current_stage := _stage_manager.get_current_stage()
+	var spawn_global_level: int = current_stage.base_global_level if current_stage != null else 0
+	var spawn_radius := _simulation.get_runtime_radius_for_level(spawn_global_level)
 	var field := _simulation.play_field_rect
 	var spawn_position := Vector2(
-		_random.randf_range(field.position.x + lv1_ball_radius, field.end.x - lv1_ball_radius),
-		field.position.y + lv1_ball_radius + 12.0
+		_random.randf_range(field.position.x + spawn_radius, field.end.x - spawn_radius),
+		field.position.y + spawn_radius + 12.0
 	)
 	var spawn_angle := deg_to_rad(_random.randf_range(-lv1_spawn_angle_degrees, lv1_spawn_angle_degrees))
 	var spawn_direction := Vector2(sin(spawn_angle), cos(spawn_angle))
 	var spawn_velocity := spawn_direction * lv1_spawn_speed_world_units_per_second
-	_simulation.spawn_ball(spawn_position, spawn_velocity, lv1_ball_radius)
+	_simulation.spawn_ball(spawn_position, spawn_velocity, spawn_radius, spawn_global_level)
 
 
 func _on_pause_requested() -> void:

@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://tests/simulation/stress_test_scene.gd" id="1_runner"]
+[ext_resource type="Script" path="res://scripts/simulation/ball_simulation_manager.gd" id="2_simulation"]
+[ext_resource type="Script" path="res://scripts/simulation/ball_renderer.gd" id="3_renderer"]
+
+[node name="StressTest" type="Node2D"]
+script = ExtResource("1_runner")
+
+[node name="Backdrop" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(500, 0, 1100, 0, 1100, 900, 500, 900)
+color = Color(0.09, 0.12, 0.18, 1)
+
+[node name="BallSimulationManager" type="Node" parent="."]
+script = ExtResource("2_simulation")
+play_field_rect = Rect2(500, 0, 600, 900)
+cashout_enabled = false
+
+[node name="BallRenderer" type="Node2D" parent="."]
+script = ExtResource("3_renderer")
+simulation_path = NodePath("../BallSimulationManager")
+
+[node name="ResultLabel" type="Label" parent="."]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 490.0
+offset_bottom = 180.0
+theme_override_colors/font_color = Color(0.85, 1, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "S4-G3 STRESS STARTING..."

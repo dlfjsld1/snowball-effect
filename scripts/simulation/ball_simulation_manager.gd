@@ -2,17 +2,22 @@ class_name BallSimulationManager
 extends Node
 
 const BallCatalogScript = preload("res://scripts/data/ball_catalog.gd")
+const SpatialGridScript = preload("res://scripts/simulation/spatial_grid.gd")
 
 signal ball_count_changed(active_count: int)
 signal cashout_completed(score_amount: float, global_level: int, world_position: Vector2)
 signal ball_merged(result_level: int, world_position: Vector2)
 signal top_ball_created(global_level: int)
+signal simulation_metrics_updated(metrics: Dictionary)
 
 @export var play_field_rect := Rect2(500.0, 0.0, 600.0, 900.0)
 @export_range(0.0, 1.0, 0.01) var wall_restitution := 1.0
 @export var base_cashout_score := 1.0
 @export var cashout_enabled := true
+@export var merge_enabled := true
 @export var maximum_ball_runtime_speed := 900.0
+@export var stage_base_ball_radius := 4.0
+@export_range(1.0, 1024.0, 1.0, "or_greater") var spatial_grid_cell_size := 32.0
 
 var positions := PackedVector2Array()
 var velocities := PackedVector2Array()
@@ -24,6 +29,33 @@ var active_indices: Array[int] = []
 var free_indices: Array[int] = []
 var _paddle_collision_provider: Node
 var _ball_catalog = BallCatalogScript.new()
+var _spatial_grid = SpatialGridScript.new()
+var _stage_ball_levels := PackedInt32Array()
+var _last_candidate_count := 0
+var _last_grid_cell_count := 0
+var _last_merge_count := 0
+var _merge_candidate_pairs: Array[Vector2i] = []
+var _merge_plans: Array[Dictionary] = []
+var _consumed_merge_flags := PackedByteArray()
+var _pending_cashout_indices: Array[int] = []
+var _pending_cashout_positions := PackedVector2Array()
+var _render_snapshot_positions := PackedVector2Array()
+var _render_snapshot_radii := PackedFloat32Array()
+var _render_snapshot := {
+	"positions": _render_snapshot_positions,
+	"radii": _render_snapshot_radii,
+	"count": 0,
+}
+var _simulation_metrics := {
+	"active_balls": 0,
+	"slot_capacity": 0,
+	"free_slots": 0,
+	"candidate_count": 0,
+	"grid_cell_count": 0,
+	"grid_bucket_capacity": 0,
+	"grid_new_buckets": 0,
+	"merges": 0,
+}
 
 
 func _physics_process(delta: float) -> void:
@@ -87,6 +119,18 @@ func get_capacity() -> int:
 	return positions.size()
 
 
+func configure_stage_ball_levels(ordered_global_levels: PackedInt32Array) -> void:
+	_stage_ball_levels = ordered_global_levels.duplicate()
+
+
+func get_runtime_radius_for_level(global_level: int) -> float:
+	var local_level := _stage_ball_levels.find(global_level)
+	if local_level >= 0:
+		return stage_base_ball_radius * pow(2.0, local_level)
+	var definition = _ball_catalog.get_definition(global_level)
+	return definition.radius if definition != null else stage_base_ball_radius
+
+
 func get_ball_global_level(index: int) -> int:
 	if not is_ball_active(index):
 		return -1
@@ -94,32 +138,42 @@ func get_ball_global_level(index: int) -> int:
 
 
 func get_merge_candidate_pairs() -> Array[Vector2i]:
-	var candidates: Array[Vector2i] = []
-	var sorted_indices: Array[int] = active_indices.duplicate()
-	sorted_indices.sort()
+	_rebuild_merge_candidate_pairs()
+	return _merge_candidate_pairs.duplicate()
 
-	for first_position in range(sorted_indices.size()):
-		var first_index := sorted_indices[first_position]
-		var first_level := global_levels[first_index]
-		for second_position in range(first_position + 1, sorted_indices.size()):
-			var second_index := sorted_indices[second_position]
-			if first_level != global_levels[second_index]:
-				continue
 
-			var combined_radius := radii[first_index] + radii[second_index]
-			if positions[first_index].distance_squared_to(positions[second_index]) <= combined_radius * combined_radius:
-				candidates.append(Vector2i(first_index, second_index))
+func _rebuild_merge_candidate_pairs() -> Array[Vector2i]:
+	_spatial_grid.cell_size = spatial_grid_cell_size
+	_spatial_grid.rebuild(positions, radii, global_levels, active_indices)
+	_spatial_grid.fill_overlapping_pairs(positions, radii, global_levels, _merge_candidate_pairs)
+	_last_candidate_count = _spatial_grid.get_candidate_check_count()
+	_last_grid_cell_count = _spatial_grid.get_cell_count()
+	return _merge_candidate_pairs
 
-	return candidates
+
+func get_spatial_metrics() -> Dictionary:
+	return {
+		"candidate_count": _last_candidate_count,
+		"grid_cell_count": _last_grid_cell_count,
+		"grid_bucket_capacity": _spatial_grid.get_allocated_bucket_count(),
+		"grid_new_buckets": _spatial_grid.get_new_bucket_count(),
+	}
+
+
+func get_simulation_metrics() -> Dictionary:
+	_update_simulation_metrics()
+	return _simulation_metrics
 
 
 func commit_merge_candidates() -> int:
-	var merge_plans: Array[Dictionary] = []
-	var consumed_indices := {}
-	for candidate in get_merge_candidate_pairs():
+	_last_merge_count = 0
+	_merge_plans.clear()
+	_consumed_merge_flags.resize(positions.size())
+	_consumed_merge_flags.fill(0)
+	for candidate in _rebuild_merge_candidate_pairs():
 		var first_index := candidate.x
 		var second_index := candidate.y
-		if consumed_indices.has(first_index) or consumed_indices.has(second_index):
+		if _consumed_merge_flags[first_index] == 1 or _consumed_merge_flags[second_index] == 1:
 			continue
 		if not is_ball_active(first_index) or not is_ball_active(second_index):
 			continue
@@ -128,9 +182,9 @@ func commit_merge_candidates() -> int:
 		if not _ball_catalog.has_definition(result_level):
 			continue
 
-		consumed_indices[first_index] = true
-		consumed_indices[second_index] = true
-		merge_plans.append({
+		_consumed_merge_flags[first_index] = 1
+		_consumed_merge_flags[second_index] = 1
+		_merge_plans.append({
 			"first_index": first_index,
 			"second_index": second_index,
 			"result_level": result_level,
@@ -138,19 +192,19 @@ func commit_merge_candidates() -> int:
 			"velocity": _get_merge_result_velocity(first_index, second_index),
 		})
 
-	for plan in merge_plans:
+	for plan in _merge_plans:
 		deactivate_ball(plan["first_index"])
 		deactivate_ball(plan["second_index"])
 
-	for plan in merge_plans:
+	for plan in _merge_plans:
 		var result_level: int = plan["result_level"]
-		var result_definition = _ball_catalog.get_definition(result_level)
 		var result_position: Vector2 = plan["position"]
-		spawn_ball(result_position, plan["velocity"], result_definition.radius, result_level)
+		spawn_ball(result_position, plan["velocity"], get_runtime_radius_for_level(result_level), result_level)
 		ball_merged.emit(result_level, result_position)
 		top_ball_created.emit(result_level)
 
-	return merge_plans.size()
+	_last_merge_count = _merge_plans.size()
+	return _last_merge_count
 
 
 func set_paddle_collision_provider(provider: Node) -> void:
@@ -167,6 +221,17 @@ func reset_runtime() -> void:
 	paddle_contact_locks.clear()
 	active_indices.clear()
 	free_indices.clear()
+	_last_candidate_count = 0
+	_last_grid_cell_count = 0
+	_last_merge_count = 0
+	_merge_candidate_pairs.clear()
+	_merge_plans.clear()
+	_consumed_merge_flags.clear()
+	_pending_cashout_indices.clear()
+	_pending_cashout_positions.clear()
+	_render_snapshot_positions.clear()
+	_render_snapshot_radii.clear()
+	_update_simulation_metrics()
 	ball_count_changed.emit(0)
 
 
@@ -212,39 +277,56 @@ func step_simulation(delta: float) -> void:
 		positions[index] = position
 		velocities[index] = velocity
 
-	commit_merge_candidates()
+	if merge_enabled:
+		commit_merge_candidates()
+	else:
+		_rebuild_merge_candidate_pairs()
+		_last_merge_count = 0
 
-	var pending_cashouts: Array[Dictionary] = []
+	_pending_cashout_indices.clear()
+	_pending_cashout_positions.clear()
 	if cashout_enabled:
 		for index in active_indices:
 			if positions[index].y - radii[index] > play_field_rect.end.y:
-				pending_cashouts.append({"index": index, "position": positions[index]})
+				_pending_cashout_indices.append(index)
+				_pending_cashout_positions.append(positions[index])
 
-	for cashout in pending_cashouts:
-		var ball_index: int = cashout["index"]
+	for cashout_index in range(_pending_cashout_indices.size()):
+		var ball_index := _pending_cashout_indices[cashout_index]
 		if deactivate_ball(ball_index):
 			var global_level := global_levels[ball_index]
 			var definition = _ball_catalog.get_definition(global_level)
-			cashout_completed.emit(definition.score_value, global_level, cashout["position"])
+			cashout_completed.emit(definition.score_value, global_level, _pending_cashout_positions[cashout_index])
+
+	_update_simulation_metrics()
+	simulation_metrics_updated.emit(_simulation_metrics)
 
 
 func get_render_snapshot() -> Dictionary:
-	var snapshot_positions := PackedVector2Array()
-	var snapshot_radii := PackedFloat32Array()
 	var active_count := active_indices.size()
-	snapshot_positions.resize(active_count)
-	snapshot_radii.resize(active_count)
+	_render_snapshot_positions.resize(active_count)
+	_render_snapshot_radii.resize(active_count)
 
 	for snapshot_index in range(active_count):
 		var ball_index := active_indices[snapshot_index]
-		snapshot_positions[snapshot_index] = positions[ball_index]
-		snapshot_radii[snapshot_index] = radii[ball_index]
+		_render_snapshot_positions[snapshot_index] = positions[ball_index]
+		_render_snapshot_radii[snapshot_index] = radii[ball_index]
 
-	return {
-		"positions": snapshot_positions,
-		"radii": snapshot_radii,
-		"count": active_count,
-	}
+	_render_snapshot["positions"] = _render_snapshot_positions
+	_render_snapshot["radii"] = _render_snapshot_radii
+	_render_snapshot["count"] = active_count
+	return _render_snapshot
+
+
+func _update_simulation_metrics() -> void:
+	_simulation_metrics["active_balls"] = active_indices.size()
+	_simulation_metrics["slot_capacity"] = positions.size()
+	_simulation_metrics["free_slots"] = free_indices.size()
+	_simulation_metrics["candidate_count"] = _last_candidate_count
+	_simulation_metrics["grid_cell_count"] = _last_grid_cell_count
+	_simulation_metrics["grid_bucket_capacity"] = _spatial_grid.get_allocated_bucket_count()
+	_simulation_metrics["grid_new_buckets"] = _spatial_grid.get_new_bucket_count()
+	_simulation_metrics["merges"] = _last_merge_count
 
 
 func _get_merge_result_velocity(first_index: int, second_index: int) -> Vector2:

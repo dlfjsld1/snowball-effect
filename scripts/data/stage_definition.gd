@@ -3,8 +3,8 @@ extends Resource
 
 ## Canonical balance and presentation data for one playable stage.
 ##
-## Physical BallDefinition values remain global. Stage-local progression, time
-## rewards, and render-only scale normalization belong here instead.
+## Catalog identity remains global. Runtime visual/collision radius follows the
+## ball's index in this Stage's local progression so each Stage restarts small.
 
 @export_range(0, 99, 1) var stage_index := 0
 @export var display_name := ""
@@ -19,8 +19,8 @@ extends Resource
 @export var time_bonus_by_local_level := PackedFloat64Array()
 @export_range(0.0, 1000.0, 0.01, "or_greater") var spawn_rate := 0.0
 
-## Render-only normalization; it must not alter BallDefinition.radius or
-## collision behavior.
+## Reserved for the later Scale Shift presentation. Gameplay balls keep visual
+## and collision radius aligned; this field must not create a mismatch.
 @export_range(0.001, 1000.0, 0.001, "or_greater") var visual_radius_scale := 1.0
 @export var background_id: StringName = &""
 

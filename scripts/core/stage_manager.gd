@@ -87,6 +87,7 @@ func get_runtime_snapshot() -> Dictionary:
 func _enter_stage(definition: StageDefinition) -> void:
 	assert(definition != null, "StageManager requires a valid StageDefinition.")
 	_simulation.reset_runtime()
+	_simulation.configure_stage_ball_levels(definition.local_ball_levels)
 	_settlement_service.reset_for_stage()
 	_stage_runtime.enter_stage(definition)
 	_set_state(PLAYING)
