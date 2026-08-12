@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_definition")
 global_level = 7
-display_name = "Sun"
+display_name = "Red Giant"
 score_value = 1.0e15
 radius = 256.0
 mass = 16384.0
-visual_key = &"sun"
-base_color = Color(1, 0.76078431, 0.27843137, 1)
+visual_key = &"red_giant"
+base_color = Color(0.85098039, 0.29411765, 0.21176471, 1)
 fx_tier = 2

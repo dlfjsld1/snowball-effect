@@ -183,3 +183,48 @@ Branch: `main` working tree
 - Core/Integration 담당은 read-only `StageCatalog.get_stage(index)`와 `StageDefinition`을 소비해 S3-G2 `enter_stage(definition)`을 구현할 수 있다.
 - `visual_radius_scale`의 실제 tuning과 Stage World 연결은 S5-G1/S5-G4의 별도 범위다.
 - 사용자 승인 seed: 초기 제한 시간은 Ground/Planetary/Galactic `45/40/35초`, clear score는 `4e6/2e18/0`을 유지한다. 실제 Stage 플레이가 가능해진 뒤 여러 차례 플레이테스트한 관측값으로만 조정한다.
+
+## 2026-08-12 — S2-G1 최신 카탈로그 계약 재정렬
+
+Owner: Content/Systems/Release
+Branch: `main` working tree
+
+### 변경
+
+- 15레벨 score/radius/mass/fx-tier progression을 유지하면서 drift가 있던 리소스를 최신 계약으로 정렬했다: Lv6 `Sun`, Lv7 `Red Giant`, Lv9 `Nebula`, Lv10 `Galaxy`, Lv11 `Galaxy Cluster`.
+- canonical display name, visual key, 문서화된 base color를 Content 카탈로그 검증 기대값에 반영했다. Time Bonus는 계속 `BallDefinition`에 없다.
+- 이동 Galactic Black Hole은 Lv14 `Black Hole` 공 정의와 별개의 Stage 맵 기믹으로 유지했다.
+
+### 확인
+
+- Primary `godot` validate: `ball_definition.gd`, `ball_catalog.gd`, S2-G1 verification script 및 scene 모두 valid (4/4).
+- Primary `godot` Main runtime query가 15개 catalog definition을 모두 로드했다. Lv14 `Black Hole`까지 name/key가 canonical sequence와 일치하고, score range는 `1`부터 `1e50`까지 유지된다. runtime debug output error 0.
+- 이 환경에서는 신뢰 가능한 Godot CLI executable path를 찾을 수 없어 MCP headless validator와 실행 중인 Main project의 data query를 baseline evidence로 기록한다.
+
+### 다음 작업 / 주의
+
+- Resource filename은 기존 path를 보존한다. Core/Presentation이 소비하는 계약은 runtime `display_name`과 `visual_key`다.
+- S3-G1은 별도의 Stage당 5레벨 chain 재정렬이 필요한 다음 Content/Systems 작업이다.
+
+## 2026-08-12 — S3-G1 Stage당 5종 계약 재정렬
+
+Owner: Content/Systems/Release
+Branch: `main` working tree
+
+### 변경
+
+- Stage progression을 최신 계약에 맞췄다: Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`.
+- Planetary/Galactic Resource의 base/top level, ordered local level, Time Bonus 표를 갱신했다. 세 Stage 모두 `[0,0.25,0.5,1,2]`를 사용하며 Lv7·Lv9는 catalog에만 남고 기본 Run에는 포함되지 않는다.
+- `StageDefinition`에 ordered five-level schema의 목적을 명시하고, content verification이 정확한 chain·길이·catalog-only level 제외·Galactic 전용 Black Hole flag까지 검사하게 했다.
+
+### 확인
+
+- Primary `godot` validate: StageDefinition, StageCatalog, S3-G1 verification script/scene, S2-G1 regression script, Main scene 모두 valid (6/6).
+- Primary `godot` Main runtime query: 세 Resource의 base/top/ordered levels/Time Bonus/Black Hole flag와 catalog size 3, invalid index rejection을 확인했다. runtime debug output error 0.
+- 프로젝트 중지 시 MCP bridge cleanup warning 한 건이 있었으나, 실행 중 debug output에는 게임 runtime error가 없었고 data query는 성공했다. MCP 종료 도구의 관찰 경고로 분류한다.
+- 신뢰 가능한 Godot CLI executable path는 이 환경에서 확인하지 못해 MCP headless validator와 Main runtime data query를 baseline evidence로 기록한다.
+
+### 다음 작업 / 주의
+
+- Core는 이제 read-only `StageCatalog.get_stage(index)`를 소비해 S3-G2 `enter_stage(definition)`와 stage-local Cashout/Time Bonus 처리를 구현할 수 있다.
+- 비연속 Planetary merge progression은 Stage runtime/Core가 `local_ball_levels` lookup으로 처리하는 후속 범위이며, 이 Goal에서는 StageManager나 runtime을 수정하지 않았다.

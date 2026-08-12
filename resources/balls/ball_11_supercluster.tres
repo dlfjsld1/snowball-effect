@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_definition")
 global_level = 11
-display_name = "Supercluster"
+display_name = "Galaxy Cluster"
 score_value = 1.0e30
 radius = 4096.0
 mass = 4194304.0
-visual_key = &"supercluster"
-base_color = Color(0.36862745, 0.45882353, 0.94901961, 1)
+visual_key = &"galaxy_cluster"
+base_color = Color(0.50196078, 0.36078431, 1, 1)
 fx_tier = 3

@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_definition")
 global_level = 6
-display_name = "Gas Giant"
+display_name = "Sun"
 score_value = 10000000000000.0
 radius = 128.0
 mass = 4096.0
-visual_key = &"gas_giant"
-base_color = Color(0.84313725, 0.60392157, 0.34117647, 1)
+visual_key = &"sun"
+base_color = Color(1, 0.76078431, 0.27843137, 1)
 fx_tier = 2

@@ -10,12 +10,12 @@ const EXPECTED_NAMES := [
 	"Giant Snowball",
 	"Moon",
 	"Earth",
-	"Gas Giant",
 	"Sun",
+	"Red Giant",
 	"Supernova",
+	"Nebula",
 	"Galaxy",
 	"Galaxy Cluster",
-	"Supercluster",
 	"Quasar",
 	"Event Horizon",
 	"Black Hole",
@@ -23,9 +23,9 @@ const EXPECTED_NAMES := [
 const EXPECTED_SCORES := [1.0, 100.0, 10000.0, 1000000.0, 1.0e8, 5.0e10, 1.0e13, 1.0e15, 5.0e17, 1.0e21, 1.0e25, 1.0e30, 1.0e36, 1.0e43, 1.0e50]
 const EXPECTED_RADII := [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0, 1024.0, 2048.0, 4096.0, 8192.0, 16384.0, 32768.0]
 const EXPECTED_MASSES := [1.0, 4.0, 16.0, 64.0, 256.0, 1024.0, 4096.0, 16384.0, 65536.0, 262144.0, 1048576.0, 4194304.0, 16777216.0, 67108864.0, 268435456.0]
-const EXPECTED_VISUAL_KEYS := [&"snowflake", &"snowball", &"big_snowball", &"giant_snowball", &"moon", &"earth", &"gas_giant", &"sun", &"supernova", &"galaxy", &"galaxy_cluster", &"supercluster", &"quasar", &"event_horizon", &"black_hole"]
+const EXPECTED_VISUAL_KEYS := [&"snowflake", &"snowball", &"big_snowball", &"giant_snowball", &"moon", &"earth", &"sun", &"red_giant", &"supernova", &"nebula", &"galaxy", &"galaxy_cluster", &"quasar", &"event_horizon", &"black_hole"]
 const EXPECTED_FX_TIERS := [0, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4]
-const EXPECTED_BASE_COLORS := [Color(0.95686275, 0.9882353, 1, 1), Color(0.91764706, 0.97254902, 1, 1), Color(0.44705882, 0.84705882, 1, 1), Color(0.22745098, 0.55294118, 1, 1), Color(0.78431373, 0.78823529, 0.84705882, 1), Color(0.15686275, 0.47058824, 0.83137255, 1), Color(0.84313725, 0.60392157, 0.34117647, 1), Color(1, 0.76078431, 0.27843137, 1), Color(1, 0.41960784, 0.20784314, 1), Color(0.30196078, 0.25882353, 0.72156863, 1), Color(0.50196078, 0.36078431, 1, 1), Color(0.36862745, 0.45882353, 0.94901961, 1), Color(0.90980392, 0.90196078, 1, 1), Color(0.22745098, 0.10196078, 0.38039216, 1), Color(0.0627451, 0.03529412, 0.12156863, 1)]
+const EXPECTED_BASE_COLORS := [Color(0.95686275, 0.9882353, 1, 1), Color(0.91764706, 0.97254902, 1, 1), Color(0.44705882, 0.84705882, 1, 1), Color(0.22745098, 0.55294118, 1, 1), Color(0.78431373, 0.78823529, 0.84705882, 1), Color(0.15686275, 0.47058824, 0.83137255, 1), Color(1, 0.76078431, 0.27843137, 1), Color(0.85098039, 0.29411765, 0.21176471, 1), Color(1, 0.41960784, 0.20784314, 1), Color(0.70588235, 0.39215686, 0.78431373, 1), Color(0.30196078, 0.25882353, 0.72156863, 1), Color(0.50196078, 0.36078431, 1, 1), Color(0.90980392, 0.90196078, 1, 1), Color(0.22745098, 0.10196078, 0.38039216, 1), Color(0.0627451, 0.03529412, 0.12156863, 1)]
 
 var _failures := 0
 

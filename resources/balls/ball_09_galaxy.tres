@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_definition")
 global_level = 9
-display_name = "Galaxy"
+display_name = "Nebula"
 score_value = 1.0e21
 radius = 1024.0
 mass = 262144.0
-visual_key = &"galaxy"
-base_color = Color(0.30196078, 0.25882353, 0.72156863, 1)
+visual_key = &"nebula"
+base_color = Color(0.70588235, 0.39215686, 0.78431373, 1)
 fx_tier = 3

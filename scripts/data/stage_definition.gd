@@ -10,6 +10,8 @@ extends Resource
 @export var display_name := ""
 @export_range(0, 99, 1) var base_global_level := 0
 @export_range(0, 99, 1) var top_global_level := 0
+## Each default stage uses exactly five ordered global levels. The IDs may be
+## noncontiguous, and the previous stage top becomes the next stage base.
 @export var local_ball_levels := PackedInt32Array()
 
 @export_range(0.0, 3600.0, 0.01, "or_greater") var base_time := 0.0
