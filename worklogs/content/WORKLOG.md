@@ -285,3 +285,29 @@ Branch: `main`
 
 - S6-G1 event tier가 아직 PENDING이므로 S6-G3/G4는 PENDING으로 유지한다.
 - S6-G1의 확정 event tier를 받은 뒤에만 필수 audio key와 실제 asset catalog를 확정한다.
+
+## 2026-08-13 — S6-G3 Audio 후보 에셋 사전 준비
+
+Owner: Content/Systems/Release
+Branch: `main`
+Status: preparatory only — S6-G3 remains `PENDING`
+
+### 변경
+
+- 프로젝트 전용으로 생성한 Ogg Vorbis 후보 음원 22개와 `assets/audio/ATTRIBUTION.md`를 Git 보관 대상으로 준비했다.
+- 후보를 S6 gameplay 10개, UI 6개, 향후 S8 6개로 구분하고, 외부 음원·샘플 팩을 사용하지 않았다는 제작 출처와 라이선스 정보를 기록했다.
+- S6-G1의 최종 event key/tier가 확정되기 전이므로 audio catalog, key 매핑, runtime 재생 정책, Web 첫 입력 활성화는 구현하지 않았다.
+
+### 확인
+
+- Godot `4.7.1.stable.official.a13da4feb` CLI의 `--import`가 22개 파일을 모두 `AudioStreamOggVorbis`로 import했다.
+- CLI load verification은 writable `--log-file`을 지정한 상태에서 exit code 0과 `S6_AUDIO_CANDIDATES_LOADED count=22 type=AudioStreamOggVorbis`를 확인했다.
+- Primary `godot` runtime에서도 22/22 파일이 모두 `AudioStreamOggVorbis`로 로드됐고, failure index와 final runtime error는 0건이었다.
+- 최초 CLI 검증에서 기본 `user://logs` 경로 쓰기 권한 때문에 프로세스가 종료됐으나, 저장소 내부 log 경로를 지정한 재검증은 통과했다. 이는 음원 또는 프로젝트 오류가 아닌 실행 환경 문제로 분리했다.
+- CLI import 중 Windows root certificate store와 Godot editor settings 저장 경고가 있었으나, import·load 결과와 무관한 환경 경고로 확인했다.
+
+### 다음 작업 / 주의
+
+- S6-G3의 Goal 상태는 `PENDING`으로 유지한다.
+- Presentation S6-G1이 최종 event key/tier를 확정한 뒤 audio catalog와 content test를 작성한다.
+- 우선순위·polyphony·Web 첫 입력 audio 활성화와 실제 Browser 재생 검증은 후속 S6-G4 범위다.
