@@ -311,3 +311,25 @@ Status: preparatory only — S6-G3 remains `PENDING`
 - S6-G3의 Goal 상태는 `PENDING`으로 유지한다.
 - Presentation S6-G1이 최종 event key/tier를 확정한 뒤 audio catalog와 content test를 작성한다.
 - 우선순위·polyphony·Web 첫 입력 audio 활성화와 실제 Browser 재생 검증은 후속 S6-G4 범위다.
+
+## 2026-08-13 — Pixabay 음원 확정본 및 개별 출처 기록
+
+Owner: Content/Systems/Release
+Branch: `codex/audio-pixabay-provenance`
+Status: asset preparation only — S6-G3/S6-G4 status unchanged
+
+### 변경
+
+- 선택한 22개 OGG 후보를 사용자 제공 Pixabay 음원으로 교체했다.
+- `assets/audio/ATTRIBUTION.md`에 Pixabay Content License와 파일별 개별 원본 URL을 기록했다.
+- `merge_t1.ogg`만 원본 URL이 아직 제공되지 않아 `Not recorded yet`로 남겼다.
+
+### 확인
+
+- 문서 출처 표의 22개 파일 항목과 사용자 제공 URL을 대조했다.
+- `git diff --check` 통과.
+
+### 다음 작업 / 주의
+
+- `merge_t1.ogg`의 원본 Pixabay URL, contributor, download date는 확보 시 추가 기록한다.
+- runtime audio catalog, 이벤트 연결, 재생 검증은 여전히 후속 S6 작업 범위다.
