@@ -8,6 +8,8 @@ signal ball_count_changed(active_count: int)
 signal cashout_completed(score_amount: float, global_level: int, world_position: Vector2)
 signal ball_merged(result_level: int, world_position: Vector2)
 signal top_ball_created(global_level: int)
+signal black_hole_phase_requested()
+signal black_hole_absorbed(score_amount: float, global_level: int, world_position: Vector2)
 signal simulation_metrics_updated(metrics: Dictionary)
 
 @export var play_field_rect := Rect2(500.0, 0.0, 600.0, 900.0)
@@ -18,6 +20,13 @@ signal simulation_metrics_updated(metrics: Dictionary)
 @export var maximum_ball_runtime_speed := 900.0
 @export var stage_base_ball_radius := 4.0
 @export_range(1.0, 1024.0, 1.0, "or_greater") var spatial_grid_cell_size := 32.0
+
+const BLACK_HOLE_INFLUENCE_RADIUS := 240.0
+const BLACK_HOLE_MAX_PULL_ACCELERATION := 300.0
+const BLACK_HOLE_TOTAL_PULL_CAP := 600.0
+const BLACK_HOLE_MUTUAL_PULL_ACCELERATION := 450.0
+const BLACK_HOLE_MAX_COUNT := 2
+const BLACK_HOLE_EPSILON_SQUARED := 0.0001
 
 var positions := PackedVector2Array()
 var velocities := PackedVector2Array()
@@ -35,6 +44,7 @@ var _stage_index := -1
 var _stage_base_global_level := 0
 var _stage_top_global_level := -1
 var _stage_spawn_rate := 0.0
+var _stage_black_hole_enabled := false
 var _last_candidate_count := 0
 var _last_grid_cell_count := 0
 var _last_merge_count := 0
@@ -43,6 +53,9 @@ var _merge_plans: Array[Dictionary] = []
 var _consumed_merge_flags := PackedByteArray()
 var _pending_cashout_indices: Array[int] = []
 var _pending_cashout_positions := PackedVector2Array()
+var _black_hole_positions := PackedVector2Array()
+var _black_hole_velocities := PackedVector2Array()
+var _black_hole_radii := PackedFloat32Array()
 var _render_snapshot_positions := PackedVector2Array()
 var _render_snapshot_radii := PackedFloat32Array()
 var _render_snapshot_global_levels := PackedInt32Array()
@@ -61,6 +74,7 @@ var _simulation_metrics := {
 	"grid_bucket_capacity": 0,
 	"grid_new_buckets": 0,
 	"merges": 0,
+	"black_holes": 0,
 }
 
 
@@ -136,6 +150,7 @@ func apply_stage_definition(definition: StageDefinition) -> void:
 	_stage_base_global_level = definition.base_global_level
 	_stage_top_global_level = definition.top_global_level
 	_stage_spawn_rate = definition.spawn_rate
+	_stage_black_hole_enabled = definition.black_hole_enabled
 	configure_stage_ball_levels(definition.local_ball_levels)
 
 
@@ -146,6 +161,7 @@ func get_stage_snapshot() -> Dictionary:
 		"top_global_level": _stage_top_global_level,
 		"local_ball_levels": _stage_ball_levels.duplicate(),
 		"spawn_rate": _stage_spawn_rate,
+		"black_hole_enabled": _stage_black_hole_enabled,
 	}
 
 
@@ -161,6 +177,31 @@ func get_ball_global_level(index: int) -> int:
 	if not is_ball_active(index):
 		return -1
 	return global_levels[index]
+
+
+func get_black_hole_count() -> int:
+	return _black_hole_positions.size()
+
+
+func get_black_hole_position(index := 0) -> Vector2:
+	if index < 0 or index >= _black_hole_positions.size():
+		return Vector2.ZERO
+	return _black_hole_positions[index]
+
+
+func get_black_hole_snapshot() -> Dictionary:
+	return {
+		"count": _black_hole_positions.size(),
+		"positions": _black_hole_positions.duplicate(),
+		"radii": _black_hole_radii.duplicate(),
+	}
+
+
+func get_black_hole_pull(position: Vector2) -> Vector2:
+	var total_pull := Vector2.ZERO
+	for black_hole_position in _black_hole_positions:
+		total_pull += _get_pull_from_source(position, black_hole_position, BLACK_HOLE_MAX_PULL_ACCELERATION)
+	return total_pull.limit_length(BLACK_HOLE_TOTAL_PULL_CAP)
 
 
 func get_merge_candidate_pairs() -> Array[Vector2i]:
@@ -225,9 +266,13 @@ func commit_merge_candidates() -> int:
 	for plan in _merge_plans:
 		var result_level: int = plan["result_level"]
 		var result_position: Vector2 = plan["position"]
-		spawn_ball(result_position, plan["velocity"], get_runtime_radius_for_level(result_level), result_level)
+		if _should_convert_merge_result_to_black_hole(result_level):
+			_create_black_hole(result_position, plan["velocity"])
+		else:
+			spawn_ball(result_position, plan["velocity"], get_runtime_radius_for_level(result_level), result_level)
 		ball_merged.emit(result_level, result_position)
-		top_ball_created.emit(result_level)
+		if result_level != _stage_top_global_level or not _stage_black_hole_enabled:
+			top_ball_created.emit(result_level)
 
 	_last_merge_count = _merge_plans.size()
 	return _last_merge_count
@@ -263,6 +308,9 @@ func reset_runtime() -> void:
 	_consumed_merge_flags.clear()
 	_pending_cashout_indices.clear()
 	_pending_cashout_positions.clear()
+	_black_hole_positions.clear()
+	_black_hole_velocities.clear()
+	_black_hole_radii.clear()
 	_render_snapshot_positions.clear()
 	_render_snapshot_radii.clear()
 	_render_snapshot_global_levels.clear()
@@ -276,11 +324,13 @@ func step_simulation(delta: float) -> void:
 	if is_instance_valid(_paddle_collision_provider) and _paddle_collision_provider.has_method("prepare_physics_transform"):
 		# Simulation runs before the sibling Paddle node in Main, so it prepares the shared transform once.
 		_paddle_collision_provider.prepare_physics_transform(delta)
+	_step_black_holes(delta)
 
 	for index in active_indices:
 		var velocity := velocities[index]
 		var position := positions[index]
 		var radius := radii[index]
+		velocity = (velocity + get_black_hole_pull(position) * delta).limit_length(maximum_ball_runtime_speed)
 
 		if is_instance_valid(_paddle_collision_provider):
 			if paddle_contact_locks[index] == 1 and _paddle_collision_provider.is_ball_separated(position, radius):
@@ -311,6 +361,8 @@ func step_simulation(delta: float) -> void:
 
 		positions[index] = position
 		velocities[index] = velocity
+
+	_commit_black_hole_absorptions()
 
 	if merge_enabled:
 		commit_merge_candidates()
@@ -365,6 +417,7 @@ func _update_simulation_metrics() -> void:
 	_simulation_metrics["grid_bucket_capacity"] = _spatial_grid.get_allocated_bucket_count()
 	_simulation_metrics["grid_new_buckets"] = _spatial_grid.get_new_bucket_count()
 	_simulation_metrics["merges"] = _last_merge_count
+	_simulation_metrics["black_holes"] = _black_hole_positions.size()
 
 
 func _get_merge_result_velocity(first_index: int, second_index: int) -> Vector2:
@@ -375,3 +428,80 @@ func _get_merge_result_velocity(first_index: int, second_index: int) -> Vector2:
 	if total_mass > 0.0:
 		result_velocity = (velocities[first_index] * first_mass + velocities[second_index] * second_mass) / total_mass
 	return result_velocity.limit_length(maximum_ball_runtime_speed)
+
+
+func _should_convert_merge_result_to_black_hole(result_level: int) -> bool:
+	return _stage_black_hole_enabled and result_level == _stage_top_global_level and _black_hole_positions.size() < BLACK_HOLE_MAX_COUNT
+
+
+func _create_black_hole(position: Vector2, velocity: Vector2) -> void:
+	var was_empty := _black_hole_positions.is_empty()
+	var footprint_level := _stage_ball_levels[2] if _stage_ball_levels.size() > 2 else _stage_base_global_level
+	_black_hole_positions.append(position)
+	_black_hole_velocities.append(velocity.limit_length(maximum_ball_runtime_speed))
+	_black_hole_radii.append(get_runtime_radius_for_level(footprint_level))
+	if was_empty:
+		black_hole_phase_requested.emit()
+
+
+func _step_black_holes(delta: float) -> void:
+	var previous_positions := _black_hole_positions.duplicate()
+	for index in range(_black_hole_positions.size()):
+		var velocity := _black_hole_velocities[index]
+		var position := previous_positions[index]
+		for other_index in range(_black_hole_positions.size()):
+			if other_index != index:
+				velocity += _get_pull_from_source(position, previous_positions[other_index], BLACK_HOLE_MUTUAL_PULL_ACCELERATION) * delta
+		velocity = velocity.limit_length(maximum_ball_runtime_speed)
+		position += velocity * delta
+		var radius := _black_hole_radii[index]
+		var left_bound := play_field_rect.position.x + radius
+		var right_bound := play_field_rect.end.x - radius
+		var top_bound := play_field_rect.position.y + radius
+		var bottom_bound := play_field_rect.end.y - radius
+		if position.x < left_bound:
+			position.x = left_bound
+			velocity.x = absf(velocity.x) * wall_restitution
+		elif position.x > right_bound:
+			position.x = right_bound
+			velocity.x = -absf(velocity.x) * wall_restitution
+		if position.y < top_bound:
+			position.y = top_bound
+			velocity.y = absf(velocity.y) * wall_restitution
+		elif position.y > bottom_bound:
+			position.y = bottom_bound
+			velocity.y = -absf(velocity.y) * wall_restitution
+		_black_hole_positions[index] = position
+		_black_hole_velocities[index] = velocity
+
+
+func _get_pull_from_source(position: Vector2, source_position: Vector2, maximum_acceleration: float) -> Vector2:
+	var offset := source_position - position
+	var distance_squared := offset.length_squared()
+	if distance_squared <= BLACK_HOLE_EPSILON_SQUARED:
+		return Vector2.ZERO
+	var distance := sqrt(distance_squared)
+	if distance >= BLACK_HOLE_INFLUENCE_RADIUS:
+		return Vector2.ZERO
+	var falloff := pow(1.0 - distance / BLACK_HOLE_INFLUENCE_RADIUS, 2.0)
+	return offset / distance * maximum_acceleration * falloff
+
+
+func _commit_black_hole_absorptions() -> void:
+	if _black_hole_positions.is_empty():
+		return
+	var absorbed_indices: Array[int] = []
+	for index in active_indices:
+		var local_level := _stage_ball_levels.find(global_levels[index])
+		if local_level < 0 or local_level > 2:
+			continue
+		for black_hole_index in range(_black_hole_positions.size()):
+			var contact_radius := radii[index] + _black_hole_radii[black_hole_index]
+			if positions[index].distance_squared_to(_black_hole_positions[black_hole_index]) <= contact_radius * contact_radius:
+				absorbed_indices.append(index)
+				break
+	for index in absorbed_indices:
+		if deactivate_ball(index):
+			var global_level := global_levels[index]
+			var definition = _ball_catalog.get_definition(global_level)
+			black_hole_absorbed.emit(definition.score_value, global_level, positions[index])

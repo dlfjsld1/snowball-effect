@@ -61,7 +61,7 @@
 | S7-G2 Blizzard | Content/Systems | PENDING | S7-G1 필요; 선택 |
 | S7-G3 Fire Core | Content/Systems | PENDING | S7-G1/S3 회귀 필요; 선택 |
 | S7-G4 Magnet | Content/Systems | PENDING | S7-G1/S4 metric 필요; 선택 |
-| S8-G1 Black Hole force | Core | PENDING | S5/S4 baseline 필요 |
+| S8-G1 Black Hole force | Core | VERIFIED | 2026-08-14 Lv14를 일반 slot이 아닌 최대 2개의 Black Hole runtime entity로 전환했다. 첫 전환은 Top Ball Clear를 보내지 않고 phase request와 StageRuntime의 `black_hole_phase_started` API를 제공한다. local Lv0~2 실제 접촉 흡수는 Cashout 상당 점수 차감 event를 내며 StageRuntime은 stage/run을 각각 0 clamp하고 run 0에서 한 번의 Run End request를 낸다. 일반 공 pull은 source vector 합산 뒤 600 cap, Black Hole mutual pull은 450, 하단 반사/Cashout·일반 Merge 제외를 자동 검증했다. Godot 4.7.1 headless S8-G1 exit 0(1,000공+force 평균 4.190ms), S2-G3/S3-G2 회귀 exit 0, Primary `godot` validate 4/4 및 Main runtime Ground/32 active/runtime error 0. L2→L3 실제 연결·최종 충돌은 S8-G4/S8-G2 범위. |
 | S8-G2 두 Black Hole 최종 충돌 runtime | Core | PENDING | S8-G1/S3 필요 |
 | S8-G3 Title·Main·Terminal UI | Content/Systems | PENDING | S8-G2 terminal snapshot schema 필요 |
 | S8-G4 Black Hole Finale·Retry 통합 | Integration | PENDING | S8-G2/G3와 모든 reset API 필요 |
@@ -83,5 +83,6 @@
 - S4-G1~G4는 모두 `VERIFIED`다. S4-G4는 일반 Lv0~13의 level별 MultiMesh batch로 공별 `draw_circle` 경로를 대체했고, 최신 clean Web stress의 500/1,000 Merge ON도 실제 공 생성 상태에서 60/60 FPS를 기록했다. 기존 S4-G3의 Merge ON scenario는 audit에서 공 생성 누락이 확인되어 현행 성능 근거로 사용하지 않는다. 최신 수치는 현 개발 PC/browser 기준이며 HUD·Stage World·대표 FX 통합 뒤 저사양 Web telemetry를 다시 측정한다. S5-G1 dependency는 유지한다.
 - S5-G1은 기존 Stage/Ball Resource mapping을 전용 검증으로 재확인해 `VERIFIED`다. 다음 순차 Core Goal은 S5-G2 Stage re-baselining runtime이며, Presentation S5-G4도 S5-G1 background key와 기존 Shift signal 계약을 바탕으로 작업 가능하다.
 - S5-G1~G5와 S5-G4I가 모두 `VERIFIED`다. 사용자 Chrome Web에서 Canvas focus 뒤 Debug `F6`/`F7` Clear와 Stage 전환을 확인했다. red console error는 없었고, WebGL/AudioContext warning은 S6/S9 품질 점검 대상으로 남긴다.
+- S8-G1 Black Hole force가 `VERIFIED`다. Core는 Black Hole runtime entity/force/흡수/점수차감과 phase·run-end request API를 제공한다. L2→L3 logical rect 활성화와 실제 재개 wiring은 S8-G4 Integration, 두 Black Hole terminal contact는 S8-G2에 남아 있다.
 - S6의 audio asset·catalog·재생/priority/polyphony·Web 첫 입력 검증은 Content/Systems가 S6-G3과 S6-G4에서 함께 소유한다. Presentation은 S6-G1의 시각 FX event tier를 확정해 전달한다.
 - 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.

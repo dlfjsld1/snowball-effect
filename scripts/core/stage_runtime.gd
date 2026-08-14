@@ -7,11 +7,15 @@ signal stage_time_changed(time_left: float)
 signal score_changed(stage_score: float, run_score: float)
 signal stage_entered(definition: StageDefinition)
 signal end_decision_requested(reason: StringName)
+signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
+signal black_hole_run_end_requested()
 
 var current_stage: StageDefinition
 var stage_time_left := 0.0
 var score_ledger: Ledger = Ledger.new()
 var _end_decision_locked := false
+var _next_black_hole_phase_id := 1
+var _black_hole_run_end_locked := false
 
 
 func enter_stage(definition: StageDefinition) -> void:
@@ -21,6 +25,8 @@ func enter_stage(definition: StageDefinition) -> void:
 	score_ledger.begin_stage()
 	stage_time_left = definition.base_time
 	_end_decision_locked = false
+	_next_black_hole_phase_id = 1
+	_black_hole_run_end_locked = false
 	stage_time_changed.emit(stage_time_left)
 	stage_entered.emit(definition)
 
@@ -80,6 +86,25 @@ func process_tick(delta: float, top_ball_created: bool, cashouts: Array[Dictiona
 
 func is_current_stage_top_ball(global_level: int) -> bool:
 	return current_stage != null and global_level == current_stage.top_global_level
+
+
+func begin_black_hole_phase(from_rect: Rect2, to_rect: Rect2) -> int:
+	assert(current_stage != null and current_stage.black_hole_enabled, "Black Hole Phase requires the Galactic Black Hole Stage.")
+	var phase_id := _next_black_hole_phase_id
+	_next_black_hole_phase_id += 1
+	black_hole_phase_started.emit(phase_id, from_rect, to_rect)
+	return phase_id
+
+
+func apply_black_hole_absorption(score_amount: float) -> bool:
+	assert(score_amount >= 0.0, "Black Hole absorption penalty must not be negative.")
+	score_ledger.stage_score = maxf(score_ledger.stage_score - score_amount, 0.0)
+	score_ledger.run_score = maxf(score_ledger.run_score - score_amount, 0.0)
+	score_ledger.score_changed.emit(score_ledger.stage_score, score_ledger.run_score)
+	if score_ledger.run_score <= 0.0 and not _black_hole_run_end_locked:
+		_black_hole_run_end_locked = true
+		black_hole_run_end_requested.emit()
+	return _black_hole_run_end_locked
 
 
 func _on_ledger_score_changed(stage_score: float, run_score: float) -> void:

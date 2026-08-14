@@ -576,3 +576,25 @@ Owner: Core
 
 - 이 수치는 현 개발 PC/in-app browser의 일반 공 렌더 기준이다. HUD·Stage World·대표 FX를 함께 켠 저사양 Web 결과는 S6/S9 telemetry에서 다시 확인한다.
 - Presentation은 최종 global-level Texture2D/머티리얼을 batch binding으로 제공할 수 있다. 일반 공 본체를 개별 Node/Sprite로 되돌리지 않는다.
+
+## 2026-08-14 — S8-G1 Black Hole force
+
+Owner: Core
+
+### 변경
+
+- Galactic의 Lv14 Merge 결과는 일반 ball slot·Top Ball Clear 대신 최대 두 개의 SoA Black Hole runtime entity로 전환한다. entity는 Quasar(local Lv2) footprint, 위치·속도·반지름 snapshot을 제공하며 일반 Merge/Cashout/성장에서 제외된다.
+- 첫 entity는 `black_hole_phase_requested`를 내고 StageRuntime은 `black_hole_phase_started(phase_id, from_rect, to_rect)` 및 `black_hole_run_end_requested` API를 제공한다. 실제 StageManager/Main 연결은 S8-G4 Integration 소유로 남겼다.
+- 일반 공은 Black Hole source vector를 합산한 뒤 한 번만 `600 world units/s²` cap을 적용한다. source는 반경 240, 최대 300, `(1 - d / r)^2` falloff이고 final ball speed cap을 계속 적용한다.
+- 두 Black Hole은 같은 tick의 snapshot에서 서로를 향해 최대 `450 world units/s²` mutual pull을 받는다. 하단은 전용 반사 경계다.
+- local Lv0~2의 실제 접촉은 Cashout 대신 한 번 소비하고 score event를 낸다. StageRuntime은 Cashout 상당 값을 stage/run score에서 각각 0 clamp해 차감하고 run score 0에서 Run End request를 한 번 낸다.
+
+### 확인
+
+- Native headless `S8-G1` exit 0: 첫 Lv14 전환/Top Clear 제외/phase signal, 저등급 흡수·점수 차감·run-end request, 600 cap, 450 mutual pull, 하단 반사, 1,000공 force scenario를 확인했다. 1,000 active ball + Black Hole force 평균은 `4.190ms/tick`이었다.
+- Native headless S2-G3 Merge와 S3-G2 StageRuntime regression exit 0.
+- Primary `godot` validate가 simulation, StageRuntime, S8-G1 test script/scene 4/4를 통과했고 Main runtime은 Ground/PLAYING/32 active ball, runtime error 0으로 확인했다.
+
+### 제외 / 다음 작업
+
+- 두 Black Hole의 terminal contact/finale lock은 S8-G2, L2→L3 frame/logical bounds activation 및 retry wiring은 S8-G4, Phase presentation은 S8-G5 범위다.
