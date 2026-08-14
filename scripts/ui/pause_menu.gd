@@ -27,6 +27,10 @@ func set_paused(is_paused: bool) -> void:
 	pause_button.text = "RESUME" if is_paused else "PAUSE"
 
 
+func apply_frame_layout(right_bottom_panel: Rect2) -> void:
+	$Buttons.position = right_bottom_panel.position + Vector2(16.0, 16.0)
+
+
 func _request_pause() -> void:
 	pause_requested.emit()
 

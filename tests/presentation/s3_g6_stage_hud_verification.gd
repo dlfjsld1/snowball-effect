@@ -11,6 +11,8 @@ var _failures := 0
 func _ready() -> void:
 	var simulation: SimulationManager = SimulationManager.new()
 	var stage_manager: StageManager = StageManager.new()
+	simulation.name = "BallSimulationManager"
+	stage_manager.name = "StageManager"
 	stage_manager.simulation_path = NodePath("../BallSimulationManager")
 	var hud: HudScript = HudScene.instantiate()
 	add_child(simulation)

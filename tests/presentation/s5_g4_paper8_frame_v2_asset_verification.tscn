@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/presentation/s5_g4_paper8_frame_v2_asset_verification.gd" id="1_test"]
+
+[node name="S5G4Paper8FrameV2AssetVerification" type="Node"]
+script = ExtResource("1_test")

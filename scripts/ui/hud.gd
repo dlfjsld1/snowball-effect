@@ -61,6 +61,13 @@ func reset_view() -> void:
 	time_label.text = "TIME 0.0"
 
 
+func apply_frame_layout(left_wing: Rect2, right_wing: Rect2) -> void:
+	stage_name_label.position = left_wing.position + Vector2(44.0, 48.0)
+	time_label.position = left_wing.position + Vector2(24.0, 154.0)
+	$Genealogy.position = left_wing.position + Vector2(44.0, 248.0)
+	stage_score_label.position = right_wing.position + Vector2(44.0, 48.0)
+
+
 func _exit_tree() -> void:
 	_unbind_sources()
 

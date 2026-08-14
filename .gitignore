@@ -5,6 +5,8 @@
 build/
 exports/
 .mcp/
+.tools/
+.godot-user/
 
 # gstack
 .agents

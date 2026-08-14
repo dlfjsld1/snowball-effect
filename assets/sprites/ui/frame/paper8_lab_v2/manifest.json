@@ -1,0 +1,110 @@
+﻿{
+    "schema":  2,
+    "design_reference":  "docs/design/mockups/drafts/frame-paper8-steampunk-lab-v1.png",
+    "authoring_canvas":  [
+                             1600,
+                             900
+                         ],
+    "palette":  [
+                    "#1f244b",
+                    "#654053",
+                    "#a8605d",
+                    "#d1a67e",
+                    "#f6e79c",
+                    "#b6cf8e",
+                    "#60ae7b",
+                    "#3c6b64"
+                ],
+    "assets":  [
+                   {
+                       "path":  "field_bezel_v2_910x900.png",
+                       "size":  [
+                                    910,
+                                    900
+                                ],
+                       "pixel_grid":  2,
+                       "binary_alpha":  true,
+                       "role":  "dynamic central bezel"
+                   },
+                   {
+                       "path":  "left_wing_v2_200x900.png",
+                       "size":  [
+                                    200,
+                                    900
+                                ],
+                       "pixel_grid":  2,
+                       "binary_alpha":  true,
+                       "role":  "continuous left machine chassis"
+                   },
+                   {
+                       "path":  "right_wing_v2_200x900.png",
+                       "size":  [
+                                    200,
+                                    900
+                                ],
+                       "pixel_grid":  2,
+                       "binary_alpha":  true,
+                       "role":  "continuous right machine chassis"
+                   },
+                   {
+                       "path":  "crt_stage_v2_176x108.png",
+                       "size":  [
+                                    176,
+                                    108
+                                ],
+                       "pixel_grid":  2,
+                       "binary_alpha":  true,
+                       "role":  "stage CRT"
+                   },
+                   {
+                       "path":  "crt_time_v2_176x80.png",
+                       "size":  [
+                                    176,
+                                    80
+                                ],
+                       "pixel_grid":  2,
+                       "binary_alpha":  true,
+                       "role":  "time CRT with integrated gauge"
+                   },
+                   {
+                       "path":  "crt_genealogy_v2_176x400.png",
+                       "size":  [
+                                    176,
+                                    400
+                                ],
+                       "pixel_grid":  2,
+                       "binary_alpha":  true,
+                       "role":  "bottom-to-top genealogy CRT"
+                   },
+                   {
+                       "path":  "crt_score_v2_176x112.png",
+                       "size":  [
+                                    176,
+                                    112
+                                ],
+                       "pixel_grid":  2,
+                       "binary_alpha":  true,
+                       "role":  "stage score CRT"
+                   },
+                   {
+                       "path":  "crt_item_v2_176x300.png",
+                       "size":  [
+                                    176,
+                                    300
+                                ],
+                       "pixel_grid":  2,
+                       "binary_alpha":  true,
+                       "role":  "current item CRT"
+                   },
+                   {
+                       "path":  "crt_pause_v2_176x104.png",
+                       "size":  [
+                                    176,
+                                    104
+                                ],
+                       "pixel_grid":  2,
+                       "binary_alpha":  true,
+                       "role":  "pause and retry CRT"
+                   }
+               ]
+}

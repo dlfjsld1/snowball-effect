@@ -1,0 +1,774 @@
+﻿{
+    "schema":  1,
+    "source":  "docs/design/mockups/drafts/frame-paper8-steampunk-lab-v1.png",
+    "authoring_canvas":  [
+                             1600,
+                             900
+                         ],
+    "logical_source":  [
+                           800,
+                           450
+                       ],
+    "render_scale":  2,
+    "palette":  [
+                    "#1f244b",
+                    "#654053",
+                    "#a8605d",
+                    "#d1a67e",
+                    "#f6e79c",
+                    "#b6cf8e",
+                    "#60ae7b",
+                    "#3c6b64"
+                ],
+    "import":  {
+                   "filter":  "nearest",
+                   "mipmaps":  false,
+                   "repeat":  "disabled except explicit tiles"
+               },
+    "notes":  [
+                  "The AI image is a concept source, not a production bitmap.",
+                  "Master and crops are palette-quantized and aligned to a 2px authoring block.",
+                  "CRT glass reference crops are proportion references; runtime scanlines use tiles/crt_scanline_tile_8x4.png.",
+                  "Fine cutouts use transparent void with a four-pixel outline-preservation radius.",
+                  "Existing C4 runtime assets remain untouched until a separate adoption/wiring change is approved."
+              ],
+    "assets":  [
+                   {
+                       "path":  "modules/module_left_bank.png",
+                       "family":  "modules",
+                       "source_rect":  [
+                                           0,
+                                           0,
+                                           370,
+                                           900
+                                       ],
+                       "size":  [
+                                    370,
+                                    900
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "coarse left cabinet reference"
+                   },
+                   {
+                       "path":  "modules/module_center_bezel.png",
+                       "family":  "modules",
+                       "source_rect":  [
+                                           350,
+                                           0,
+                                           910,
+                                           900
+                                       ],
+                       "size":  [
+                                    910,
+                                    900
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "coarse central frame reference"
+                   },
+                   {
+                       "path":  "modules/module_right_bank.png",
+                       "family":  "modules",
+                       "source_rect":  [
+                                           1230,
+                                           0,
+                                           370,
+                                           900
+                                       ],
+                       "size":  [
+                                    370,
+                                    900
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "coarse right cabinet reference"
+                   },
+                   {
+                       "path":  "bezel/bezel_corner_top_left.png",
+                       "family":  "bezel",
+                       "source_rect":  [
+                                           350,
+                                           0,
+                                           100,
+                                           100
+                                       ],
+                       "size":  [
+                                    100,
+                                    100
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "top-left fixed corner"
+                   },
+                   {
+                       "path":  "bezel/bezel_edge_top.png",
+                       "family":  "bezel",
+                       "source_rect":  [
+                                           430,
+                                           10,
+                                           760,
+                                           70
+                                       ],
+                       "size":  [
+                                    760,
+                                    70
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "horizontal tile/stretch source"
+                   },
+                   {
+                       "path":  "bezel/bezel_corner_top_right.png",
+                       "family":  "bezel",
+                       "source_rect":  [
+                                           1170,
+                                           0,
+                                           100,
+                                           100
+                                       ],
+                       "size":  [
+                                    100,
+                                    100
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "top-right fixed corner"
+                   },
+                   {
+                       "path":  "bezel/bezel_edge_left.png",
+                       "family":  "bezel",
+                       "source_rect":  [
+                                           350,
+                                           80,
+                                           80,
+                                           740
+                                       ],
+                       "size":  [
+                                    80,
+                                    740
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "vertical tile/stretch source"
+                   },
+                   {
+                       "path":  "bezel/bezel_edge_right.png",
+                       "family":  "bezel",
+                       "source_rect":  [
+                                           1180,
+                                           80,
+                                           80,
+                                           740
+                                       ],
+                       "size":  [
+                                    80,
+                                    740
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "vertical tile/stretch source"
+                   },
+                   {
+                       "path":  "bezel/bezel_corner_bottom_left.png",
+                       "family":  "bezel",
+                       "source_rect":  [
+                                           350,
+                                           800,
+                                           100,
+                                           100
+                                       ],
+                       "size":  [
+                                    100,
+                                    100
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "bottom-left fixed corner"
+                   },
+                   {
+                       "path":  "bezel/bezel_edge_bottom.png",
+                       "family":  "bezel",
+                       "source_rect":  [
+                                           430,
+                                           830,
+                                           760,
+                                           70
+                                       ],
+                       "size":  [
+                                    760,
+                                    70
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "horizontal tile/stretch source"
+                   },
+                   {
+                       "path":  "bezel/bezel_corner_bottom_right.png",
+                       "family":  "bezel",
+                       "source_rect":  [
+                                           1170,
+                                           800,
+                                           100,
+                                           100
+                                       ],
+                       "size":  [
+                                    100,
+                                    100
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "bottom-right fixed corner"
+                   },
+                   {
+                       "path":  "crt/crt_stage_module.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           24,
+                                           20,
+                                           280,
+                                           200
+                                       ],
+                       "size":  [
+                                    280,
+                                    200
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "stage CRT module reference"
+                   },
+                   {
+                       "path":  "crt/crt_time_module.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           28,
+                                           208,
+                                           260,
+                                           110
+                                       ],
+                       "size":  [
+                                    260,
+                                    110
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "time CRT and gauge module reference"
+                   },
+                   {
+                       "path":  "crt/crt_genealogy_module.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           44,
+                                           310,
+                                           270,
+                                           470
+                                       ],
+                       "size":  [
+                                    270,
+                                    470
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "vertical genealogy CRT module reference"
+                   },
+                   {
+                       "path":  "crt/crt_score_module.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           1310,
+                                           20,
+                                           280,
+                                           220
+                                       ],
+                       "size":  [
+                                    280,
+                                    220
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "score CRT module reference"
+                   },
+                   {
+                       "path":  "crt/crt_item_module.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           1310,
+                                           284,
+                                           280,
+                                           390
+                                       ],
+                       "size":  [
+                                    280,
+                                    390
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "vertical item CRT module reference"
+                   },
+                   {
+                       "path":  "crt/crt_pause_module.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           1240,
+                                           734,
+                                           350,
+                                           166
+                                       ],
+                       "size":  [
+                                    350,
+                                    166
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "pause-retry CRT module reference"
+                   },
+                   {
+                       "path":  "crt/crt_stage_glass_reference.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           52,
+                                           46,
+                                           220,
+                                           150
+                                       ],
+                       "size":  [
+                                    220,
+                                    150
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "glass proportion reference; use scanline tile for runtime"
+                   },
+                   {
+                       "path":  "crt/crt_time_glass_reference.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           54,
+                                           230,
+                                           112,
+                                           62
+                                       ],
+                       "size":  [
+                                    112,
+                                    62
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "glass proportion reference; use scanline tile for runtime"
+                   },
+                   {
+                       "path":  "crt/crt_genealogy_glass_reference.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           72,
+                                           338,
+                                           198,
+                                           400
+                                       ],
+                       "size":  [
+                                    198,
+                                    400
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "glass proportion reference; use scanline tile for runtime"
+                   },
+                   {
+                       "path":  "crt/crt_score_glass_reference.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           1340,
+                                           48,
+                                           214,
+                                           150
+                                       ],
+                       "size":  [
+                                    214,
+                                    150
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "glass proportion reference; use scanline tile for runtime"
+                   },
+                   {
+                       "path":  "crt/crt_item_glass_reference.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           1340,
+                                           316,
+                                           210,
+                                           310
+                                       ],
+                       "size":  [
+                                    210,
+                                    310
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "glass proportion reference; use scanline tile for runtime"
+                   },
+                   {
+                       "path":  "crt/crt_pause_glass_reference.png",
+                       "family":  "crt",
+                       "source_rect":  [
+                                           1268,
+                                           766,
+                                           278,
+                                           104
+                                       ],
+                       "size":  [
+                                    278,
+                                    104
+                                ],
+                       "transparent_void":  false,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "glass proportion reference; use scanline tile for runtime"
+                   },
+                   {
+                       "path":  "machinery/machinery_left_outer_spine.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           0,
+                                           18,
+                                           64,
+                                           820
+                                       ],
+                       "size":  [
+                                    64,
+                                    820
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "outer pipe and bolt strip"
+                   },
+                   {
+                       "path":  "machinery/machinery_left_inner_spine.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           278,
+                                           0,
+                                           100,
+                                           900
+                                       ],
+                       "size":  [
+                                    100,
+                                    900
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "inner instrument spine"
+                   },
+                   {
+                       "path":  "machinery/machinery_right_inner_spine.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           1220,
+                                           0,
+                                           112,
+                                           730
+                                       ],
+                       "size":  [
+                                    112,
+                                    730
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "inner conduit spine"
+                   },
+                   {
+                       "path":  "machinery/machinery_right_outer_spine.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           1530,
+                                           18,
+                                           70,
+                                           860
+                                       ],
+                       "size":  [
+                                    70,
+                                    860
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "outer bolt and indicator strip"
+                   },
+                   {
+                       "path":  "machinery/machinery_left_bottom_console.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           18,
+                                           766,
+                                           330,
+                                           124
+                                       ],
+                       "size":  [
+                                    330,
+                                    124
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "vent and indicator console"
+                   },
+                   {
+                       "path":  "machinery/machinery_right_middle_console.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           1310,
+                                           634,
+                                           270,
+                                           110
+                                       ],
+                       "size":  [
+                                    270,
+                                    110
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "gauge and switch console"
+                   },
+                   {
+                       "path":  "machinery/machinery_round_gauge_left.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           178,
+                                           210,
+                                           96,
+                                           104
+                                       ],
+                       "size":  [
+                                    96,
+                                    104
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "ellipse",
+                       "pixel_grid":  2,
+                       "role":  "round gauge ornament"
+                   },
+                   {
+                       "path":  "machinery/machinery_round_gauge_right.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           1430,
+                                           650,
+                                           92,
+                                           86
+                                       ],
+                       "size":  [
+                                    92,
+                                    86
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "ellipse",
+                       "pixel_grid":  2,
+                       "role":  "round gauge ornament"
+                   },
+                   {
+                       "path":  "machinery/machinery_indicator_strip_left.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           286,
+                                           42,
+                                           52,
+                                           178
+                                       ],
+                       "size":  [
+                                    52,
+                                    178
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "vertical indicator strip"
+                   },
+                   {
+                       "path":  "machinery/machinery_indicator_strip_right.png",
+                       "family":  "machinery",
+                       "source_rect":  [
+                                           1538,
+                                           320,
+                                           50,
+                                           300
+                                       ],
+                       "size":  [
+                                    50,
+                                    300
+                                ],
+                       "transparent_void":  true,
+                       "shape":  "rect",
+                       "pixel_grid":  2,
+                       "role":  "vertical indicator strip"
+                   },
+                   {
+                       "path":  "runtime/field_bezel_910x900.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    910,
+                                    900
+                                ],
+                       "transparent_void":  true,
+                       "pixel_grid":  2,
+                       "role":  "full-height dynamic field bezel with transparent opening"
+                   },
+                   {
+                       "path":  "runtime/wing_backplate_152x900.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    152,
+                                    900
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  2,
+                       "role":  "full-height narrow machine wing backplate"
+                   },
+                   {
+                       "path":  "runtime/crt_stage_132x94.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    132,
+                                    94
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  2,
+                       "role":  "stage CRT at runtime size"
+                   },
+                   {
+                       "path":  "runtime/crt_time_132x64.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    132,
+                                    64
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  2,
+                       "role":  "time CRT at runtime size"
+                   },
+                   {
+                       "path":  "runtime/crt_genealogy_132x400.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    132,
+                                    400
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  2,
+                       "role":  "vertical genealogy CRT at runtime size"
+                   },
+                   {
+                       "path":  "runtime/crt_score_132x104.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    132,
+                                    104
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  2,
+                       "role":  "stage score CRT at runtime size"
+                   },
+                   {
+                       "path":  "runtime/crt_item_132x230.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    132,
+                                    230
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  2,
+                       "role":  "active item CRT at runtime size"
+                   },
+                   {
+                       "path":  "runtime/crt_pause_132x94.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    132,
+                                    94
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  2,
+                       "role":  "pause and retry CRT at runtime size"
+                   },
+                   {
+                       "path":  "runtime/machinery_left_console_132x52.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    132,
+                                    52
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  2,
+                       "role":  "left lower machinery filler"
+                   },
+                   {
+                       "path":  "runtime/machinery_right_console_132x54.png",
+                       "family":  "runtime",
+                       "size":  [
+                                    132,
+                                    54
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  2,
+                       "role":  "right middle machinery filler"
+                   },
+                   {
+                       "path":  "tiles/crt_scanline_tile_8x4.png",
+                       "family":  "tiles",
+                       "size":  [
+                                    8,
+                                    4
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  1,
+                       "role":  "uniform one-pixel CRT scanline tile"
+                   },
+                   {
+                       "path":  "tiles/enamel_edge_tile_16.png",
+                       "family":  "tiles",
+                       "size":  [
+                                    16,
+                                    16
+                                ],
+                       "transparent_void":  false,
+                       "pixel_grid":  1,
+                       "role":  "repeatable enamel edge material tile"
+                   },
+                   {
+                       "path":  "tiles/bolt_8.png",
+                       "family":  "tiles",
+                       "size":  [
+                                    8,
+                                    8
+                                ],
+                       "transparent_void":  true,
+                       "pixel_grid":  1,
+                       "role":  "small machine bolt ornament"
+                   }
+               ]
+}

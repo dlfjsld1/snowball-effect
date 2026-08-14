@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/gameplay/paddle.tscn" id="5_paddle"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="6_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
+[ext_resource type="PackedScene" path="res://scenes/backgrounds/gameplay_frame.tscn" id="8_frame"]
+[ext_resource type="PackedScene" path="res://scenes/backgrounds/stage_world.tscn" id="9_stage_world"]
 
 [node name="Main" type="Node2D"]
 
@@ -18,13 +20,18 @@ paddle_path = NodePath("../PlayField/PaddleMount/Paddle")
 stage_manager_path = NodePath("../StageManager")
 hud_path = NodePath("../UI/HUDMount/HUD")
 pause_menu_path = NodePath("../UI/PauseMenu")
+gameplay_frame_path = NodePath("../UI/GameplayFrame")
+play_field_backdrop_path = NodePath("../PlayField/Backdrop")
+background_manager_path = NodePath("../StageWorld/BackgroundManager")
+presentation_manager_path = NodePath("../UI/GameplayFrame/PresentationManager")
 
 [node name="StageManager" type="Node" parent="."]
 script = ExtResource("2_stage_manager")
 simulation_path = NodePath("../PlayField/SimulationMount/BallSimulationManager")
-auto_complete_shift_presentation = true
 
 [node name="StageWorld" type="Node2D" parent="."]
+
+[node name="BackgroundManager" parent="StageWorld" instance=ExtResource("9_stage_world")]
 
 [node name="PlayField" type="Node2D" parent="."]
 
@@ -47,6 +54,8 @@ simulation_path = NodePath("../BallSimulationManager")
 runtime_start_position = Vector2(800, 760)
 
 [node name="UI" type="CanvasLayer" parent="."]
+
+[node name="GameplayFrame" parent="UI" instance=ExtResource("8_frame")]
 
 [node name="HUDMount" type="Control" parent="UI"]
 layout_mode = 3

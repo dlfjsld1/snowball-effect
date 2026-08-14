@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/presentation/background_manager.gd" id="1_manager"]
+[ext_resource type="Script" path="res://scripts/presentation/stage_ambient_layer.gd" id="2_ambient"]
+
+[node name="BackgroundManager" type="Node2D"]
+z_index = -100
+script = ExtResource("1_manager")
+
+[node name="LayerA" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+texture_filter = 1
+centered = false
+
+[node name="LayerB" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+texture_filter = 1
+centered = false
+modulate = Color(1, 1, 1, 0)
+
+[node name="Ambient" type="Node2D" parent="."]
+unique_name_in_owner = true
+z_index = 1
+script = ExtResource("2_ambient")

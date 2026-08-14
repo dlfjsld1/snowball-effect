@@ -38,7 +38,7 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 ### S5-G4 Stage World와 Shift presentation
 
 - Owner: Presentation
-- Owned Files: `scripts/presentation/background_manager.gd`, `scripts/presentation/presentation_manager.gd`, `scripts/ui/hud.gd`, `scenes/ui/hud.tscn`, `scenes/backgrounds/**`, `scenes/effects/**`, `tests/presentation/**`
+- Owned Files: `scripts/presentation/background_manager.gd`, `scripts/presentation/presentation_manager.gd`, `scripts/presentation/gameplay_frame.gd`, `scripts/ui/hud.gd`, `scenes/ui/hud.tscn`, `scenes/backgrounds/**`, `scenes/effects/**`, `assets/sprites/ui/frame/c4/**`, `assets/sprites/ui/frame/paper8_lab_v1/**`, `tools/presentation/frame_asset_kit/**`, `tests/presentation/**`
 - Integration Point: `stage_changed`, `stage_shift_started` 구독; `stage_shift_presentation_finished` 반환.
 - Dependencies: S5-G1 background key와 `INTEGRATION_CONTRACTS.md`의 Shift signal 계약.
 - Verification: Stage World 전환, Stage 이름을 persistent HUD에 갱신, 현재 Stage 5종 족보를 세로로 배치하고 공개된 항목만 표시, Shift 후 새 목록과 `revealed_count=1`이 한 번 적용됨, 새 공 최초 생성마다 한 항목만 공개, `NEXT` Spawn 예고 없음, Shift 완료 신호 한 번, animation/HUD가 gameplay state를 직접 변경하지 않음.
@@ -53,11 +53,20 @@ Presentation은 `stage_shift_started(next_definition, shift_id)`를 받은 뒤�
 ### S5-G5 3-Stage 통합 완주
 
 - Owner: Integration
-- Owned Files: `scenes/main/main.tscn`, `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `tests/integration/**`
+- Owned Files: `scenes/main/main.tscn`, `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `tests/integration/**`, `.gitignore`의 S5-G5 로컬 검증 도구 제외 항목
 - Integration Point: S5-G1~G4 결과를 playable Main에 조립.
 - Dependencies: S5-G1~G4 `VERIFIED`.
-- Verification: Top Ball/Score Clear 양쪽으로 세 Stage 연속 진행; stage reset/run preserve; 체류 시간과 Cashout 시간 기록.
+- Verification: Top Ball/Score Clear 양쪽으로 세 Stage 연속 진행; stage reset/run preserve; 체류 시간과 Cashout 시간 기록. Debug build에서는 `F6` Top Ball Clear와 `F7` Time Up Score Clear로 같은 전환 계약을 강제 검증할 수 있다.
 - Do Not Modify: 각 Owner 내부 구현; 발견된 결함은 소유 lane으로 반환.
+
+### S5-G4I Shift presentation handoff wiring
+
+- Owner: Integration
+- Owned Files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`
+- Integration Point: `stage_shift_started(next_definition, shift_id)`를 Presentation에 전달하고 `stage_shift_presentation_finished(shift_id)`를 `StageManager.accept_stage_shift_presentation_finished(shift_id)`로 반환.
+- Dependencies: S5-G3의 matching `shift_id` 계약과 S5-G4 Presentation manager.
+- Verification: 임시 `auto_complete_shift_presentation`을 끈 상태에서 Shift 시작 직후 Stage가 바뀌지 않고, Presentation 완료 뒤 한 번만 다음 Stage에 진입하며 stale/duplicate 완료는 거부됨.
+- Do Not Modify: StageManager 상태 계산, StageDefinition 값, Presentation animation 내부.
 
 ## Exit Gate
 

@@ -1,0 +1,87 @@
+﻿{
+    "authoring_canvas":  [
+                             1600,
+                             900
+                         ],
+    "schema":  1,
+    "logical_canvas":  [
+                           800,
+                           450
+                       ],
+    "assets":  [
+                   {
+                       "palette":  [
+                                       "#1f285d",
+                                       "#4b849a",
+                                       "#98d8b1",
+                                       "#ecf2cb"
+                                   ],
+                       "path":  "background_ground_1600x900.png",
+                       "pixel_grid":  2,
+                       "size":  [
+                                    1600,
+                                    900
+                                ],
+                       "stage":  "ground"
+                   },
+                   {
+                       "palette":  [
+                                       "#050718",
+                                       "#0b1235",
+                                       "#0000cd",
+                                       "#4169e1",
+                                       "#228b22",
+                                       "#32cd32",
+                                       "#8b4513",
+                                       "#f0fff0",
+                                       "#696969",
+                                       "#808080",
+                                       "#a8a9a9",
+                                       "#dcdcdc",
+                                       "#ffe4b5",
+                                       "#f8f8ff",
+                                       "#708090",
+                                       "#e6e6fa",
+                                       "#a52a2a",
+                                       "#d2691e",
+                                       "#ff8c00",
+                                       "#cd853f",
+                                       "#f0e68c",
+                                       "#ffee00",
+                                       "#ffa500",
+                                       "#ff4500",
+                                       "#b22222",
+                                       "#fffacd"
+                                   ],
+                       "path":  "background_planetary_1600x900.png",
+                       "pixel_grid":  2,
+                       "size":  [
+                                    1600,
+                                    900
+                                ],
+                       "stage":  "planetary"
+                   },
+                   {
+                       "palette":  [
+                                       "#050718",
+                                       "#0b1235",
+                                       "#174c56",
+                                       "#1b7f79",
+                                       "#2aa69a",
+                                       "#5fd0c4",
+                                       "#4b3d8f",
+                                       "#6a54b8",
+                                       "#a47be8",
+                                       "#d8d5ff",
+                                       "#f2f5ff"
+                                   ],
+                       "path":  "background_galactic_1600x900.png",
+                       "pixel_grid":  2,
+                       "size":  [
+                                    1600,
+                                    900
+                                ],
+                       "stage":  "galactic"
+                   }
+               ]
+}
