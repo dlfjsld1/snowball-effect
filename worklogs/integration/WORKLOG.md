@@ -474,3 +474,19 @@ Locked files: `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `
 - Browser 검증 완료 전 S5-G5를 `VERIFIED`로 올리지 않았다.
 
 Integration lock released.
+
+## 2026-08-14 — S5-G5 user Chrome Web evidence
+
+Owner: Integration
+Locked files: 없음
+
+### 확인
+
+- 사용자가 `build/web` Debug build를 Chrome의 local HTTP server로 실행했다.
+- Canvas focus 뒤 `F6`/`F7` Clear와 Stage 전환이 실제로 동작함을 수동 확인했다.
+- Console에는 red error가 없었다. `WebGL INVALID_OPERATION` 경고와 user gesture 전 `AudioContext was not allowed to start` 경고가 보였으나 Clear/Shift 경로를 막지 않았다.
+
+### 결과
+
+- Q-S5 Web Gate를 충족해 S5-G5를 `VERIFIED`로 갱신했다.
+- 경고의 원인 개선과 audio 첫 입력 정책은 S6/S9 범위에서 다시 점검한다.
