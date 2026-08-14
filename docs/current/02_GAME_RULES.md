@@ -614,6 +614,36 @@ Cashout으로 얻는 평균 추가 시간이 소비 시간보다 너무 커서 �
 ### Player Agency
 초반에는 조작을 잘한 플레이어가 더 빠르게 성장하는가?
 
+### Known balancing observation — Controllable Merge and Stage Shift pacing
+
+> **향후 플레이테스트 관찰용 메모이며 확정 게임 계약, Task 또는 구현 승인이 아니다. 현재 Merge/Stage Clear 규칙은 유지한다.**
+
+현재 플레이에서 같은 등급 공의 자동 Merge가 연쇄적으로 일어나고 최고공 또는 clear score에 너무 빨리 도달하면, 플레이어는 패들로 합체를 만들었다기보다 게임이 스스로 Phase Shift했다고 느낄 수 있다. 이는 Snowball Effect가 지향하는 `통제 가능한 폭주`와 어긋날 위험이 있다.
+
+향후 검토의 기준 루프는 다음과 같다.
+
+```text
+패들 조작으로 궤도를 만든다
+→ 합칠 두 공을 예측한다
+→ 의도한 Merge가 성공한다
+→ 성장·점수·밀도가 커진다
+→ KEEP 또는 Cashout을 선택한다
+→ 충분히 축적된 성공 뒤 Stage Shift가 온다
+```
+
+검토할 후보는 가벼운 스침의 즉시 Merge를 줄이고, 최근 Paddle 타격·충돌 강도·짧은 접촉 유지 같은 조건으로 플레이어가 만든 충돌이 더 명확하게 Merge로 이어지게 하는 방식이다. 단, 어느 한 조건도 아직 채택하지 않는다. Merge가 너무 어려워져 공 튕기기만 남는 결과도 피해야 한다.
+
+동시에 Stage Shift는 일반 Merge보다 훨씬 큰 성취로 읽혀야 한다. 이후 밸런스 플레이테스트에서 Stage별 clear score, Spawn density, time economy, 고레벨 Merge 빈도를 함께 조정해 `너무 빠른 자동 Shift`와 `첫 Shift가 지나치게 늦는 문제` 사이를 확인한다. Clear/Score Clear의 명확한 UI·FX 피드백은 S6 Presentation 후보로 별도 검토한다.
+
+플레이테스트에서는 단순 Merge 수뿐 아니라 다음을 기록한다.
+
+- 플레이어가 "저 둘을 합치려 했다"고 설명하는지
+- 첫 의도적 Merge와 첫 Stage Shift까지 걸린 시간
+- Shift가 자신의 성공인지 자동 진행인지 느낀 이유
+- 다음 판에서 개선하려는 조작 목표가 있는지
+
+**상태: Known balancing observation / revisit after current planned gameplay and presentation work.**
+
 ### Endgame Chaos
 후반 자동 연쇄가 늘어도 실제 공과 패들이 읽히는가?
 
