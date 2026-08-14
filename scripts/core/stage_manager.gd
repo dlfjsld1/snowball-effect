@@ -93,6 +93,27 @@ func get_runtime_snapshot() -> Dictionary:
 	}
 
 
+func debug_force_top_ball_clear() -> bool:
+	if not OS.is_debug_build() or current_state != PLAYING:
+		return false
+	_on_end_decision_requested(&"TOP_BALL_CLEAR")
+	return current_state == SHIFTING or current_state == CLEARED
+
+
+func debug_force_score_clear() -> bool:
+	if not OS.is_debug_build() or current_state != PLAYING or _stage_runtime.current_stage == null:
+		return false
+	var clear_score := _stage_runtime.current_stage.clear_score
+	if clear_score <= 0.0:
+		return false
+	var missing_score := maxf(clear_score - _stage_runtime.score_ledger.stage_score, 0.0)
+	if missing_score > 0.0:
+		_stage_runtime.score_ledger.apply_score_event(missing_score)
+	_stage_runtime.stage_time_left = 0.0
+	_stage_runtime.process_tick(0.0, false, [])
+	return current_state == SHIFTING
+
+
 func accept_stage_shift_presentation_finished(shift_id: int) -> bool:
 	if current_state != SHIFTING or shift_id != _pending_shift_id or _pending_shift_definition == null:
 		return false
@@ -107,8 +128,7 @@ func accept_stage_shift_presentation_finished(shift_id: int) -> bool:
 
 func _enter_stage(definition: StageDefinition) -> void:
 	assert(definition != null, "StageManager requires a valid StageDefinition.")
-	_simulation.reset_runtime()
-	_simulation.configure_stage_ball_levels(definition.local_ball_levels)
+	_simulation.apply_stage_definition(definition)
 	_settlement_service.reset_for_stage()
 	_stage_runtime.enter_stage(definition)
 	_set_state(PLAYING)

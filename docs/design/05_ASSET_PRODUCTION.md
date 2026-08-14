@@ -100,7 +100,7 @@ Team-level ownership과 Goal-level Owned Files는 다르다. 아래 runtime fami
 | production Ball sprites | S2-G5가 renderer/ball assets를 소유하지 않음 | 별도 Presentation asset Goal + Core renderer consumer/Integration point 추가 |
 | Merge particles | S2-G5는 effect scene 중심, raw asset 경로 없음 | 필요 시 S2-G5에 좁은 `assets/particles/merge/**` 추가 |
 | HUD sprites/theme | S3-G6에 `assets/sprites/ui/**` 없음 | asset을 쓸 경우 해당 경로 추가; 아니면 code-native proxy로 제한 |
-| Frame/Stage World exports | S5-G4에 `assets/backgrounds/**`가 없음 | S5-G4 Owned Files에 target asset 경로 추가 |
+| Frame/Stage World exports | C4와 Paper-8 Lab Frame texture target은 각각 `assets/sprites/ui/frame/c4/**`, `assets/sprites/ui/frame/paper8_lab_v1/**`; Stage World 그림은 별도 | S5-G4에 두 Frame target과 재현 도구 `tools/presentation/frame_asset_kit/**`를 추가함. Stage World raw asset이 필요하면 `assets/backgrounds/**`를 별도 추가 |
 | Title/Result visual assets | S8-G3 runtime UI가 Content-owned | Presentation asset Goal을 추가하거나 Content가 제공받는 approved export 경로 명시 |
 | Main/Pause/Settings visual assets | 현재 Pause Goal은 toolbar 수준이고 Settings/Main 확장 Goal 없음 | Content UI Goal과 Presentation asset handoff Goal을 분리하고 UI 하위 경로 명시 |
 | Item Box/rarity/fragment assets | S7 Goal에 Box visual/fragment의 Presentation Owned Files가 없음 | Item Box Content/Core/Presentation Goal을 추가하고 `assets/sprites/items/item_box/**`와 effect 경로 명시 |
@@ -126,6 +126,8 @@ Goal이 갱신되지 않으면 Presentation은 `docs/design/**`의 spec/keyframe
 이 이름은 제안이며 기존 repository naming convention과 충돌하면 Goal 착수 시 조정한다.
 
 ## 7. Pixel Asset Checklist
+
+크기별 LOD, logical pixel, detail density와 AI 생성물 cleanup 기준은 [12_PIXEL_DESIGN_GUIDELINES.md](12_PIXEL_DESIGN_GUIDELINES.md)를 따른다.
 
 - 투명 배경 가장자리의 dark/white matte bleed가 없다.
 - nearest filtering에서 의도한 outline이 유지된다.

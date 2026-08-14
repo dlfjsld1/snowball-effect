@@ -23,81 +23,143 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_effect_manager")
 
-[node name="Readout" type="VBoxContainer" parent="."]
+[node name="Readout" type="Control" parent="."]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 280.0
-offset_bottom = 180.0
+mouse_filter = 2
 
 [node name="StageNameLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
 text = "STAGE GROUND"
+offset_right = 112.0
+offset_bottom = 54.0
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+theme_override_font_sizes/font_size = 12
 
 [node name="TimeLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
 text = "TIME 45.0"
+offset_right = 112.0
+offset_bottom = 52.0
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_font_sizes/font_size = 13
 
 [node name="StageScoreLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 0
 text = "STAGE SCORE 0"
+offset_right = 112.0
+offset_bottom = 76.0
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_font_sizes/font_size = 12
 
 [node name="RunScoreLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
-layout_mode = 2
+visible = false
+layout_mode = 0
 text = "RUN SCORE 0"
 
 [node name="ClearTargetLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
-layout_mode = 2
+visible = false
+layout_mode = 0
 text = "TARGET 0"
 
 [node name="BallCountLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
-layout_mode = 2
+visible = false
+layout_mode = 0
 text = "BALLS 0"
 
-[node name="Genealogy" type="PanelContainer" parent="."]
+[node name="Genealogy" type="Control" parent="."]
 layout_mode = 0
-offset_left = 1200.0
-offset_top = 24.0
-offset_right = 1450.0
-offset_bottom = 248.0
+offset_right = 112.0
+offset_bottom = 386.0
+mouse_filter = 2
 
-[node name="Content" type="VBoxContainer" parent="Genealogy"]
-layout_mode = 2
+[node name="Content" type="Control" parent="Genealogy"]
+layout_mode = 0
+offset_right = 112.0
+offset_bottom = 386.0
 
 [node name="Title" type="Label" parent="Genealogy/Content"]
-layout_mode = 2
+layout_mode = 0
+offset_right = 112.0
+offset_bottom = 26.0
 text = "GENEALOGY"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+theme_override_font_sizes/font_size = 10
 
-[node name="Slots" type="VBoxContainer" parent="Genealogy/Content"]
-layout_mode = 2
+[node name="Slots" type="Control" parent="Genealogy/Content"]
+layout_mode = 0
+offset_top = 28.0
+offset_right = 112.0
+offset_bottom = 382.0
 
 [node name="Slot0" type="Label" parent="Genealogy/Content/Slots"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 32)
+layout_mode = 0
+offset_top = 288.0
+offset_right = 112.0
+offset_bottom = 344.0
 text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+theme_override_font_sizes/font_size = 10
 
 [node name="Slot1" type="Label" parent="Genealogy/Content/Slots"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 32)
+layout_mode = 0
+offset_top = 216.0
+offset_right = 112.0
+offset_bottom = 272.0
 text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+theme_override_font_sizes/font_size = 10
 
 [node name="Slot2" type="Label" parent="Genealogy/Content/Slots"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 32)
+layout_mode = 0
+offset_top = 144.0
+offset_right = 112.0
+offset_bottom = 200.0
 text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+theme_override_font_sizes/font_size = 10
 
 [node name="Slot3" type="Label" parent="Genealogy/Content/Slots"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 32)
+layout_mode = 0
+offset_top = 72.0
+offset_right = 112.0
+offset_bottom = 128.0
 text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+theme_override_font_sizes/font_size = 10
 
 [node name="Slot4" type="Label" parent="Genealogy/Content/Slots"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 32)
+layout_mode = 0
+offset_right = 112.0
+offset_bottom = 56.0
 text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_font_sizes/font_size = 10

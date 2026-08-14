@@ -133,3 +133,96 @@ Branch: `codex/s2-g5-merge-presentation`
 - 잘못 적용했던 global Lv0~14 radius 일괄 2배 변경을 전부 되돌렸다.
 - 실제 visual/collision 반지름은 현재 Stage local level 기준 `4, 8, 16, 32, 64`로 계산하도록 정정했다.
 - 공유 공 Moon과 Galaxy는 다음 Stage의 local Lv0가 되면 visual/collision 반지름 모두 `4`로 다시 시작한다.
+
+## 2026-08-13 — S5-G4 C4 Godot Frame Kit 도입
+
+Owner: Presentation
+Branch: `ui-design`
+
+### 작업
+
+- 승인된 C4 Selective-Waist CRT Cabinet의 투명 PNG 10개를 Presentation-owned runtime 경로로 도입했다.
+- `GameplayFrame` Scene과 profile script를 추가해 L0/L1/L2/L3에서 field와 고정 폭 wing이 화면 중심 `x=800`을 기준으로 함께 이동하도록 구성했다.
+- CRT shell과 phosphor glass를 별도 layer로 유지하고, 왼쪽 full housing·오른쪽 top/bottom housing·CRT가 없는 18px selective waist 구조를 반영했다.
+
+### 변경 파일과 계약
+
+- Goal: `S5-G4`, lane: Presentation, 상태: `IN PROGRESS`.
+- 추가 Owned Files: `scripts/presentation/gameplay_frame.gd`, `assets/sprites/ui/frame/c4/**`.
+- Integration-owned Main/StageManager와 S5-G3 임시 adapter는 변경하지 않았다.
+- 기존 `stage_shift_started(next_definition, shift_id)` 및 `stage_shift_presentation_finished(shift_id)` wiring은 이번 frame asset 단위에서 의도적으로 제외했다.
+
+### 확인 / 남은 검증
+
+- 10개 PNG의 선언 크기와 partial alpha 0을 정적 검사했다.
+- Scene의 `res://` 참조 11개가 모두 존재하고 `git diff --check`가 통과했다.
+- L0/L1/L2/L3 중심축·field width·152px wing 위치를 자동 검증하는 Godot test Scene을 추가했다.
+- Godot 4.7.1 CLI로 프로젝트 import/load exit 0, 전용 test Scene exit 0과 `4 profiles, fixed wings, centered field`를 확인했다.
+- Primary `godot` MCP 3.2.2를 Codex에 등록하고 `get_project_info`에서 Godot `4.7.1.stable`과 프로젝트 구조 응답을 확인했다.
+- 프레임 kit 검증은 통과했지만 Stage World·Shift presentation 전체는 남아 있으므로 S5-G4는 `IN PROGRESS`를 유지한다.
+
+## 2026-08-13 — S5-G4 플레이 프레임 하단 레이아웃 보정
+
+- 물리 Play Field와 시각적 Cashout corridor를 분리하고, Ground의 최대 cashout 가능 공이 완전히 퇴장할 때까지 중앙 베젤 안에 보이도록 하단 여유를 64px 확보했다.
+- 왼쪽 housing은 세로 Genealogy CRT 하단 + 12px까지 축소하고, 오른쪽 상단 housing도 Item CRT 하단 + 12px까지 축소했다.
+- 오른쪽 하단 Pause CRT/housing/button을 하나의 패널로 합치고 중앙 베젤과 `y=900` 바닥선을 맞췄다.
+- Godot 4.7.1 CLI에서 S5-G4 frame kit 및 playable integration 검증과 S1-G5/S3-G6/S5-G3 회귀 검증이 모두 통과했다.
+
+## 2026-08-13 — S5-G4 CRT 스캔라인 보정
+
+- 80px CRT glass NinePatch의 중앙 행이 세로로 확대되어 긴 CRT에 굵은 검은 띠가 생기던 원인을 확인했다.
+- 별도 색상 변형 에셋 대신 모든 CRT glass의 세로 stretch mode를 `TILE`로 통일해 원본 1px 스캔라인과 승인 팔레트를 유지했다.
+- S5-G4 frame kit 및 playable integration Godot CLI 검증이 통과했다.
+
+## 2026-08-14 — Pixel Design Guidelines 편입
+
+- 외부 `PIXEL_DESIGN_GUIDELINES.md`를 기존 Foundations, Stage-local radius, Web resize, asset production 계약과 대조했다.
+- logical pixel, 크기별 Ball LOD, FX·Background·HUD 밀도, AI 생성물 cleanup을 `docs/design/12_PIXEL_DESIGN_GUIDELINES.md`의 단일 제작 기준으로 편입했다.
+- `1600×900`을 고정 runtime 출력으로 해석하지 않고 authoring 기준으로 제한했으며, 개별 에셋의 정수 transform과 전체 Web viewport fractional fit을 구분했다.
+- runtime Scene·Script·Resource와 Goal 상태는 변경하지 않았다. 문서 링크와 핵심 계약 정적 검증이 통과했다.
+
+## 2026-08-14 — S5-G4 Paper-8 Laboratory modular frame kit
+
+- Owner lane: Presentation. Goal remains `IN PROGRESS`; no Integration lock was used.
+- Audited the approved concept source: `1672x941`, 114,963 unique colors, and 13 exact Paper-8 pixels.
+- Added a deterministic cleanup pipeline that normalizes through `800x450`, quantizes to the exact eight-color Paper-8 palette, and exports at `1600x900` with enforced `2x2` authoring blocks.
+- Exported 36 modular PNGs: 3 coarse modules, 8 bezel pieces, 12 CRT references, 10 machinery cutouts, and 3 deterministic tiles.
+- Added an exploded image-generation reference for component-boundary guidance only; it is explicitly excluded from runtime use.
+- Fixed both round-gauge cutouts after validation found an opaque rectangular crop; dedicated ellipse masks now produce binary-alpha ornaments.
+- `verify_paper8_frame_kit.ps1` passed all 36 assets for exact palette, alpha, dimensions, and pixel-grid compliance.
+- Godot 4.7.1 `--import` completed successfully. The dedicated Godot test loaded all 36 PNGs as `Texture2D` and passed; the existing four-profile C4 frame regression also passed.
+- Intentionally excluded runtime wiring and replacement of the current 152px C4 wings. That adoption requires a separate approved layout change.
+
+## 2026-08-14 — S5-G4 Paper-8 runtime reassembly and field-boundary alignment
+
+- Replaced the C4 frame scene visuals with exact-size Paper-8 runtime pieces while keeping the approved centered four-profile expansion and 152px moving wings.
+- Rebuilt the central bezel as a transparent 50px frame whose outside spans `y=0..900`; removed the previous 120px top presentation gap.
+- Defined the visible and physical Play Field as the bezel's inner pixel opening: L0/L1/L2/L3 widths `560/720/880/1040`, shared vertical range `y=50..850`.
+- Existing Main frame wiring now applies that single Rect to Simulation, Paddle, Backdrop, and Spawn. The simulation's strict lower test removes a ball only when `ball_top > 850`, after the full sprite clears the opening.
+- Added 10 runtime assembly assets, bringing the validated manifest to 46 PNGs. Removed the obsolete `crt_genealogy_132x360` intermediate after replacing it with the final 132x400 panel; it can be recreated from the source crop by restoring the old build size parameter.
+- Updated the directly coupled Main integration verification expectations without changing Integration-owned runtime files or signal contracts.
+- Verification: exact palette/alpha/grid `46/46`; Godot 4.7.1 asset import; Paper-8 Texture2D load; four-profile frame and ball-boundary checks; Main frame/bounds/HUD/Pause integration; S3-G6 HUD and S1-G5 Pause regressions; clean Main load.
+- Native OpenGL render captured a `1600x900` L0 preview with the top and bottom frame pixels touching the viewport edges and no runtime errors.
+- Goal remains `IN PROGRESS` because Stage backgrounds and Scale Shift animation are still outstanding.
+
+## 2026-08-14 — S5-G4 Paper-8 frame v2 independent-component rebuild
+
+- Rejected the crop-derived runtime assembly and retained the approved full-frame image only as a visual reference.
+- Independently designed nine new components: one dynamic central bezel, two continuous full-height chassis, and six purpose-built CRTs.
+- Removed separate machinery filler sprites from the runtime scene. Empty chassis regions now come from the continuous left/right body art instead of pasted fragments.
+- Expanded each moving wing from 152px to 200px while preserving centered L0/L1/L2/L3 field widths and the authoritative `y=50..850` physics opening.
+- Archived chroma and cleaned alpha sources outside Godot import; finalized runtime PNGs use the exact Paper-8 palette, binary alpha, and an enforced 2x2 authoring grid.
+- Verification: `PAPER8_FRAME_V2_VERIFIED assets=9`; Godot 4.7.1 Texture2D load; four-profile frame/ball-boundary test; Main HUD/Pause integration test; native OpenGL 1600x900 capture.
+- Preview: `docs/design/mockups/drafts/frame-paper8-runtime-preview-v2.png`.
+- S5-G4 remains `IN PROGRESS`; Stage backgrounds and Scale Shift animation are intentionally not claimed complete.
+
+## 2026-08-14 — S5-G4 Stage World and Scale Shift completion
+
+- Documented two deferred improvements without implementing them: stronger open-Cashout direction cues and powered CRT phosphor/static treatment.
+- Generated independent Ground, Planetary, and Galactic Stage World sources with built-in ImageGen, then normalized them to `1600x900`, approved per-Stage palettes, opaque pixels, and a strict 2x2 authoring grid.
+- Ground uses snow banks/conifers plus 48 moving snow particles. Planetary uses an Earth horizon aligned to the Ground side banks, Mercury/Moon/Mars/Sun, and 28 twinkling stars. Galactic uses a separated spiral galaxy and teal nebula plus 44 twinkling stars.
+- Added `BackgroundManager`, `StageAmbientLayer`, and `PresentationManager`. The `0.9s` Shift crossfades Stage World, moves the bezel and both 200px wings around center x=800, keeps HUD/Pause aligned, and emits the matching completion ID once.
+- Verification: `STAGE_WORLD_BACKGROUNDS_VERIFIED assets=3 canvas=1600x900 grid=2`; Godot 4.7.1 Stage World/Shift test; frame bounds and HUD/Pause regressions; Native OpenGL Ground and mid-Shift captures at 1600x900.
+- Runtime visual load: three static backgrounds total 4,320,000 pixels, approximately 16.48 MiB uncompressed RGBA; dynamic overlay peak 48 small draw-rect particles. FPS was not measured in this Goal and remains part of S5-G5 Web integration evidence.
+- Preview paths: `docs/design/mockups/drafts/frame-paper8-stage-world-preview.png` and `frame-paper8-scale-shift-preview.png`.
+- S5-G4 is `VERIFIED`; three-Stage Desktop/Web completion remains S5-G5.

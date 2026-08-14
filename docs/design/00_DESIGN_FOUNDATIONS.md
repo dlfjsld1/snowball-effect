@@ -69,6 +69,8 @@ Item Box rarity seed는 Common=`bare_steel/paper_050`, Rare=`signal_cyan`, Epic=
 
 ## 5. Pixel Language
 
+세부 제작·LOD·AI 생성물 검수 기준의 단일 source of truth는 [12_PIXEL_DESIGN_GUIDELINES.md](12_PIXEL_DESIGN_GUIDELINES.md)다.
+
 - 1600×900을 layout authoring 기준으로 삼는다.
 - 캐릭터·Ball·Frame sprite는 같은 장면 안에서 texel density가 흔들리지 않게 제작한다.
 - pixel asset은 nearest filtering을 사용하되 전체 Web viewport를 강제로 정수 배율에 맞추지는 않는다.

@@ -1,0 +1,171 @@
+[gd_scene load_steps=12 format=3 uid="uid://deic2cryapcmb"]
+
+[ext_resource type="Script" uid="uid://bkmtnd1dgffmf" path="res://scripts/presentation/gameplay_frame.gd" id="1_frame"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/field_bezel_v2_910x900.png" id="2_bezel"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/left_wing_v2_200x900.png" id="3_left_wing"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/right_wing_v2_200x900.png" id="4_right_wing"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_stage_v2_176x108.png" id="5_stage"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_time_v2_176x80.png" id="6_time"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_genealogy_v2_176x400.png" id="7_genealogy"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_score_v2_176x112.png" id="8_score"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_item_v2_176x300.png" id="9_item"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_pause_v2_176x104.png" id="10_pause"]
+[ext_resource type="Script" path="res://scripts/presentation/presentation_manager.gd" id="11_presentation"]
+
+[node name="GameplayFrame" type="Control" unique_id=1995335417]
+texture_filter = 1
+custom_minimum_size = Vector2(1600, 900)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1600.0
+offset_bottom = 900.0
+mouse_filter = 2
+script = ExtResource("1_frame")
+
+[node name="HousingPanels" type="Control" parent="."]
+mouse_filter = 2
+
+[node name="LeftHousing" type="TextureRect" parent="HousingPanels"]
+unique_name_in_owner = true
+offset_left = 258.0
+offset_right = 458.0
+offset_bottom = 900.0
+mouse_filter = 2
+texture = ExtResource("3_left_wing")
+
+[node name="RightTopHousing" type="TextureRect" parent="HousingPanels"]
+unique_name_in_owner = true
+offset_left = 1142.0
+offset_right = 1342.0
+offset_bottom = 900.0
+mouse_filter = 2
+texture = ExtResource("4_right_wing")
+
+[node name="RightBottomHousing" type="Control" parent="HousingPanels"]
+unique_name_in_owner = true
+visible = false
+
+[node name="RightEmptyWaist" type="Control" parent="HousingPanels"]
+unique_name_in_owner = true
+visible = false
+
+[node name="FieldBezel" type="NinePatchRect" parent="."]
+unique_name_in_owner = true
+offset_left = 470.0
+offset_right = 1130.0
+offset_bottom = 900.0
+mouse_filter = 2
+texture = ExtResource("2_bezel")
+draw_center = false
+patch_margin_left = 50
+patch_margin_top = 50
+patch_margin_right = 50
+patch_margin_bottom = 50
+
+[node name="CrtShells" type="Control" parent="."]
+mouse_filter = 2
+
+[node name="LeftCrtGroup" type="Control" parent="CrtShells"]
+unique_name_in_owner = true
+offset_left = 258.0
+offset_right = 458.0
+offset_bottom = 900.0
+mouse_filter = 2
+
+[node name="StageShell" type="TextureRect" parent="CrtShells/LeftCrtGroup"]
+offset_left = 12.0
+offset_top = 18.0
+offset_right = 188.0
+offset_bottom = 126.0
+mouse_filter = 2
+texture = ExtResource("5_stage")
+
+[node name="TimeShell" type="TextureRect" parent="CrtShells/LeftCrtGroup"]
+offset_left = 12.0
+offset_top = 138.0
+offset_right = 188.0
+offset_bottom = 218.0
+mouse_filter = 2
+texture = ExtResource("6_time")
+
+[node name="GenealogyShell" type="TextureRect" parent="CrtShells/LeftCrtGroup"]
+offset_left = 12.0
+offset_top = 232.0
+offset_right = 188.0
+offset_bottom = 632.0
+mouse_filter = 2
+texture = ExtResource("7_genealogy")
+
+[node name="RightCrtGroup" type="Control" parent="CrtShells"]
+unique_name_in_owner = true
+offset_left = 1142.0
+offset_right = 1342.0
+offset_bottom = 900.0
+mouse_filter = 2
+
+[node name="ScoreShell" type="TextureRect" parent="CrtShells/RightCrtGroup"]
+offset_left = 12.0
+offset_top = 18.0
+offset_right = 188.0
+offset_bottom = 130.0
+mouse_filter = 2
+texture = ExtResource("8_score")
+
+[node name="ItemShell" type="TextureRect" parent="CrtShells/RightCrtGroup"]
+offset_left = 12.0
+offset_top = 142.0
+offset_right = 188.0
+offset_bottom = 442.0
+mouse_filter = 2
+texture = ExtResource("9_item")
+
+[node name="PauseShell" type="TextureRect" parent="CrtShells/RightCrtGroup"]
+offset_left = 12.0
+offset_top = 796.0
+offset_right = 188.0
+offset_bottom = 900.0
+mouse_filter = 2
+texture = ExtResource("10_pause")
+
+[node name="HudAnchors" type="Control" parent="."]
+mouse_filter = 2
+
+[node name="PresentationManager" type="Control" parent="."]
+unique_name_in_owner = true
+z_index = 100
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("11_presentation")
+
+[node name="ShiftFlash" type="ColorRect" parent="PresentationManager"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.37, 0.68, 0.48, 0)
+
+[node name="ShiftLabel" type="Label" parent="PresentationManager"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 550.0
+offset_top = 392.0
+offset_right = 1050.0
+offset_bottom = 508.0
+mouse_filter = 2
+text = "SCALE SHIFT"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_colors/font_outline_color = Color(0.1216, 0.1412, 0.2941, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 48

@@ -408,3 +408,69 @@ Locked files: 없음
 ### 확인
 
 - 문서 변경만 수행했고 runtime 파일·Goal 상태는 바꾸지 않았다.
+
+## 2026-08-13 — S5-G4-I Frame playable wiring
+
+Owner: Integration
+Branch: `ui-design`
+Locked files: `scenes/main/main.tscn`, `scripts/core/game_manager.gd`, `scenes/ui/pause_menu.tscn`, `scripts/ui/pause_menu.gd`, `tests/integration/s5_g4_frame_playable_verification.*`
+
+### 변경
+
+- Main UI에 승인된 `GameplayFrame`을 실제 instance로 배치했다.
+- Stage index 0/1/2를 L0/L1/L2 profile에 연결하고 frame opening Rect를 Simulation 경계, Paddle clamp, Play Field Backdrop의 단일 적용값으로 사용했다.
+- Stage/Time/세로 공 족보와 현재 Stage Score를 좌우 CRT에 배치하고, Pause/Retry를 하단 우측 CRT 안으로 이동했다.
+- L3 profile은 일반 Stage에 연결하지 않고 Galactic 내부 Black Hole 국면용으로 보존했다.
+- 기존 S3-G6 검증의 동적 Node 이름 누락으로 발생하던 거짓 양성을 두 줄 수정했다.
+
+### 확인
+
+- Godot 4.7.1 CLI: S1-G4 HUD, S1-G5 Pause, S3-G6 Stage HUD, S5-G3 Shift, S5-G4 frame kit, S5-G4 playable wiring 검증 모두 exit 0 / `SCRIPT ERROR`·`ERROR:` 0건.
+- Desktop Main을 실제 실행해 공이 L0 frame opening 안에서 생성·반사·Merge/Cashout되고 CRT HUD와 Pause/Retry가 표시되는 화면을 확인했다.
+- 성능 수치는 이번 연결 작업에서 별도 측정하지 않았다. S5 Stage World·FX 통합 뒤 S9 telemetry에서 재측정한다.
+- Stage별 배경과 실제 Shift animation, 임시 auto-complete adapter 제거는 이번 wiring에서 제외했다.
+
+## 2026-08-13 — S5-G4-I Cashout corridor / 하단 CRT 정렬
+
+- `GameManager`가 물리 Play Field Rect와 프레임 내부의 시각적 Cashout Rect를 각각 적용하도록 연결했다.
+- HUD는 좌우 wing rect를 유지하고 PauseMenu는 별도의 bottom-panel rect를 받아 중앙 베젤 하단과 정렬되도록 했다.
+- Integration lock은 기존 S5-G4-I 범위(`scenes/main/main.tscn`, `scripts/core/game_manager.gd`, Pause UI 및 playable verification)에 유지했다.
+- Godot CLI playable verification과 Pause/HUD/Scale Shift 회귀 검증이 모두 통과했다.
+
+## 2026-08-14 — S5-G4I Shift presentation handoff wiring
+
+- Locked only `scripts/core/game_manager.gd` and `scenes/main/main.tscn` for the handoff.
+- Replaced the temporary `auto_complete_shift_presentation` path with explicit `stage_shift_started` → Presentation → `stage_shift_presentation_finished(shift_id)` → `accept_stage_shift_presentation_finished(shift_id)` wiring.
+- Added the Presentation-owned Stage World scene to the existing `StageWorld` mount and passed read-only layout dependencies to PresentationManager.
+- Verification: completion does not advance the Stage early; matching completion advances Ground→Planetary once; stale completion is rejected; S5-G3 state mediation, S5-G4 frame integration, S3-G6 HUD, and S1-G5 Pause regressions pass under Godot 4.7.1 CLI.
+- Integration lock released. Full Ground→Planetary→Galactic Desktop/Web completion is intentionally left to S5-G5.
+
+## 2026-08-14 — S5-G5 3-Stage integration
+
+Owner: Integration
+Locked files: `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s5_g5_*`, `.gitignore`
+
+### 변경
+
+- Stage 진입 시 Simulation의 레벨 목록만 바꾸던 연결을 기존 `apply_stage_definition()` API로 교체해 stage index/base/top/spawn snapshot과 배열 reset을 함께 적용했다.
+- HUD source binding에 StageManager를 명시적으로 전달해 Main tree 지연 탐색 의존을 제거했다.
+- Debug build에서만 `F6` Top Ball Clear와 `F7` Time Up Score Clear를 제공했다.
+- Ground Top Ball→Planetary, Planetary Score Clear→Galactic, Retry→Ground를 한 번에 검증하는 S5-G5 integration scene을 추가했다.
+- 로컬 Godot 4.7.1 CLI와 export template은 `.tools/`, `.godot-user/`에 두고 Git/export 대상에서 제외했다.
+
+### 검증
+
+- Godot 4.7.1 CLI: `S5_G5_THREE_STAGE_VERIFIED route=top_ball+score_clear shifts=2 retry=ground ground_stage_time=44.77 planetary_cashout_time_gain=4.00`.
+- S5-G2/G3/G4 handoff, S3-G6 HUD, S5-G4 frame 회귀를 포함한 6개 scene이 exit 0이다.
+- Native Main smoke는 OpenGL 3.3 / Intel Arc 130V에서 exit 0이다.
+- Web Debug/Release export는 각각 성공했다. PCK `4,842,624 bytes`, WASM Debug `37,900,721 bytes`, Release `39,513,091 bytes`다.
+- 로컬 HTTP에서 Debug HTML/JS/WASM/PCK와 Release HTML/JS가 200을 반환했다.
+- 인앱/확장 Browser 연결 목록이 비어 실제 Canvas, F6/F7 입력, console error는 확인하지 못했다. 따라서 S5-G5는 `IMPLEMENTED`, Q-S5 Web Gate는 `UNVERIFIED — browser tooling unavailable`로 남긴다.
+- 실제 FPS와 플레이 밸런스 체류 시간은 측정하지 않았다. `44.77s`는 자동 강제 경로의 Ground 잔여 Stage 시간이다.
+
+### 제외
+
+- Galactic 첫 Lv14 Black Hole 전환과 finale는 S8 범위이며 구현하지 않았다.
+- Browser 검증 완료 전 S5-G5를 `VERIFIED`로 올리지 않았다.
+
+Integration lock released.

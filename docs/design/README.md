@@ -23,6 +23,7 @@ Mode: Builder
 | Presentation 기술 경계와 검증 구조 | CONDITIONAL APPROVAL | User | 2026-08-11 | typed snapshots, epoch correlation, contract+Web tests; Core/Integration handoff 필요 |
 | V4 Frozen Enamel Arcade 목업 | APPROVED VISUAL DIRECTION | User | 2026-08-11 | slim fixed-width bezel, Main/Pause 재질, Merge/Item/Milestone FX 채택 |
 | V5 Black Hole Phase/HUD revision | APPROVED VISUAL DIRECTION | User | 2026-08-12 | L3는 Galactic gameplay, Lv14 Black Hole Ball/동명 맵 기믹 식별, Stage 이름·세로 progressive HUD |
+| Stage World 3종·Scale Shift runtime baseline | IMPLEMENTED BASELINE | User | 2026-08-14 | [`15_STAGE_WORLD_AND_SHIFT_RUNTIME_SPEC.md`](15_STAGE_WORLD_AND_SHIFT_RUNTIME_SPEC.md), Cashout/CRT polish는 TODO로 이관 |
 | 전체 문서 세트 | APPROVED | User | 2026-08-10 | open Decision Gate는 각 Goal 전에 별도 확정 |
 
 ## Problem Statement
@@ -128,6 +129,9 @@ Approach B를 사용한다. 구조적 계약을 먼저 고정하되 아트 주�
 | [08_TECHNICAL_REVIEW_HANDOFF.md](08_TECHNICAL_REVIEW_HANDOFF.md) | Eng review 결과, Core/Integration blocker, typed 계약과 테스트 구조 |
 | [09_APPROVED_VISUAL_DIRECTION_V4.md](09_APPROVED_VISUAL_DIRECTION_V4.md) | 채택한 V4 목업, Frozen Enamel 토큰, slim bezel, 핵심 FX 제작 기준 |
 | [10_APPROVED_VISUAL_DIRECTION_V5.md](10_APPROVED_VISUAL_DIRECTION_V5.md) | 최신 Ball/HUD/Black Hole Phase 정정과 팀 공유 목업 기준 |
+| [11_FX_CATALOG.md](11_FX_CATALOG.md) | 전체 FX 제작 목록, Tier·계약·우선순위와 구현 선택성 |
+| [12_PIXEL_DESIGN_GUIDELINES.md](12_PIXEL_DESIGN_GUIDELINES.md) | logical pixel, Ball LOD, FX·Background·HUD 밀도와 AI 생성물 production 규칙 |
+| [14_FRAME_PAPER8_LAB_ASSET_SPEC.md](14_FRAME_PAPER8_LAB_ASSET_SPEC.md) | 승인된 Paper-8 Lab 프레임의 8색 정규화, 세부 분할, Godot import 계약 |
 | [TODOS.md](TODOS.md) | v1 밖 후속 디자인/접근성 작업 |
 | [WIREFRAME_DYNAMIC_PLAYFIELD.png](WIREFRAME_DYNAMIC_PLAYFIELD.png) | 승인된 동적 폭 구조의 1차 비교판 |
 | [mockups/approved-v5/README.md](mockups/approved-v5/README.md) | 팀 공유용 V5 Main/HUD/Black Hole Phase/Pause/FX PNG export |
