@@ -598,3 +598,23 @@ Owner: Core
 ### 제외 / 다음 작업
 
 - 두 Black Hole의 terminal contact/finale lock은 S8-G2, L2→L3 frame/logical bounds activation 및 retry wiring은 S8-G4, Phase presentation은 S8-G5 범위다.
+
+## 2026-08-14 — S8-G2 두 Black Hole 최종 충돌 runtime
+
+Owner: Core
+
+### 변경
+
+- 두 Black Hole의 previous/current motion을 상대 sweep으로 검사해 earliest contact를 한 번만 확정한다. 접촉 뒤 Black Hole force와 일반 ball 이동·흡수·Merge·Cashout commit을 모두 중지한다.
+- simulation은 `black_hole_finale_started(contact_snapshot)`을, StageRuntime은 한 번만 확정되는 `black_hole_finale_locked(result_snapshot)`을 제공한다. 결과에는 contact center, 두 entity의 position/velocity/radius, stage index/score, final run score가 들어간다.
+- 첫·두 번째 Black Hole 생성은 terminal이 아니며, terminal은 일반 Top Ball Clear/Stage Shift를 요청하지 않는다.
+
+### 확인
+
+- Native headless S8-G2 verification exit 0: 두 Black Hole 생성 후 contact terminal 1회, snapshot, contact tick의 일반 Lv10 Merge 미commit, 반복 tick 중복 event 없음, regular Shift event 없음.
+- Native headless S8-G1, S2-G3, S3-G2 회귀 exit 0. S8-G1 1,000 active ball force 평균 `4.135ms/tick`.
+- Primary `godot` validate 4/4, Main runtime Ground/PLAYING/26 active ball/runtime error 0.
+
+### 제외 / 다음 작업
+
+- Result/Title/Main Menu UI는 S8-G3, Black Hole phase/finale visual은 S8-G5, Main signal wiring·logical L3 bounds·Retry reset은 S8-G4 Integration 범위다.

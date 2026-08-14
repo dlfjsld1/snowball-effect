@@ -9,6 +9,7 @@ signal stage_entered(definition: StageDefinition)
 signal end_decision_requested(reason: StringName)
 signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
 signal black_hole_run_end_requested()
+signal black_hole_finale_locked(result_snapshot: Dictionary)
 
 var current_stage: StageDefinition
 var stage_time_left := 0.0
@@ -16,6 +17,8 @@ var score_ledger: Ledger = Ledger.new()
 var _end_decision_locked := false
 var _next_black_hole_phase_id := 1
 var _black_hole_run_end_locked := false
+var _black_hole_finale_locked := false
+var _black_hole_finale_snapshot: Dictionary = {}
 
 
 func enter_stage(definition: StageDefinition) -> void:
@@ -27,6 +30,8 @@ func enter_stage(definition: StageDefinition) -> void:
 	_end_decision_locked = false
 	_next_black_hole_phase_id = 1
 	_black_hole_run_end_locked = false
+	_black_hole_finale_locked = false
+	_black_hole_finale_snapshot.clear()
 	stage_time_changed.emit(stage_time_left)
 	stage_entered.emit(definition)
 
@@ -105,6 +110,27 @@ func apply_black_hole_absorption(score_amount: float) -> bool:
 		_black_hole_run_end_locked = true
 		black_hole_run_end_requested.emit()
 	return _black_hole_run_end_locked
+
+
+func lock_black_hole_finale(contact_snapshot: Dictionary) -> Dictionary:
+	assert(not contact_snapshot.is_empty(), "Black Hole finale requires a contact snapshot.")
+	if _black_hole_finale_locked:
+		return get_black_hole_finale_snapshot()
+	_black_hole_finale_locked = true
+	_black_hole_finale_snapshot = contact_snapshot.duplicate(true)
+	_black_hole_finale_snapshot["stage_index"] = current_stage.stage_index if current_stage != null else -1
+	_black_hole_finale_snapshot["stage_score"] = score_ledger.stage_score
+	_black_hole_finale_snapshot["run_score"] = score_ledger.run_score
+	black_hole_finale_locked.emit(get_black_hole_finale_snapshot())
+	return get_black_hole_finale_snapshot()
+
+
+func is_black_hole_finale_locked() -> bool:
+	return _black_hole_finale_locked
+
+
+func get_black_hole_finale_snapshot() -> Dictionary:
+	return _black_hole_finale_snapshot.duplicate(true)
 
 
 func _on_ledger_score_changed(stage_score: float, run_score: float) -> void:

@@ -23,7 +23,7 @@
 | Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시한다. S5-G3는 이 Presentation 완료 계약을 전제로 먼저 구현됐다. S5-G4 전 Main의 임시 adapter가 같은 API를 deferred 한 번 호출하며, Presentation 연결 시 Integration이 adapter를 제거한다. |
 | Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | 첫 Lv14→Black Hole 전환과 Galactic 내부 L2→L3 국면 시작; 새 Stage가 아님 |
 | Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용 |
-| Core simulation | Black Hole finale event + read-only contact snapshot (exact signature: S8-G2) | Integration, Presentation | 두 Black Hole 접촉을 한 번 잠그고 mutual orbit·폭발·타이틀 Run End 시작 |
+| Core simulation / Stage runtime | `black_hole_finale_started(contact_snapshot)` → `black_hole_finale_locked(result_snapshot)` | Integration, Presentation, Content/Systems | 두 Black Hole의 earliest contact를 simulation이 한 번 잠그고, Stage runtime이 `contact_position`, 두 Black Hole의 position/velocity/radius, `stage_index`, `stage_score`, `run_score`를 읽기 전용 final result snapshot으로 확정한다. Integration은 이 신호 뒤 gameplay commit을 재개하지 않는다. |
 
 ## S6 audio ownership
 

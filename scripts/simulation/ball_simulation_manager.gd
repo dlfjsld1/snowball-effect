@@ -10,6 +10,7 @@ signal ball_merged(result_level: int, world_position: Vector2)
 signal top_ball_created(global_level: int)
 signal black_hole_phase_requested()
 signal black_hole_absorbed(score_amount: float, global_level: int, world_position: Vector2)
+signal black_hole_finale_started(contact_snapshot: Dictionary)
 signal simulation_metrics_updated(metrics: Dictionary)
 
 @export var play_field_rect := Rect2(500.0, 0.0, 600.0, 900.0)
@@ -56,6 +57,8 @@ var _pending_cashout_positions := PackedVector2Array()
 var _black_hole_positions := PackedVector2Array()
 var _black_hole_velocities := PackedVector2Array()
 var _black_hole_radii := PackedFloat32Array()
+var _black_hole_terminal_locked := false
+var _black_hole_terminal_snapshot: Dictionary = {}
 var _render_snapshot_positions := PackedVector2Array()
 var _render_snapshot_radii := PackedFloat32Array()
 var _render_snapshot_global_levels := PackedInt32Array()
@@ -197,6 +200,14 @@ func get_black_hole_snapshot() -> Dictionary:
 	}
 
 
+func is_black_hole_terminal_locked() -> bool:
+	return _black_hole_terminal_locked
+
+
+func get_black_hole_terminal_snapshot() -> Dictionary:
+	return _black_hole_terminal_snapshot.duplicate(true)
+
+
 func get_black_hole_pull(position: Vector2) -> Vector2:
 	var total_pull := Vector2.ZERO
 	for black_hole_position in _black_hole_positions:
@@ -311,6 +322,8 @@ func reset_runtime() -> void:
 	_black_hole_positions.clear()
 	_black_hole_velocities.clear()
 	_black_hole_radii.clear()
+	_black_hole_terminal_locked = false
+	_black_hole_terminal_snapshot.clear()
 	_render_snapshot_positions.clear()
 	_render_snapshot_radii.clear()
 	_render_snapshot_global_levels.clear()
@@ -325,6 +338,10 @@ func step_simulation(delta: float) -> void:
 		# Simulation runs before the sibling Paddle node in Main, so it prepares the shared transform once.
 		_paddle_collision_provider.prepare_physics_transform(delta)
 	_step_black_holes(delta)
+	if _black_hole_terminal_locked:
+		_update_simulation_metrics()
+		simulation_metrics_updated.emit(_simulation_metrics)
+		return
 
 	for index in active_indices:
 		var velocity := velocities[index]
@@ -445,7 +462,11 @@ func _create_black_hole(position: Vector2, velocity: Vector2) -> void:
 
 
 func _step_black_holes(delta: float) -> void:
+	if _black_hole_terminal_locked:
+		return
 	var previous_positions := _black_hole_positions.duplicate()
+	var next_velocities := PackedVector2Array()
+	var next_positions := PackedVector2Array()
 	for index in range(_black_hole_positions.size()):
 		var velocity := _black_hole_velocities[index]
 		var position := previous_positions[index]
@@ -454,6 +475,18 @@ func _step_black_holes(delta: float) -> void:
 				velocity += _get_pull_from_source(position, previous_positions[other_index], BLACK_HOLE_MUTUAL_PULL_ACCELERATION) * delta
 		velocity = velocity.limit_length(maximum_ball_runtime_speed)
 		position += velocity * delta
+		next_velocities.append(velocity)
+		next_positions.append(position)
+
+	if _black_hole_positions.size() == BLACK_HOLE_MAX_COUNT:
+		var contact_time := _get_black_hole_contact_time(previous_positions[0], next_velocities[0], previous_positions[1], next_velocities[1], _black_hole_radii[0] + _black_hole_radii[1], delta)
+		if contact_time >= 0.0:
+			_lock_black_hole_terminal(previous_positions, next_velocities, contact_time)
+			return
+
+	for index in range(_black_hole_positions.size()):
+		var velocity := next_velocities[index]
+		var position := next_positions[index]
 		var radius := _black_hole_radii[index]
 		var left_bound := play_field_rect.position.x + radius
 		var right_bound := play_field_rect.end.x - radius
@@ -473,6 +506,43 @@ func _step_black_holes(delta: float) -> void:
 			velocity.y = -absf(velocity.y) * wall_restitution
 		_black_hole_positions[index] = position
 		_black_hole_velocities[index] = velocity
+
+
+func _get_black_hole_contact_time(first_position: Vector2, first_velocity: Vector2, second_position: Vector2, second_velocity: Vector2, contact_radius: float, delta: float) -> float:
+	var relative_position := first_position - second_position
+	var relative_velocity := first_velocity - second_velocity
+	var overlap := relative_position.length_squared() - contact_radius * contact_radius
+	if overlap <= 0.0:
+		return 0.0
+	var velocity_length_squared := relative_velocity.length_squared()
+	if velocity_length_squared <= BLACK_HOLE_EPSILON_SQUARED:
+		return -1.0
+	var b := 2.0 * relative_position.dot(relative_velocity)
+	var discriminant := b * b - 4.0 * velocity_length_squared * overlap
+	if discriminant < 0.0:
+		return -1.0
+	var time := (-b - sqrt(discriminant)) / (2.0 * velocity_length_squared)
+	return time if time >= 0.0 and time <= delta else -1.0
+
+
+func _lock_black_hole_terminal(previous_positions: PackedVector2Array, next_velocities: PackedVector2Array, contact_time: float) -> void:
+	if _black_hole_terminal_locked:
+		return
+	_black_hole_terminal_locked = true
+	var first_position := previous_positions[0] + next_velocities[0] * contact_time
+	var second_position := previous_positions[1] + next_velocities[1] * contact_time
+	_black_hole_positions[0] = first_position
+	_black_hole_positions[1] = second_position
+	_black_hole_velocities[0] = next_velocities[0]
+	_black_hole_velocities[1] = next_velocities[1]
+	_black_hole_terminal_snapshot = {
+		"contact_position": (first_position + second_position) * 0.5,
+		"black_holes": [
+			{"position": first_position, "velocity": next_velocities[0], "radius": _black_hole_radii[0]},
+			{"position": second_position, "velocity": next_velocities[1], "radius": _black_hole_radii[1]},
+		],
+	}
+	black_hole_finale_started.emit(get_black_hole_terminal_snapshot())
 
 
 func _get_pull_from_source(position: Vector2, source_position: Vector2, maximum_acceleration: float) -> Vector2:
