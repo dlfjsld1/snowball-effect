@@ -512,3 +512,20 @@ Locked files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `
 
 - Black Hole terminal `run_end` forwarding은 S8-G4 Integration 범위다.
 - 실제 브라우저 audio playback과 late-density 가독성은 S6-G4 Content verification에 남긴다.
+
+## 2026-08-16 — S8-G4 선행 Integration 골격 계약
+
+Owner: Integration
+Locked files: `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s8_g4_*`
+
+### 결정
+
+- S8-G2의 phase/finale/result schema가 확정됐으므로 S8-G3/G5 완료를 기다리지 않고 Integration-owned 골격을 먼저 진행한다.
+- matching `phase_id` 완료 API, terminal snapshot 전달, Retry/Main Menu handler와 Core reset을 먼저 제공한다.
+- Presentation producer가 없는 동안에는 실제 완료 API를 deferred 한 번 호출하는 임시 adapter를 허용하되, 실제 S8-G5 연결 시 제거한다.
+
+### 병렬 작업 보호
+
+- `scripts/presentation/**`, `scripts/ui/**`, `scenes/backgrounds/**`, `scenes/effects/**`는 잠그거나 수정하지 않는다.
+- 임시 adapter는 연출·Result UI를 구현한 것으로 취급하지 않으며 S8-G4 최종 상태를 올리는 Evidence로 사용하지 않는다.
+- S8-G3와 S8-G5는 Integration 골격의 공개 signal/API를 기준으로 각 Owner lane에서 병렬 개발할 수 있다.

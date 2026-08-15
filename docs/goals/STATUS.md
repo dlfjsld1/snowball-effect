@@ -9,7 +9,7 @@
 | Core | 없음 | 본인/팀 리드 | available |
 | Presentation | 없음 | 팀원 A | available |
 | Content/Systems/Release | 없음 | Content/Systems/Release 담당 | available |
-| Integration | 없음 | 본인/팀 리드 | available |
+| Integration | S8-G4 Integration skeleton | 본인/팀 리드 | IN PROGRESS |
 
 각 lane은 `IN PROGRESS`를 최대 하나만 가진다. 서로 다른 lane은 Dependencies와 Integration Point가 충족되면 병렬 진행할 수 있다.
 
@@ -17,7 +17,7 @@
 
 | Integration Goal | Locked Files | 상태 |
 |---|---|---|
-| 없음 | 없음 | unlocked |
+| S8-G4 Integration skeleton | `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s8_g4_*` | locked |
 
 ## Goal matrix
 
@@ -64,7 +64,7 @@
 | S8-G1 Black Hole force | Core | VERIFIED | 2026-08-14 Lv14를 일반 slot이 아닌 최대 2개의 Black Hole runtime entity로 전환했다. 첫 전환은 Top Ball Clear를 보내지 않고 phase request와 StageRuntime의 `black_hole_phase_started` API를 제공한다. local Lv0~2 실제 접촉 흡수는 Cashout 상당 점수 차감 event를 내며 StageRuntime은 stage/run을 각각 0 clamp하고 run 0에서 한 번의 Run End request를 낸다. 일반 공 pull은 source vector 합산 뒤 600 cap, Black Hole mutual pull은 450, 하단 반사/Cashout·일반 Merge 제외를 자동 검증했다. Godot 4.7.1 headless S8-G1 exit 0(1,000공+force 평균 4.190ms), S2-G3/S3-G2 회귀 exit 0, Primary `godot` validate 4/4 및 Main runtime Ground/32 active/runtime error 0. L2→L3 실제 연결·최종 충돌은 S8-G4/S8-G2 범위. |
 | S8-G2 두 Black Hole 최종 충돌 runtime | Core | VERIFIED | 2026-08-14 Black Hole relative sweep의 earliest contact를 한 번 lock하고 이후 normal ball simulation commit을 멈춘다. simulation은 `black_hole_finale_started(contact_snapshot)`, StageRuntime은 contact·두 Black Hole state와 stage/run score를 포함한 immutable-style `black_hole_finale_locked(result_snapshot)`을 제공한다. 첫/두 번째 Lv14 생성만으로는 끝나지 않으며 terminal은 Top Ball/Stage Shift를 요청하지 않는다. Godot 4.7.1 headless S8-G2 및 S8-G1/S2-G3/S3-G2 회귀 exit 0, Primary `godot` validate 4/4와 Main runtime Ground/PLAYING/error 0. UI·actual finale wiring은 S8-G3/S8-G4 범위. |
 | S8-G3 Title·Main·Terminal UI | Content/Systems | PENDING | S8-G2 terminal snapshot schema 필요 |
-| S8-G4 Black Hole Finale·Retry 통합 | Integration | PENDING | S8-G2/G3와 모든 reset API 필요 |
+| S8-G4 Black Hole Finale·Retry 통합 | Integration | IN PROGRESS | S8-G2의 공개 phase/finale/result 계약을 기준으로 Integration-owned 골격을 선행한다. matching `phase_id` 완료 중재, terminal snapshot 전달, Run End·Retry/Main Menu handler와 Core reset을 먼저 연결하며 S8-G3/G5 파일은 수정하지 않는다. 실제 UI·Presentation producer 연결, 임시 adapter 제거, Item/Presentation 포함 전체 reset과 Desktop/Web 완주 전에는 `IMPLEMENTED` 또는 `VERIFIED`로 닫지 않는다. |
 | S8-G5 Black Hole Phase presentation | Presentation | PENDING | S5-G4 Frame/Field 계약과 S8-G1 phase signal 필요 |
 | S9-G1 Release tuning·telemetry | Content/Systems | PENDING | S6/S8 완료; S7 선택 |
 | S9-G2 Web export·browser QA | Content/Systems | PENDING | S9-G1과 통합 RC 필요 |
@@ -85,6 +85,7 @@
 - S5-G1~G5와 S5-G4I가 모두 `VERIFIED`다. 사용자 Chrome Web에서 Canvas focus 뒤 Debug `F6`/`F7` Clear와 Stage 전환을 확인했다. red console error는 없었고, WebGL/AudioContext warning은 S6/S9 품질 점검 대상으로 남긴다.
 - S8-G1 Black Hole force가 `VERIFIED`다. Core는 Black Hole runtime entity/force/흡수/점수차감과 phase·run-end request API를 제공한다. L2→L3 logical rect 활성화와 실제 재개 wiring은 S8-G4 Integration에 남아 있다.
 - S8-G2 Black Hole terminal runtime이 `VERIFIED`다. Core가 earliest contact 이후 simulation commit을 잠그고 finale/result snapshot을 제공한다. Content/Systems는 S8-G3 Result UI를, Presentation은 S8-G5 Phase presentation을 시작할 수 있다. 두 API의 Main 연결·Retry reset은 S8-G4 Integration에 남아 있다.
+- S8-G4는 S8-G2의 확정 API를 소비하는 Integration 골격부터 `IN PROGRESS`다. Integration-owned 파일만 잠그며 S8-G3/G5는 병렬로 각 Owner 파일에서 개발한다. 임시 phase 완료 adapter는 실제 producer 연결 시 제거하고, 그 전에는 S8-G4 완료 증거로 사용하지 않는다.
 - S6-G1·G3·G4는 Content/Systems가 순서대로 소유하고, S6-G2 CUT-IN은 Presentation이 소유한다. S6-G1은 시각 FX event tier와 budget을 확정해 S6-G3 audio catalog의 선행 계약으로 제공한다.
 - S6-G1과 S6-G3은 `VERIFIED`다. S6-G2는 확정된 `priority_event_reserved` 계약을 소비할 수 있고, Content/Systems는 S6-G3 audio catalog를 소비하는 S6-G4를 시작할 수 있다.
 - 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.
