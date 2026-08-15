@@ -625,3 +625,8 @@ Status: `IN PROGRESS` — Content 소유 구현 완료, Integration/Web 검증 �
 
 - Integration이 Main mount와 보류 event forwarding을 연결해야 한다.
 - 실제 Web 첫 입력 재생 및 late-density 청감 검증은 Integration 후 S6 Slice gate에서 수행한다.
+
+## 2026-08-15 S6-G4 담당 표기 보정
+
+- `STATUS.md`의 S6-G4 활성 lane과 Goal Owner를 개인명 또는 축약 lane이 아닌 `Content/Systems/Release 담당`으로 명시했다.
+- 역할 담당자가 명확히 보이도록 한 문서 표기 보정이며, AudioManager 구현·재생 정책·Integration 범위는 변경하지 않았다.
