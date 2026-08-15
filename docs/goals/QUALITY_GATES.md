@@ -37,7 +37,7 @@
 | Q-S4 | release path에 전수 O(N²) 없음, 실제 Web 동시 활성 500개에서 최저 30 FPS 이상, 1,000개 stretch FPS·allocation·병목 관찰 기록 |
 | Q-S5 | ordered Stage chain(`6→8→10`)과 5종 세로 progressive HUD, Stage별 reset/preserve, top-ball lock, settlement 후 shift, 세 Stage 연속 완주 |
 | Q-S6 | burst에서도 패들·공 가독성, FX budget 작동, 중요한 이벤트 우선 |
-| Q-S7 | 아이템 비활성화 시 Core 결과 동일, Fire modifier가 Settlement에 침투하지 않음 |
+| Q-S7 | Stage당 Item Ball 1회, local Lv3+ 공의 유효 5-hit 파괴, 파괴 후 item별 Orb 생성, Paddle 획득 뒤 CUT-IN·1회 activation, 하단 miss 시 미적용·소멸, 아이템 비활성화 시 Core 결과 동일, Fire modifier가 Settlement에 침투하지 않음 |
 | Q-S8 | 첫 Lv14→이동 Black Hole 전환, L2→L3 Frame/Play Field 동기 확장 후 gameplay 재개, 저등급 흡수 점수 차감·run score 0 Game Over·다중 pull vector 합산/cap·Black Hole 상호 인력·하단 반사·비성장 안정성, 두 번째 Black Hole과 접촉 시 1회 finale→UI 제거→타이틀/Clear Score/Main Menu, Retry 완전 초기화 |
 | Q-S9 | 공개 URL incognito 완주, Chrome/Edge, console, resize, 오디오 활성화 확인 |
 
