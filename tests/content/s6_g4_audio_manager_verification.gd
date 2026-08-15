@@ -35,8 +35,17 @@ func _ready() -> void:
 	_expect(_audio_manager.get_debug_snapshot()["dropped_event_count"] >= 1, "Dropped events must be observable for verification.")
 
 	_audio_manager.reset_runtime()
+	_audio_manager.play_event(&"settlement_start")
+	_expect(_active_keys().has(&"settlement_start"), "Settlement start must map from its lifecycle signal.")
+
+	_audio_manager.reset_runtime()
+	_audio_manager.play_event(&"settlement_finish")
+	_expect(_active_keys().has(&"settlement_finish"), "Settlement finish must map from its lifecycle signal.")
+
+	_audio_manager.reset_runtime()
 	_expect(_audio_manager.play_event(&"settlement_start"), "The first settlement sound must play.")
-	_expect(not _audio_manager.play_event(&"settlement_finish"), "Shared settlement polyphony must reject overlapping state sounds.")
+	_expect(_audio_manager.play_event(&"settlement_finish"), "Settlement finish must queue behind its start sound.")
+	_expect(_audio_manager.get_debug_snapshot()["pending_settlement_finish"], "Queued settlement finish must remain observable.")
 
 	_audio_manager.reset_runtime()
 	ball_merged.emit(0, Vector2.ZERO)
@@ -62,7 +71,16 @@ func _ready() -> void:
 	pause_requested.emit()
 	_expect(_active_keys().count(&"ui_pause") == 1, "Reconfiguring sources must not duplicate pause connections.")
 	pause_requested.emit()
-	_expect(_active_keys().count(&"ui_pause") == 1, "Resume must not replay ui_pause while ui_resume is deferred.")
+	_expect(_active_keys().count(&"ui_pause") == 1, "The shared pause toggle request must not stack ui_pause on resume.")
+
+	_audio_manager.reset_runtime()
+	_audio_manager.play_event(&"settlement_start")
+	_audio_manager.play_event(&"settlement_finish")
+	_expect(_audio_manager.get_debug_snapshot()["pending_settlement_finish"], "Settlement finish must wait until its start sound completes.")
+	for child in _audio_manager.get_children():
+		if child is AudioStreamPlayer and child.get_meta(&"audio_event_key", &"") == &"settlement_start":
+			child.finished.emit()
+	_expect(_active_keys().has(&"settlement_finish"), "Settlement finish must play after settlement_start completes.")
 
 	_audio_manager.reset_runtime()
 	black_hole_phase_requested.emit()
@@ -84,6 +102,11 @@ func _ready() -> void:
 
 	if _failures == 0:
 		print("S6_G4_FOUNDATION_VERIFIED player_pool=%d" % _audio_manager.get_debug_snapshot()["player_count"])
+	_audio_manager.reset_runtime()
+	constrained_manager.reset_runtime()
+	_audio_manager.queue_free()
+	constrained_manager.queue_free()
+	await get_tree().process_frame
 	await get_tree().create_timer(0.25).timeout
 	get_tree().quit(_failures)
 

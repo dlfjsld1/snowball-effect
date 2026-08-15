@@ -7,7 +7,6 @@ signal retry_requested
 @onready var pause_button: Button = $Buttons/PauseButton
 @onready var retry_button: Button = $Buttons/RetryButton
 
-
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	pause_button.pressed.connect(_request_pause)
