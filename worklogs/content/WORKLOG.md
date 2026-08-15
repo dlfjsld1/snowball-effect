@@ -603,3 +603,25 @@ Status: `VERIFIED`
 
 - S6-G4에서 AudioManager가 기존 gameplay signal을 read-only로 구독하고 catalog key를 재생한다.
 - priority/polyphony, volume, Web 첫 입력 audio unlock, 실제 Browser playback은 S6-G4/S6 Slice gate에서 검증한다.
+
+## 2026-08-15 S6-G4 AudioManager 기반 구현
+
+Owner: Content/Systems/Release
+Status: `IN PROGRESS` — Content 소유 구현 완료, Integration/Web 검증 대기
+
+### 변경
+
+- `AudioManager`가 기존 공개 signal을 read-only로 구독하여 catalog key를 재생하도록 구현했다.
+- Merge/Cashout tier, transition, terminal, Black Hole, Pause/Retry의 priority·polyphony·cooldown·volume 정책을 정의했다.
+- Retry는 루프·cooldown·전환 억제를 초기화하고, terminal 사운드가 정리한 낮은 priority playback도 선점 진단값에 기록한다.
+- 단일 `pause_requested`의 두 번째 호출은 resume으로 처리하며, 전용 resume event가 생길 때까지 `ui_resume`은 보류한다.
+
+### 검증
+
+- Primary Godot validation: AudioManager, S6-G4 verification script/scene `3/3 valid`.
+- S6-G4 verification scene exit 0: input unlock, cooldown, shared-group polyphony, transition suppression, terminal preemption, loop stop, Retry reset, pause/resume toggle 검증.
+
+### 남은 작업
+
+- Integration이 Main mount와 보류 event forwarding을 연결해야 한다.
+- 실제 Web 첫 입력 재생 및 late-density 청감 검증은 Integration 후 S6 Slice gate에서 수행한다.

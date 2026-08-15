@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Core | 없음 | 본인/팀 리드 | available |
 | Presentation | 없음 | 팀원 A | available |
-| Content/Systems | 없음 | 사용자 | available |
+| Content/Systems | S6-G4 사운드 계층·가독성 | 사용자 | IN PROGRESS |
 | Integration | 없음 | 본인/팀 리드 | available |
 
 각 lane은 `IN PROGRESS`를 최대 하나만 가진다. 서로 다른 lane은 Dependencies와 Integration Point가 충족되면 병렬 진행할 수 있다.
@@ -56,7 +56,7 @@
 | S6-G1 이벤트 등급·FX budget | Content/Systems | VERIFIED | 2026-08-15 `EffectManager`에 BallDefinition tier 기반 Merge/Cashout 공통 budget, tier별 active `12/8/4/2/1`, frame spawn `4/4/3/2/1`, 전체 active 24, 낮은 FX eviction과 Transition/Terminal 예약 API를 구현했다. Godot 4.7.1 CLI 자동 scene exit 0: Tier 0 20건 중 4건 표시·16건 throttle, 같은 burst Tier 3/Cashout 보존, 24개 포화 시 오래된 하위 tier 1건 교체, 삭제 대기 FX slot 반환, 잘못된 tier 조회 거부, Clear→Settlement→Shift 순서, Terminal dominance, Terminal 뒤 Retry와 진행 중 Pause Retry의 FX·Run 단위 counter reset을 확인했다. Primary validation 8/8. S2-G3/S4-G4/S3-G5/S5-G3/S5-G5 CLI 회귀와 Main headless 120 frames exit 0. 실제 Main Galactic 395 active balls에서 공·패들·Tier 3 FX 가독성과 budget을 확인했고, 별도 Ground runtime에서 viewport 아래 Cashout source가 Y `804`에 표시되어 하단 cabinet과 분리되는 것을 screenshot으로 확인했다. 각 MCP runtime error 0. background MCP 순간 21 FPS는 release 성능 수치가 아니며 Web burst 성능은 S6 Slice 후속 Gate다. 기존 S2-G5 scene은 StageDefinition 미적용으로 stale assertion 4건이 남아 별도 Presentation test repair가 필요하다. |
 | S6-G2 CUT-IN·화면 연출 | Presentation | PENDING | S6-G1/S5 상태 계약 필요 |
 | S6-G3 Audio 콘텐츠 | Content/Systems | VERIFIED | 2026-08-15 `resources/audio/audio_catalog.tres`에 파일명과 동일한 22개 event key를 OGG AudioStream으로 1:1 등록했다. Godot 4.7.1 CLI headless verification exit 0: `S6_G3_VERIFIED audio_events=22 ogg_streams=22`; 키 중복·누락, key/filename 불일치, null stream, non-OGG source, loop 설정을 검증했다. S6-G1 FX budget regression exit 0 및 Main headless 120 frames exit 0. 실제 재생·priority/polyphony·첫 입력 audio unlock·Browser playback은 S6-G4 범위다. |
-| S6-G4 사운드 계층·가독성 | Content/Systems | PENDING | S6-G1/G3 필요 |
+| S6-G4 사운드 계층·가독성 | Content/Systems | IN PROGRESS | 2026-08-15 AudioManager에 catalog 기반 재생과 현재 공개된 read-only event 구독을 구현했다. Merge T0~T3은 priority `10/20/30/45`, polyphony `2/2/1/1`, cooldown `0.10/0.14/0.20/0.28s`, volume `-12/-10/-8/-6dB`; Cashout은 `25/50`, `2/1`, `0.14/0.22s`, `-7/-4dB`; 상태음은 `70~100`, UI는 `40`/1/`0.08s`를 사용한다. pool 포화 시 더 높은 priority만 낮은 non-terminal sound를 선점하고, terminal은 낮은 priority playback을 정리한다. 단일 `pause_requested`의 두 번째 호출은 resume으로 보고 무음 처리하며 `ui_resume`은 보류한다. Primary Godot validation 3/3 및 S6-G4 verification scene exit 0: cooldown, shared-group polyphony, transition gameplay suppression, terminal preemption, loop stop, retry와 pause/resume toggle을 확인했다. Main wiring, 보류 event forwarding, 실제/Web playback과 late-density 가독성 검증은 남아 있음. |
 | S7-G1 Item gateway 통합 | Integration | PENDING | S5 완료와 Core/Content API 필요; 선택 |
 | S7-G2 Blizzard | Content/Systems | PENDING | S7-G1 필요; 선택 |
 | S7-G3 Fire Core | Content/Systems | PENDING | S7-G1/S3 회귀 필요; 선택 |
