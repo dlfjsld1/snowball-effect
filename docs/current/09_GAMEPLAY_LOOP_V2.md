@@ -621,6 +621,7 @@ Vampire Survivors처럼 화면 곳곳에서 계속 보상이 터지는 느낌.
 # 16. 고등급 CUT-IN
 
 중요한 공 또는 특수 효과는 짧은 CUT-IN을 사용할 수 있다.
+각 Stage의 local 5종 중 4단계 공은 첫 생성 때 일반 고등급 CUT-IN을 사용한다. 5단계 최고 공은 별도 CUT-IN을 겹치지 않고 실제 결과 공을 사용하는 Stage Clear / Scale Shift 또는 Black Hole Phase 연출로 강조한다.
 
 일반 동작:
 
@@ -658,17 +659,17 @@ Play Field + Stage World 전체 dim
 예:
 
 ```text
-Big Snowball
+Giant Snowball
 → CUT-IN 가능
 
-Giant Snowball
+Moon
 → SCALE SHIFT
 ```
 
 Planetary:
 
 ```text
-Earth Snowball
+Supernova
 → CUT-IN 가능
 
 Galaxy
@@ -678,8 +679,11 @@ Galaxy
 Galactic:
 
 ```text
-Galaxy Snowball
+Event Horizon
 → CUT-IN 가능
+
+First Black Hole
+→ BLACK HOLE PHASE
 
 Two Black Holes Contact
 → FINAL ORBIT / EXPLOSION / TITLE 연출
@@ -688,6 +692,8 @@ Two Black Holes Contact
 ---
 
 # 17. 아이템
+
+각 Stage에서 임의의 시점에 Item Ball이 한 번 등장한다. 현재 Stage의 3단계 이상 공이 유효 hit 5회를 주면 Item Ball이 깨지고 아이템별 Item Orb가 수직 아래로 떨어진다. Orb의 크기·충돌 반지름·초기 speed는 현재 Stage 3단계 공과 같으며, Paddle로 받으면 CUT-IN 뒤 효과가 한 번 적용된다. 열린 하단으로 놓치면 효과 없이 소멸한다.
 
 ## Blizzard
 

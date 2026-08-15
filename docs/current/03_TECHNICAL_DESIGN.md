@@ -551,14 +551,18 @@ scale shift: up to about 0.8~1.0s
 
 ### 획득
 
+- Stage 진입마다 Item Ball 등장 가능 횟수를 1회로 초기화하고, 정해진 tuning 범위 안에서 임의의 등장 시점을 하나 선택한다. 등장·파괴·실패 뒤 같은 Stage에서 재스폰하지 않는다.
 - Item Ball과 logical Snowball의 원 충돌 후보를 중앙 simulation 위치 snapshot으로 검사
 - `local_level = current_stage.local_ball_levels.find(ball.global_level)`로 계산하며 `-1`은 Stage data/runtime 오류로 처리
 - `local_level >= 2`인 접촉만 유효 damage; 더 높은 단계도 같은 규칙으로 damage 가능
 - 한 contact pair는 분리되기 전까지 damage 한 번만 commit
 - 유효 hit마다 damage count를 올리고 Presentation에 균열 단계 이벤트 전달
-- `required_break_hits` 도달 시 broken/acquired lock과 pending activation을 한 번만 확정
+- `required_break_hits = 5`에 도달하면 broken lock을 한 번만 확정하고 Item Ball을 제거한 뒤 해당 `item_type`의 Item Orb를 하나 생성
+- 파괴와 획득을 별도 상태로 관리하며, Item Ball 파괴 시에는 pending activation을 만들지 않음
+- Item Orb의 visual/collision radius와 초기 speed는 현재 Stage `local_level = 2` 공의 runtime 기준값을 사용하고, 초기 velocity는 수직 아래 방향으로 설정
+- Paddle과 Item Orb의 접촉을 한 번 commit하면 collected lock과 pending activation을 확정하고 CUT-IN을 요청
+- Item Orb가 열린 하단을 통과하면 missed 상태로 제거하며 activation을 만들지 않음
 - CUT-IN activation cue에서 ItemManager가 효과를 시작하며, cue가 실패하거나 skip되면 안전한 fallback으로 한 번 적용
-- Item Ball 제거 또는 풀 반환은 논리 획득 확정 뒤 수행
 - 획득·재획득·만료·Retry 때 read-only active item snapshot을 HUD에 전달
 
 ### Blizzard
@@ -646,7 +650,7 @@ ItemDefinition
 - spawn_weight
 - duration
 - magnitude
-- required_break_hits
+- required_break_hits (current contract: 5)
 ```
 
 초기에는 `.tres` 또는 GDScript Resource를 사용한다.  
@@ -683,7 +687,9 @@ signal black_hole_phase_presentation_finished(phase_id: int)
 signal black_hole_finale_locked(result_snapshot: Dictionary)
 signal item_planet_damaged(item_type: int, current_hits: int, required_hits: int, world_position: Vector2)
 signal item_planet_broken(item_type: int, world_position: Vector2)
-signal item_collected(item_type: int)
+signal item_orb_spawned(item_type: int, world_position: Vector2)
+signal item_collected(item_type: int, world_position: Vector2)
+signal item_orb_missed(item_type: int, world_position: Vector2)
 signal active_items_changed(items: Array)
 signal resume_requested()
 signal settings_requested()

@@ -251,9 +251,10 @@ MultiMesh follow-up은 simulation 구조를 바꾸지 않고 render snapshot con
 
 ## 완료 조건
 
-- 아이템은 현재 Stage의 3단계 이상 Snowball(`local_level >= 2`)이 Item Ball을 여러 번 깨뜨려 획득
-- hit 누적 균열/파편 뒤 최종 파괴 시 CUT-IN과 1회 activation
-- 놓치면 사라짐
+- Stage마다 임의의 시점에 Item Ball 1회 등장
+- 현재 Stage의 3단계 이상 Snowball(`local_level >= 2`)이 Item Ball에 유효 hit 5회를 주면 파괴
+- 파괴 시 해당 종류의 Item Orb 생성; Orb 크기·반지름·초기 speed는 현재 Stage 3단계 공과 동일
+- Item Orb를 Paddle로 받으면 CUT-IN 뒤 1회 activation, 열린 하단으로 놓치면 효과 없이 소멸
 - 지속 시간이 HUD에 표시
 - 같은 아이템 재획득 시 갱신
 - Fire 공의 합체·점수 배수 정상

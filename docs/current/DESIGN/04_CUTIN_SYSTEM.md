@@ -111,7 +111,7 @@ VALUE 500Qi
 아이템/특수 상태:
 
 1. 효과 이름
-2. 적용된 공/효과 이미지
+2. 실제 획득한 Item Orb와 대응 효과 이미지
 3. 핵심 효과 한 줄
 
 예:
@@ -138,13 +138,15 @@ MERGE ATTRACTION
 
 CUT-IN 후보:
 
-- 해당 Stage에서 처음 만든 중요한 고등급 공
+- 각 Stage에서 처음 만든 4단계 공(`local_level = 3`)
+- 5단계 최고 공은 별도 일반 CUT-IN 대신 실제 결과 공을 사용하는 Stage Clear / Scale Shift 또는 Black Hole Phase 연출로 강조
 - 매우 높은 Tier 머지
 - 기록 갱신급 공
-- 특별한 아이템/속성이 처음 강하게 적용된 순간
+- Paddle이 Item Orb를 획득해 아이템 효과 적용이 확정된 순간
 - 게임적으로 큰 상태 변화
 
 일반 머지는 즉시 파티클로 끝낸다.
+Item Ball 파괴는 Item Orb 생성 이벤트이며 CUT-IN 시작 조건이 아니다.
 
 ---
 
