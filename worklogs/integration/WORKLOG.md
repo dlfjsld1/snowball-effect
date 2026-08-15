@@ -490,3 +490,25 @@ Locked files: 없음
 
 - Q-S5 Web Gate를 충족해 S5-G5를 `VERIFIED`로 갱신했다.
 - 경고의 원인 개선과 audio 첫 입력 정책은 S6/S9 범위에서 다시 점검한다.
+
+## 2026-08-15 — S6-G4 audio handoff
+
+Owner: Integration
+Locked files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s6_g4_audio_wiring_verification.*`
+
+### 변경
+
+- `SettlementService`의 `final_settlement_started(amount)`와 `final_settlement_finished(amount)`를 `StageManager` public signal로 한 번씩 forwarding했다.
+- Main에 Content-owned `AudioManager`를 mount하고 Simulation, StageManager, PauseMenu를 read-only source로 연결했다.
+- `GameManager`는 전달된 Settlement 신호를 `settlement_start`와 `settlement_finish` event로만 매핑한다. 점수·상태·settlement timing은 변경하지 않는다.
+
+### 검증
+
+- 전용 integration scene에서 start/finish forwarding 각 1회, Main AudioManager mount와 source binding, `settlement_start` 전달을 확인했다.
+- 기존 AudioManager foundation 및 S3-G5/S5-G3 integration regression scene이 통과했다.
+- Primary `godot` Main runtime은 bridge ready, screenshot 생성, captured runtime error 0으로 확인했다.
+
+### 제외
+
+- Black Hole terminal `run_end` forwarding은 S8-G4 Integration 범위다.
+- 실제 브라우저 audio playback과 late-density 가독성은 S6-G4 Content verification에 남긴다.

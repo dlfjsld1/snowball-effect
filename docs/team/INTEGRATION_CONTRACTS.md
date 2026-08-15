@@ -13,7 +13,7 @@
 | Core simulation | `simulation_metrics_updated(metrics)` — read-only `active_balls/slot_capacity/free_slots/candidate_count/grid_cell_count/grid_bucket_capacity/grid_new_buckets/merges` | Presentation, Content/Systems | 성능 HUD와 release stress 측정; simulation state 수정 금지 |
 | Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration, Content AudioManager | Clear 표시·상태 잠금·audio event 선택 |
-| Core Settlement | `final_settlement_started(amount)`, `final_settlement_finished(amount)` | Presentation, Integration, Content AudioManager | 정산 연출·완료 중재·audio event 선택 |
+| Core Settlement → Integration StageManager | `final_settlement_started(amount: float)`, `final_settlement_finished(amount: float)` | Integration GameManager, Content AudioManager | SettlementService의 내부 신호를 StageManager가 한 번 전달한다. GameManager는 각각 `settlement_start`/`settlement_finish` audio event로만 매핑하며 점수·상태는 변경하지 않는다. |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation | data 적용과 Stage World 변경 |
 | Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager | 시작, Pause modal 행동과 화면 전환 요청 |
 | Content ItemManager | `item_planet_damaged(item_type, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |
