@@ -14,11 +14,13 @@
 - 데이터 기준으로 `local_level >= 2`; 그보다 높은 local level도 모두 유효
 - 유효 Snowball 충돌마다 damage 1회와 균열/픽셀 파편 단계 갱신
 - 동일 contact가 여러 physics frame에 걸쳐도 분리 전에는 중복 damage 없음
-- `required_break_hits` 도달 시 파괴·획득 lock을 한 번만 확정
-- 파괴 CUT-IN의 activation cue에서 아이템 효과 시작
-- CUT-IN 실패/skip 시에도 확정된 아이템은 안전하게 한 번 적용
+- 유효 hit 5회에 Item Ball 파괴 lock을 한 번만 확정
+- 파괴 시 아이템 종류별로 구분되는 Item Orb를 하나 생성하며 즉시 획득·발동하지 않음
+- Item Orb의 visual/collision radius와 초기 speed는 현재 Stage의 3단계 공(`local_level = 2`)과 같고 초기 velocity는 수직 아래 방향
+- Paddle이 Item Orb를 받으면 획득 lock과 CUT-IN을 요청하고 activation cue 뒤 효과 시작
+- Item Orb를 놓쳐 열린 하단으로 떨어뜨리면 효과 없이 소멸
+- CUT-IN 실패/skip 시에도 Paddle로 획득을 확정한 아이템은 안전하게 한 번 적용
 - 1~2단계 공과 Paddle은 즉시 획득 또는 파괴하지 않음
-- 놓치면 제거
 - 지속 효과는 HUD 표시
 - 같은 효과 재획득 시 지속시간 갱신
 - 다른 효과 동시 유지 가능
@@ -95,16 +97,9 @@ duration: 7s
 
 ## 아이템 행성 스폰
 
-초기:
+Item Ball은 Stage마다 임의의 시점에 한 번만 등장한다. 정확한 등장 시간 범위는 플레이테스트 tuning 값으로 두며, 한 번 등장한 뒤 파괴하거나 Item Orb 획득에 실패해도 같은 Stage에서 다시 생성하지 않는다.
 
-```text
-첫 아이템: 게임 시작 15~25초
-이후: 12~20초 랜덤
-```
-
-Stage가 오르면 약간 자주 나올 수 있다.
-
-행성의 정확한 `required_break_hits`, 낮은 단계 공과의 물리 반응, 등장 궤적은 아직 확정하지 않는다. 파괴 가능 여부는 고정 global level이 아니라 현재 Stage 기준 `local_level >= 2`로 계산한다.
+파괴에는 유효 hit 5회가 필요하다. 파괴 가능 여부는 고정 global level이 아니라 현재 Stage 기준 `local_level >= 2`로 계산한다. 낮은 단계 공과 Item Ball의 정확한 반사·통과 반응 및 Item Ball 자체의 등장 궤적은 구현 전 별도 tuning으로 남긴다.
 
 ---
 
@@ -118,7 +113,7 @@ Stage가 오르면 약간 자주 나올 수 있다.
 
 ## 아이템 CUT-IN
 
-강한 아이템/특수 속성의 첫 적용에는 짧은 CUT-IN을 사용할 수 있다.
+Paddle이 Item Orb를 획득하면 아이템 종류를 보여주는 짧은 CUT-IN을 재생하고 activation cue 뒤 효과를 적용한다. Item Ball이 깨진 순간에는 CUT-IN이나 효과를 시작하지 않는다.
 
 예:
 
@@ -128,5 +123,4 @@ FIRE SNOWBALL
 CASHOUT ×10
 ```
 
-모든 아이템 획득마다 강제로 띄우지 않는다.
 일반 공 고등급 CUT-IN과 동일한 cooldown/priority 시스템을 사용한다.

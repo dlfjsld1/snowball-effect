@@ -12,9 +12,9 @@
 
 - Owner: Integration
 - Owned Files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `scripts/core/item_effect_gateway.gd`
-- Integration Point: Content item effect를 Core의 제한된 cashout modifier/simulation command API에 연결.
-- Dependencies: S5 완료; Core와 Content가 modifier/effect contract 제시.
-- Verification: item 전체 off에서 Core 회귀 결과 동일; Core 문서와 Settlement에 item 이름이 없음.
+- Integration Point: Content의 `item_collected(item_type, world_position)` 이후 CUT-IN activation cue를 Core의 제한된 cashout modifier/simulation command API에 연결. `item_planet_broken`은 effect activation을 요청하지 않는다.
+- Dependencies: S5 완료; Content가 Stage당 Item Ball 1회→Lv3+ 공 5-hit 파괴→Item Orb 낙하→Paddle 획득/하단 소멸 계약을 제공하고 Core가 modifier/effect contract를 제시.
+- Verification: Item Ball 파괴만으로 효과가 적용되지 않고 Paddle의 Item Orb 획득 뒤 CUT-IN을 거쳐 한 번 적용; Orb miss 시 미적용; item 전체 off에서 Core 회귀 결과 동일; Core 문서와 Settlement에 item 이름이 없음.
 - Do Not Modify: Core 계산 내부와 개별 item 구현.
 
 ### S7-G2 Blizzard

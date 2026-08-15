@@ -184,7 +184,10 @@ BallSimulationManager가 플레이 필드 Rect를 받아 직접 처리해도 된
 
 책임:
 
-- 아이템 스폰 타이머
+- Stage당 Item Ball 1회의 랜덤 등장 예약
+- local Lv3 이상 Snowball hit와 5-hit 파괴 lock
+- 파괴 뒤 item별 Item Orb 생성
+- Item Orb의 Paddle 획득·하단 miss 판정
 - 활성 효과
 - 지속시간
 - 아이템 획득 신호

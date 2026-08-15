@@ -525,18 +525,21 @@ Two Black Holes Contact
 
 ## 16. 아이템
 
-아이템은 아이템을 품은 행성형 `Item Ball`로 Play Field에 등장하며, 현재 Stage의 **3단계 이상 Snowball**이 충돌할 때마다 점차 깨진다.
+아이템은 아이템을 품은 행성형 `Item Ball`로 Play Field에 등장한다. Item Ball은 각 Stage에서 임의의 시점에 한 번만 등장하며, 현재 Stage의 **3단계 이상 Snowball**이 충돌할 때마다 점차 깨진다. 정확한 등장 시간 범위는 플레이테스트 tuning 값이다.
 
 - 사람 기준 3단계 이상은 데이터의 0-based 표기로 `local_level >= 2`다.
 - Stage의 local 5종 중 3단계, 4단계, 5단계 공은 모두 유효 damage를 줄 수 있다.
 - 유효 충돌 한 번당 파괴 hit를 한 번만 반영하고, 같은 접촉의 frame 중복 damage를 막는다.
 - hit가 누적될수록 균열·픽셀 파편 등 단계적인 damage 표현을 보여준다.
-- 필요한 hit 수는 `ItemDefinition`의 플레이테스트 tuning 값이다.
-- 마지막 hit에서 Item Ball 파괴와 아이템 획득을 한 번만 확정하고 CUT-IN을 요청한다.
-- CUT-IN의 activation cue에 맞춰 효과를 시작하되, 연출 실패가 아이템 유실이나 중복 적용을 만들지 않게 한다.
+- Item Ball은 유효 hit 5회에 파괴된다.
+- 마지막 hit에서는 Item Ball 파괴를 한 번만 확정하고, 품고 있던 아이템 종류에 대응하는 `Item Orb`를 하나 생성한다. 이 시점에는 아직 아이템을 획득하거나 발동하지 않는다.
+- Item Orb는 아이템별로 외형과 식별 정보를 구분한다.
+- Item Orb의 visual radius, collision radius와 초기 speed는 현재 Stage의 3단계 Snowball(`local_level = 2`)과 같으며, 초기 velocity는 수직 아래 방향이다.
+- Paddle이 Item Orb를 받으면 획득을 한 번 확정하고 CUT-IN을 요청한다. CUT-IN의 activation cue 뒤 해당 효과를 한 번 적용한다.
+- Item Orb가 Paddle에 닿지 않고 열린 하단으로 빠지면 효과 없이 소멸한다. 해당 Stage에는 Item Ball이 다시 등장하지 않는다.
+- CUT-IN이 실패하거나 skip되어도 이미 획득된 아이템은 안전한 fallback으로 한 번만 적용한다.
 - 1~2단계 공과 Paddle은 Item Ball을 즉시 획득하거나 파괴하지 않는다.
 - Item Ball은 일반 Snowball Merge 대상이 아니다.
-- Item Ball을 놓치면 효과 없이 제거한다.
 - 아이템 효과는 Optional Item Layer에 남으며 Core Merge/Settlement 계약을 바꾸지 않는다.
 
 ### Blizzard
@@ -562,6 +565,12 @@ Fire 공:
 
 일반 머지 파티클보다 중요한 이벤트에만 사용한다.
 
+각 Stage의 local 5종 중 마지막 두 단계가 고등급 공 강조 대상이다.
+
+- 4단계 공(`local_level = 3`)을 해당 Stage에서 처음 만들면 일반 고등급 CUT-IN을 사용한다.
+- 5단계 최고 공(`local_level = 4`)은 Stage Clear / Scale Shift 또는 Galactic Black Hole Phase 전환 연출이 같은 역할을 대신한다. 별도의 일반 CUT-IN을 중복 재생하지 않는다.
+- CUT-IN과 최고 공 전환 연출에 표시되는 공은 실제 Merge 결과로 생성된 gameplay 공의 형태와 일치해야 한다.
+
 - 현재 게임 이벤트 먼저 확정
 - 현재 장면 전체 freeze
 - Play Field와 Stage World 전체 dim
@@ -576,8 +585,7 @@ Fire 공:
 0.45 ~ 0.70초
 ```
 
-Stage 최고 공은 곧 Stage Clear / Scale Shift로 이어지므로
-일반 CUT-IN과 중복하지 않는다.
+Stage 최고 공은 곧 Stage Clear / Scale Shift 또는 Black Hole Phase로 이어지므로 일반 CUT-IN과 중복하지 않는다.
 
 ---
 

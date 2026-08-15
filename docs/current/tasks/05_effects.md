@@ -41,6 +41,8 @@
 - CUT-IN 후보
 - 특별 사운드
 
+Stage local 5종 중 4단계 공(`local_level = 3`)의 첫 생성은 일반 고등급 CUT-IN 대상이다. 최고 공(`local_level = 4`)은 실제 결과 공의 모습을 Stage Clear / Scale Shift 또는 Black Hole Phase 연출 안에서 강조하고 일반 CUT-IN을 중복 재생하지 않는다.
+
 ### Tier 4
 - SCALE SHIFT
 - 일반 CUT-IN과 별도
@@ -69,6 +71,8 @@
 - 픽셀 기계 패널 진입/체류/퇴장
 - 공 이름 / 공 이미지 / VALUE
 - 별도 화면 전환 금지
+- 공 CUT-IN의 이미지는 실제 Merge 결과 gameplay 공의 형태와 일치
+- 아이템 CUT-IN은 Item Ball 파괴가 아니라 Paddle의 Item Orb 획득 뒤 시작
 
 초기 타이밍:
 
