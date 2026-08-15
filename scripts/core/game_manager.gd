@@ -7,6 +7,7 @@ const StageManagerScript = preload("res://scripts/core/stage_manager.gd")
 const HudScript = preload("res://scripts/ui/hud.gd")
 const PauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
 const GameplayFrameScript = preload("res://scripts/presentation/gameplay_frame.gd")
+const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd")
 
 @export var simulation_path: NodePath
 @export var paddle_path: NodePath
@@ -17,6 +18,7 @@ const GameplayFrameScript = preload("res://scripts/presentation/gameplay_frame.g
 @export var play_field_backdrop_path: NodePath
 @export var background_manager_path: NodePath
 @export var presentation_manager_path: NodePath
+@export var audio_manager_path: NodePath
 @export var spawn_rate := 6.0
 @export var lv1_ball_radius := 4.0
 @export var lv1_spawn_speed_world_units_per_second := 160.0
@@ -33,6 +35,7 @@ var _gameplay_frame: GameplayFrameScript
 var _play_field_backdrop: Polygon2D
 var _background_manager: BackgroundManager
 var _presentation_manager: PresentationManager
+var _audio_manager: AudioManagerScript
 var _spawn_accumulator := 0.0
 var _random := RandomNumberGenerator.new()
 var _initialized := false
@@ -49,6 +52,7 @@ func _ready() -> void:
 	_play_field_backdrop = get_node(play_field_backdrop_path) as Polygon2D
 	_background_manager = get_node(background_manager_path) as BackgroundManager
 	_presentation_manager = get_node(presentation_manager_path) as PresentationManager
+	_audio_manager = get_node(audio_manager_path) as AudioManagerScript
 	call_deferred("_initialize_runtime")
 
 
@@ -57,8 +61,11 @@ func _initialize_runtime() -> void:
 	_simulation.set_paddle_collision_provider(_paddle)
 	_stage_manager.stage_changed.connect(_on_stage_changed)
 	_stage_manager.stage_shift_started.connect(_presentation_manager.play_stage_shift)
+	_stage_manager.final_settlement_started.connect(_on_final_settlement_started)
+	_stage_manager.final_settlement_finished.connect(_on_final_settlement_finished)
 	_presentation_manager.stage_shift_presentation_finished.connect(_on_stage_shift_presentation_finished)
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
+	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu)
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation, _stage_manager)
 	_pause_menu.pause_requested.connect(_on_pause_requested)
 	_pause_menu.retry_requested.connect(_on_retry_requested)
@@ -123,6 +130,14 @@ func _on_stage_changed(definition: StageDefinition) -> void:
 
 func _on_stage_shift_presentation_finished(shift_id: int) -> void:
 	_stage_manager.accept_stage_shift_presentation_finished(shift_id)
+
+
+func _on_final_settlement_started(_amount: float) -> void:
+	_audio_manager.play_event(&"settlement_start")
+
+
+func _on_final_settlement_finished(_amount: float) -> void:
+	_audio_manager.play_event(&"settlement_finish")
 
 
 func _apply_stage_frame(stage_index: int) -> void:

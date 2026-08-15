@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
 [ext_resource type="PackedScene" path="res://scenes/backgrounds/gameplay_frame.tscn" id="8_frame"]
 [ext_resource type="PackedScene" path="res://scenes/backgrounds/stage_world.tscn" id="9_stage_world"]
+[ext_resource type="Script" path="res://scripts/presentation/audio_manager.gd" id="10_audio_manager"]
 
 [node name="Main" type="Node2D"]
 
@@ -24,10 +25,15 @@ gameplay_frame_path = NodePath("../UI/GameplayFrame")
 play_field_backdrop_path = NodePath("../PlayField/Backdrop")
 background_manager_path = NodePath("../StageWorld/BackgroundManager")
 presentation_manager_path = NodePath("../UI/GameplayFrame/PresentationManager")
+audio_manager_path = NodePath("../AudioManager")
 
 [node name="StageManager" type="Node" parent="."]
 script = ExtResource("2_stage_manager")
 simulation_path = NodePath("../PlayField/SimulationMount/BallSimulationManager")
+
+[node name="AudioManager" type="Node" parent="."]
+process_mode = 3
+script = ExtResource("10_audio_manager")
 
 [node name="StageWorld" type="Node2D" parent="."]
 

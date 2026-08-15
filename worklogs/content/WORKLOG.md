@@ -630,3 +630,21 @@ Status: `IN PROGRESS` — Content 소유 구현 완료, Integration/Web 검증 �
 
 - `STATUS.md`의 S6-G4 활성 lane과 Goal Owner를 개인명 또는 축약 lane이 아닌 `Content/Systems/Release 담당`으로 명시했다.
 - 역할 담당자가 명확히 보이도록 한 문서 표기 보정이며, AudioManager 구현·재생 정책·Integration 범위는 변경하지 않았다.
+
+## 2026-08-16 S6-G4 구현 정리
+
+Owner: Content/Systems/Release 담당
+Status: `IMPLEMENTED`
+
+### 완료 및 검증
+
+- AudioManager mount와 공식 정산 경로 `SettlementService → StageManager → GameManager → AudioManager`를 적용했다.
+- Priority/polyphony/cooldown 정책, 정산 start/finish 순차 재생, 공유 Pause toggle, Retry reset을 자동 검증했다.
+- 실제 Chrome Web Main에서 Canvas 렌더링, console error 0, 첫 입력 뒤 Pause 음 재생을 확인했다.
+- 별도 Web 스트레스 Scene에서 500·1,000볼 렌더링과 console error 0을 확인했다.
+
+### 보류
+
+- `ui_start`, `ui_menu`, `ui_click`, `run_end`은 발생 신호가 제공된 뒤 catalog key 그대로 매핑한다.
+- Main Web에서 고밀도 HUD와 음향을 동시에 보는 가독성 확인은 사용자 결정으로 보류한다.
+- 보류 항목 때문에 S6-G4는 `VERIFIED`가 아닌 `IMPLEMENTED`로 기록한다.

@@ -27,6 +27,8 @@ func _ready() -> void:
 
 	menu.set_paused(true)
 	_expect(menu.pause_button.text == "RESUME", "Paused view must identify the resume action.")
+	menu.pause_button.pressed.emit()
+	_expect(_pause_requests == 2, "Resume-labeled button must emit the shared pause toggle request.")
 	menu.set_paused(false)
 	_expect(menu.pause_button.text == "PAUSE", "Playing view must identify the pause action.")
 	_expect(not get_tree().paused, "Request UI must not pause the SceneTree directly.")

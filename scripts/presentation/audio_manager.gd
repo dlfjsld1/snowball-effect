@@ -4,8 +4,8 @@ extends Node
 ## Content-owned audio consumer for the S6 catalog.
 ##
 ## This node reads existing gameplay/UI signals only. It never changes score,
-## timer, stage state, or simulation state. Integration owns mounting it in Main
-## and passing the event sources through configure_sources().
+## timer, stage state, or simulation state. Main passes event sources through
+## configure_sources() after mounting this node.
 
 const AudioCatalogResource = preload("res://resources/audio/audio_catalog.tres")
 const BallCatalog = preload("res://scripts/data/ball_catalog.gd")
@@ -61,6 +61,7 @@ var _gameplay_suppressed := false
 var _dropped_event_count := 0
 var _preempted_event_count := 0
 var _pause_toggle_is_paused := false
+var _pending_settlement_finish := false
 
 
 func _ready() -> void:
@@ -104,6 +105,9 @@ func play_event(event_key: StringName) -> bool:
 		return false
 	if bool(policy.get("terminal", false)):
 		_prepare_terminal_playback(int(policy["priority"]))
+	if event_key == &"settlement_finish" and _is_group_playing(&"settlement"):
+		_pending_settlement_finish = true
+		return true
 	if _count_playing_in_group(group) >= int(policy["polyphony"]):
 		_drop_event()
 		return false
@@ -146,6 +150,7 @@ func reset_runtime() -> void:
 	_dropped_event_count = 0
 	_preempted_event_count = 0
 	_pause_toggle_is_paused = false
+	_pending_settlement_finish = false
 	for player in _players:
 		player.stop()
 
@@ -167,6 +172,7 @@ func get_debug_snapshot() -> Dictionary:
 		"dropped_event_count": _dropped_event_count,
 		"preempted_event_count": _preempted_event_count,
 		"pause_toggle_is_paused": _pause_toggle_is_paused,
+		"pending_settlement_finish": _pending_settlement_finish,
 	}
 
 
@@ -351,6 +357,11 @@ func _play_stage_clear_once() -> void:
 
 
 func _on_player_finished(player: AudioStreamPlayer) -> void:
+	if _pending_settlement_finish and StringName(player.get_meta(&"audio_event_key", &"")) == &"settlement_start":
+		player.stop()
+		_pending_settlement_finish = false
+		play_event(&"settlement_finish")
+		return
 	if not bool(player.get_meta(&"audio_event_loop", false)):
 		return
 	if player != _black_hole_loop_player or not audio_unlocked:
@@ -360,3 +371,7 @@ func _on_player_finished(player: AudioStreamPlayer) -> void:
 
 func _is_user_activation(event: InputEvent) -> bool:
 	return event is InputEventKey or event is InputEventMouseButton or event is InputEventScreenTouch
+
+
+func _is_group_playing(group: StringName) -> bool:
+	return _count_playing_in_group(group) > 0

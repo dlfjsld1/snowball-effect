@@ -10,6 +10,8 @@ const Ledger = preload("res://scripts/core/score_ledger.gd")
 signal stage_changed(definition: StageDefinition)
 signal stage_state_changed(state: StringName)
 signal stage_shift_started(next_definition: StageDefinition, shift_id: int)
+signal final_settlement_started(amount: float)
+signal final_settlement_finished(amount: float)
 
 const READY: StringName = &"READY"
 const PLAYING: StringName = &"PLAYING"
@@ -48,6 +50,8 @@ func _ready() -> void:
 	_simulation.cashout_completed.connect(_on_cashout_completed)
 	_simulation.top_ball_created.connect(_on_top_ball_created)
 	_stage_runtime.end_decision_requested.connect(_on_end_decision_requested)
+	_settlement_service.final_settlement_started.connect(_on_final_settlement_started)
+	_settlement_service.final_settlement_finished.connect(_on_final_settlement_finished)
 
 
 func _physics_process(delta: float) -> void:
@@ -143,6 +147,14 @@ func _on_cashout_completed(score_amount: float, global_level: int, _world_positi
 func _on_top_ball_created(global_level: int) -> void:
 	if current_state == PLAYING and _stage_runtime.is_current_stage_top_ball(global_level):
 		_top_ball_created = true
+
+
+func _on_final_settlement_started(amount: float) -> void:
+	final_settlement_started.emit(amount)
+
+
+func _on_final_settlement_finished(amount: float) -> void:
+	final_settlement_finished.emit(amount)
 
 
 func _on_end_decision_requested(reason: StringName) -> void:
