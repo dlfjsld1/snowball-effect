@@ -333,3 +333,248 @@ Status: asset preparation only — S6-G3/S6-G4 status unchanged
 
 - `merge_t1.ogg`의 원본 Pixabay URL, contributor, download date는 확보 시 추가 기록한다.
 - runtime audio catalog, 이벤트 연결, 재생 검증은 여전히 후속 S6 작업 범위다.
+
+## 2026-08-15 — S6-G1 이벤트 등급·FX budget
+
+Owner: Content/Systems
+Branch: `main` working tree
+Status: `IMPLEMENTED`
+
+### 작업
+
+- `BallDefinition.fx_tier`를 단일 source로 사용하는 Merge/Cashout 공통 FX budget 경로를 구현했다.
+- tier별 active 상한 `12/8/4/2/1`, 한 frame spawn 상한 `4/4/3/2/1`, 전체 gameplay FX 상한 `24`를 적용했다.
+- 낮은 tier 포화 중 높은 tier를 보존하고, Stage Clear·Settlement·Scale Shift·Black Hole Phase·Fail/Run End·Finale가 일반 FX를 억제할 수 있는 Transition/Terminal 예약 API를 추가했다.
+- Cashout 전용 chunky pixel effect를 추가했다. CUT-IN, Scale Shift, Black Hole presentation 자체는 후속 Goal 범위로 남겼다.
+
+### 확인
+
+- Primary Godot validation: S6-G1 script/scene 5종과 S2-G5/S4-G4 회귀 scene을 포함해 7/7 valid.
+- Godot 4.7.1 HUD runtime: 같은 frame Tier 0 20건 중 4건 active/16건 throttle, Tier 3 Merge 1건과 Cashout 1건 보존.
+- 같은 runtime에서 Stage Clear 예약 후 active gameplay FX `0`, phase `TRANSITION`; resume 뒤 Tier 3 재허용; Black Hole Finale 뒤 `TERMINAL` 유지.
+- HUD 전용 runtime에서 Merge/Cashout tier 차이와 popup을 screenshot으로 확인했고 runtime error는 0건이었다.
+- S6-G1 자동 verification scene은 process exit 0이었다. Scene이 bridge 초기화 전에 끝나 stdout은 회수하지 못했으며, 같은 assertion을 live runtime API로 재검증했다.
+
+### 남은 확인 / 주의
+
+- Main runtime은 기존 Stage World 이미지의 `.godot/imported/*.ctex` cache 누락으로 별도 오류가 발생했다. 원본 PNG는 존재하며 S6-G1 변경과 무관하므로 이 Goal에서 수정하지 않았다.
+- Q-S6의 실제 Main/Web burst에서 패들·공 가독성, 후반 FX 성능은 S6-G2~G4 통합 뒤 확인한다. 이 때문에 현재 상태는 `IMPLEMENTED`이며 `VERIFIED`가 아니다.
+- S6-G2는 `priority_event_reserved(event_key, priority)`를 CUT-IN/화면 연출 입력으로 사용할 수 있고, S6-G3/G4는 확정 tier/priority를 audio catalog와 polyphony 정책에 사용한다.
+
+## 2026-08-15 — S6-G1 최종 검증
+
+Owner: Content/Systems
+Status: `VERIFIED`
+
+### 추가 변경
+
+- 실제 Main 화면 확인에서 어두웠던 Tier 3/4 FX 색을 흰색 방향으로 보정해 Play Field 대비를 높였다.
+- 포화 시 공 실루엣을 가리던 Tier 0 Merge value label은 생략하고, Cashout 점수 정보는 유지했다.
+
+### 최종 확인
+
+- Godot 4.7.1 CLI S6-G1 자동 scene exit 0: `S6_G1_VERIFIED low_burst_throttled=true high_tier_preserved=true cashout_budgeted=true priority_reservations=true`.
+- S2-G3 Merge commit과 S4-G4 MultiMesh 회귀 scene은 각각 exit 0. 관련 script/scene validation 7/7 valid.
+- `.godot` import cache를 표준 headless import로 갱신한 뒤 Main headless 120 frames exit 0.
+- 실제 Main Galactic 화면에서 active balls `395`, active gameplay FX `6`, 누적 throttle `647` 상태의 공·패들·Tier 3 Event Horizon·Cashout popup 동시 가독성을 확인했다. runtime error 0.
+- 같은 background MCP 순간 FPS는 `21`이었다. 도구 호출과 장시간 debug 진행이 포함된 단일 관측이므로 release/Web 성능 근거로 사용하지 않는다.
+
+### 알려진 별도 회귀
+
+- 기존 S2-G5 Presentation verification은 현재 StageDefinition을 Simulation에 적용하지 않아 최초 Merge가 성립하지 않는 stale assertion 4건을 출력한다. S6-G1의 read-only Merge/Cashout 경로와 Core S2-G3 Merge commit은 별도 자동 검증에서 통과했으며, 다른 Owner test는 이 Goal에서 수정하지 않았다.
+- S6 전체 Web burst smoke와 release FPS는 S6-G2~G4 통합 뒤 Slice Gate에서 측정한다.
+
+## 2026-08-15 — S6-G1 구현 검토
+
+Owner: Content/Systems
+Status: `VERIFIED` 유지
+
+### 검토·수정
+
+- Black Hole Finale `100` 이후 Run End `95`처럼 낮거나 같은 Terminal 예약이 authoritative event를 덮던 우선순위 역전을 차단했다. Terminal 상태에서는 더 높은 예약만 승격할 수 있다.
+- Stage source의 `current_state` 내부 필드 직접 접근을 제거하고 공개 `get_runtime_snapshot()`으로 초기 상태를 읽게 했다.
+- 전체 active 24개를 Tier 0/1/2로 채운 뒤 Tier 3가 가장 오래된 하위 FX를 교체하는 경로를 자동 검증에 추가했다.
+- `reset_runtime_fx()`가 EffectManager의 비-FX 자식까지 제거하지 않도록 S6 gameplay FX metadata가 있는 노드만 정리하고, Terminal lock·내부 sequence를 Retry 기준으로 초기화했다.
+
+### 재검증
+
+- Godot 4.7.1 CLI S6-G1 자동 scene exit 0: burst throttle, high-tier 보존, 전체 상한 eviction, Cashout budget, Terminal dominance, reset 안전성 통과.
+- S2-G3 Merge commit, S4-G4 MultiMesh 회귀 scene exit 0.
+- Main headless 120 frames exit 0. Windows root certificate store 경고 외 parse/runtime 오류는 없었다.
+- 최초 CLI 시도는 기존 Godot 프로세스와 기본 `user://logs` 파일 경합 중 엔진 signal 11로 실패했다. 고유 `--log-file`로 재실행해 프로젝트와 무관한 tooling/log 경합으로 구분했고, 이후 모든 검증은 정상 종료했다.
+
+## 2026-08-15 — S6-G1 2차 구현 검토
+
+Owner: Content/Systems
+Status: `VERIFIED` 유지
+
+### 검토·수정
+
+- 효과 수명이 끝나 `queue_free()`를 요청했지만 아직 frame-end 삭제 전인 노드를 active budget에서 제외했다. 삭제 대기 중인 Tier 4가 단일 slot을 점유해 다음 Tier 4 표현을 한 frame 불필요하게 막는 경계 조건을 제거했다.
+- 자동 검증에 삭제 대기 FX의 즉시 slot 반환과 같은 Tier replacement 허용을 추가했다.
+- `INTEGRATION_CONTRACTS.md`의 `S6 audio ownership` 제목을 실제 범위에 맞게 `S6 FX·audio ownership`으로 수정했다.
+- STATUS의 `validation 7/7`을 resource parse·validation으로 명확히 표현해, 별도로 알려진 S2-G5 runtime stale assertion을 통과했다는 뜻으로 오해되지 않게 했다.
+
+### Godot 충돌 기록 정정
+
+- 최초 실패에서 확정된 사실은 기본 `user://logs` 파일 open 실패 직후 Godot engine이 signal 11로 종료됐다는 것이다. 당시 별도 Godot 프로세스가 함께 존재했지만 그것이 파일 open 실패의 직접 원인인지는 확정하지 않았다.
+- 고유 `--log-file`을 지정한 모든 후속 실행이 정상 종료했으므로 프로젝트 코드 실패가 아닌 Godot tooling/logging 문제로 분류한다.
+
+### 재검증
+
+- Godot 4.7.1 CLI S6-G1 자동 scene exit 0: `queued_release=true`를 포함한 모든 budget·priority·reset assertion 통과.
+- S2-G3 Merge commit과 S4-G4 MultiMesh 회귀 scene exit 0.
+- Main headless 120 frames exit 0. Windows root certificate store 경고 외 parse/runtime 오류는 없었다.
+
+## 2026-08-15 — S6-G1 3차 구현 검토
+
+Owner: Content/Systems
+Status: `VERIFIED` 유지
+
+### 검토·수정
+
+- Main의 실제 Retry 경로는 `StageManager`가 `FAILED` 뒤 `PLAYING`을 emit하지만 별도 `reset_runtime_fx()` 호출은 없었다. Terminal 상태에서 일반 resume을 거부하던 기존 동작 때문에 Retry 뒤 Merge/Cashout FX가 계속 억제되는 연결 누락을 확인했다.
+- 연결된 Stage source의 권위 있는 `PLAYING` 재진입은 내부 `reset_runtime_fx()`로 처리해 Terminal lock을 해제하고 gameplay FX를 다시 허용했다. 외부의 일반 `resume_gameplay_fx()`는 계속 Terminal을 해제하지 못한다.
+- Terminal 상태에서는 현재 목록뿐 아니라 향후 event 추가에도 안전하도록 비-Terminal 이벤트의 승격을 명시적으로 거부한다.
+- 자동 검증에 Black Hole Finale 뒤 Scale Shift 거부, Stage `PLAYING` 재진입 reset, 이후 Tier 3 Merge 재허용을 추가했다.
+
+### 재검증
+
+- Godot 4.7.1 CLI S6-G1 자동 scene exit 0: `terminal_dominance=true`, `retry_reentry=true` 포함 전체 assertion 통과.
+- S2-G3 Merge commit, S4-G4 MultiMesh 회귀 scene과 Main headless 120 frames 모두 exit 0.
+- Primary MCP 실제 Main에서 EffectManager→StageManager binding `true`, Black Hole Finale 뒤 `TERMINAL`, Stage `PLAYING` emit 뒤 phase `PLAYING`·reserved priority `-1`, Tier 3 Merge FX `1`을 확인했다.
+- 첫 MCP 검사용 임시 스크립트는 로컬 변수 type inference parse 오류가 있었고 타입을 명시한 재실행은 성공했다. 오류 경로가 `gdscript://...`와 `mcp_bridge.gd`였으므로 프로젝트 GDScript 오류와 구분했으며, 검증 뒤 Primary MCP 프로세스를 정상 종료했다.
+
+## 2026-08-15 — S6-G1 반복 감사 1차
+
+Owner: Content/Systems
+Status: 검증 전 수정
+
+### 발견·수정
+
+- Cashout은 `ball_center.y - radius > field_bottom` 뒤 emit되므로 큰 공의 원본 위치가 viewport 아래일 수 있었다. gameplay event 위치와 판정은 바꾸지 않고 Cashout effect의 시각 Y anchor만 viewport 하단에서 64px 안쪽으로 제한했다.
+- `get_active_effect_count_for_tier()`가 잘못된 Tier를 0/4로 clamp해 진단 값을 왜곡하던 동작을 제거하고 범위 밖 조회는 `0`을 반환하게 했다.
+- 새 Cashout effect의 export lifetime을 `0.05~5.0s`로 제한하고 runtime 나눗셈에도 최소값을 적용했다.
+- `03_TECHNICAL_DESIGN.md`의 오래된 4인자 Cashout 권장 신호를 실제 producer 계약인 `cashout_completed(score_amount, global_level, world_position)`으로 정정했다.
+
+## 2026-08-15 — S6-G1 반복 감사 2차
+
+Owner: Content/Systems
+Status: 검증 전 수정
+
+### 발견·수정
+
+- Terminal 뒤 Stage `PLAYING` 재진입이 화면 lock과 effect만 초기화하고 이전 Run의 accepted/dropped/evicted/priority 누적 카운터를 남기고 있었다.
+- Terminal→`PLAYING`은 Retry/새 Run이므로 `reset_runtime_fx(true)`를 사용해 Run 단위 진단 snapshot도 초기화했다. 일반 Stage Shift의 Transition→`PLAYING`은 기존처럼 카운터를 유지한다.
+- 자동 검증에 Retry 직후 Merge/dropped/priority counter `0`, 첫 새 Run Merge counter `1`을 추가했다.
+
+## 2026-08-15 — S6-G1 반복 감사 3차
+
+Owner: Content/Systems
+Status: 문서 정합성 수정
+
+### 발견·수정
+
+- `STATUS.md` 요약이 `S6-G1~G4` 전체를 Content/Systems 소유라고 표현하면서 같은 문장에서 G2를 Presentation 소유라고 적어 내부 모순이 있었다.
+- 실제 Goal 표와 팀 계약에 맞춰 S6-G1·G3·G4는 Content/Systems, S6-G2는 Presentation으로 명확히 분리했다.
+
+## 2026-08-15 — S6-G1 반복 감사 4차
+
+Owner: Content/Systems
+Status: 계약 명확화·검증 보강
+
+### 발견·수정
+
+- 숫자 우선도만 보면 `Stage Clear(80) → Final Settlement(70) → Scale Shift(85)`에서 Settlement가 거부돼야 하는 것으로 오해할 수 있었다. Transition 숫자는 동시 표현 충돌/일반 FX 억제용이며 권위 있는 Stage 상태 순서를 재정렬하지 않고, 단조 승격은 Terminal에만 적용한다고 계약을 명확히 했다.
+- 자동 검증에 위 3단계 예약 순서, Scale Shift 뒤 gameplay resume, 같은 Run의 진단 counter 유지, Run End `95`에서 Black Hole Finale `100`으로의 Terminal 승격을 추가했다.
+
+## 2026-08-15 — S6-G1 반복 감사 5차
+
+Owner: Content/Systems
+Status: 실제 화면 수정
+
+### 발견·수정
+
+- Primary MCP 실제 Main에 viewport 아래 Cashout을 주입한 결과 Y `836` popup이 화면 안에는 있었지만 하단 cabinet frame과 겹쳐 대비가 낮았다.
+- visual anchor를 viewport 하단 `96px` 안쪽(Y `804`)으로 올려 어두운 Play Field 안에 유지하고, Cashout label에 2px dark outline을 추가했다.
+
+## 2026-08-15 — S6-G1 반복 감사 6차
+
+Owner: Content/Systems
+Status: 디자인 문서 정합성 수정
+
+### 발견·수정
+
+- `docs/design/03_BALLS_FX_AND_MOTION.md`가 S6-G1에 별도 `FxBudgetProfile`, 위치 aggregation, reusable pool을 필수 산출물처럼 적어 최신 사용자 승인 구현과 충돌했다.
+- 현재 단일 source of truth는 `EffectManager`의 bounded constants와 Integration Contract이며, profile 추출·aggregation·pooling은 복수 tuning/reduced-effects 요구가 생길 때의 후속 최적화로 명확히 분리했다.
+- 같은 구표현이 남아 있던 Goal Roadmap, Technical Review Handoff, Pixel Design Guidelines도 동일한 계약으로 정리했다.
+
+## 2026-08-15 — S6-G1 반복 감사 최종 무발견 회차
+
+Owner: Content/Systems
+Status: `VERIFIED` 유지
+
+### 최종 검증
+
+- Primary Godot validation: EffectManager, Cashout script/scene, Merge scene, S6 test script/scene, HUD, Main `8/8 valid`.
+- Godot 4.7.1 CLI: S6-G1, S2-G3, S4-G4, S3-G5, S5-G3, S5-G5와 Main headless 120 frames 모두 exit 0. Windows root certificate store 경고 외 project parse/runtime 오류 없음.
+- 최종 S6 sentinel: `invalid_tier_query=true`, `cashout_visible_anchor=true`, `transition_sequence=true`, `terminal_dominance=true`, `retry_reentry=true`, `retry_counter_reset=true`.
+- Primary MCP 실제 Main: viewport 아래 Cashout source `(800, 1200)`가 `(800, 804)`에 표시되고 `EVENT HORIZON CASHOUT +123K` label과 dark outline이 하단 cabinet 위 Play Field에서 읽힘. runtime error 0, 프로세스 정상 종료.
+- 최종 코드·Scene·신호·Goal/Owner/Integration Contract·상위 디자인 문서 재대조에서 새 오류나 어색한 부분 0건.
+
+### 의도적으로 남은 후속 범위
+
+- 기존 S2-G5 stale verification repair는 Presentation-owned 별도 작업이다.
+- Q-S6 Web burst와 release frame-time은 S6-G2~G4 통합 뒤 Slice Gate에서 측정한다.
+- `FxBudgetProfile`, 위치 aggregation, reusable Node pool은 복수 tuning/reduced-effects 요구가 생길 때 별도 Goal로 승인한다.
+
+## 2026-08-15 — S6-G1 반복 감사 7차
+
+Owner: Content/Systems
+Status: 검증 전 수정
+
+### 발견·수정
+
+- 이전 Retry 수정은 Terminal 뒤 Retry만 초기화했다. Pause 메뉴에서 진행 중 Retry를 선택하면 StageManager가 같은 index의 Stage를 다시 시작하지만 EffectManager phase는 `PLAYING`이어서 기존 FX와 counter가 남는 경로를 확인했다.
+- Stage source의 `stage_changed`를 read-only 구독하고 새 Stage index가 이전과 같거나 낮으면 Retry/Restart로 판정해 FX·counter를 초기화한다. index가 증가하는 일반 Shift는 유지하며, `stage_changed` 없이 같은 Galactic을 재개하는 Black Hole Phase도 오판하지 않는다.
+- 자동 검증에 active Ground Pause Retry cleanup과 normal Shift counter 보존을 추가했다.
+
+### 검증
+
+- Godot 4.7.1 CLI S6-G1 자동 scene exit 0: `active_retry_reset=true`를 포함한 전체 assertion 통과.
+- Primary MCP 실제 Main에서 Tier 3 Merge FX를 생성한 뒤 `GameManager._on_retry_requested()`를 호출했다. Retry 전 active FX/merge count `1/1`, Retry 후 `0/0`, dropped/priority count `0/0`, Stage `0/PLAYING`, retry count `1`을 확인했다.
+- Primary MCP debug output에 runtime error가 없었고 spawned process를 정상 종료했다.
+
+## 2026-08-15 — S6-G1 반복 감사 8차
+
+Owner: Content/Systems
+Status: `VERIFIED` 유지
+
+### 최종 검증
+
+- 코드의 tier 예산, 상태 이벤트 우선도, Terminal 단조 승격, Transition 작성 순서, 신호 연결·해제, Retry/Restart 판정을 계약 문서와 다시 대조했다.
+- Primary Godot validation: EffectManager, Cashout script/scene, Merge scene, S6 test script/scene, HUD, Main `8/8 valid`.
+- Godot 4.7.1 CLI: S6-G1 sentinel의 `active_retry_reset=true`를 포함한 전체 assertion, S2-G3, S4-G4, S3-G5, S5-G3, S5-G5 회귀, Main Scene 120 frames가 모두 exit 0이었다.
+- 실제 Main Pause Retry MCP 검증은 Retry 전 active FX/merge count `1/1`, Retry 후 `0/0`, Stage `0/PLAYING`, runtime error 0이었다.
+- `git diff --check`에서 whitespace 오류가 없고 실행 중인 Godot 프로세스도 남지 않았다. Windows root certificate store 경고는 모든 CLI 실행에서 동일한 환경 경고이며 project parse/runtime 오류와 분리했다.
+
+### 남은 범위
+
+- S6-G1 범위 안의 알려진 오류는 없다.
+- 기존 S2-G5 stale verification repair와 Q-S6 Web burst/release 성능 측정은 앞서 기록한 별도 후속 범위를 유지한다.
+
+### 문서 표현 수정
+
+- Pause Retry 실런타임 검증이 추가됐는데도 `STATUS.md`가 예전 검증 횟수 표현인 `두 MCP`를 유지하고 있었다. 횟수에 종속되지 않는 `각 MCP runtime error 0`으로 바로잡았다.
+
+## 2026-08-15 — S6-G1 반복 감사 9차·최종 무발견 회차
+
+Owner: Content/Systems
+Status: `VERIFIED` 유지
+
+### 결과
+
+- 8차에서 수정한 MCP 검증 표현과 Retry/Restart 계약 문장을 코드·자동 검증·`STATUS.md`에 다시 대조했다.
+- S6-G1 자동 scene은 `active_retry_reset=true`를 포함한 전체 sentinel과 exit 0을 다시 확인했다.
+- 오래된 문구, 누락된 sentinel, trailing whitespace, 남은 Godot 프로세스를 검사했으며 추가 오류나 어색한 부분을 발견하지 못했다.
+- S6-G1 범위의 반복 감사를 이 무발견 회차로 종료한다.

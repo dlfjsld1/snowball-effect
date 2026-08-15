@@ -665,7 +665,7 @@ HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallC
 권장 신호:
 
 ```gdscript
-signal cashout_completed(score_amount: float, time_bonus: float, world_position: Vector2, ball_level: int)
+signal cashout_completed(score_amount: float, global_level: int, world_position: Vector2)
 signal ball_merged(result_level: int, world_position: Vector2)
 signal highest_level_changed(new_level: int)
 signal stage_timer_changed(time_left: float)

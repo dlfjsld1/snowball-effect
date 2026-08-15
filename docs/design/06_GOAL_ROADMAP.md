@@ -168,10 +168,10 @@ L1/L2 완료 뒤에는 다음 Stage를 활성화한다. L3는 첫 Lv14의 Black 
 ### S6-G1 Event Tiers and FX Budget
 
 - T0~T4 matrix 확정.
-- tier별 maximum concurrent count, popup aggregation threshold, duration을 Entry Gate에서 수치로 고정.
+- tier별 maximum concurrent count, render-frame spawn cap, duration을 Entry Gate에서 수치로 고정.
 - burst 시 일반 FX throttle, critical event 보존.
 - effect count와 frame-time evidence 기록.
-- `FxBudgetProfile`을 사용해 T0/T1 aggregation pool, T2 제한 pool, T3/T4 reserved slot을 분리하고 event당 무제한 Node/Tween 생성 경로를 금지.
+- 현재 단일 runtime consumer인 `EffectManager`에서 bounded active/spawn cap과 critical priority reservation을 적용하고 event당 동시 Node/Tween 수가 무제한 증가하는 경로를 금지. 복수 profile이 필요해질 때만 `FxBudgetProfile`을 추출.
 
 ### S6-G2 CUT-IN and Screen Presentation
 

@@ -10,8 +10,8 @@
 
 ### S6-G1 이벤트 등급과 FX budget
 
-- Owner: Presentation
-- Owned Files: `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/presentation/**`
+- Owner: Content/Systems
+- Owned Files: `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/content/s6_g1_**`
 - Integration Point: Core Merge/Cashout/Clear event를 구독하고 등급별 표현만 결정.
 - Dependencies: S5 완료와 event signature 안정화.
 - Verification: 일반/고레벨/Clear 효과 등급 분리; burst에서 일반 FX throttle, 중요 이벤트 보존.

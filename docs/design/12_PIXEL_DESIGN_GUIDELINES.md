@@ -79,7 +79,7 @@ Purpose: 서로 다른 크기와 Stage의 에셋이 같은 픽셀 문법과 deta
 - Merge ring은 매끄러운 vector circle보다 계단형 pixel ring을 우선한다.
 - Ball과 Paddle은 항상 일반 particle보다 선명하고 높은 대비를 유지한다.
 - blur와 glow는 silhouette을 대체하지 않고 짧은 보조 layer로만 사용한다.
-- 실제 cap, duration, aggregation은 `FxBudgetProfile`과 S6 검증에서 확정한다.
+- 실제 cap과 duration은 S6 Integration Contract와 검증에서 확정한다. aggregation/profile 분리는 해당 기능을 도입하는 후속 Goal에서 별도로 승인한다.
 
 ## 5. Background and Stage World
 

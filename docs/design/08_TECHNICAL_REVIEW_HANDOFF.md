@@ -109,7 +109,7 @@ Restart/Retry는 `reset_presentation(new_epoch)`를 호출한다. Presenter와 I
 - V5 Frozen Enamel, slim fixed-width bezel, Compression Bloom, Salvage Burst, Cabinet Score Lock, Black Hole Phase를 visual handoff 기준으로 사용한다.
 - 필수 gameplay visual은 missing texture/font/key 때 code-native 또는 approved proxy fallback을 표시한다.
 - missing key warning은 key당 한 번만 기록한다.
-- `FxBudgetProfile`은 T0/T1 aggregation pool, T2 limited pool, T3/T4 reserved slot을 분리한다.
+- 현재 S6-G1은 `EffectManager`의 bounded active/spawn cap과 critical priority reservation으로 tier를 분리한다. `FxBudgetProfile`, aggregation, reusable pool은 복수 tuning/reduced-effects 요구가 생길 때의 후속 최적화다.
 - event당 무제한 Node/Tween/popup 생성 경로를 허용하지 않는다.
 
 ## 4. Verification Contract

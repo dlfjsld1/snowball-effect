@@ -39,7 +39,7 @@ Core는 실제 게임 규칙을 소유하지만 Integration-owned coordinator를
 - 게임플레이 신호를 화면 표현으로 변환
 
 Presentation은 점수, 타이머, Merge, Stage 판정을 직접 수행하지 않는다.
-S6에서는 시각 FX event tier를 확정하지만, 음원 asset/catalog·AudioManager·재생 우선순위·Web audio 활성화는 Content/Systems가 담당한다.
+S6-G2의 CUT-IN과 화면 연출은 Presentation이 담당한다. S6-G1의 시각 FX event tier와 budget, 음원 asset/catalog·AudioManager·재생 우선순위·Web audio 활성화는 Content/Systems가 담당한다.
 
 ## 3. Content / Systems / Release
 
@@ -48,6 +48,7 @@ S6에서는 시각 FX event tier를 확정하지만, 음원 asset/catalog·Audio
 - BallDefinition, StageDefinition, ItemDefinition과 튜닝 seed
 - Title, Pause, Result 화면의 자체 UI
 - S6 audio asset/catalog, AudioManager, 재생 우선순위·polyphony, Web 첫 입력 audio 활성화
+- S6-G1 시각 FX event tier와 budget
 - Web Export, 브라우저 QA, 성능 기록, 공개 빌드 검증
 - Core 안정화 뒤 Optional Item 구현
 

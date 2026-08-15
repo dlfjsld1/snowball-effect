@@ -73,7 +73,7 @@ Lv7 `Red Giant`와 Lv9 `Nebula`를 포함한 15종 전체 연결은 개발용 ca
 
 ## 4. Event Tier Matrix
 
-정확한 particle 수, maximum concurrent count, aggregation threshold, duration은 S6-G1 Entry Gate에서 확정한다. 이 값이 없으면 S6-G1 구현을 시작하지 않는다.
+정확한 maximum concurrent count, render-frame spawn cap과 기본 duration은 S6-G1 Entry Gate에서 확정한다. 위치 aggregation을 실제로 도입할 경우에만 별도 threshold를 승인한다.
 
 | Tier | Event 예시 | 목적 | 보존 정책 |
 |---:|---|---|---|
@@ -216,12 +216,13 @@ T2의 핵심 burst, T3/T4 state transition, Paddle/Ball outline, 필수 HUD는 �
 
 ### Runtime budget architecture
 
-- S6-G1은 data-driven `FxBudgetProfile`에 tier별 pool cap, duration, aggregation threshold, reserved critical slot 수를 기록한다.
-- T0/T1은 같은 tick·인접 위치 event를 합치고 pool이 가득 차면 drop/throttle할 수 있다.
-- T2는 별도 제한 pool을 사용한다.
-- T3/T4는 저등급 event가 소비할 수 없는 reserved slot을 사용하며 drop하지 않는다.
-- runtime은 event마다 새 Node/Tween/popup을 무제한 생성하지 않는다.
-- 정확한 cap은 S4 Core-only baseline 뒤 동일 환경의 Presentation-on 측정으로 확정한다.
+- 현재 승인된 S6-G1 runtime source of truth는 단일 소비자인 `EffectManager`의 tier별 priority, active cap, render-frame spawn cap, 전체 active cap 상수다. 정확한 값과 상태 이벤트 우선도는 `docs/team/INTEGRATION_CONTRACTS.md`를 따른다.
+- 별도 data-driven `FxBudgetProfile`, 위치 기반 aggregation, reusable Node pool은 reduced-effects profile이나 복수 tuning profile이 실제로 필요해질 때 분리하는 후속 최적화다. 현재 Goal의 완료 조건으로 소급하지 않는다.
+- T0/T1은 pool/budget이 가득 차면 drop/throttle할 수 있다. 같은 tick·인접 위치 aggregation은 후속 후보로 유지한다.
+- T2는 T0/T1보다 엄격한 별도 active·spawn cap을 사용한다.
+- T3/T4 상태 전환은 gameplay FX보다 높은 별도 priority reservation을 사용하며 낮은 이벤트가 덮어쓰지 못한다. gameplay Merge/Cashout의 high tier는 낮은 active effect를 eviction할 수 있다.
+- runtime은 active Node/Tween/popup 수가 event 수에 따라 무제한 증가하지 않게 한다.
+- 현재 cap은 S6-G1 initial production 값으로 승인한다. 전체 S6 통합 뒤 Q-S6 Web burst에서 같은 환경의 Presentation-on 수치를 측정하고, 실제 가독성·frame-time 근거가 있을 때만 재조정한다.
 
 ## 10. Cut-in and Camera
 

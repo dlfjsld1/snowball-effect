@@ -25,12 +25,23 @@
 | Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용 |
 | Core simulation / Stage runtime | `black_hole_finale_started(contact_snapshot)` → `black_hole_finale_locked(result_snapshot)` | Integration, Presentation, Content/Systems | 두 Black Hole의 earliest contact를 simulation이 한 번 잠그고, Stage runtime이 `contact_position`, 두 Black Hole의 position/velocity/radius, `stage_index`, `stage_score`, `run_score`를 읽기 전용 final result snapshot으로 확정한다. Integration은 이 신호 뒤 gameplay commit을 재개하지 않는다. |
 
-## S6 audio ownership
+## S6 FX·audio ownership
 
-- Content/Systems는 S6-G3과 S6-G4를 함께 소유한다. `assets/audio/**`, `resources/audio/**`, `scripts/presentation/audio_manager.gd`가 대상이다.
+- Content/Systems는 S6-G1, S6-G3, S6-G4를 순서대로 소유한다. S6-G1의 대상은 `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/content/s6_g1_**`이며, S6-G3/G4의 대상은 `assets/audio/**`, `resources/audio/**`, `scripts/presentation/audio_manager.gd`다.
 - Content AudioManager는 기존 gameplay event를 read-only로 구독하고 S6-G3 catalog의 event key를 재생한다. 점수·타이머·Stage 상태를 변경하거나 새 gameplay signal을 만들지 않는다.
-- Presentation은 S6-G1에서 시각 FX의 event tier만 확정한다. tier-to-audio-key 매핑, priority/polyphony, Web 첫 입력 이후 audio 활성화는 Content가 구현한다.
+- Content/Systems는 S6-G1에서 시각 FX의 event tier와 budget을 확정한다. tier-to-audio-key 매핑, priority/polyphony, Web 첫 입력 이후 audio 활성화도 Content/Systems가 구현한다. Presentation은 S6-G2 CUT-IN과 화면 연출을 소유한다.
 - S6-G1이 완료되기 전에는 필수 audio key 목록을 확정하거나 S6-G3/G4를 `IN PROGRESS` 또는 완료로 변경하지 않는다.
+
+### S6-G1 FX priority contract
+
+- 일반 Merge/Cashout의 tier source of truth는 `BallDefinition.fx_tier`다. 두 이벤트는 같은 budget 경로를 사용하고 gameplay score/state를 변경하지 않는다.
+- Cashout gameplay event의 원본 `world_position`은 유지하되, 시각 effect anchor는 완전히 열린 하단 경계를 지난 고등급 공도 popup이 보이고 하단 cabinet과 겹치지 않도록 viewport 하단 96px 안쪽으로 제한한다.
+- gameplay priority는 tier 0~4 순서로 `10/25/40/55/65`, 동시 active 상한은 `12/8/4/2/1`, 한 render frame spawn 상한은 `4/4/3/2/1`이다. 전체 gameplay FX active 상한은 `24`다.
+- 상태 이벤트 우선도는 Final Settlement `70`, Stage Clear `80`, Scale Shift `85`, Black Hole Phase `90`, Stage Fail/Run End `95`, Black Hole Finale `100`이다.
+- Transition 숫자는 동시 표현 충돌과 gameplay FX 정리에 쓰며 상태 진행을 재정렬하지 않는다. 따라서 권위 있는 Stage source의 `Stage Clear(80) → Final Settlement(70) → Scale Shift(85)`는 숫자가 단조 증가하지 않아도 작성된 상태 순서대로 모두 전달한다. 단조 승격 규칙은 Terminal 잠금에 적용한다.
+- `EffectManager.priority_event_reserved(event_key, priority)`는 상위 Presentation에 표현 slot이 예약됐음을 알리는 read-only 신호다. S6-G1은 CUT-IN·Scale Shift·Black Hole finale 자체를 실행하지 않는다.
+- Transition 예약은 낮은 gameplay FX를 정리하고 새 Merge/Cashout FX를 억제한다. `resume_gameplay_fx()` 후에만 다시 허용한다. Terminal 예약은 일반 resume으로 해제되지 않고, 비-Terminal 이벤트나 낮거나 같은 Terminal 이벤트가 덮어쓰지 못한다. 더 높은 Terminal만 승격할 수 있다. 권위 있는 Stage source가 Terminal 뒤 `PLAYING`으로 재진입하면 `EffectManager`가 FX와 Run 단위 진단 카운터를 초기화한다. 또한 `stage_changed`의 Stage index가 이전과 같거나 낮아지는 Retry/Restart도 동일하게 초기화한다. 더 높은 index로 이동하는 일반 Stage Shift와 `stage_changed` 없이 같은 Galactic을 재개하는 Black Hole Phase는 카운터를 유지한다.
+- S6-G3/G4는 이 priority/tier를 audio key와 polyphony 정책의 입력으로 사용하되 시각 budget 수치를 오디오 재생 수로 그대로 복제하지 않는다.
 
 ## Integration Goal 조건
 
