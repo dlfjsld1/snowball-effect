@@ -578,3 +578,28 @@ Status: `VERIFIED` 유지
 - S6-G1 자동 scene은 `active_retry_reset=true`를 포함한 전체 sentinel과 exit 0을 다시 확인했다.
 - 오래된 문구, 누락된 sentinel, trailing whitespace, 남은 Godot 프로세스를 검사했으며 추가 오류나 어색한 부분을 발견하지 못했다.
 - S6-G1 범위의 반복 감사를 이 무발견 회차로 종료한다.
+
+## 2026-08-15 S6-G3 Audio 콘텐츠
+
+Owner: Content/Systems/Release
+Branch: `main` working tree
+Status: `VERIFIED`
+
+### 변경
+
+- `resources/audio/audio_catalog.tres`에 파일명과 동일한 22개 event key와 OGG AudioStream을 단일 catalog로 등록했다.
+- `AudioEventDefinition`은 event key, stream, loop intent만 소유하며, `AudioCatalog`는 read-only key lookup을 제공한다.
+- `black_hole_loop`만 loop intent를 가지며, 실제 AudioPlayer 재생 정책은 구현하지 않았다.
+- content verification scene은 키 누락/중복, null stream, key-to-filename 불일치, non-OGG source, loop 설정과 unknown-key rejection을 검증한다.
+
+### 검증
+
+- Godot 4.7.1 CLI headless S6-G3 verification exit 0: `S6_G3_VERIFIED audio_events=22 ogg_streams=22`.
+- S6-G1 FX budget regression exit 0.
+- Main headless 120 frames exit 0.
+- `git diff --check` 통과.
+
+### 다음 작업 / 범위 제외
+
+- S6-G4에서 AudioManager가 기존 gameplay signal을 read-only로 구독하고 catalog key를 재생한다.
+- priority/polyphony, volume, Web 첫 입력 audio unlock, 실제 Browser playback은 S6-G4/S6 Slice gate에서 검증한다.

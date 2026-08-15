@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Core | 없음 | 본인/팀 리드 | available |
 | Presentation | 없음 | 팀원 A | available |
-| Content/Systems | 없음 | 팀원 B | available |
+| Content/Systems | 없음 | 사용자 | available |
 | Integration | 없음 | 본인/팀 리드 | available |
 
 각 lane은 `IN PROGRESS`를 최대 하나만 가진다. 서로 다른 lane은 Dependencies와 Integration Point가 충족되면 병렬 진행할 수 있다.
@@ -55,7 +55,7 @@
 | S5-G5 3-Stage 통합 완주 | Integration | VERIFIED | 2026-08-14 Main 연속 경로에서 Ground Top Ball→Planetary, Planetary Supernova 4회 Cashout(`+4.00s`)→Time Up Score Clear→Galactic, Stage score reset/run score preserve, 2회 Shift, Retry→Ground를 CLI로 확인했다. Debug build 강제 검증은 `F6` Top Ball Clear, `F7` Time Up Score Clear다. Godot 4.7.1 CLI 회귀 6종과 Native OpenGL Main smoke exit 0, Web Debug/Release export 및 로컬 HTTP 주요 파일 200 통과. 사용자 Chrome 수동 Web 검증에서 Canvas focus 뒤 F6/F7 Clear와 Stage 전환을 실제 확인했고 Console에 red error는 없었다. 노란 `WebGL INVALID_OPERATION` 경고와 user gesture 전 `AudioContext` 경고는 기능을 막지 않았으며 S6/S9 Web 품질 점검 대상으로 기록한다. |
 | S6-G1 이벤트 등급·FX budget | Content/Systems | VERIFIED | 2026-08-15 `EffectManager`에 BallDefinition tier 기반 Merge/Cashout 공통 budget, tier별 active `12/8/4/2/1`, frame spawn `4/4/3/2/1`, 전체 active 24, 낮은 FX eviction과 Transition/Terminal 예약 API를 구현했다. Godot 4.7.1 CLI 자동 scene exit 0: Tier 0 20건 중 4건 표시·16건 throttle, 같은 burst Tier 3/Cashout 보존, 24개 포화 시 오래된 하위 tier 1건 교체, 삭제 대기 FX slot 반환, 잘못된 tier 조회 거부, Clear→Settlement→Shift 순서, Terminal dominance, Terminal 뒤 Retry와 진행 중 Pause Retry의 FX·Run 단위 counter reset을 확인했다. Primary validation 8/8. S2-G3/S4-G4/S3-G5/S5-G3/S5-G5 CLI 회귀와 Main headless 120 frames exit 0. 실제 Main Galactic 395 active balls에서 공·패들·Tier 3 FX 가독성과 budget을 확인했고, 별도 Ground runtime에서 viewport 아래 Cashout source가 Y `804`에 표시되어 하단 cabinet과 분리되는 것을 screenshot으로 확인했다. 각 MCP runtime error 0. background MCP 순간 21 FPS는 release 성능 수치가 아니며 Web burst 성능은 S6 Slice 후속 Gate다. 기존 S2-G5 scene은 StageDefinition 미적용으로 stale assertion 4건이 남아 별도 Presentation test repair가 필요하다. |
 | S6-G2 CUT-IN·화면 연출 | Presentation | PENDING | S6-G1/S5 상태 계약 필요 |
-| S6-G3 Audio 콘텐츠 | Content/Systems | PENDING | S6-G1 event tier 필요 |
+| S6-G3 Audio 콘텐츠 | Content/Systems | VERIFIED | 2026-08-15 `resources/audio/audio_catalog.tres`에 파일명과 동일한 22개 event key를 OGG AudioStream으로 1:1 등록했다. Godot 4.7.1 CLI headless verification exit 0: `S6_G3_VERIFIED audio_events=22 ogg_streams=22`; 키 중복·누락, key/filename 불일치, null stream, non-OGG source, loop 설정을 검증했다. S6-G1 FX budget regression exit 0 및 Main headless 120 frames exit 0. 실제 재생·priority/polyphony·첫 입력 audio unlock·Browser playback은 S6-G4 범위다. |
 | S6-G4 사운드 계층·가독성 | Content/Systems | PENDING | S6-G1/G3 필요 |
 | S7-G1 Item gateway 통합 | Integration | PENDING | S5 완료와 Core/Content API 필요; 선택 |
 | S7-G2 Blizzard | Content/Systems | PENDING | S7-G1 필요; 선택 |
@@ -86,5 +86,5 @@
 - S8-G1 Black Hole force가 `VERIFIED`다. Core는 Black Hole runtime entity/force/흡수/점수차감과 phase·run-end request API를 제공한다. L2→L3 logical rect 활성화와 실제 재개 wiring은 S8-G4 Integration에 남아 있다.
 - S8-G2 Black Hole terminal runtime이 `VERIFIED`다. Core가 earliest contact 이후 simulation commit을 잠그고 finale/result snapshot을 제공한다. Content/Systems는 S8-G3 Result UI를, Presentation은 S8-G5 Phase presentation을 시작할 수 있다. 두 API의 Main 연결·Retry reset은 S8-G4 Integration에 남아 있다.
 - S6-G1·G3·G4는 Content/Systems가 순서대로 소유하고, S6-G2 CUT-IN은 Presentation이 소유한다. S6-G1은 시각 FX event tier와 budget을 확정해 S6-G3 audio catalog의 선행 계약으로 제공한다.
-- S6-G1은 `VERIFIED`다. S6-G2는 확정된 `priority_event_reserved` 계약을 소비할 수 있고, Content/Systems는 S6-G3 audio catalog를 시작할 수 있다.
+- S6-G1과 S6-G3은 `VERIFIED`다. S6-G2는 확정된 `priority_event_reserved` 계약을 소비할 수 있고, Content/Systems는 S6-G3 audio catalog를 소비하는 S6-G4를 시작할 수 있다.
 - 알려진 별도 문제: 기존 Web preset의 `export_filter="all_resources"`가 `build/` 산출물까지 다시 패킹한다. S1-G1 범위 밖이므로 수정하지 않음.
