@@ -41,11 +41,13 @@ func _verify_profile(
 	pause_menu: PauseMenu
 ) -> void:
 	var definition: StageDefinition = STAGE_CATALOG.new().get_stage(profile_index)
+	paddle.position.x = expected_field.end.x + paddle.paddle_width
 	game_manager._on_stage_changed(definition)
 	_expect(frame.profile_index == profile_index, "Frame profile must follow the Stage index.")
 	_expect(frame.get_field_rect() == expected_field, "Frame field rect must match the approved profile.")
 	_expect(simulation.play_field_rect == expected_field, "Simulation bounds must match the visible frame opening.")
 	_expect(paddle.play_field_rect == expected_field, "Paddle clamp must match the visible frame opening.")
+	_expect(paddle.position.x <= expected_field.end.x - paddle.paddle_width * 0.5, "Paddle must remain fully inside the visible field after a Stage frame change.")
 	_expect(backdrop.polygon[0] == expected_field.position and backdrop.polygon[2] == frame.get_field_visual_rect().end, "Backdrop must include the open-bottom Cashout corridor.")
 	_expect(hud.stage_name_label.position.x == frame.get_left_wing_rect().position.x + 44.0, "Stage HUD must stay inside the left CRT wing.")
 	_expect(hud.stage_score_label.position.x == frame.get_right_wing_rect().position.x + 44.0, "Score HUD must stay inside the right CRT wing.")

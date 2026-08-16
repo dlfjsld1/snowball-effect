@@ -553,3 +553,40 @@ Locked files: `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `
 - S8-G3 Result/Title UI와 S8-G5 실제 phase/finale presentation은 각 Owner 범위다.
 - 임시 adapter를 포함한 이 골격은 최종 `IMPLEMENTED`/`VERIFIED` 증거가 아니다. 실제 producer 연결 및 전체 reset·Desktop/Web 완주가 남아 있다.
 - 사용자가 Presentation Frame 기준을 우선하도록 결정했다. 따라서 Core logical target도 현재 `GameplayFrame.FIELD_WIDTHS`의 L2/L3 `880/1040`과 일치시키고, 관련 current rules/S8 Goal 계약을 같은 값으로 정정했다.
+
+## 2026-08-17 — S8-G3 Terminal UI Main handoff
+
+Owner: Integration
+Locked files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s8_g4_*`
+
+### 구현
+
+- Main에 Content-owned `TitleScreen`과 `ResultPanel`을 mount했다.
+- Black Hole finale의 read-only result snapshot은 `ResultPanel.show_result()`로 전달하고, gameplay HUD/Pause control은 숨긴다.
+- Result/Pause의 `main_menu_requested`는 Core runtime을 `READY`로 정리한 뒤 Title을 표시한다. Title의 `start_requested`는 Ground fresh run으로 돌아간다. Pause `resume_requested`도 기존 pause toggle과 분리해 연결했다.
+
+### 검증
+
+- Primary validate에서 GameManager, Main, S8-G4 test, S8-G3 test가 모두 valid다.
+- Godot 4.7.1 headless S8-G4, S8-G3, S5-G5 verification scene이 exit 0으로 완료됐다.
+- Primary Main runtime에서 finale Result Panel의 `SNOWBALL EFFECT`/`CLEAR SCORE`/`MAIN MENU`, Main Menu→Title, Title Start→`PLAYING`을 확인했고 final runtime error는 0이다.
+
+### 제외
+
+- S8-G5의 실제 Black Hole Phase/Finale presentation producer는 아직 연결되지 않았다. 임시 phase adapter와 S8-G4 `IN PROGRESS` 상태를 유지한다.
+
+## 2026-08-17 — S8 UI handoff·Paddle field-boundary follow-up
+
+Owner: Integration
+Locked files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `scripts/gameplay/paddle.gd`, `tests/integration/s8_g4_*`, `tests/integration/s5_g4_*`
+
+### 변경
+
+- Main에 Title/Result UI를 연결하고 terminal result snapshot, Main Menu, Title Start 경로를 통합했다.
+- Stage frame 또는 Black Hole field 경계가 바뀔 때 Paddle 중심이 field 끝을 넘지 않도록, 회전한 Paddle의 실제 가로 점유 폭 기준 clamp와 motion-history reset을 적용했다.
+- 자동 Merge 뒤 갑작스러운 최고 공 Clear/Scale Shift는 현재 규칙을 유지한 채 향후 balancing observation으로 기록했다.
+
+### 검증
+
+- Primary runtime에서 Result→Title→fresh Ground run을 확인했다.
+- Galactic field 경계에서 회전 Paddle의 중심이 실제 right limit 안에 남고 linear velocity가 0으로 reset됨을 확인했다.

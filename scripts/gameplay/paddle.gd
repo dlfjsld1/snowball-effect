@@ -147,6 +147,13 @@ func reset_runtime() -> void:
 	_reset_motion_history()
 
 
+func clamp_to_play_field() -> void:
+	position.x = clampf(position.x, _left_limit(), _right_limit())
+	if _has_mouse_target:
+		_mouse_target_x = clampf(_mouse_target_x, _left_limit(), _right_limit())
+	_reset_motion_history()
+
+
 func resolve_continuous_ball_collision(
 	ball_start: Vector2,
 	ball_velocity: Vector2,

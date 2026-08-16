@@ -6,6 +6,8 @@ const PaddleScript = preload("res://scripts/gameplay/paddle.gd")
 const StageManagerScript = preload("res://scripts/core/stage_manager.gd")
 const HudScript = preload("res://scripts/ui/hud.gd")
 const PauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
+const TitleScreenScript = preload("res://scripts/ui/title_screen.gd")
+const ResultPanelScript = preload("res://scripts/ui/result_panel.gd")
 const GameplayFrameScript = preload("res://scripts/presentation/gameplay_frame.gd")
 const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd")
 
@@ -19,6 +21,8 @@ signal terminal_result_available(result_snapshot: Dictionary)
 @export var stage_manager_path: NodePath
 @export var hud_path: NodePath
 @export var pause_menu_path: NodePath
+@export var title_screen_path: NodePath
+@export var result_panel_path: NodePath
 @export var gameplay_frame_path: NodePath
 @export var play_field_backdrop_path: NodePath
 @export var background_manager_path: NodePath
@@ -37,6 +41,8 @@ var _paddle: PaddleScript
 var _stage_manager: StageManagerScript
 var _hud: HudScript
 var _pause_menu: PauseMenuScript
+var _title_screen: TitleScreenScript
+var _result_panel: ResultPanelScript
 var _gameplay_frame: GameplayFrameScript
 var _play_field_backdrop: Polygon2D
 var _background_manager: BackgroundManager
@@ -55,6 +61,8 @@ func _ready() -> void:
 	_stage_manager = get_node(stage_manager_path) as StageManagerScript
 	_hud = get_node(hud_path) as HudScript
 	_pause_menu = get_node(pause_menu_path) as PauseMenuScript
+	_title_screen = get_node(title_screen_path) as TitleScreenScript
+	_result_panel = get_node(result_panel_path) as ResultPanelScript
 	_gameplay_frame = get_node(gameplay_frame_path) as GameplayFrameScript
 	_play_field_backdrop = get_node(play_field_backdrop_path) as Polygon2D
 	_background_manager = get_node(background_manager_path) as BackgroundManager
@@ -80,6 +88,10 @@ func _initialize_runtime() -> void:
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation, _stage_manager)
 	_pause_menu.pause_requested.connect(_on_pause_requested)
 	_pause_menu.retry_requested.connect(_on_retry_requested)
+	_pause_menu.resume_requested.connect(_on_resume_requested)
+	_pause_menu.main_menu_requested.connect(_on_main_menu_requested)
+	_title_screen.start_requested.connect(_on_start_requested)
+	_result_panel.main_menu_requested.connect(_on_main_menu_requested)
 	_start_run()
 	_initialized = true
 
@@ -135,6 +147,10 @@ func _start_run() -> void:
 	_stage_manager.start_run()
 	_paddle.reset_runtime()
 	_paddle.set_physics_process(true)
+	_title_screen.hide_title()
+	_result_panel.hide_result()
+	_hud.visible = true
+	_pause_menu.visible = true
 	_hud.reset_view()
 	_pause_menu.set_paused(false)
 	_spawn_ball()
@@ -187,13 +203,16 @@ func _complete_temporary_black_hole_phase(phase_id: int) -> void:
 func _on_black_hole_phase_gameplay_resumed(_phase_id: int, logical_rect: Rect2) -> void:
 	_simulation.play_field_rect = logical_rect
 	_paddle.play_field_rect = logical_rect
-	_paddle.position.x = clampf(_paddle.position.x, logical_rect.position.x, logical_rect.end.x)
+	_paddle.clamp_to_play_field()
 	_paddle.set_physics_process(true)
 
 
 func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
 	_terminal_result_snapshot = result_snapshot.duplicate(true)
 	_paddle.set_physics_process(false)
+	_hud.visible = false
+	_pause_menu.visible = false
+	_result_panel.show_result(get_terminal_result_snapshot())
 	terminal_result_available.emit(get_terminal_result_snapshot())
 
 
@@ -204,7 +223,7 @@ func _apply_stage_frame(stage_index: int) -> void:
 	var visual_field_rect := _gameplay_frame.get_field_visual_rect()
 	_simulation.play_field_rect = field_rect
 	_paddle.play_field_rect = field_rect
-	_paddle.position.x = clampf(_paddle.position.x, field_rect.position.x, field_rect.end.x)
+	_paddle.clamp_to_play_field()
 	_play_field_backdrop.polygon = PackedVector2Array([
 		visual_field_rect.position,
 		Vector2(visual_field_rect.end.x, visual_field_rect.position.y),
@@ -235,8 +254,18 @@ func _on_pause_requested() -> void:
 	_pause_menu.set_paused(get_tree().paused)
 
 
+func _on_resume_requested() -> void:
+	if get_tree().paused:
+		get_tree().paused = false
+	_pause_menu.set_paused(false)
+
+
 func _on_retry_requested() -> void:
 	retry_count += 1
+	_start_run()
+
+
+func _on_start_requested() -> void:
 	_start_run()
 
 
@@ -246,4 +275,8 @@ func _on_main_menu_requested() -> void:
 	_stage_manager.end_run_to_main_menu()
 	_paddle.set_physics_process(false)
 	_hud.reset_view()
+	_hud.visible = false
+	_pause_menu.visible = false
 	_pause_menu.set_paused(false)
+	_result_panel.hide_result()
+	_title_screen.show_title()
