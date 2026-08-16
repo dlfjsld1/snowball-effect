@@ -21,6 +21,7 @@ func _ready() -> void:
 	var frame: GameplayFrame = main.get_node("UI/GameplayFrame")
 	var hud: Hud = main.get_node("UI/HUDMount/HUD")
 
+	_expect(not simulation.is_physics_processing(), "StageManager must be the only Main physics driver for BallSimulationManager.")
 	game_manager.set_physics_process(false)
 	stage_manager.set_physics_process(false)
 	presenter.shift_duration = 0.05

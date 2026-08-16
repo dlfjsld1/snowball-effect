@@ -590,3 +590,18 @@ Locked files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `scripts/
 
 - Primary runtime에서 Result→Title→fresh Ground run을 확인했다.
 - Galactic field 경계에서 회전 Paddle의 중심이 실제 right limit 안에 남고 linear velocity가 0으로 reset됨을 확인했다.
+
+## 2026-08-17 — Ground Moon Clear tick ownership regression
+
+Owner: Integration
+Locked files: `scripts/core/stage_manager.gd`, `tests/integration/s5_g5_*`
+
+### 수정
+
+- Main에서 BallSimulationManager의 자체 physics callback이 StageManager tick 뒤에도 실행되어, 두 번째 simulation step에서 발생한 Top Ball event가 다음 tick에 유실될 수 있음을 재현했다.
+- deferred lifecycle 시점에 callback을 다시 비활성화해 StageManager만 authoritative simulation tick을 실행하도록 고정했다.
+
+### 검증
+
+- Primary runtime에서 simulation 자체 physics는 `false`이며 Giant Snowball pair→Moon 뒤 `SHIFTING`, active ball `0`, 0.9초 shift 뒤 Planetary `PLAYING`을 확인했다.
+- S5-G5 integration verification에 single simulation tick owner assertion을 추가했다.
