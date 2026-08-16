@@ -2,6 +2,8 @@ class_name StageRuntime
 extends Node
 
 const Ledger = preload("res://scripts/core/score_ledger.gd")
+const BLACK_HOLE_ABSORPTION_SCORE_RATIO := 0.125
+const BLACK_HOLE_ABSORPTION_BASELINE_CAP_RATIO := 0.25
 
 signal stage_time_changed(time_left: float)
 signal score_changed(stage_score: float, run_score: float)
@@ -19,6 +21,8 @@ var _next_black_hole_phase_id := 1
 var _black_hole_run_end_locked := false
 var _black_hole_finale_locked := false
 var _black_hole_finale_snapshot: Dictionary = {}
+var _black_hole_phase_run_score_baseline := 0.0
+var _black_hole_phase_baseline_captured := false
 
 
 func enter_stage(definition: StageDefinition) -> void:
@@ -32,6 +36,8 @@ func enter_stage(definition: StageDefinition) -> void:
 	_black_hole_run_end_locked = false
 	_black_hole_finale_locked = false
 	_black_hole_finale_snapshot.clear()
+	_black_hole_phase_run_score_baseline = 0.0
+	_black_hole_phase_baseline_captured = false
 	stage_time_changed.emit(stage_time_left)
 	stage_entered.emit(definition)
 
@@ -95,6 +101,9 @@ func is_current_stage_top_ball(global_level: int) -> bool:
 
 func begin_black_hole_phase(from_rect: Rect2, to_rect: Rect2) -> int:
 	assert(current_stage != null and current_stage.black_hole_enabled, "Black Hole Phase requires the Galactic Black Hole Stage.")
+	if not _black_hole_phase_baseline_captured:
+		_black_hole_phase_run_score_baseline = maxf(score_ledger.run_score, 0.0)
+		_black_hole_phase_baseline_captured = true
 	var phase_id := _next_black_hole_phase_id
 	_next_black_hole_phase_id += 1
 	black_hole_phase_started.emit(phase_id, from_rect, to_rect)
@@ -103,13 +112,25 @@ func begin_black_hole_phase(from_rect: Rect2, to_rect: Rect2) -> int:
 
 func apply_black_hole_absorption(score_amount: float) -> bool:
 	assert(score_amount >= 0.0, "Black Hole absorption penalty must not be negative.")
-	score_ledger.stage_score = maxf(score_ledger.stage_score - score_amount, 0.0)
-	score_ledger.run_score = maxf(score_ledger.run_score - score_amount, 0.0)
+	var penalty := calculate_black_hole_absorption_penalty(score_amount)
+	score_ledger.stage_score = maxf(score_ledger.stage_score - penalty, 0.0)
+	score_ledger.run_score = maxf(score_ledger.run_score - penalty, 0.0)
 	score_ledger.score_changed.emit(score_ledger.stage_score, score_ledger.run_score)
 	if score_ledger.run_score <= 0.0 and not _black_hole_run_end_locked:
 		_black_hole_run_end_locked = true
 		black_hole_run_end_requested.emit()
 	return _black_hole_run_end_locked
+
+
+func calculate_black_hole_absorption_penalty(cashout_score: float) -> float:
+	assert(cashout_score >= 0.0, "Black Hole absorption Cashout score must not be negative.")
+	var scaled_penalty := cashout_score * BLACK_HOLE_ABSORPTION_SCORE_RATIO
+	var phase_cap := _black_hole_phase_run_score_baseline * BLACK_HOLE_ABSORPTION_BASELINE_CAP_RATIO
+	return minf(scaled_penalty, phase_cap)
+
+
+func get_black_hole_phase_run_score_baseline() -> float:
+	return _black_hole_phase_run_score_baseline
 
 
 func lock_black_hole_finale(contact_snapshot: Dictionary) -> Dictionary:

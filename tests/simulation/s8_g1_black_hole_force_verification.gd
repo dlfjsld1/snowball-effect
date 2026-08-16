@@ -27,11 +27,14 @@ func _ready() -> void:
 	_verify_pull_and_bottom_reflection()
 	_verify_thousand_ball_force_regression()
 	if _failures == 0:
-		print("S8_G1_VERIFIED phase=once absorption=score_deducted pull_cap=600 mutual=450 bottom_reflect=true stress=1000")
+		print("S8_G1_VERIFIED phase=once absorption=score_deducted pull_cap=%s mutual=450 bottom_reflect=true stress=1000" % SimulationManager.BLACK_HOLE_TOTAL_PULL_CAP)
 	get_tree().quit(_failures)
 
 
 func _verify_first_conversion_and_absorption() -> void:
+	var absorbed_definition = simulation._ball_catalog.get_definition(10)
+	var starting_score: float = absorbed_definition.score_value * 8.0
+	stage_runtime.score_ledger.apply_score_event(starting_score)
 	var radius := simulation.get_runtime_radius_for_level(13)
 	simulation.spawn_ball(Vector2(700.0, 300.0), Vector2.ZERO, radius, 13)
 	simulation.spawn_ball(Vector2(710.0, 300.0), Vector2.ZERO, radius, 13)
@@ -40,16 +43,25 @@ func _verify_first_conversion_and_absorption() -> void:
 	_expect(simulation.get_active_count() == 0, "Converted Black Hole must not remain in the normal Ball slot set.")
 	_expect(_phase_count == 1, "First Black Hole must request exactly one Galactic phase transition.")
 	_expect(_runtime_phase_count == 1, "StageRuntime must publish the Black Hole phase signal once.")
+	_expect(is_equal_approx(stage_runtime.get_black_hole_phase_run_score_baseline(), starting_score), "First Black Hole appearance must capture the Run Score penalty baseline once.")
 
-	var absorbed_definition = simulation._ball_catalog.get_definition(10)
-	stage_runtime.score_ledger.apply_score_event(absorbed_definition.score_value)
 	var absorb_index := simulation.spawn_ball(simulation.get_black_hole_position(), Vector2.ZERO, simulation.get_runtime_radius_for_level(10), 10)
 	simulation.step_simulation(TEST_DELTA)
 	_expect(not simulation.is_ball_active(absorb_index), "Local Lv0 Ball in actual Black Hole contact must be absorbed.")
 	_expect(_absorption_count == 1, "Absorption must emit exactly one penalty event.")
-	_expect(is_equal_approx(stage_runtime.score_ledger.stage_score, 0.0), "Absorption must clamp Stage score at zero.")
-	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, 0.0), "Absorption must clamp Run score at zero.")
-	_expect(_run_end_count == 1, "Run score depletion must request immediate Black Hole Run End once.")
+	var expected_low_penalty: float = absorbed_definition.score_value * StageRuntime.BLACK_HOLE_ABSORPTION_SCORE_RATIO
+	_expect(is_equal_approx(stage_runtime.score_ledger.stage_score, starting_score - expected_low_penalty), "Local Lv0 absorption must deduct 12.5% of its Cashout value.")
+	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, starting_score - expected_low_penalty), "A single low Ball absorption must not erase the whole Run Score.")
+	_expect(_run_end_count == 0, "The first low Ball absorption must not immediately end a funded Run.")
+
+	var cap: float = starting_score * StageRuntime.BLACK_HOLE_ABSORPTION_BASELINE_CAP_RATIO
+	var high_cashout_score := 1.0e50
+	_expect(is_equal_approx(stage_runtime.calculate_black_hole_absorption_penalty(high_cashout_score), cap), "A high-value absorbed Ball must cap at 25% of the phase-entry Run Score.")
+	for _hit in range(4):
+		stage_runtime.apply_black_hole_absorption(high_cashout_score)
+	_expect(is_equal_approx(stage_runtime.score_ledger.stage_score, 0.0), "Repeated capped absorption must clamp Stage score at zero.")
+	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, 0.0), "Repeated capped absorption must still be able to deplete Run Score.")
+	_expect(_run_end_count == 1, "Run score depletion must request Black Hole Run End exactly once.")
 
 
 func _verify_pull_and_bottom_reflection() -> void:
@@ -59,7 +71,7 @@ func _verify_pull_and_bottom_reflection() -> void:
 	_expect(simulation.commit_merge_candidates() == 1, "Second Event Horizon pair must create the second Black Hole.")
 	_expect(simulation.get_black_hole_count() == 2, "Two Black Holes must coexist without generic Merge.")
 	var combined_pull := simulation.get_black_hole_pull(Vector2(800.0, 300.0))
-	_expect(combined_pull.length() <= SimulationManager.BLACK_HOLE_TOTAL_PULL_CAP + 0.01, "Multi-source ordinary Ball pull must use the single 600 cap.")
+	_expect(combined_pull.length() <= SimulationManager.BLACK_HOLE_TOTAL_PULL_CAP + 0.01, "Multi-source ordinary Ball pull must use the configured single cap.")
 	var first_before := simulation.get_black_hole_position(0)
 	var second_before := simulation.get_black_hole_position(1)
 	simulation.step_simulation(0.25)
