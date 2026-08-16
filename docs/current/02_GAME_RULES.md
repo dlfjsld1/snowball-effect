@@ -449,6 +449,8 @@ Galactic에서 첫 Lv14 `Black Hole` Ball을 만들면 일반 Top Ball Clear를 
 2. `Black Hole Phase Transition`으로 Frame과 실제 Play Field를 L2 `880`에서 L3 `1040`으로 함께 확장한다.
 3. 전환 중에만 spawn·timer·input을 잠그고, 완료 후 같은 Galactic gameplay를 재개한다.
 
+Frame의 바닥 장식과 Paddle/공의 실제 충돌 영역을 분리한다. 모든 Frame profile의 logical Play Field는 시각적 개구부보다 하단 `32 logical units` 위에서 끝나며, 남은 strip은 Cashout/프레임 안전 여백이다. Paddle은 회전한 전체 외곽이 이 logical 경계를 넘지 않도록 X·Y 모두 clamp한다.
+
 전환된 Black Hole은 별도 Stage나 새 BallDefinition이 아니다. Lv14 Ball에서 유래했지만 일반 Snowball Merge/Cashout 대상에서 빠져 Black Hole 전용 runtime entity가 된다. Black Hole 외형을 유지하되 gameplay footprint는 사람 기준 Galactic 3단계 공인 Quasar, 즉 `local_level = 2`에 해당하는 크기를 기준으로 한다.
 
 ### 이동·흡수·인력
@@ -463,8 +465,8 @@ Galactic에서 첫 Lv14 `Black Hole` Ball을 만들면 일반 Top Ball Clear를 
 인력의 첫 플레이테스트 seed:
 
 ```text
-influence_radius = 240 world units
-maximum_pull_acceleration = 300 world units/s²
+influence_radius = 300 world units
+maximum_pull_acceleration = 450 world units/s²
 pull_falloff = (1 - distance / influence_radius)²
 ```
 
@@ -473,16 +475,20 @@ pull_falloff = (1 - distance / influence_radius)²
 두 Black Hole이 존재하면 일반 공은 각 Black Hole이 만드는 pull vector를 합산해서 받는다. 따라서 항상 정확히 2배가 되는 것은 아니다. 두 힘이 같은 방향이면 강해지고, 두 Black Hole 사이에서는 일부 상쇄될 수 있다. 합산 결과에는 별도 cap을 한 번 적용한다.
 
 ```text
-ordinary_ball_pull_per_black_hole_max = 300 world units/s²
-ordinary_ball_total_pull_cap = 600 world units/s²
+ordinary_ball_pull_per_black_hole_max = 450 world units/s²
+ordinary_ball_total_pull_cap = 900 world units/s²
 black_hole_mutual_pull_max = 450 world units/s²
 ```
 
 Black Hole끼리는 저등급 공 흡수 규칙을 적용하지 않고 서로에게만 전용 mutual pull을 적용한다. 접촉이 확정되면 일반 force simulation을 중단하고 terminal lock 뒤 연출용 회전·폭발로 전환한다. 세 수치 모두 초기 플레이테스트 seed다.
 
-공을 흡수할 때는 그 순간 해당 공이 Active Cashout됐다면 받을 `calculate_cashout_score(ball)` 값을 `absorption_penalty`로 사용한다. Time Bonus와 Cashout popup은 발생시키지 않으며 다음처럼 점수를 차감한다.
+첫 Black Hole이 등장하는 순간의 `run_score`를 `black_hole_phase_score_baseline`으로 한 번 저장한다. 공을 흡수할 때는 해당 공의 Active Cashout 가치 전액을 직접 빼지 않고 다음 값을 `absorption_penalty`로 사용한다.
 
 ```text
+raw_penalty = calculate_cashout_score(ball) × 0.125
+phase_cap = black_hole_phase_score_baseline × 0.25
+absorption_penalty = min(raw_penalty, phase_cap)
+
 next_stage_score = stage_score - absorption_penalty
 next_run_score = run_score - absorption_penalty
 
@@ -495,6 +501,8 @@ otherwise
 → stage_score = max(0, next_stage_score)
 → run_score = next_run_score
 ```
+
+이 비율은 첫 플레이테스트 seed다. 기존 전액 차감은 Galactic 기본공 Galaxy 하나의 `1e25` 가치가 직전 Planetary 최고공 정산으로 확보한 최소 Run Score와 같은 규모여서, 첫 Black Hole이 기본공 하나를 흡수하는 즉시 Run을 끝낼 수 있었다. `12.5%`는 최소 자금 기준으로 같은 기본공 약 8회의 손실 여지를 만들고, phase baseline의 `25%` 상한은 Galaxy Cluster·Quasar처럼 지수적으로 큰 공 한 개가 즉사 패널티가 되는 것을 막는다. 반대로 고가 공을 반복해서 잃으면 4회 안팎으로 Run을 끝낼 수 있어 위험은 유지한다. Time Bonus와 Cashout popup은 발생시키지 않는다.
 
 Game Over 기준은 Stage마다 0으로 초기화되는 `stage_score`가 아니라 Run 전체 누적인 `run_score`다. 흡수 판정은 Black Hole과 공의 실제 접촉을 사용하며 별도 원거리 즉시 흡수 반경을 추가하지 않는다. 정확한 Black Hole 이동 속도는 tuning 대상으로 남긴다.
 

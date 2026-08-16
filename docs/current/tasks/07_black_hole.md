@@ -66,16 +66,16 @@ Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성�
 초기 플레이테스트 seed:
 
 ```text
-influence_radius = 240 world units
-maximum_pull_acceleration = 300 world units/s²
-total_pull_cap = 600 world units/s²
+influence_radius = 300 world units
+maximum_pull_acceleration = 450 world units/s²
+total_pull_cap = 900 world units/s²
 black_hole_mutual_pull_max = 450 world units/s²
 pull_falloff = (1 - distance / influence_radius)²
 ```
 
 반경 밖의 pull은 0이며 기존 Ball runtime speed cap을 유지한다. 두 Black Hole이 존재하면 일반 공은 두 pull vector의 합을 받되 합산 cap을 한 번 적용한다. 같은 방향에서는 강해지고 두 Black Hole 사이에서는 일부 상쇄될 수 있으므로 항상 정확히 2배가 되는 것은 아니다. Black Hole끼리는 전용 mutual pull로 서로를 끌어당기며 접촉 후 terminal 연출로 전환한다. 수치는 tuning data다.
 
-흡수는 실제 contact에서만 발생한다. 흡수된 공이 그 순간 Active Cashout됐다면 받을 점수를 stage/run score에서 각각 차감한다. Stage score는 0에서 clamp하고, Run score가 0 이하가 되면 0으로 고정한 뒤 즉시 Game Over/Run End한다. Time Bonus와 Cashout popup은 없다.
+흡수는 실제 contact에서만 발생한다. 첫 Black Hole 등장 시점 Run Score를 한 번 baseline으로 저장하고, 흡수된 공의 Active Cashout 가치 `12.5%`와 baseline `25%` 중 작은 값을 stage/run score에서 각각 차감한다. 전액 차감으로 첫 Galaxy 흡수 즉시 Run이 끝나던 문제를 피하면서, 고가 공 반복 손실은 여전히 치명적으로 유지하기 위한 첫 플레이테스트 seed다. Stage score는 0에서 clamp하고, Run score가 0 이하가 되면 0으로 고정한 뒤 즉시 Game Over/Run End한다. Time Bonus와 Cashout popup은 없다.
 
 ---
 
@@ -129,7 +129,7 @@ contact lock
 - Black Hole이 하단 Cashout되지 않음
 - Black Hole 하단 반사, 비성장, 일반 Merge 제외
 - 인력이 강해도 두 번째 Black Hole 제작 gameplay가 계속 가능
-- 흡수 공의 Cashout 상당 점수가 stage/run에서 차감되고 run score가 0이 되면 즉시 Game Over
+- 흡수 패널티가 Cashout 가치 `12.5%`와 phase-entry Run Score `25%` 상한으로 계산되어 stage/run에서 차감되고, run score가 0이 되면 즉시 Game Over
 - Galactic 최종 국면의 생성량에서 성능 확인
 - 첫 Lv14가 Black Hole entity로 정확히 한 번 전환됨
 - 두 번째 Black Hole 접촉 시 회전·폭발·UI 제거·타이틀·Clear Score·Main Menu Run End가 한 번만 발생

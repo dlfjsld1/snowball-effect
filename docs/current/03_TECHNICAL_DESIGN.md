@@ -444,6 +444,8 @@ func format_score(value: float) -> String
 
 적용 대상은 Item Ball과 Lv14 Black Hole Ball/전환된 Black Hole runtime entity를 제외한 일반 Snowball이다. Item Ball은 균열·파괴 상태를, Black Hole은 고유 ring/왜곡/흡수 표현을 가지므로 전용 렌더러를 유지한다. Galactic에서는 일반 Lv10~13 batch와 Black Hole 전용 렌더러가 함께 존재한다.
 
+Black Hole runtime entity는 일반 Ball slot/render snapshot 밖에 있으므로, 전용 renderer는 `get_black_hole_snapshot()`의 read-only position/radius를 별도로 읽어 최소한 dark core와 ring을 항상 표시한다. 이는 gameplay state를 변경하지 않는 가시성 fallback이며, 향후 S8-G5의 ring·별 파티클·왜곡 표현이 이를 대체하거나 확장한다.
+
 Core는 render snapshot을 읽어 batch를 구성하고 gameplay state를 변경하지 않는다. Presentation은 level별 Texture2D와 머티리얼 표현을 제공할 수 있지만 simulation 내부 배열을 직접 읽거나 수정하지 않는다. 최종 asset atlas는 필수 선행 조건이 아니며 별도 텍스처 방식으로 먼저 연결할 수 있다.
 
 ### 10.3 구현·검증 경계
@@ -587,6 +589,8 @@ scale shift: up to about 0.8~1.0s
 
 Black Hole gameplay state와 force/absorption 계산은 Core가 소유하고, BackgroundManager는 read-only 위치 snapshot을 받아 시각 중심을 맞춘다. 활성화는 Stage 변경이 아니라 같은 Galactic Stage 안의 `Black Hole Phase Transition`이다.
 
+Frame의 시각적 개구부와 simulation logical field는 같은 폭을 공유한다. 다만 하단에는 `32 logical units`의 safety/cashout strip을 남긴다. Simulation Cashout, Paddle clamp, Black Hole 하단 반사는 이 reduced logical rect를 사용하고, visual backdrop은 frame 개구부 전체를 유지한다.
+
 ```gdscript
 func get_black_hole_position() -> Vector2
 func get_black_hole_pull(position: Vector2) -> Vector2
@@ -598,15 +602,15 @@ func get_black_hole_pull(position: Vector2) -> Vector2
 성능상 공마다 `sqrt`를 줄이고 싶다면 거리 제곱 기반 완만한 함수 사용 가능하다.  
 다만 조작감이 우선이며 실제 측정 후 최적화한다.
 
-초기 force seed는 영향 반경 `240 world units`, 최대 가속도 `300 world units/s²`다. 반경 안의 normalized distance `t = clamp(distance / 240, 0, 1)`에 대해 `(1 - t)²` falloff를 사용하고 반경 밖은 0으로 둔다. delta를 곱해 velocity에 적용한 뒤 기존 final Ball speed cap을 유지한다. 중심 거리 `epsilon` 이하에서는 영벡터를 normalize하지 않아 NaN을 막는다. 수치는 Stage tuning data로 교체 가능해야 한다.
+초기 force seed는 영향 반경 `300 world units`, 최대 가속도 `450 world units/s²`다. 반경 안의 normalized distance `t = clamp(distance / 300, 0, 1)`에 대해 `(1 - t)²` falloff를 사용하고 반경 밖은 0으로 둔다. delta를 곱해 velocity에 적용한 뒤 기존 final Ball speed cap을 유지한다. 중심 거리 `epsilon` 이하에서는 영벡터를 normalize하지 않아 NaN을 막는다. 수치는 Stage tuning data로 교체 가능해야 한다.
 
-일반 공에 대한 다중 Black Hole force는 각 source의 vector를 먼저 합한 뒤 `600 world units/s²`로 한 번 제한한다. 같은 방향의 힘은 더해지고 반대 방향은 자연스럽게 상쇄되므로 Black Hole 수를 단순 scalar 배수로 적용하지 않는다. 그 뒤 delta를 곱하고 기존 Ball runtime speed cap을 적용한다.
+일반 공에 대한 다중 Black Hole force는 각 source의 vector를 먼저 합한 뒤 `900 world units/s²`로 한 번 제한한다. 같은 방향의 힘은 더해지고 반대 방향은 자연스럽게 상쇄되므로 Black Hole 수를 단순 scalar 배수로 적용하지 않는다. 그 뒤 delta를 곱하고 기존 Ball runtime speed cap을 적용한다.
 
 Black Hole entity끼리는 일반 공용 force/absorption loop와 분리해 상대 Black Hole 방향으로 최대 `450 world units/s²`의 mutual acceleration을 적용한다. 이 값은 접근을 유도하는 gameplay seed이며, 접촉 확정 이후에는 force 적분을 멈추고 terminal presentation이 회전·폭발 transform을 소유한다.
 
 향후 Presentation 후보인 Black Hole 주변 일반 공의 tidal deformation은 일반 Snowball MultiMesh와 양립한다. Core가 제공하는 read-only Black Hole 위치/영향 snapshot과 공의 nominal transform을 바탕으로 instance의 비균일 scale·회전 또는 shared shader custom data만 바꿀 수 있다. 이 시각 변형이 도입되더라도 Core의 공 중심, nominal radius, 원형 Merge/Paddle/벽 충돌은 그대로 유지하고 궤도 변화는 기존 force 계산만이 소유한다. 정확한 변형 강도·falloff·최대 비율은 아직 구현 계약이 아니다.
 
-흡수 contact가 확정되면 일반 Cashout commit 전에 해당 공을 한 번 소비한다. `calculate_cashout_score(ball)`을 read-only로 계산한 값을 stage/run score에서 각각 차감한다. `stage_score`는 0에서 clamp하고, 계산 결과 `run_score <= 0`이면 `run_score = 0`으로 고정한 뒤 즉시 failure lock과 Run End를 요청한다. Time Bonus, Cashout 전용 popup, Merge, Settlement 중복 반영은 없다.
+흡수 contact가 확정되면 일반 Cashout commit 전에 해당 공을 한 번 소비한다. StageRuntime은 첫 Black Hole phase 시작 시 Run Score baseline을 한 번 snapshot하고, `min(calculate_cashout_score(ball) × 0.125, phase_entry_run_score × 0.25)`를 stage/run score에서 각각 차감한다. baseline은 이후 Cashout이나 흡수로 갱신하지 않는다. `stage_score`는 0에서 clamp하고, 계산 결과 `run_score <= 0`이면 `run_score = 0`으로 고정한 뒤 즉시 failure lock과 Run End를 요청한다. Time Bonus, Cashout 전용 popup, Merge, Settlement 중복 반영은 없다.
 
 두 Black Hole의 earliest contact가 확정되면 terminal lock을 한 번만 세우고 이후 공 simulation 결과를 더 commit하지 않는다. Presentation은 두 중심의 상호 인력·회전·폭발을 재생하며 gameplay HUD를 숨기고 `SNOWBALL EFFECT` 타이틀, 그 아래 `CLEAR SCORE` 최종 run score와 `MAIN MENU` 버튼을 표시한다.
 
@@ -640,9 +644,9 @@ StageDefinition
 - background_id
 - global_force_scale (explicit Stage effect only; not default downward gravity)
 - black_hole_enabled
-- black_hole_influence_radius (initial seed: 240 world units)
-- black_hole_max_pull_acceleration (initial seed: 300 world units/s²)
-- black_hole_total_pull_cap (initial seed: 600 world units/s²)
+- black_hole_influence_radius (initial seed: 300 world units)
+- black_hole_max_pull_acceleration (initial seed: 450 world units/s²)
+- black_hole_total_pull_cap (initial seed: 900 world units/s²)
 - black_hole_mutual_pull_acceleration (initial seed: 450 world units/s²)
 
 ItemDefinition
