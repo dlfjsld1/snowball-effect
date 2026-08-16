@@ -229,7 +229,7 @@ Fire와 optional item은 계속 Core rules와 분리한다. Item Box가 없어�
 
 ## 9. S8 — Black Hole and Final Result
 
-Lv14 `Black Hole`은 Galactic top Ball이다. 첫 Lv14는 이동 Black Hole runtime 기믹으로 전환되며 `Black Hole Phase Transition`으로 L2 `920`→L3 `1080` Frame/Play Field를 함께 확장하고 같은 Stage gameplay를 재개한다. 두 번째 Black Hole과 접촉하면 추가 Frame Shift 없이 finale와 타이틀 Run End로 간다. Presentation 구현은 S8-G5, logical phase/force는 S8-G1, wiring은 S8-G4가 소유한다.
+Lv14 `Black Hole`은 Galactic top Ball이다. 첫 Lv14는 이동 Black Hole runtime 기믹으로 전환되며 `Black Hole Phase Transition`으로 L2 `880`→L3 `1040` Frame/Play Field를 함께 확장하고 같은 Stage gameplay를 재개한다. 두 번째 Black Hole과 접촉하면 추가 Frame Shift 없이 finale와 타이틀 Run End로 간다. Presentation 구현은 S8-G5, logical phase/force는 S8-G1, wiring은 S8-G4가 소유한다.
 
 ### Main/Result UI expansion
 

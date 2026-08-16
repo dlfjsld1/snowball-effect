@@ -12,6 +12,9 @@ signal stage_state_changed(state: StringName)
 signal stage_shift_started(next_definition: StageDefinition, shift_id: int)
 signal final_settlement_started(amount: float)
 signal final_settlement_finished(amount: float)
+signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
+signal black_hole_phase_gameplay_resumed(phase_id: int, logical_rect: Rect2)
+signal black_hole_finale_locked(result_snapshot: Dictionary)
 
 const READY: StringName = &"READY"
 const PLAYING: StringName = &"PLAYING"
@@ -21,6 +24,8 @@ const SETTLING: StringName = &"SETTLING"
 const CLEARED: StringName = &"CLEARED"
 const SHIFTING: StringName = &"SHIFTING"
 const FAILED: StringName = &"FAILED"
+const BLACK_HOLE_PHASE_LOCKED: StringName = &"BLACK_HOLE_PHASE_LOCKED"
+const RUN_ENDED: StringName = &"RUN_ENDED"
 
 @export var simulation_path: NodePath
 @export var auto_complete_shift_presentation := false
@@ -37,6 +42,8 @@ var _top_ball_created := false
 var _pending_shift_id := -1
 var _pending_shift_definition: StageDefinition
 var _next_shift_id := 1
+var _pending_black_hole_phase_id := -1
+var _pending_black_hole_logical_rect := Rect2()
 
 
 func _ready() -> void:
@@ -49,7 +56,12 @@ func _ready() -> void:
 	_settlement_service.configure(_stage_runtime.score_ledger)
 	_simulation.cashout_completed.connect(_on_cashout_completed)
 	_simulation.top_ball_created.connect(_on_top_ball_created)
+	_simulation.black_hole_absorbed.connect(_on_black_hole_absorbed)
+	_simulation.black_hole_finale_started.connect(_on_black_hole_finale_started)
 	_stage_runtime.end_decision_requested.connect(_on_end_decision_requested)
+	_stage_runtime.black_hole_phase_started.connect(_on_black_hole_phase_started)
+	_stage_runtime.black_hole_run_end_requested.connect(_on_black_hole_run_end_requested)
+	_stage_runtime.black_hole_finale_locked.connect(_on_black_hole_finale_locked)
 	_settlement_service.final_settlement_started.connect(_on_final_settlement_started)
 	_settlement_service.final_settlement_finished.connect(_on_final_settlement_finished)
 
@@ -63,6 +75,8 @@ func _physics_process(delta: float) -> void:
 	_stage_runtime.stage_time_left -= delta
 	_stage_runtime.stage_time_changed.emit(_stage_runtime.stage_time_left)
 	_simulation.step_simulation(delta)
+	if current_state != PLAYING:
+		return
 	_stage_runtime.process_tick(0.0, _top_ball_created, _pending_cashouts)
 
 
@@ -70,6 +84,8 @@ func start_run() -> void:
 	current_stage_index = 0
 	_pending_shift_id = -1
 	_pending_shift_definition = null
+	_pending_black_hole_phase_id = -1
+	_pending_black_hole_logical_rect = Rect2()
 	_stage_runtime.score_ledger.reset_runtime()
 	_enter_stage(_stage_catalog.get_stage(current_stage_index))
 
@@ -94,6 +110,8 @@ func get_runtime_snapshot() -> Dictionary:
 		"stage_score": _stage_runtime.score_ledger.stage_score,
 		"run_score": _stage_runtime.score_ledger.run_score,
 		"pending_shift_id": _pending_shift_id,
+		"pending_black_hole_phase_id": _pending_black_hole_phase_id,
+		"black_hole_finale_locked": _stage_runtime.is_black_hole_finale_locked(),
 	}
 
 
@@ -130,6 +148,41 @@ func accept_stage_shift_presentation_finished(shift_id: int) -> bool:
 	return true
 
 
+func begin_black_hole_phase(from_rect: Rect2, to_rect: Rect2) -> bool:
+	if current_state != PLAYING or _stage_runtime.current_stage == null or not _stage_runtime.current_stage.black_hole_enabled:
+		return false
+	if _pending_black_hole_phase_id != -1 or to_rect.size.x <= 0.0 or to_rect.size.y <= 0.0:
+		return false
+
+	_set_state(BLACK_HOLE_PHASE_LOCKED)
+	_pending_black_hole_logical_rect = to_rect
+	_pending_black_hole_phase_id = _stage_runtime.begin_black_hole_phase(from_rect, to_rect)
+	return true
+
+
+func accept_black_hole_phase_presentation_finished(phase_id: int) -> bool:
+	if current_state != BLACK_HOLE_PHASE_LOCKED or phase_id != _pending_black_hole_phase_id:
+		return false
+
+	var logical_rect := _pending_black_hole_logical_rect
+	_pending_black_hole_phase_id = -1
+	_pending_black_hole_logical_rect = Rect2()
+	black_hole_phase_gameplay_resumed.emit(phase_id, logical_rect)
+	_set_state(PLAYING)
+	return true
+
+
+func end_run_to_main_menu() -> void:
+	_pending_shift_id = -1
+	_pending_shift_definition = null
+	_pending_black_hole_phase_id = -1
+	_pending_black_hole_logical_rect = Rect2()
+	_simulation.reset_runtime()
+	_settlement_service.reset_for_stage()
+	_stage_runtime.score_ledger.reset_runtime()
+	_set_state(READY)
+
+
 func _enter_stage(definition: StageDefinition) -> void:
 	assert(definition != null, "StageManager requires a valid StageDefinition.")
 	_simulation.apply_stage_definition(definition)
@@ -147,6 +200,35 @@ func _on_cashout_completed(score_amount: float, global_level: int, _world_positi
 func _on_top_ball_created(global_level: int) -> void:
 	if current_state == PLAYING and _stage_runtime.is_current_stage_top_ball(global_level):
 		_top_ball_created = true
+
+
+func _on_black_hole_absorbed(score_amount: float, _global_level: int, _world_position: Vector2) -> void:
+	if current_state == PLAYING or current_state == BLACK_HOLE_PHASE_LOCKED:
+		_stage_runtime.apply_black_hole_absorption(score_amount)
+
+
+func _on_black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2) -> void:
+	black_hole_phase_started.emit(phase_id, from_rect, to_rect)
+
+
+func _on_black_hole_finale_started(contact_snapshot: Dictionary) -> void:
+	if current_state != PLAYING:
+		return
+	_stage_runtime.lock_black_hole_finale(contact_snapshot)
+
+
+func _on_black_hole_run_end_requested() -> void:
+	if current_state == PLAYING or current_state == BLACK_HOLE_PHASE_LOCKED:
+		_pending_black_hole_phase_id = -1
+		_pending_black_hole_logical_rect = Rect2()
+		_set_state(FAILED)
+
+
+func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
+	if current_state != PLAYING:
+		return
+	_set_state(RUN_ENDED)
+	black_hole_finale_locked.emit(result_snapshot.duplicate(true))
 
 
 func _on_final_settlement_started(amount: float) -> void:

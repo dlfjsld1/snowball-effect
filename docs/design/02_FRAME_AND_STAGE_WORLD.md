@@ -18,10 +18,10 @@ Stage를 Clear하면 프레임 폭이 한 단계 넓어진다. 프레임 장식�
 
 | 진행 | 표시 이름 | 기존 Stage anchor | `play_field_rect` seed | 상태 |
 |---|---|---|---|---|
-| 시작 | Initial Frame | Ground | `Rect2(500, 0, 600, 900)` | TUNING |
-| 첫 Clear 후 | Frame Level 1 | Planetary | `Rect2(420, 0, 760, 900)` | TUNING |
-| 둘째 Clear 후 | Frame Level 2 | Galactic | `Rect2(340, 0, 920, 900)` | TUNING |
-| Black Hole 발동 | Frame Level 3 | Galactic — Black Hole Phase | `Rect2(260, 0, 1080, 900)` | TUNING |
+| 시작 | Initial Frame | Ground | `Rect2(520, 50, 560, 800)` | IMPLEMENTED |
+| 첫 Clear 후 | Frame Level 1 | Planetary | `Rect2(440, 50, 720, 800)` | IMPLEMENTED |
+| 둘째 Clear 후 | Frame Level 2 | Galactic | `Rect2(360, 50, 880, 800)` | IMPLEMENTED |
+| Black Hole 발동 | Frame Level 3 | Galactic — Black Hole Phase | `Rect2(280, 50, 1040, 800)` | IMPLEMENTED |
 
 폭은 1600×900 authoring viewport의 logical unit 기준이다. v1은 `Ground/Planetary/Galactic` 3개 Stage를 사용한다. L3는 별도 Stage나 Final Result 배경이 아니라 Black Hole 기믹이 활성화된 Galactic의 gameplay profile이다. 각 Stage의 구체적인 그림과 재질은 재설계할 수 있다.
 

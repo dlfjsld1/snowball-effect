@@ -10,7 +10,7 @@ Working name: **Frozen Enamel Arcade / Black Hole Phase Revision**
 
 ## 1. Adoption Statement
 
-V5는 V4의 Frozen Enamel 재질, slim fixed-width bezel, Main/Pause 구성과 Merge·Item·Milestone FX 문법을 유지하면서 최신 Ball/HUD/Black Hole 계약을 반영한다. 이 문서와 팀 공유 [HTML mockup](WIREFRAME_DYNAMIC_PLAYFIELD.html)이 현재 visual source다. V4 문서는 역사 자료로 남긴다.
+V5는 V4의 Frozen Enamel 재질, slim fixed-width bezel, Main/Pause 구성과 Merge·Item·Milestone FX 문법을 유지하면서 최신 Ball/HUD/Black Hole 계약을 반영한다. 이 문서와 팀 공유 [HTML mockup](WIREFRAME_DYNAMIC_PLAYFIELD.html)이 현재 visual source다. 단, Play Field geometry는 mockup의 이전 비교값보다 현재 `GameplayFrame` 구현의 `560/720/880/1040`을 우선한다. V4 문서는 역사 자료로 남긴다.
 
 이 승인은 Godot runtime Scene·Script·Resource·asset import 구현 승인이 아니다.
 
@@ -44,10 +44,10 @@ Lv14 `Black Hole`은 BallDefinition이다. 첫 Lv14가 생성되면 일반 Clear
 
 | Profile | Gameplay role | Active Rect seed |
 |---|---|---|
-| Initial | Ground | `Rect2(500, 0, 600, 900)` |
-| L1 | Planetary | `Rect2(420, 0, 760, 900)` |
-| L2 | Galactic | `Rect2(340, 0, 920, 900)` |
-| L3 | Galactic — Black Hole Phase | `Rect2(260, 0, 1080, 900)` |
+| Initial | Ground | `Rect2(520, 50, 560, 800)` |
+| L1 | Planetary | `Rect2(440, 50, 720, 800)` |
+| L2 | Galactic | `Rect2(360, 50, 880, 800)` |
+| L3 | Galactic — Black Hole Phase | `Rect2(280, 50, 1040, 800)` |
 
 L2→L3의 이름은 **Black Hole Phase Transition**이다. 첫 Black Hole 전환 중에만 gameplay를 잠그고 Frame·표시 Field·logical Play Field·HUD housing을 같은 중심축에서 함께 확장한 뒤 Galactic gameplay를 재개한다. 두 Black Hole 접촉 뒤에는 추가 Frame Shift 없이 서로를 끌어당기는 회전·폭발을 재생하고 gameplay HUD/UI를 제거한 뒤 `SNOWBALL EFFECT` 타이틀로 Run을 끝낸다.
 

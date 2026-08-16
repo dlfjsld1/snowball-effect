@@ -45,7 +45,7 @@
 - Integration Skeleton: S8-G2 완료 뒤 Integration-owned 파일에서 즉시 시작할 수 있다. Phase 시작을 전달하고 matching `phase_id` 완료만 수락하는 API, terminal snapshot 전달 지점, `retry_requested/main_menu_requested` handler, Core-owned reset 연결을 먼저 제공한다. 실제 Presentation 완료 producer가 없을 때는 같은 완료 API를 deferred 한 번 호출하는 임시 adapter를 둘 수 있다.
 - Parallel Handoff: 임시 adapter는 Presentation/Content-owned 파일을 수정하거나 그 연출·UI 동작을 흉내 내지 않는다. S8-G5는 `black_hole_phase_started(...)`를 구독해 동일한 완료 API를 호출하고, S8-G3는 read-only result snapshot을 표시한 뒤 기존 request signal을 발행한다. 실제 producer가 Main에 연결되면 Integration이 해당 임시 adapter를 제거한다.
 - Skeleton Verification: matching/stale/duplicate `phase_id` 중재, terminal lock 뒤 gameplay commit·추가 Shift 차단, result snapshot 1회 전달, Core reset과 handler 중복 호출 방지를 Integration test로 확인한다. 이 증거만으로 S8-G4를 `IMPLEMENTED` 또는 `VERIFIED`로 닫지 않는다.
-- Final Verification: 실제 S8-G3/G5 산출물을 Main에 연결한 뒤 matching `phase_id`에서 L2→L3 logical Rect 활성화 후 같은 Galactic gameplay 재개; 두 Black Hole 접촉 뒤 finale→타이틀→Run End에서 추가 Shift 없음; Retry가 배열·점수·타이머·settlement/shift/phase/Black Hole/item/presentation lock 완전 초기화; Main 이동은 Run state를 안전하게 종료하고 Title/Main 화면으로 돌아감.
+- Final Verification: 실제 S8-G3/G5 산출물을 Main에 연결한 뒤 matching `phase_id`에서 Presentation Frame과 같은 L2 `880`→L3 `1040` logical Rect 활성화 후 같은 Galactic gameplay 재개; 두 Black Hole 접촉 뒤 finale→타이틀→Run End에서 추가 Shift 없음; Retry가 배열·점수·타이머·settlement/shift/phase/Black Hole/item/presentation lock 완전 초기화; Main 이동은 Run state를 안전하게 종료하고 Title/Main 화면으로 돌아감.
 - Do Not Modify: Result UI 내부와 각 Owner reset 내부.
 
 ### S8-G5 Black Hole Phase presentation
@@ -54,7 +54,7 @@
 - Owned Files: `scripts/presentation/background_manager.gd`, `scripts/presentation/presentation_manager.gd`, `scenes/backgrounds/**`, `scenes/effects/**`, `scripts/ui/hud.gd`, `tests/presentation/**`
 - Integration Point: `black_hole_phase_started(phase_id, from_rect, to_rect)`를 구독하고 `black_hole_phase_presentation_finished(phase_id)`를 정확히 한 번 반환.
 - Dependencies: S5-G4의 Frame/Field 이동 계약과 S8-G1의 phase/position snapshot.
-- Verification: L2 `920`에서 L3 `1080`으로 Frame·표시 Play Field·고정 폭 HUD housing이 함께 좌우 대칭 확장; `Galactic` Stage 표시는 유지; 전환 완료 뒤 gameplay Black Hole과 HUD가 활성 상태로 남음; 두 Black Hole 접촉 시 mutual orbit·폭발 뒤 HUD/UI 제거와 타이틀·Clear Score·Main Menu 표시; reduced-effects에서도 상태명·경계 이동·finale가 읽힘; duplicate/stale `phase_id`는 완료로 재사용되지 않음.
+- Verification: L2 `880`에서 L3 `1040`으로 Frame·표시 Play Field·고정 폭 HUD housing이 함께 좌우 대칭 확장; `Galactic` Stage 표시는 유지; 전환 완료 뒤 gameplay Black Hole과 HUD가 활성 상태로 남음; 두 Black Hole 접촉 시 mutual orbit·폭발 뒤 HUD/UI 제거와 타이틀·Clear Score·Main Menu 표시; reduced-effects에서도 상태명·경계 이동·finale가 읽힘; duplicate/stale `phase_id`는 완료로 재사용되지 않음.
 - Do Not Modify: StageManager, logical bounds, force 계산, Stage/ball resource 값.
 
 ## Exit Gate

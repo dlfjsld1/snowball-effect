@@ -446,7 +446,7 @@ Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole
 Galactic에서 첫 Lv14 `Black Hole` Ball을 만들면 일반 Top Ball Clear를 발생시키지 않는다.
 
 1. 생성된 Lv14 Ball을 이동 Black Hole 기믹으로 전환한다.
-2. `Black Hole Phase Transition`으로 Frame과 실제 Play Field를 L2 `920`에서 L3 `1080`으로 함께 확장한다.
+2. `Black Hole Phase Transition`으로 Frame과 실제 Play Field를 L2 `880`에서 L3 `1040`으로 함께 확장한다.
 3. 전환 중에만 spawn·timer·input을 잠그고, 완료 후 같은 Galactic gameplay를 재개한다.
 
 전환된 Black Hole은 별도 Stage나 새 BallDefinition이 아니다. Lv14 Ball에서 유래했지만 일반 Snowball Merge/Cashout 대상에서 빠져 Black Hole 전용 runtime entity가 된다. Black Hole 외형을 유지하되 gameplay footprint는 사람 기준 Galactic 3단계 공인 Quasar, 즉 `local_level = 2`에 해당하는 크기를 기준으로 한다.

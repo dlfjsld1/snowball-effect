@@ -80,7 +80,7 @@ Snowball Effect에는 최소 플레이 루프와 규칙·Goal 계약이 있지�
 
 ### 튜닝 시작값
 
-1600×900 기준 폭 `600 → 760 → 920 → 1080`을 비교용 시작값으로 사용한다. 이 수치는 balance·spawn density·paddle reach·Web 가독성 검증 후 바꿀 수 있다.
+현재 Presentation Frame 구현과 동일하게 1600×900 기준 logical Play Field 폭 `560 → 720 → 880 → 1040`을 사용한다. 이 수치는 balance·spawn density·paddle reach·Web 가독성 검증 후 바꿀 수 있다.
 
 ### 미확정
 

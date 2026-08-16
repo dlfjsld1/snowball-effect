@@ -529,3 +529,27 @@ Locked files: `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `
 - `scripts/presentation/**`, `scripts/ui/**`, `scenes/backgrounds/**`, `scenes/effects/**`는 잠그거나 수정하지 않는다.
 - 임시 adapter는 연출·Result UI를 구현한 것으로 취급하지 않으며 S8-G4 최종 상태를 올리는 Evidence로 사용하지 않는다.
 - S8-G3와 S8-G5는 Integration 골격의 공개 signal/API를 기준으로 각 Owner lane에서 병렬 개발할 수 있다.
+
+## 2026-08-16 — S8-G4 Black Hole Finale·Retry Integration 골격
+
+Owner: Integration
+Locked files: `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `tests/integration/s8_g4_*`
+
+### 구현
+
+- 첫 Black Hole phase request를 `StageManager`가 `BLACK_HOLE_PHASE_LOCKED`로 잠그고, `phase_id`와 from/to logical Rect를 공개하도록 연결했다.
+- matching `phase_id`만 L3 logical Rect와 gameplay를 재개하며 stale·duplicate completion은 무시한다. 실제 S8-G5 전에는 `GameManager`의 deferred adapter가 같은 public completion API를 한 번 호출한다.
+- 두 Black Hole finale snapshot은 `RUN_ENDED` 상태와 `terminal_result_available`으로 정확히 한 번 전달한다. 이 상태에서는 simulation commit이 다시 진행되지 않는다.
+- Retry는 Ground 재시작과 terminal snapshot 제거를, Main Menu는 simulation·ledger·settlement를 정리하고 `READY` 상태로 돌아가는 골격을 제공한다.
+
+### 검증
+
+- Godot 4.7.1 CLI project load와 S8-G4/S8-G2/S5-G5 headless scenes가 exit 0으로 완료됐다. S8-G4 test는 첫 Lv14 merge가 Time Up과 같은 tick에 발생해도 `BLACK_HOLE_PHASE_LOCKED`가 우선하고 뒤늦은 종료 중재가 실행되지 않음을 포함한다.
+- Primary `godot` validate 5/5: GameManager, StageManager, Main, S8-G4 test script/scene이 모두 valid다.
+- Primary Main runtime script에서 stale phase 거부, matching phase 수락, logical width `880→1040`, terminal snapshot 1회, `RUN_ENDED`, Retry `PLAYING`, Main Menu `READY`를 확인했다.
+
+### 제외
+
+- S8-G3 Result/Title UI와 S8-G5 실제 phase/finale presentation은 각 Owner 범위다.
+- 임시 adapter를 포함한 이 골격은 최종 `IMPLEMENTED`/`VERIFIED` 증거가 아니다. 실제 producer 연결 및 전체 reset·Desktop/Web 완주가 남아 있다.
+- 사용자가 Presentation Frame 기준을 우선하도록 결정했다. 따라서 Core logical target도 현재 `GameplayFrame.FIELD_WIDTHS`의 L2/L3 `880/1040`과 일치시키고, 관련 current rules/S8 Goal 계약을 같은 값으로 정정했다.

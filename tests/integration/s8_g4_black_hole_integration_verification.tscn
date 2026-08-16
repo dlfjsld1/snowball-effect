@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/integration/s8_g4_black_hole_integration_verification.gd" id="1"]
+
+[node name="S8G4BlackHoleIntegrationVerification" type="Node"]
+script = ExtResource("1")

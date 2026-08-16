@@ -9,6 +9,11 @@ const PauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
 const GameplayFrameScript = preload("res://scripts/presentation/gameplay_frame.gd")
 const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd")
 
+const BLACK_HOLE_LOGICAL_FIELD_WIDTH := 1040.0
+
+signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
+signal terminal_result_available(result_snapshot: Dictionary)
+
 @export var simulation_path: NodePath
 @export var paddle_path: NodePath
 @export var stage_manager_path: NodePath
@@ -23,6 +28,7 @@ const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd"
 @export var lv1_ball_radius := 4.0
 @export var lv1_spawn_speed_world_units_per_second := 160.0
 @export_range(0.0, 89.0, 0.1) var lv1_spawn_angle_degrees := 20.0
+@export var auto_complete_black_hole_phase_presentation := true
 
 var retry_count := 0
 
@@ -39,6 +45,7 @@ var _audio_manager: AudioManagerScript
 var _spawn_accumulator := 0.0
 var _random := RandomNumberGenerator.new()
 var _initialized := false
+var _terminal_result_snapshot: Dictionary = {}
 
 
 func _ready() -> void:
@@ -63,7 +70,11 @@ func _initialize_runtime() -> void:
 	_stage_manager.stage_shift_started.connect(_presentation_manager.play_stage_shift)
 	_stage_manager.final_settlement_started.connect(_on_final_settlement_started)
 	_stage_manager.final_settlement_finished.connect(_on_final_settlement_finished)
+	_stage_manager.black_hole_phase_started.connect(_on_black_hole_phase_started)
+	_stage_manager.black_hole_phase_gameplay_resumed.connect(_on_black_hole_phase_gameplay_resumed)
+	_stage_manager.black_hole_finale_locked.connect(_on_black_hole_finale_locked)
 	_presentation_manager.stage_shift_presentation_finished.connect(_on_stage_shift_presentation_finished)
+	_simulation.black_hole_phase_requested.connect(_on_black_hole_phase_requested)
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
 	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu)
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation, _stage_manager)
@@ -108,15 +119,22 @@ func get_runtime_snapshot() -> Dictionary:
 		"retry_count": retry_count,
 		"paddle_position": _paddle.position,
 		"paddle_rotation": _paddle.rotation,
+		"terminal_result": get_terminal_result_snapshot(),
 	}
+
+
+func get_terminal_result_snapshot() -> Dictionary:
+	return _terminal_result_snapshot.duplicate(true)
 
 
 func _start_run() -> void:
 	get_tree().paused = false
 	_random.seed = 1337
 	_spawn_accumulator = 0.0
+	_terminal_result_snapshot.clear()
 	_stage_manager.start_run()
 	_paddle.reset_runtime()
+	_paddle.set_physics_process(true)
 	_hud.reset_view()
 	_pause_menu.set_paused(false)
 	_spawn_ball()
@@ -132,12 +150,51 @@ func _on_stage_shift_presentation_finished(shift_id: int) -> void:
 	_stage_manager.accept_stage_shift_presentation_finished(shift_id)
 
 
+func accept_black_hole_phase_presentation_finished(phase_id: int) -> bool:
+	return _stage_manager.accept_black_hole_phase_presentation_finished(phase_id)
+
+
 func _on_final_settlement_started(_amount: float) -> void:
 	_audio_manager.play_event(&"settlement_start")
 
 
 func _on_final_settlement_finished(_amount: float) -> void:
 	_audio_manager.play_event(&"settlement_finish")
+
+
+func _on_black_hole_phase_requested() -> void:
+	if not _initialized or _stage_manager.current_state != StageManager.PLAYING:
+		return
+	var from_rect := _simulation.play_field_rect
+	var to_rect := Rect2(
+		Vector2(from_rect.get_center().x - BLACK_HOLE_LOGICAL_FIELD_WIDTH * 0.5, from_rect.position.y),
+		Vector2(BLACK_HOLE_LOGICAL_FIELD_WIDTH, from_rect.size.y)
+	)
+	_stage_manager.begin_black_hole_phase(from_rect, to_rect)
+
+
+func _on_black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2) -> void:
+	_paddle.set_physics_process(false)
+	black_hole_phase_started.emit(phase_id, from_rect, to_rect)
+	if auto_complete_black_hole_phase_presentation:
+		call_deferred("_complete_temporary_black_hole_phase", phase_id)
+
+
+func _complete_temporary_black_hole_phase(phase_id: int) -> void:
+	accept_black_hole_phase_presentation_finished(phase_id)
+
+
+func _on_black_hole_phase_gameplay_resumed(_phase_id: int, logical_rect: Rect2) -> void:
+	_simulation.play_field_rect = logical_rect
+	_paddle.play_field_rect = logical_rect
+	_paddle.position.x = clampf(_paddle.position.x, logical_rect.position.x, logical_rect.end.x)
+	_paddle.set_physics_process(true)
+
+
+func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
+	_terminal_result_snapshot = result_snapshot.duplicate(true)
+	_paddle.set_physics_process(false)
+	terminal_result_available.emit(get_terminal_result_snapshot())
 
 
 func _apply_stage_frame(stage_index: int) -> void:
@@ -181,3 +238,12 @@ func _on_pause_requested() -> void:
 func _on_retry_requested() -> void:
 	retry_count += 1
 	_start_run()
+
+
+func _on_main_menu_requested() -> void:
+	get_tree().paused = false
+	_terminal_result_snapshot.clear()
+	_stage_manager.end_run_to_main_menu()
+	_paddle.set_physics_process(false)
+	_hud.reset_view()
+	_pause_menu.set_paused(false)
