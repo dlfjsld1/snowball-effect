@@ -5,6 +5,7 @@ const PauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
 
 var _pause_requests := 0
 var _retry_requests := 0
+var _resume_requests := 0
 var _failures := 0
 
 
@@ -13,6 +14,7 @@ func _ready() -> void:
 	add_child(menu)
 	menu.pause_requested.connect(func() -> void: _pause_requests += 1)
 	menu.retry_requested.connect(func() -> void: _retry_requests += 1)
+	menu.resume_requested.connect(func() -> void: _resume_requests += 1)
 
 	var gameplay_state := {"value": 17}
 	var pause_event := InputEventAction.new()
@@ -26,11 +28,11 @@ func _ready() -> void:
 	_expect(gameplay_state.value == 17, "Request UI must not mutate gameplay state.")
 
 	menu.set_paused(true)
-	_expect(menu.pause_button.text == "RESUME", "Paused view must identify the resume action.")
-	menu.pause_button.pressed.emit()
-	_expect(_pause_requests == 2, "Resume-labeled button must emit the shared pause toggle request.")
+	_expect(menu.pause_modal.visible and not menu.pause_button.visible, "Paused view must show the modal instead of the quick controls.")
+	menu.resume_button.pressed.emit()
+	_expect(_resume_requests == 1, "Resume button must emit one request without changing runtime state.")
 	menu.set_paused(false)
-	_expect(menu.pause_button.text == "PAUSE", "Playing view must identify the pause action.")
+	_expect(not menu.pause_modal.visible and menu.pause_button.visible, "Playing view must restore the quick controls.")
 	_expect(not get_tree().paused, "Request UI must not pause the SceneTree directly.")
 
 	if _failures == 0:
