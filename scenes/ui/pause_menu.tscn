@@ -1,6 +1,34 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_pause"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v1/tiles/bolt_8.png" id="2_bolt"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/c4/field_bezel_96.png" id="3_button_bezel"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/field_bezel_v2_910x900.png" id="4_modal_bezel"]
+
+[sub_resource type="StyleBoxFlat" id="StylePanel"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+bg_color = Color(0.3, 0.25, 0.12, 0.28)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9647, 0.9059, 0.6118, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+bg_color = Color(0.714, 0.812, 0.557, 0.2)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.714, 0.812, 0.557, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleDivider"]
+bg_color = Color(0.55, 0.42, 0.22, 0.75)
 
 [node name="PauseMenu" type="Control"]
 process_mode = 3
@@ -35,3 +63,344 @@ custom_minimum_size = Vector2(59, 70)
 flat = true
 text = "RETRY"
 theme_override_font_sizes/font_size = 9
+
+[node name="PauseModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="Dim" type="ColorRect" parent="PauseModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.03, 0.06, 0.82)
+
+[node name="Center" type="CenterContainer" parent="PauseModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="PauseModal/Center"]
+layout_mode = 2
+custom_minimum_size = Vector2(440, 480)
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="CRTChamber" type="ColorRect" parent="PauseModal/Center/Panel"]
+show_behind_parent = true
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.018, 0.035, 0.06, 0.98)
+
+[node name="ModalFieldBezel" type="NinePatchRect" parent="PauseModal/Center/Panel"]
+show_behind_parent = true
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_modal_bezel")
+draw_center = false
+patch_margin_left = 50
+patch_margin_top = 50
+patch_margin_right = 50
+patch_margin_bottom = 50
+
+[node name="Margin" type="MarginContainer" parent="PauseModal/Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 72
+theme_override_constants/margin_top = 64
+theme_override_constants/margin_right = 72
+theme_override_constants/margin_bottom = 64
+
+[node name="Content" type="VBoxContainer" parent="PauseModal/Center/Panel/Margin"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="Kicker" type="Label" parent="PauseModal/Center/Panel/Margin/Content"]
+layout_mode = 2
+text = "SNOWBALL EFFECT"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
+theme_override_font_sizes/font_size = 11
+
+[node name="Title" type="Label" parent="PauseModal/Center/Panel/Margin/Content"]
+layout_mode = 2
+text = "PAUSED"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_font_sizes/font_size = 30
+
+[node name="Divider" type="Panel" parent="PauseModal/Center/Panel/Margin/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 2)
+theme_override_styles/panel = SubResource("StyleDivider")
+
+[node name="Actions" type="VBoxContainer" parent="PauseModal/Center/Panel/Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ResumeButton" type="Button" parent="PauseModal/Center/Panel/Margin/Content/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 48)
+text = "RESUME"
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+
+[node name="CRTGlass" type="ColorRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/ResumeButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.025, 0.12, 0.12, 1)
+
+[node name="Bezel" type="NinePatchRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/ResumeButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_button_bezel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+draw_center = false
+modulate = Color(0.72, 0.53, 0.29, 1)
+
+[node name="BoltTopLeft" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/ResumeButton"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 13.0
+offset_bottom = 13.0
+mouse_filter = 2
+texture = ExtResource("2_bolt")
+
+[node name="BoltBottomRight" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/ResumeButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -13.0
+offset_top = -13.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("2_bolt")
+
+[node name="RetryButton" type="Button" parent="PauseModal/Center/Panel/Margin/Content/Actions"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 48)
+text = "RETRY"
+theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+
+[node name="CRTGlass" type="ColorRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/RetryButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.025, 0.12, 0.12, 1)
+
+[node name="Bezel" type="NinePatchRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/RetryButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_button_bezel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+draw_center = false
+modulate = Color(0.72, 0.53, 0.29, 1)
+
+[node name="BoltTopLeft" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/RetryButton"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 13.0
+offset_bottom = 13.0
+mouse_filter = 2
+texture = ExtResource("2_bolt")
+
+[node name="BoltBottomRight" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/RetryButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -13.0
+offset_top = -13.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("2_bolt")
+
+[node name="SettingsButton" type="Button" parent="PauseModal/Center/Panel/Margin/Content/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 48)
+text = "SETTINGS"
+theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+
+[node name="CRTGlass" type="ColorRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/SettingsButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.025, 0.12, 0.12, 1)
+
+[node name="Bezel" type="NinePatchRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/SettingsButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_button_bezel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+draw_center = false
+modulate = Color(0.72, 0.53, 0.29, 1)
+
+[node name="BoltTopLeft" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/SettingsButton"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 13.0
+offset_bottom = 13.0
+mouse_filter = 2
+texture = ExtResource("2_bolt")
+
+[node name="BoltBottomRight" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/SettingsButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -13.0
+offset_top = -13.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("2_bolt")
+
+[node name="MainMenuButton" type="Button" parent="PauseModal/Center/Panel/Margin/Content/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 48)
+text = "MAIN MENU"
+theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+
+[node name="CRTGlass" type="ColorRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/MainMenuButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.025, 0.12, 0.12, 1)
+
+[node name="Bezel" type="NinePatchRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/MainMenuButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_button_bezel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+draw_center = false
+modulate = Color(0.72, 0.53, 0.29, 1)
+
+[node name="BoltTopLeft" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/MainMenuButton"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 13.0
+offset_bottom = 13.0
+mouse_filter = 2
+texture = ExtResource("2_bolt")
+
+[node name="BoltBottomRight" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/MainMenuButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -13.0
+offset_top = -13.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("2_bolt")

@@ -648,3 +648,102 @@ Status: `IMPLEMENTED`
 - `ui_start`, `ui_menu`, `ui_click`, `run_end`은 발생 신호가 제공된 뒤 catalog key 그대로 매핑한다.
 - Main Web에서 고밀도 HUD와 음향을 동시에 보는 가독성 확인은 사용자 결정으로 보류한다.
 - 보류 항목 때문에 S6-G4는 `VERIFIED`가 아닌 `IMPLEMENTED`로 기록한다.
+
+## 2026-08-16 — S8-G3 Title·Main·Terminal UI
+
+Owner: Content/Systems/Release 담당
+Status: `IMPLEMENTED`
+
+### 변경
+
+- `TitleScreen`과 `ResultPanel`을 추가했다. Title은 `start_requested`만 발행하고, Result는 Core terminal snapshot의 deep copy에서 `run_score`만 읽어 `CLEAR SCORE`로 포맷해 표시한다.
+- 기존 Pause UI를 gameplay 상태를 직접 바꾸지 않는 modal로 확장했다. 재개, 다시 시작, 설정, 메인 화면은 각각 `resume_requested`, `retry_requested`, `settings_requested`, `main_menu_requested`만 발행한다.
+- 독립 검증에서 각 요청의 단일 발행, Result snapshot copy, score formatting, hide/reset, SceneTree pause 무변경을 확인했다. 기존 S1-G5 Pause 요청 검증도 modal 구조에 맞춰 회귀 검증했다.
+
+### 검증
+
+- Primary `godot` validate: Title/Result/Pause scripts·scenes, S8-G3 test, S1-G5 test, Main scene 모두 valid (10/10).
+- Primary `godot` S8-G3 verification scene: exit 0.
+- Primary `godot` S1-G5 regression scene: exit 0. 두 짧은 scene은 MCP bridge 준비 전 정상 종료됐으며 stderr에 project script/runtime error는 없었다.
+- 이 환경에서 Godot CLI executable을 찾을 수 없어 CLI baseline은 실행하지 못했다.
+
+### 다음 작업 / 범위 제외
+
+- S8-G4 Integration이 UI scene mount, `terminal_result_available → ResultPanel.show_result`, Title/Pause/Result request signal과 GameManager wiring, HUD/Pause hide/show, Retry/Main Menu reset을 연결한다.
+- S8-G3은 GameManager/StageManager/Core result 계산을 수정하지 않았다. 실제 finale 및 Web 결과 화면 검증은 Integration 뒤에 수행한다.
+
+## 2026-08-16 — S8-G3 Pause UI 레이아웃 보정
+
+Owner: Content/Systems/Release 담당
+
+- `PanelContainer`의 직속 자식이 겹치던 구조를 중앙 패널 안의 단일 세로 컨테이너 구조로 교체했다.
+- 게임 배경의 짙은 남색, 청록 CRT, 황동 프레임 색상을 기준으로 패널·구분선·버튼 상태 스타일을 적용했다.
+- Primary `godot`에서 Pause scene/script와 S1-G5 검증 script가 모두 valid임을 확인하고, 실제 Project에서 Esc 입력 뒤 제목과 네 버튼이 분리되어 표시되는 스크린샷을 확인했다.
+- GameManager의 pause/resume wiring은 S8-G4 Integration 범위로 변경하지 않았다.
+
+## 2026-08-16 — S8-G3 Pause 제어 패널 시각 보정
+
+Owner: Content/Systems/Release 담당
+
+- 기존 평면 버튼을 직선형 황동 베젤과 CRT 유리색의 기계식 제어 패널 스타일로 교체했다.
+- 게임 프레임에 쓰이는 `bolt_8.png`를 각 버튼의 대각 모서리에 배치해 캐비닛 그래픽 언어를 이어갔다.
+- Primary `godot`에서 Pause scene/script validate를 통과했고, Main runtime의 Esc Pause 화면에서 4개 버튼의 분리된 표시와 볼트 텍스처를 확인했다.
+
+## 2026-08-16 — S8-G3 Pause 버튼 프레임 모듈화
+
+Owner: Content/Systems/Release 담당
+
+- 평면 테두리만 남아 있던 버튼을 기존 `field_bezel_96.png`의 9-slice 프레임, CRT 유리 배경, 대각 픽셀 볼트로 구성된 기계식 모듈로 교체했다.
+- Primary `godot` Pause scene validate를 통과했고, 실행 중인 Main의 Pause modal에서 네 버튼이 프레임형 제어 패널로 표시되는 것을 확인했다.
+
+## 2026-08-16 — S8-G3 Pause 모달 황동 프레임 보정
+
+Owner: Content/Systems/Release 담당
+
+- 모달 외곽을 투명한 평면 패널 대신 `field_bezel_96.png` 기반 9-slice 황동 프레임과 어두운 CRT 챔버로 교체했다.
+- 내측 여백을 확장해 프레임이 타이틀·버튼과 겹치지 않도록 했으며, Primary `godot` scene validate와 Main runtime Pause 화면에서 표시를 확인했다.
+
+## 2026-08-16 — S8-G3 Pause 모달 Game Field 프레임 적용
+
+Owner: Content/Systems/Release 담당
+
+- 버튼의 기계식 베젤 버전은 유지하고, 모달 외곽만 실제 게임 중앙 필드의 `field_bezel_910x900.png` 황동 파이프 프레임으로 교체했다.
+- Primary `godot` scene validate와 Main runtime Pause 화면에서 버튼과 외곽 프레임이 각각 의도한 그래픽으로 분리 표시됨을 확인했다.
+
+## 2026-08-16 — S8-G3 Pause 모달 프레임 안정화
+
+Owner: Content/Systems/Release 담당
+
+- 전체 필드 이미지와 전용 베젤 조각의 확대·축소 사용을 제거했다. 모달 크기에 독립적인 황동 이중 프레임과 CRT 챔버로 외곽을 재구성했다.
+- 버튼의 기계식 모듈 디자인은 유지했다. Primary `godot` scene validate와 Main runtime에서 프레임의 비율 깨짐 없이 표시됨을 확인했다.
+
+## 2026-08-16 — S8-G3 Pause 모달 Presentation 9-slice 적용
+
+Owner: Content/Systems/Release 담당
+
+- Presentation `gameplay_frame.tscn`을 조사해 실제 FieldBezel이 `field_bezel_v2_910x900.png`를 `NinePatchRect`, `draw_center=false`, 50px patch margin으로 사용하는 방식을 확인했다.
+- 동일한 v2 FieldBezel 9-slice를 Pause 모달 외곽에 적용했다. 전체 프레임 이미지 축소나 수동 조각 배치는 제거했으며, 버튼 모듈 디자인은 유지했다.
+- 최초 Primary validate는 이전 MCP bridge port listen 오류로 실패했으나, 새 Primary runtime 세션에서 정상 기동했다. 실제 Pause 화면에서 모달 크기에 맞춰 황동 파이프·커넥터 프레임이 표시됨을 확인했다.
+
+## 2026-08-16 — S8-G3 Pause 모달 내부 여백 조정
+
+Owner: Content/Systems/Release 담당
+
+- 모달 최소 크기를 `440×480`으로 늘리고, 프레임 안쪽 여백을 좌우 62px·상하 64px로 조정했다.
+- Primary `godot` scene validate와 Main runtime Pause 화면에서 title·버튼이 황동 파이프 프레임 및 커넥터와 겹치지 않고 분리됨을 확인했다.
+
+## 2026-08-16 — S8-G3 Pause 모달 크기·여백 재산정
+
+Owner: Content/Systems/Release 담당
+
+- Presentation FieldBezel의 50px protected edge와 1600×900 중앙 Field 가시 영역을 기준으로 모달을 `560×640`으로 조정했다.
+- 좌우 82px·상하 80px 여백으로 콘텐츠 영역을 약 `396×480`으로 확보하고, 각 버튼의 최소 높이를 54px로 조정했다.
+- Primary `godot` scene validate와 Main runtime Pause 화면에서 큰 모달의 9-slice 파이프 프레임, 콘텐츠 간격, 버튼 가독성을 확인했다.
+
+## 2026-08-16 — S8-G3 Pause 모달 크기 복구·좌우 여백 확장
+
+Owner: Content/Systems/Release 담당
+
+- 모달과 버튼 크기를 이전 `440×480`, 48px 버튼 높이로 복구했다.
+- 좌우 내부 여백은 이전 62px보다 넓은 72px으로 조정하고, 상하 여백은 64px로 유지했다.
+- Primary `godot` scene validate와 Main runtime Pause 화면에서 버튼과 황동 파이프 프레임 사이 간격을 확인했다.
