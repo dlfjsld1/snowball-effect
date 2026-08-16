@@ -114,10 +114,11 @@ func apply_input(
 
 	if is_zero_approx(move_axis) and is_finite(mouse_target_x):
 		# Mouse is a direct logical-X control. Its velocity is derived from this real transform change.
-		position.x = clampf(mouse_target_x, _left_limit(), _right_limit())
+		position.x = mouse_target_x
 	else:
-		var target_x := clampf(position.x + move_axis * move_speed * delta, _left_limit(), _right_limit())
+		var target_x := position.x + move_axis * move_speed * delta
 		position.x = move_toward(position.x, target_x, move_speed * delta)
+	_clamp_position_to_play_field()
 
 	linear_velocity = (global_position - _previous_position) / delta
 	angular_velocity = _signed_angle_displacement / delta
@@ -148,7 +149,7 @@ func reset_runtime() -> void:
 
 
 func clamp_to_play_field() -> void:
-	position.x = clampf(position.x, _left_limit(), _right_limit())
+	_clamp_position_to_play_field()
 	if _has_mouse_target:
 		_mouse_target_x = clampf(_mouse_target_x, _left_limit(), _right_limit())
 	_reset_motion_history()
@@ -399,8 +400,25 @@ func _right_limit() -> float:
 	return play_field_rect.end.x - _horizontal_half_extent()
 
 
+func _top_limit() -> float:
+	return play_field_rect.position.y + _vertical_half_extent()
+
+
+func _bottom_limit() -> float:
+	return play_field_rect.end.y - _vertical_half_extent()
+
+
 func _horizontal_half_extent() -> float:
 	return absf(cos(rotation)) * paddle_width * 0.5 + absf(sin(rotation)) * paddle_thickness * 0.5
+
+
+func _vertical_half_extent() -> float:
+	return absf(sin(rotation)) * paddle_width * 0.5 + absf(cos(rotation)) * paddle_thickness * 0.5
+
+
+func _clamp_position_to_play_field() -> void:
+	position.x = clampf(position.x, _left_limit(), _right_limit())
+	position.y = clampf(position.y, _top_limit(), _bottom_limit())
 
 
 func _set_mouse_position_target(world_x: float) -> void:

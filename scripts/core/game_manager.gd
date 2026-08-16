@@ -11,8 +11,6 @@ const ResultPanelScript = preload("res://scripts/ui/result_panel.gd")
 const GameplayFrameScript = preload("res://scripts/presentation/gameplay_frame.gd")
 const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd")
 
-const BLACK_HOLE_LOGICAL_FIELD_WIDTH := 1040.0
-
 signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
 signal terminal_result_available(result_snapshot: Dictionary)
 
@@ -182,10 +180,7 @@ func _on_black_hole_phase_requested() -> void:
 	if not _initialized or _stage_manager.current_state != StageManager.PLAYING:
 		return
 	var from_rect := _simulation.play_field_rect
-	var to_rect := Rect2(
-		Vector2(from_rect.get_center().x - BLACK_HOLE_LOGICAL_FIELD_WIDTH * 0.5, from_rect.position.y),
-		Vector2(BLACK_HOLE_LOGICAL_FIELD_WIDTH, from_rect.size.y)
-	)
+	var to_rect := _gameplay_frame.get_field_rect_for_profile(3)
 	_stage_manager.begin_black_hole_phase(from_rect, to_rect)
 
 
@@ -201,9 +196,8 @@ func _complete_temporary_black_hole_phase(phase_id: int) -> void:
 
 
 func _on_black_hole_phase_gameplay_resumed(_phase_id: int, logical_rect: Rect2) -> void:
-	_simulation.play_field_rect = logical_rect
-	_paddle.play_field_rect = logical_rect
-	_paddle.clamp_to_play_field()
+	_gameplay_frame.set_profile(3)
+	_apply_play_field_layout(logical_rect)
 	_paddle.set_physics_process(true)
 
 
@@ -219,7 +213,10 @@ func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
 func _apply_stage_frame(stage_index: int) -> void:
 	var profile_index := clampi(stage_index, 0, 2)
 	_gameplay_frame.set_profile(profile_index)
-	var field_rect := _gameplay_frame.get_field_rect()
+	_apply_play_field_layout(_gameplay_frame.get_field_rect())
+
+
+func _apply_play_field_layout(field_rect: Rect2) -> void:
 	var visual_field_rect := _gameplay_frame.get_field_visual_rect()
 	_simulation.play_field_rect = field_rect
 	_paddle.play_field_rect = field_rect

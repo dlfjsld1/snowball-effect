@@ -605,3 +605,34 @@ Locked files: `scripts/core/stage_manager.gd`, `tests/integration/s5_g5_*`
 
 - Primary runtime에서 simulation 자체 physics는 `false`이며 Giant Snowball pair→Moon 뒤 `SHIFTING`, active ball `0`, 0.9초 shift 뒤 Planetary `PLAYING`을 확인했다.
 - S5-G5 integration verification에 single simulation tick owner assertion을 추가했다.
+
+## 2026-08-17 — Black Hole visibility and Frame-safe Paddle bounds
+
+Owner: Integration emergency follow-up
+Locked files: `scripts/simulation/ball_renderer.gd`, `scripts/gameplay/paddle.gd`, `scripts/presentation/gameplay_frame.gd`, corresponding S4/S5 verification scripts
+
+### 변경
+
+- 일반 ball slot 밖으로 전환된 Black Hole runtime entity의 read-only snapshot을 renderer가 별도로 읽어, 최소 dark core/ring fallback을 표시하도록 했다. S8-G5의 완성형 ring·particle·finale presentation은 여전히 Presentation 범위다.
+- visual frame 하단과 실제 logical play field 사이에 `32 logical units` safety/cashout strip을 두고, Paddle이 회전한 전체 X/Y 외곽을 logical field 안에 clamp하도록 했다.
+
+### 확인
+
+- Primary runtime에서 Galactic Black Hole entity 1개가 position `(800, 300)`, radius `16`으로 생성된 뒤 renderer metric `black_hole_count=1` 및 동일 render position을 확인했다.
+- L2 field는 `Rect2(360, 50, 880, 768)`로 적용됐고, 45도 Paddle은 y=`727.49`로 보정되어 하단 logical boundary 안에 남았다.
+- Primary validate 5/5 통과. Native CLI는 기존 `user://logs` 접근 오류 후 signal 11로 테스트 실행 전 종료되어 환경 문제로 분리했다.
+
+## 2026-08-17 — L3 Frame/UI synchronization correction
+
+Owner: Integration follow-up for S8-G4
+Locked files: `scripts/core/game_manager.gd`, `scripts/presentation/gameplay_frame.gd`, `tests/integration/s8_g4_black_hole_integration_verification.gd`
+
+### 원인과 수정
+
+- Black Hole Phase 재개 시 simulation과 Paddle만 L3 `1040` logical rect로 바꾸고 GameplayFrame은 L2 profile에 남아 있었다. 그래서 확장된 Paddle이 L2 우측 UI와 시각적으로 겹칠 수 있었다.
+- L3의 logical rect를 GameplayFrame profile data에서 직접 가져오고, Phase 재개 시 Frame profile·backdrop·HUD·Pause layout과 simulation/Paddle을 같은 L3 rect로 함께 갱신한다.
+
+### 확인
+
+- Primary validate 3/3 통과.
+- Primary Main runtime에서 L3 profile과 simulation/Paddle logical rect가 모두 `Rect2(280, 50, 1040, 768)`이고, 우측 하단 UI panel은 `Rect2(1406, 796, 152, 104)`로 field 바깥에 남는 것을 확인했다. runtime error 0.

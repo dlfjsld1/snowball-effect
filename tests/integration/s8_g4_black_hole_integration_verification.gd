@@ -19,6 +19,8 @@ func _ready() -> void:
 	var game_manager: GameManager = main.get_node("GameManager")
 	var stage_manager: StageManager = main.get_node("StageManager")
 	var simulation: BallSimulationManager = main.get_node("PlayField/SimulationMount/BallSimulationManager")
+	var paddle: Paddle = main.get_node("PlayField/PaddleMount/Paddle")
+	var gameplay_frame: GameplayFrame = main.get_node("UI/GameplayFrame")
 	var title_screen: TitleScreenScript = main.get_node("UI/TitleScreen")
 	var result_panel: ResultPanelScript = main.get_node("UI/ResultPanel")
 	game_manager.set_physics_process(false)
@@ -29,7 +31,7 @@ func _ready() -> void:
 
 	var galactic := StageCatalogScript.new().get_stage(2) as StageDefinition
 	stage_manager._enter_stage(galactic)
-	_verify_phase_mediation(game_manager, stage_manager, simulation)
+	_verify_phase_mediation(game_manager, stage_manager, simulation, paddle, gameplay_frame)
 	_verify_finale_lock_and_resets(game_manager, stage_manager, simulation, title_screen, result_panel)
 
 	if _failures == 0:
@@ -37,7 +39,7 @@ func _ready() -> void:
 	get_tree().quit(_failures)
 
 
-func _verify_phase_mediation(game_manager: GameManager, stage_manager: StageManager, simulation: BallSimulationManager) -> void:
+func _verify_phase_mediation(game_manager: GameManager, stage_manager: StageManager, simulation: BallSimulationManager, paddle: Paddle, gameplay_frame: GameplayFrame) -> void:
 	var radius := simulation.get_runtime_radius_for_level(13)
 	simulation.spawn_ball(Vector2(760.0, 320.0), Vector2.ZERO, radius, 13)
 	simulation.spawn_ball(Vector2(764.0, 320.0), Vector2.ZERO, radius, 13)
@@ -52,6 +54,8 @@ func _verify_phase_mediation(game_manager: GameManager, stage_manager: StageMana
 	_expect(game_manager.accept_black_hole_phase_presentation_finished(phase_id), "Matching phase completion must resume gameplay.")
 	_expect(stage_manager.current_state == StageManager.PLAYING, "Matching completion must resume Galactic gameplay.")
 	_expect(is_equal_approx(simulation.play_field_rect.size.x, 1040.0), "Matching completion must activate the L3 logical rect.")
+	_expect(gameplay_frame.get_profile_id() == &"L3", "Black Hole gameplay resume must switch the visible frame to the L3 profile.")
+	_expect(paddle.play_field_rect == gameplay_frame.get_field_rect(), "Paddle bounds must match the L3 visible frame profile.")
 	_expect(not game_manager.accept_black_hole_phase_presentation_finished(phase_id), "Duplicate phase completion must be rejected.")
 
 
