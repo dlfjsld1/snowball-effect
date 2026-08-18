@@ -271,7 +271,7 @@ MultiMesh follow-up은 simulation 구조를 바꾸지 않고 render snapshot con
 - 첫 Lv14 Ball을 이동 Black Hole runtime entity로 전환하며 L2→L3 확장
 - Black Hole 이동, 저등급 공 흡수와 주변 궤도 인력
 - Black Hole 하단 반사, 비성장·일반 Merge 제외
-- 흡수 공 Cashout 상당 점수 차감과 run score 0 Game Over
+- 흡수 공 Cashout 가치 `12.5%`/phase-entry Run Score `25%` 상한 차감과 run score 0 Game Over
 - 궤도 잔상
 - 두 번째 Black Hole 생성 후 두 Black Hole 충돌로 최종 회전·폭발·타이틀 Run End 연결
 - 타이틀 아래 Clear Score와 Main Menu 표시

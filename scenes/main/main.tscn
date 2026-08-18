@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
@@ -7,9 +7,11 @@
 [ext_resource type="PackedScene" path="res://scenes/gameplay/paddle.tscn" id="5_paddle"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="6_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
-[ext_resource type="PackedScene" path="res://scenes/backgrounds/gameplay_frame.tscn" id="8_frame"]
-[ext_resource type="PackedScene" path="res://scenes/backgrounds/stage_world.tscn" id="9_stage_world"]
-[ext_resource type="Script" path="res://scripts/presentation/audio_manager.gd" id="10_audio_manager"]
+[ext_resource type="PackedScene" path="res://scenes/ui/title_screen.tscn" id="8_title"]
+[ext_resource type="PackedScene" path="res://scenes/ui/result_panel.tscn" id="9_result"]
+[ext_resource type="PackedScene" path="res://scenes/backgrounds/gameplay_frame.tscn" id="10_frame"]
+[ext_resource type="PackedScene" path="res://scenes/backgrounds/stage_world.tscn" id="11_stage_world"]
+[ext_resource type="Script" path="res://scripts/presentation/audio_manager.gd" id="12_audio_manager"]
 
 [node name="Main" type="Node2D"]
 
@@ -21,6 +23,8 @@ paddle_path = NodePath("../PlayField/PaddleMount/Paddle")
 stage_manager_path = NodePath("../StageManager")
 hud_path = NodePath("../UI/HUDMount/HUD")
 pause_menu_path = NodePath("../UI/PauseMenu")
+title_screen_path = NodePath("../UI/TitleScreen")
+result_panel_path = NodePath("../UI/ResultPanel")
 gameplay_frame_path = NodePath("../UI/GameplayFrame")
 play_field_backdrop_path = NodePath("../PlayField/Backdrop")
 background_manager_path = NodePath("../StageWorld/BackgroundManager")
@@ -33,11 +37,11 @@ simulation_path = NodePath("../PlayField/SimulationMount/BallSimulationManager")
 
 [node name="AudioManager" type="Node" parent="."]
 process_mode = 3
-script = ExtResource("10_audio_manager")
+script = ExtResource("12_audio_manager")
 
 [node name="StageWorld" type="Node2D" parent="."]
 
-[node name="BackgroundManager" parent="StageWorld" instance=ExtResource("9_stage_world")]
+[node name="BackgroundManager" parent="StageWorld" instance=ExtResource("11_stage_world")]
 
 [node name="PlayField" type="Node2D" parent="."]
 
@@ -61,7 +65,7 @@ runtime_start_position = Vector2(800, 760)
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="GameplayFrame" parent="UI" instance=ExtResource("8_frame")]
+[node name="GameplayFrame" parent="UI" instance=ExtResource("10_frame")]
 
 [node name="HUDMount" type="Control" parent="UI"]
 layout_mode = 3
@@ -76,3 +80,7 @@ mouse_filter = 2
 layout_mode = 1
 
 [node name="PauseMenu" parent="UI" instance=ExtResource("7_pause")]
+
+[node name="TitleScreen" parent="UI" instance=ExtResource("8_title")]
+
+[node name="ResultPanel" parent="UI" instance=ExtResource("9_result")]

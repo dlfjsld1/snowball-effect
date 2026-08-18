@@ -49,6 +49,7 @@ var _pending_black_hole_logical_rect := Rect2()
 func _ready() -> void:
 	_simulation = get_node(simulation_path) as SimulationManager
 	_simulation.set_physics_process(false)
+	call_deferred("_disable_simulation_physics_process")
 	_stage_runtime = StageRuntime.new()
 	_settlement_service = SettlementService.new()
 	add_child(_stage_runtime)
@@ -64,6 +65,12 @@ func _ready() -> void:
 	_stage_runtime.black_hole_finale_locked.connect(_on_black_hole_finale_locked)
 	_settlement_service.final_settlement_started.connect(_on_final_settlement_started)
 	_settlement_service.final_settlement_finished.connect(_on_final_settlement_finished)
+
+
+func _disable_simulation_physics_process() -> void:
+	# The sibling simulation node may register its default physics callback after
+	# this manager's _ready. StageManager is the single authoritative tick owner.
+	_simulation.set_physics_process(false)
 
 
 func _physics_process(delta: float) -> void:

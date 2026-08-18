@@ -14,7 +14,7 @@
 - Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `scripts/core/stage_runtime.gd`, `tests/simulation/**`
 - Integration Point: 첫 Lv14 생성에서 `black_hole_phase_started(phase_id, from_rect, to_rect)`와 Black Hole position snapshot을 Integration/Presentation에 read-only 제공.
 - Dependencies: S5 완료와 S4 performance baseline.
-- Verification: 첫 Lv14가 일반 Clear 없이 Black Hole runtime entity로 한 번 전환; `local_level <= 2` 흡수와 Cashout 상당 점수 차감, run score 0의 즉시 Game Over, 다중 source vector 합산·600 total cap, Black Hole 상호 450 pull, 하단 반사·Cashout 제외, 비성장·Merge 제외, NaN·폭주 없음, 1,000공 성능 회귀 기록; 별도 Stage나 새 BallDefinition을 생성하지 않음.
+- Verification: 첫 Lv14가 일반 Clear 없이 Black Hole runtime entity로 한 번 전환; `local_level <= 2` 흡수와 Cashout 가치 `12.5%`/phase-entry Run Score `25%` 상한 패널티, 단일 저등급 흡수 즉사 방지와 반복 손실의 run score 0 즉시 Game Over, 다중 source vector 합산·900 total cap, Black Hole 상호 450 pull, 하단 반사·Cashout 제외, 비성장·Merge 제외, NaN·폭주 없음, 1,000공 성능 회귀 기록; 별도 Stage나 새 BallDefinition을 생성하지 않음.
 - Do Not Modify: Black Hole visual과 Stage resource 값.
 
 ### S8-G2 두 Black Hole 최종 충돌 runtime
