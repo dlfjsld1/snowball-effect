@@ -226,3 +226,27 @@ Branch: `ui-design`
 - Runtime visual load: three static backgrounds total 4,320,000 pixels, approximately 16.48 MiB uncompressed RGBA; dynamic overlay peak 48 small draw-rect particles. FPS was not measured in this Goal and remains part of S5-G5 Web integration evidence.
 - Preview paths: `docs/design/mockups/drafts/frame-paper8-stage-world-preview.png` and `frame-paper8-scale-shift-preview.png`.
 - S5-G4 is `VERIFIED`; three-Stage Desktop/Web completion remains S5-G5.
+
+## 2026-08-18 — S2-G5 contract repair and S6-G2 design preparation
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- `ball_merged(result_level, world_position)` 2인자 계약에 없는 score amount 추측을 제거하고 catalog name만 표시하도록 정정했다.
+- D안 `FIRST CONTACT` CUT-IN을 공통 배경과 공별 문구·공 레이어로 분리하고, 대상 6종을 Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`로 확정했다.
+- 후속 Goal로 local Lv4 즉시 Clear 제거(S3-G7), Stage Score gauge(S3-G8), 축하 메시지·`Next Stage` 확인(S5-G6/G6I), Galactic 투명 배경(S5-G7)을 문서화했다.
+
+### 검증
+
+- Godot 4.7.1 CLI project load exit 0. S2-G5, S6-G1, S6-G3, S6-G4 foundation, S6-G4 wiring 검증이 모두 exit 0으로 통과했다. S6-G4 wiring 종료 시 기존 ObjectDB 12개/resource 6개 leak 진단이 남지만 test assertion과 exit code는 정상이다.
+- S2-G5 fixture는 현재 Stage-local Merge 계약에 맞게 Ground chain을 명시했다. Core runtime은 변경하지 않았다.
+- CUT-IN layer asset 12개는 투명 alpha와 1600×900 공통 배경 조립 규격을 사용한다.
+- `git diff --check` 통과. MCP/Web은 이번 문서·asset 준비 변경에 사용하지 않았다.
+
+### 제외
+
+- S6-G2 runtime controller, pause/handoff, Run-scoped 중복 억제는 구현하지 않았다.
+- S3-G7/S3-G8/S5-G6/S5-G6I/S5-G7은 PENDING 문서 계약이며 runtime 파일을 수정하지 않았다.
+- 사용자가 별도로 결정한 Stage Restart 계약은 변경하지 않았다.

@@ -175,9 +175,16 @@ L1/L2 완료 뒤에는 다음 Stage를 활성화한다. L3는 첫 Lv14의 Black 
 
 ### S6-G2 CUT-IN and Screen Presentation
 
-- high-tier Merge/Shift/Final event의 cut-in 우선순위.
+- Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`의 Run 내 최초 생성 CUT-IN 6종.
 - `presentation_pause_requested(duration)`와 `cutin_finished(event_id)` handoff.
 - 중복/선점/취소/reset 정책.
+
+### 확정 후속 Presentation/Integration Goals
+
+- S3-G7: local Lv4 생성 즉시 Clear 제거와 Time Up Score Clear 단일 경로 마이그레이션.
+- S3-G8: `stage_score / clear_score` read-only gauge bar.
+- S5-G6/S5-G6I: Stage Clear 축하 메시지·`Next Stage` 요청 UI와 matching 요청 이후 Shift wiring.
+- S5-G7: Galactic Stage World 배경 레이어의 투명 합성.
 
 ### S6-G4 Sound Tier and Readability
 

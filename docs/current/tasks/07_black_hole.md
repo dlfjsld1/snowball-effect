@@ -30,7 +30,7 @@ Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성�
 
 ## Black Hole Phase Transition
 
-- 첫 Lv14 생성은 일반 Top Ball Clear/Result를 발생시키지 않는다.
+- 첫 Lv14 생성은 Run 내 최초 FIRST CONTACT CUT-IN 뒤 Black Hole Phase를 요청하며 Clear/Result를 발생시키지 않는다.
 - 발동 시 Stage는 바뀌지 않고 `Galactic`을 유지한다.
 - spawn·timer·input을 전환 중에만 잠근다.
 - Frame과 실제 Play Field가 L2 `880`에서 L3 `1040`으로 함께 좌우 대칭 확장한다.

@@ -182,7 +182,7 @@ func _on_ball_merged(result_level: int, world_position: Vector2) -> void:
 	var effect = MergeEffectScene.instantiate()
 	_register_effect(effect, &"MERGE", tier)
 	add_child(effect)
-	effect.setup(world_position, definition.display_name, definition.score_value, _get_effect_color(definition.base_color, tier), tier)
+	effect.setup(world_position, definition.display_name, _get_effect_color(definition.base_color, tier), tier)
 	if tier == 0:
 		effect.value_label.visible = false
 	merge_effect_count += 1

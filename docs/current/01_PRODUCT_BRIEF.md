@@ -36,8 +36,7 @@ Stage Start
    ├─ KEEP → 더 높은 머지 / 폭발적인 점수 가치
    └─ CASHOUT → Score + Time Bonus
 → Ground/Planetary 최고 공 제작?
-   ├─ YES → 즉시 Stage Clear
-   └─ NO → 시간 계속 진행
+   └─ YES → FIRST CONTACT CUT-IN → 시간 계속 진행
 → Galactic 첫 Black Hole 제작?
    ├─ YES → 이동 Black Hole 전환 + L3 확장 후 계속 플레이
    └─ 두 Black Hole 충돌 → 최종 폭발 + 타이틀 + Run End
@@ -45,7 +44,7 @@ Stage Start
    ├─ 화면 공 Final Settlement (Score Only)
    ├─ clear_score 이상 → Stage Clear
    └─ 미달 → Run End
-→ Ground/Planetary 성공 시 SCALE SHIFT
+→ Ground/Planetary 성공 시 축하 메시지 → `Next Stage` → SCALE SHIFT
 → 이전 최고 공이 다음 Stage의 기본 공
 ```
 
@@ -86,11 +85,7 @@ Final Settlement = Score Only
 
 ## 5. Stage Clear
 
-한 Stage를 통과하는 방법은 두 가지다.
-
-### Top Ball Clear
-
-Ground와 Planetary는 현재 Stage 최고 공을 만들면 즉시 성공한다. 마지막 Galactic의 첫 Lv14는 Black Hole 최종 국면을 활성화하는 예외다.
+Ground와 Planetary는 Time Up 뒤 Final Settlement 점수로 통과한다. local Lv4 생성 자체는 Clear 조건이 아니며, 첫 생성 CUT-IN 뒤 gameplay를 계속한다.
 
 ### Score Clear
 
@@ -263,7 +258,7 @@ Final Settlement:
 - Cashout
 - 공별 Time Bonus
 - Stage별 타이머
-- Ground/Planetary 최고 공 즉시 Clear; Galactic은 두 Black Hole 충돌로 종료
+- Ground/Planetary Time Up Score Clear; Galactic은 두 Black Hole 충돌로 종료
 - Time Up Final Settlement
 - clear_score 기반 Score Clear
 - Scale Shift
