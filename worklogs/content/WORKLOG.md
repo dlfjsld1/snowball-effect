@@ -747,3 +747,17 @@ Owner: Content/Systems/Release 담당
 - 모달과 버튼 크기를 이전 `440×480`, 48px 버튼 높이로 복구했다.
 - 좌우 내부 여백은 이전 62px보다 넓은 72px으로 조정하고, 상하 여백은 64px로 유지했다.
 - Primary `godot` scene validate와 Main runtime Pause 화면에서 버튼과 황동 파이프 프레임 사이 간격을 확인했다.
+
+## 2026-08-18 — S6-G4 ui_start·ui_click 연결
+
+Owner: Content/Systems/Release 담당
+
+- 원격 Main에 mount된 `TitleScreen.start_requested`를 AudioManager의 `ui_start` catalog key에 직접 연결했다.
+- 전용 사운드가 없는 `PauseMenu.settings_requested`를 일반 확정 조작음 `ui_click`에 연결했다.
+- `AudioManager.configure_sources()`에 선택형 TitleScreen source를 추가하고, S8-G4 Integration의 GameManager가 해당 source를 전달하도록 연결했다. 기존 3-source 호출 호환성은 유지했다.
+- S6-G4 자동 검증에 start signal 매핑과 source 재설정 시 중복 구독 방지를 포함했다.
+- Primary `godot` validation 5/5, S6-G4 verification scene exit 0, 실제 Main runtime에서 `start_requested` 후 활성 key `ui_start` 1개와 runtime error 0을 확인했다.
+- 실제 Main Web에 임시 검증 probe를 사용해 simulation tick을 유지한 500공을 구성했다. spatial candidates `2291`, grid cells `432`, 5초 시점 `60 FPS`였고 Paddle·공·HUD 경계를 시각 확인했다.
+- 첫 Canvas 입력 뒤 6개 policy sound가 `dropped=0`으로 동시에 활성화됐으며, 이어진 `run_end`가 6개를 선점하고 terminal 단독 재생되는 것을 확인했다. Web console warning/error는 0건이었다.
+- 임시 probe와 로컬 서버 파일을 제거한 뒤 clean Web build를 다시 export하고 정상 Main smoke를 확인했다. S6-G4의 남은 보류 항목이 없어 `VERIFIED`로 갱신했다.
+- 최종 clean 저장소에서 Godot 4.7.1 CLI/headless S6-G4 verification scene과 Main 120-frame smoke가 모두 exit 0이었다.

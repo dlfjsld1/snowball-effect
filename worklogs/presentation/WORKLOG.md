@@ -244,6 +244,7 @@ Branch: `fx-design`
 - S2-G5 fixture는 현재 Stage-local Merge 계약에 맞게 Ground chain을 명시했다. Core runtime은 변경하지 않았다.
 - CUT-IN layer asset 12개는 투명 alpha와 1600×900 공통 배경 조립 규격을 사용한다.
 - `git diff --check` 통과. MCP/Web은 이번 문서·asset 준비 변경에 사용하지 않았다.
+- push 직전 `origin/main` `dbd62bb`를 pull해 S6-G4 VERIFIED 오디오 갱신을 병합했다. STATUS 단일 충돌은 원격 S6-G4 최신 증거와 신규 PENDING Goal을 모두 보존해 해결했으며, 병합 뒤 Godot 4.7.1 CLI project load, S2-G5, S6-G4 foundation/wiring, Main 120-frame smoke가 모두 exit 0이었다.
 
 ### 제외
 

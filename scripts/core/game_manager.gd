@@ -82,7 +82,7 @@ func _initialize_runtime() -> void:
 	_presentation_manager.stage_shift_presentation_finished.connect(_on_stage_shift_presentation_finished)
 	_simulation.black_hole_phase_requested.connect(_on_black_hole_phase_requested)
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
-	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu)
+	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu, _title_screen)
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation, _stage_manager)
 	_pause_menu.pause_requested.connect(_on_pause_requested)
 	_pause_menu.retry_requested.connect(_on_retry_requested)
