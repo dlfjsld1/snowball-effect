@@ -12,6 +12,7 @@ signal stage_shift_started(next_definition: Resource, shift_id: int)
 signal stage_changed(definition: Resource)
 signal pause_requested()
 signal retry_requested()
+signal main_menu_requested()
 
 var _failures := 0
 var _audio_manager
@@ -72,6 +73,13 @@ func _ready() -> void:
 	_expect(_active_keys().count(&"ui_pause") == 1, "Reconfiguring sources must not duplicate pause connections.")
 	pause_requested.emit()
 	_expect(_active_keys().count(&"ui_pause") == 1, "The shared pause toggle request must not stack ui_pause on resume.")
+	_audio_manager.reset_runtime()
+	main_menu_requested.emit()
+	_expect(_active_keys().has(&"ui_menu"), "Main-menu request must map to ui_menu.")
+
+	_audio_manager.reset_runtime()
+	stage_state_changed.emit(&"RUN_ENDED")
+	_expect(_active_keys().has(&"run_end"), "Run-ended stage state must map to run_end.")
 
 	_audio_manager.reset_runtime()
 	_audio_manager.play_event(&"settlement_start")

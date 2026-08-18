@@ -262,6 +262,7 @@ func _connect_pause_menu_source() -> void:
 		return
 	_connect_signal(_pause_menu_source, &"pause_requested", _on_pause_requested)
 	_connect_signal(_pause_menu_source, &"retry_requested", _on_retry_requested)
+	_connect_signal(_pause_menu_source, &"main_menu_requested", _on_main_menu_requested)
 
 
 func _disconnect_sources() -> void:
@@ -275,6 +276,7 @@ func _disconnect_sources() -> void:
 	_disconnect_signal(_stage_source, &"stage_changed", _on_stage_changed)
 	_disconnect_signal(_pause_menu_source, &"pause_requested", _on_pause_requested)
 	_disconnect_signal(_pause_menu_source, &"retry_requested", _on_retry_requested)
+	_disconnect_signal(_pause_menu_source, &"main_menu_requested", _on_main_menu_requested)
 
 
 func _connect_signal(source: Node, signal_name: StringName, callback: Callable) -> void:
@@ -309,6 +311,8 @@ func _on_stage_state_changed(state: StringName) -> void:
 		_play_stage_clear_once()
 	elif state == STAGE_FAILED:
 		play_event(&"stage_fail")
+	elif state == &"RUN_ENDED":
+		play_event(&"run_end")
 	elif state == STAGE_PLAYING:
 		_stage_clear_played = false
 
@@ -332,6 +336,10 @@ func _on_pause_requested() -> void:
 func _on_retry_requested() -> void:
 	reset_runtime()
 	play_event(&"ui_retry")
+
+
+func _on_main_menu_requested() -> void:
+	play_event(&"ui_menu")
 
 
 func _on_black_hole_phase_requested() -> void:
