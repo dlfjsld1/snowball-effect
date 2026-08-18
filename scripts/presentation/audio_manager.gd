@@ -54,6 +54,7 @@ var _players: Array[AudioStreamPlayer] = []
 var _simulation_source: Node
 var _stage_source: Node
 var _pause_menu_source: Node
+var _title_screen_source: Node
 var _stage_clear_played := false
 var _black_hole_loop_player: AudioStreamPlayer
 var _last_play_time_by_group: Dictionary = {}
@@ -75,14 +76,21 @@ func _input(event: InputEvent) -> void:
 	audio_unlocked = true
 
 
-func configure_sources(simulation_source: Node, stage_source: Node, pause_menu_source: Node) -> void:
+func configure_sources(
+	simulation_source: Node,
+	stage_source: Node,
+	pause_menu_source: Node,
+	title_screen_source: Node = null
+) -> void:
 	_disconnect_sources()
 	_simulation_source = simulation_source
 	_stage_source = stage_source
 	_pause_menu_source = pause_menu_source
+	_title_screen_source = title_screen_source
 	_connect_simulation_source()
 	_connect_stage_source()
 	_connect_pause_menu_source()
+	_connect_title_screen_source()
 
 
 func play_event(event_key: StringName) -> bool:
@@ -262,7 +270,14 @@ func _connect_pause_menu_source() -> void:
 		return
 	_connect_signal(_pause_menu_source, &"pause_requested", _on_pause_requested)
 	_connect_signal(_pause_menu_source, &"retry_requested", _on_retry_requested)
+	_connect_signal(_pause_menu_source, &"settings_requested", _on_settings_requested)
 	_connect_signal(_pause_menu_source, &"main_menu_requested", _on_main_menu_requested)
+
+
+func _connect_title_screen_source() -> void:
+	if not is_instance_valid(_title_screen_source):
+		return
+	_connect_signal(_title_screen_source, &"start_requested", _on_start_requested)
 
 
 func _disconnect_sources() -> void:
@@ -276,7 +291,9 @@ func _disconnect_sources() -> void:
 	_disconnect_signal(_stage_source, &"stage_changed", _on_stage_changed)
 	_disconnect_signal(_pause_menu_source, &"pause_requested", _on_pause_requested)
 	_disconnect_signal(_pause_menu_source, &"retry_requested", _on_retry_requested)
+	_disconnect_signal(_pause_menu_source, &"settings_requested", _on_settings_requested)
 	_disconnect_signal(_pause_menu_source, &"main_menu_requested", _on_main_menu_requested)
+	_disconnect_signal(_title_screen_source, &"start_requested", _on_start_requested)
 
 
 func _connect_signal(source: Node, signal_name: StringName, callback: Callable) -> void:
@@ -338,8 +355,16 @@ func _on_retry_requested() -> void:
 	play_event(&"ui_retry")
 
 
+func _on_settings_requested() -> void:
+	play_event(&"ui_click")
+
+
 func _on_main_menu_requested() -> void:
 	play_event(&"ui_menu")
+
+
+func _on_start_requested() -> void:
+	play_event(&"ui_start")
 
 
 func _on_black_hole_phase_requested() -> void:

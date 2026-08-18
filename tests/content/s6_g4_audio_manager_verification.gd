@@ -12,7 +12,9 @@ signal stage_shift_started(next_definition: Resource, shift_id: int)
 signal stage_changed(definition: Resource)
 signal pause_requested()
 signal retry_requested()
+signal settings_requested()
 signal main_menu_requested()
+signal start_requested()
 
 var _failures := 0
 var _audio_manager
@@ -21,7 +23,7 @@ var _audio_manager
 func _ready() -> void:
 	_audio_manager = AudioManagerScript.new()
 	add_child(_audio_manager)
-	_audio_manager.configure_sources(self, self, self)
+	_audio_manager.configure_sources(self, self, self, self)
 
 	_expect(not _audio_manager.play_event(&"merge_t0"), "Playback must wait for an input unlock.")
 	_audio_manager.audio_unlocked = true
@@ -68,7 +70,7 @@ func _ready() -> void:
 	_expect(_active_keys().has(&"black_hole_finale"), "Finale must play its one-shot event.")
 
 	_audio_manager.reset_runtime()
-	_audio_manager.configure_sources(self, self, self)
+	_audio_manager.configure_sources(self, self, self, self)
 	pause_requested.emit()
 	_expect(_active_keys().count(&"ui_pause") == 1, "Reconfiguring sources must not duplicate pause connections.")
 	pause_requested.emit()
@@ -76,6 +78,14 @@ func _ready() -> void:
 	_audio_manager.reset_runtime()
 	main_menu_requested.emit()
 	_expect(_active_keys().has(&"ui_menu"), "Main-menu request must map to ui_menu.")
+
+	_audio_manager.reset_runtime()
+	settings_requested.emit()
+	_expect(_active_keys().count(&"ui_click") == 1, "Settings request must map once to the generic ui_click sound.")
+
+	_audio_manager.reset_runtime()
+	start_requested.emit()
+	_expect(_active_keys().count(&"ui_start") == 1, "Start request must map once to ui_start after source reconfiguration.")
 
 	_audio_manager.reset_runtime()
 	stage_state_changed.emit(&"RUN_ENDED")
