@@ -138,12 +138,12 @@ Codex는 작업을 마치고 아래 형식으로 보고한다.
 - 플레이 중 공을 바닥으로 보내는 것은 `Cashout`.
 - 일반 Cashout = `Score + Time Bonus`.
 - 고등급 공을 더 머지할지 Cashout해 시간을 확보할지 선택한다.
-- Ground/Planetary 최고 공 제작 = 즉시 Stage Clear. Galactic 첫 Lv14는 이동 Black Hole 국면으로 전환하고 두 번째 Black Hole과 충돌할 때 Run End.
+- 각 Stage local Lv3/Lv4의 Run 내 최초 생성은 6종 FIRST CONTACT CUT-IN 대상이며, Ground/Planetary 최고 공 제작은 즉시 Clear하지 않는다. Galactic 첫 Lv14는 CUT-IN 뒤 이동 Black Hole 국면으로 전환하고 두 번째 Black Hole과 충돌할 때 Run End.
 - Time Up = 화면 공 `Final Settlement`.
 - Final Settlement = `Score only`; Time Bonus 없음.
 - Time Up 후 Final Stage Score가 `clear_score` 이상이면 Stage Clear.
 - 부족하면 Run End.
-- 성공한 Stage는 Settlement 후 `SCALE SHIFT`.
+- 성공한 Stage는 Settlement 후 축하 메시지에서 `Next Stage`를 확인한 뒤 `SCALE SHIFT`.
 - Time Up 판정은 해당 physics tick의 Merge와 Active Cashout을 모두 반영한 뒤 수행한다.
-- 같은 tick에서는 Top Ball Clear가 Time Up보다 우선한다.
+- 같은 tick의 local Lv4 생성은 Time Up을 취소하지 않는다.
 - `stage_score`와 `run_score`는 점수 이벤트 때 함께 증가하며 Stage 종료 시 다시 합산하지 않는다.

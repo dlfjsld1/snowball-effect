@@ -41,7 +41,7 @@
 - CUT-IN 후보
 - 특별 사운드
 
-Stage local 5종 중 4단계 공(`local_level = 3`)의 첫 생성은 일반 고등급 CUT-IN 대상이다. 최고 공(`local_level = 4`)은 실제 결과 공의 모습을 Stage Clear / Scale Shift 또는 Black Hole Phase 연출 안에서 강조하고 일반 CUT-IN을 중복 재생하지 않는다.
+Stage local 5종 중 마지막 두 단계(`local_level = 3`, `local_level = 4`)의 Run 내 첫 생성은 `FIRST CONTACT` 고등급 CUT-IN 대상이다. 대상은 Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`로 정확히 6종이다.
 
 ### Tier 4
 - SCALE SHIFT
@@ -145,4 +145,4 @@ Time Up 또는 Stage Clear Settlement:
 - Time Bonus popup 금지
 - 공 수가 많으면 개별 Tween 대신 배치/샘플링 연출
 
-Stage 최고 공은 일반 CUT-IN보다 Stage Clear / Scale Shift 연출을 우선한다.
+Moon과 Galaxy는 CUT-IN 뒤 gameplay를 재개한다. 첫 Black Hole은 CUT-IN을 마친 뒤 Black Hole Phase 전환을 이어간다.

@@ -138,8 +138,10 @@ MERGE ATTRACTION
 
 CUT-IN 후보:
 
-- 각 Stage에서 처음 만든 4단계 공(`local_level = 3`)
-- 5단계 최고 공은 별도 일반 CUT-IN 대신 실제 결과 공을 사용하는 Stage Clear / Scale Shift 또는 Black Hole Phase 연출로 강조
+- 각 Stage에서 Run 내 처음 만든 local Lv3·Lv4
+- Ground: `Giant Snowball`, `Moon`
+- Planetary: `Supernova`, `Galaxy`
+- Galactic: `Event Horizon`, `Black Hole`
 - 매우 높은 Tier 머지
 - 기록 갱신급 공
 - Paddle이 Item Orb를 획득해 아이템 효과 적용이 확정된 순간
@@ -166,7 +168,7 @@ pending_priority_event
 - 연속 머지가 발생해도 CUT-IN을 큐로 끝없이 쌓지 않는다.
 - 낮은 우선순위 이벤트는 버릴 수 있다.
 - 높은 우선순위 이벤트가 기존 낮은 이벤트를 대체할 수 있다.
-- 일반 CUT-IN 직후 Scale Shift가 발생하면 Scale Shift를 우선한다.
+- Moon·Galaxy CUT-IN 뒤에는 gameplay를 재개하고, Black Hole CUT-IN 뒤에는 Black Hole Phase 전환을 이어간다.
 - 동일 공의 첫 발견 CUT-IN은 한 판에 한 번을 기본으로 한다.
 
 ---

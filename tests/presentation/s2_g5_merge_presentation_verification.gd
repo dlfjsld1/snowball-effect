@@ -11,6 +11,7 @@ func _ready() -> void:
 	var hud: Hud = HudScene.instantiate()
 	add_child(simulation)
 	add_child(hud)
+	simulation.configure_stage_ball_levels(PackedInt32Array([0, 1, 2, 3, 4]))
 	hud.bind_sources(null, simulation)
 
 	simulation.spawn_ball(Vector2(100.0, 100.0), Vector2.ZERO, 4.0, 0)
@@ -22,11 +23,11 @@ func _ready() -> void:
 
 	hud.effect_manager._on_ball_merged(13, Vector2(200.0, 200.0))
 	var high_value_effect: MergeEffect = hud.effect_manager.get_child(-1)
-	_expect(high_value_effect.value_label.text.contains("1.00e+43"), "High-value Merge display must use ScoreFormatter output.")
+	_expect(high_value_effect.value_label.text == "EVENT HORIZON", "Merge display must use the catalog name without inferring a score amount.")
 	_expect(hud.effect_manager.merge_effect_count == 2, "Presentation effect count must follow emitted events only.")
 
 	if _failures == 0:
-		print("S2_G5_VERIFIED merge_fx_once=true high_value_format=true presentation_readonly=true")
+		print("S2_G5_VERIFIED merge_fx_once=true catalog_name=true presentation_readonly=true")
 	get_tree().quit(_failures)
 
 

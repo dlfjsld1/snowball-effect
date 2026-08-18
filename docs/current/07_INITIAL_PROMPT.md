@@ -38,10 +38,10 @@ Godot 4.x로 브라우저에서 실행 가능한 2D 액션 머지 게임 **Snowb
 26. Ground/Planetary 최고 공 생성은 즉시 Stage Clear다. Galactic 첫 Lv14는 이동 Black Hole 국면으로 전환한다.
 27. Time Up 시 활성 공을 Final Settlement하며 Score만 더하고 Time Bonus는 주지 않는다.
 28. Time Up 후 final Stage score가 clear_score 이상이면 다음 Stage, 미달이면 Run End다.
-29. 성공한 Stage는 Settlement 이후 Scale Shift로 다음 Stage에 진입한다.
+29. 성공한 Stage는 Settlement 이후 축하 메시지에서 `Next Stage`를 확인한 뒤 Scale Shift로 다음 Stage에 진입한다.
 30. 마지막 Galactic Stage는 Time Up 또는 두 Black Hole의 충돌로 종료한다. 첫 Lv14 Black Hole Ball은 이동 기믹으로 전환하며 같은 Galactic gameplay의 L3 국면을 활성화한다.
 31. Time Up은 같은 physics tick의 Merge와 Active Cashout을 먼저 반영한 뒤 판정한다. Cashout으로 시간이 양수가 되면 플레이를 계속한다.
-32. 같은 tick에서는 Top Ball Clear가 Time Up보다 우선한다.
+32. 같은 tick의 local Lv4 생성은 종료 사유가 아니며 Merge/Cashout commit 뒤 Time Up 경로를 사용한다.
 33. 모든 점수 이벤트는 `stage_score`와 `run_score`에 같은 amount를 한 번씩 더하며 Stage 종료 시 `run_score += stage_score`를 하지 않는다.
 34. Final Settlement는 active ball snapshot의 기본 score_value만 한 번 합산하며 Time Bonus, Active Cashout 전용 modifier, 추가 Merge를 적용하지 않는다.
 

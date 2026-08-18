@@ -48,12 +48,14 @@ levels [10, 11, 12, 13, 14], spawn 35/s
 
 ## 전환 순서
 
-1. Stage Clear 결정 (Top Ball 또는 Score Clear)
+1. Time Up Final Settlement 뒤 Score Clear 결정
 2. 중복 전환 잠금
 3. Final Settlement 완료 확인
-4. 시뮬레이션 짧게 감속
-5. `SCALE SHIFT`
-6. Stage 데이터 변경
+4. 축하 메시지와 `Next Stage` 버튼을 표시하고 gameplay 정지
+5. matching `Next Stage` 요청 수신
+6. 시뮬레이션 짧게 감속
+7. `SCALE SHIFT`
+8. Stage 데이터 변경
 8. 렌더 크기 스케일 재설정
 9. 배경 전환
 10. 새 Stage 이름과 공 족보 갱신; 세로 5칸에서 첫 공만 공개
@@ -64,8 +66,8 @@ levels [10, 11, 12, 13, 14], spawn 35/s
 
 ## 주의
 
-- 최고 공이 생성되자마자 바닥으로 떨어져도 Stage는 전환됨
-- 같은 최고 공이 여러 개 생겨도 한 번만 전환
+- local Lv4 생성만으로 Stage를 전환하지 않음
+- 축하 메시지 표시 중 중복 `Next Stage` 요청은 한 번만 수락
 - 전환 중 새 전환 요청 무시
 - 전환 후 기존 고레벨 공 인덱스와 정의가 깨지지 않음
 - `run_score`, 통계, 최고 기록은 유지

@@ -52,7 +52,7 @@ StageManager
  ├─ Stage score / clear_score
  ├─ 기본/최고 global_level
  ├─ 생성량
- ├─ Top Ball Clear
+ ├─ local Lv3/Lv4 first-discovery tracking
  ├─ Time Up / Final Settlement / Score Clear
  ├─ Scale Shift
  └─ 블랙홀 설정
@@ -535,7 +535,7 @@ game event committed
 - 실제 게임 이벤트는 CUT-IN 시작 전에 이미 확정
 - CUT-IN 애니메이션 실패가 게임 상태를 되돌리지 않음
 - 연속 이벤트를 무한 큐잉하지 않음
-- Scale Shift가 일반 CUT-IN보다 높은 우선순위
+- local Lv4 CUT-IN과 Clear 확인 UI가 겹치지 않도록 상태별 순서를 보장
 - 입력 눌림 상태가 pause/resume 후 꼬이지 않는지 검증
 - Tween/AnimationPlayer는 Web Export에서 검증
 
@@ -585,7 +585,7 @@ scale shift: up to about 0.8~1.0s
 
 ## 13. 블랙홀 기술
 
-첫 Lv14 Black Hole Ball 생성은 일반 Top Ball Clear를 요청하지 않는다. Core simulation은 해당 Ball slot을 일반 Merge/Cashout 집합에서 제거하고, 그 위치와 운동 상태를 이어받는 Black Hole runtime entity로 전환한다. 두 번째 Lv14도 같은 방식으로 두 번째 Black Hole entity가 되며, 둘의 접촉은 일반 Merge보다 우선하는 terminal event다.
+첫 Lv14 Black Hole Ball 생성은 Stage Clear를 요청하지 않는다. Run 내 첫 생성이면 FIRST CONTACT CUT-IN을 완료한 뒤, Core simulation은 해당 Ball slot을 일반 Merge/Cashout 집합에서 제거하고 그 위치와 운동 상태를 이어받는 Black Hole runtime entity로 전환한다. 두 번째 Lv14도 같은 방식으로 두 번째 Black Hole entity가 되며, 둘의 접촉은 일반 Merge보다 우선하는 terminal event다.
 
 Black Hole gameplay state와 force/absorption 계산은 Core가 소유하고, BackgroundManager는 read-only 위치 snapshot을 받아 시각 중심을 맞춘다. 활성화는 Stage 변경이 아니라 같은 Galactic Stage 안의 `Black Hole Phase Transition`이다.
 
@@ -824,27 +824,19 @@ Stage 종료 판정은 다음 순서를 따른다.
 ```text
 1. stage_time_left -= delta
 2. 이동 / 충돌 / Merge 처리
-3. Merge 확정 및 Top Ball 여부 기록
+3. Merge 확정 및 local Lv3/Lv4 최초 생성 여부 기록
 4. Active Cashout 점수와 Time Bonus 반영
 5. 종료 판정
-   - Top Ball 생성 → TOP_BALL_CLEAR
-   - 아니고 stage_time_left <= 0 → TIME_UP
+   - stage_time_left <= 0 → TIME_UP
    - 그 외 → PLAYING 유지
 ```
 
 같은 tick의 Cashout으로 시간이 다시 양수가 되면 Time Up을 취소한다.
-같은 tick에 Top Ball과 Time Up 조건이 모두 있으면 Top Ball Clear가 우선한다.
+local Lv4 생성은 종료 사유가 아니다. 같은 tick에 local Lv4와 Time Up이 함께 발생하면 Merge/Cashout commit과 최초 발견 기록을 마친 뒤 Time Up 경로를 사용한다.
 
-### Top Ball Clear
+### Local Lv4 first discovery
 
-현재 Stage `top_global_level` 공이 생성되면:
-
-1. Stage 성공 상태 잠금
-2. 추가 Stage 타이머 감소 정지
-3. 일반 CUT-IN보다 Stage Clear 우선
-4. `stage_clear_decided(reason = TOP_BALL)` 확정
-5. Final Settlement 실행
-6. `stage_clear_completed` 후 다음 Stage면 Scale Shift
+현재 Stage `top_global_level` 공이 처음 생성되면 Run-scoped discovery를 기록하고 FIRST CONTACT CUT-IN을 요청한다. Ground/Planetary에서는 CUT-IN 뒤 PLAYING으로 돌아가며, Galactic의 첫 Black Hole만 CUT-IN 뒤 Black Hole Phase 전환을 이어간다.
 
 ### Time Up
 
@@ -854,8 +846,9 @@ tick의 Cashout 반영 후에도 시간이 0 이하이면:
 2. 플레이 입력/물리 진행 정지 또는 짧게 감속
 3. Final Settlement
 4. 마지막 Stage가 아니면 `final_stage_score >= clear_score` 판정
-5. 성공 → Scale Shift
-6. 실패 → Run End
+5. 성공 → 축하 메시지와 `Next Stage` 확인 대기
+6. matching `Next Stage` 요청 → Scale Shift
+7. 실패 → Run End
 
 ### Final Settlement
 

@@ -22,8 +22,8 @@
 - Owner: Presentation
 - Owned Files: `scripts/presentation/presentation_manager.gd`, `scripts/presentation/cutin_controller.gd`, `scenes/effects/**`, `tests/presentation/**`
 - Integration Point: `presentation_pause_requested(duration)`와 `cutin_finished(event_id)`를 Integration에 제공.
-- Dependencies: S6-G1과 S5-G3 상태 계약.
-- Verification: 중요 Merge/Shift 연출 1초 미만, 중복/우선순위 정상, animation 완료가 gameplay 판정을 직접 실행하지 않음.
+- Dependencies: S6-G1, S3-G7과 S5-G3 상태 계약.
+- Verification: Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`의 Run 내 최초 생성 CUT-IN 6종; 공통 배경 하나와 공별 문구·공 레이어 조립; 기본 1초 미만; 같은 공 반복 생성 억제; Moon/Galaxy 뒤 PLAYING 복귀, 첫 Black Hole 뒤 Phase handoff; animation 완료가 gameplay 판정을 직접 실행하지 않음.
 - Do Not Modify: GameManager/StageManager와 Merge logic.
 
 ### S6-G3 Audio 콘텐츠
