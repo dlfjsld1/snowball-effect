@@ -1,8 +1,6 @@
 class_name MergeEffect
 extends Node2D
 
-const ScoreFormatter = preload("res://scripts/utils/score_formatter.gd")
-
 @export var lifetime := 0.32
 
 @onready var value_label: Label = $ValueLabel
@@ -12,11 +10,11 @@ var _color := Color.WHITE
 var _fx_tier := 0
 
 
-func setup(world_position: Vector2, display_name: String, score_value: float, base_color: Color, fx_tier: int) -> void:
+func setup(world_position: Vector2, display_name: String, base_color: Color, fx_tier: int) -> void:
 	position = world_position
 	_color = base_color
 	_fx_tier = fx_tier
-	value_label.text = "%s  VALUE %s" % [display_name.to_upper(), ScoreFormatter.format_score(score_value)]
+	value_label.text = display_name.to_upper()
 	value_label.modulate = base_color
 	queue_redraw()
 

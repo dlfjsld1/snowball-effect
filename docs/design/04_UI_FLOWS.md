@@ -21,11 +21,9 @@ Playing
       └─ Main Screen → Confirm/Cancel
            └─ Confirm → end current Run → Main Screen
   ├─ Black Hole gimmick activation → Black Hole Phase Transition → Galactic Playing (L3)
-  ├─ Top Ball Clear Lock → Final Settlement
-  │    ├─ non-final Stage → Scale Shift → Next Stage Playing
-  │    └─ final Stage → Final Result
+  ├─ local Lv3/Lv4 first discovery → FIRST CONTACT CUT-IN → Playing
   └─ Time Up Lock → Final Settlement
-       ├─ non-final + score clear → Score Clear → Scale Shift → Next Stage Playing
+       ├─ non-final + score clear → Congratulations pause → `Next Stage` → Scale Shift → Next Stage Playing
        ├─ non-final + score miss → Failure → Run Result
        └─ final Stage → Final Result
 
@@ -136,12 +134,13 @@ Main Screen과 Pause가 같은 Settings panel을 공유한다.
 
 UI는 다음 순서를 섞지 않는다.
 
-1. Clear Lock 또는 Time Up Lock.
+1. Time Up Lock.
 2. Final Settlement: 남은 공의 base score 반영 표시.
 3. authoritative success/failure reason 표시.
-4. non-final success면 Scale Shift, final success면 Final Result.
-5. non-final Shift의 HUD reflow와 profile activation.
-6. 다음 Stage control 반환 또는 Final Result.
+4. non-final success면 축하 메시지와 `Next Stage` 버튼을 표시한 채 정지, final success면 Final Result.
+5. matching `Next Stage` 요청을 받은 뒤에만 Scale Shift.
+6. non-final Shift의 HUD reflow와 profile activation.
+7. 다음 Stage control 반환 또는 Final Result.
 
 Settlement score가 이미 run score에 반영되는 authoritative event를 표시할 뿐 Presentation이 `run_score += stage_score`를 수행하지 않는다.
 
@@ -149,14 +148,14 @@ Settlement score가 이미 run score에 반영되는 authoritative event를 표�
 
 | Trigger | Stage | After Final Settlement | Presentation destination |
 |---|---|---|---|
-| Top Ball | non-final | `CLEARED` | Clear → Scale Shift |
+| local Lv4 first discovery | non-final | `PLAYING` | FIRST CONTACT CUT-IN → Playing |
 | Two Black Holes contact | final | terminal snapshot | mutual orbit·폭발 뒤 gameplay UI 제거, `SNOWBALL EFFECT`, `CLEAR SCORE`, `MAIN MENU` |
-| Time Up + score clear | non-final | `CLEARED` | Score Clear → Scale Shift |
+| Time Up + score clear | non-final | `CLEARED` | Congratulations pause → `Next Stage` → Scale Shift |
 | Time Up + score miss | non-final | `FAILED` | Failure → Run Result |
 | Time Up | final | final result snapshot | Final Result; no next Stage |
 
 - 같은 tick의 Active Cashout으로 시간이 다시 양수가 되면 Time Up UI를 띄우지 않는다.
-- 같은 tick에 Top Ball과 Time Up이 함께 생기면 Top Ball success UI를 사용한다.
+- 같은 tick에 local Lv4와 Time Up이 함께 생기면 최초 발견은 기록하되 종료 경로는 Time Up 결과를 사용한다.
 - 결과가 잠기기 전에 failure overlay를 선행 표시하지 않는다.
 - 하나의 terminal correlation ID에는 presentation 한 종류만 시작한다.
 

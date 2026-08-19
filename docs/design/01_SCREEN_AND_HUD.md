@@ -23,7 +23,7 @@ Runtime ownership note: HUD는 Presentation-owned, Pause/Main/Settings runtime�
 |---|---:|---|---|
 | `stage_display_name` | 1 | `Ground`/`Planetary`/`Galactic`을 항상 표시 | StageDefinition |
 | `stage_time_left` | 1 | 항상 표시, 10초 미만 warning state | Core Stage runtime |
-| `stage_score / clear_score` | 1 | Stage Score와 Target을 한 묶음으로 크게 표시 | Core score ledger + StageDefinition |
+| `stage_score / clear_score` | 1 | Stage Score와 Target을 한 묶음으로 크게 표시하고 아래에 채워지는 gauge bar 배치 | Core score ledger + StageDefinition |
 | `ball_progression[]` | 2 | 현재 Stage의 5종을 낮은 단계부터 세로 5칸에 배치하고 발견된 공만 표시 | StageDefinition + BallCatalog + Core discovery event |
 | `run_score` | 2 | Stage Score보다 작고 낮은 대비로 항상 표시 | Core score ledger |
 | `active_effects[]` | 2 | 0개면 숨김, 활성 효과마다 남은 시간 표시 | Optional Item/Effect system |
@@ -43,7 +43,7 @@ Stage 이름은 persistent HUD 필수 항목이다. Stage index 숫자는 선택
 4. Current Stage Ball Progression — 세로 5칸.
 5. Run Score.
 
-Stage name, Time, Stage Score/Target은 1차 계층 안에서 역할을 구분한다. Ball Progression은 Merge 결과를 화면을 떠나지 않고 확인하는 compact read-only vertical chain이다. 5칸 housing은 항상 같은 높이를 유지하지만 Stage 진입 시 첫 아이콘만 표시하고, 새로운 local 공을 만들 때 아래 슬롯의 아이콘과 이름을 하나씩 공개한다. 미발견 항목은 silhouette나 정답 label을 보여주지 않는다.
+Stage name, Time, Stage Score/Target은 1차 계층 안에서 역할을 구분한다. 점수 gauge는 `clamp(stage_score / clear_score, 0, 1)`의 read-only 시각화이며 판정이나 점수 계산을 수행하지 않는다. `clear_score <= 0`인 Galactic에서는 숨기거나 final-stage 전용 비결정 상태로 바꾼다. Ball Progression은 Merge 결과를 화면을 떠나지 않고 확인하는 compact read-only vertical chain이다. 5칸 housing은 항상 같은 높이를 유지하지만 Stage 진입 시 첫 아이콘만 표시하고, 새로운 local 공을 만들 때 아래 슬롯의 아이콘과 이름을 하나씩 공개한다. 미발견 항목은 silhouette나 정답 label을 보여주지 않는다.
 
 ### Right — active state panel
 

@@ -45,8 +45,9 @@
 - 일시정지 진입 버튼
 - 현재 Stage 이름 (`Ground` / `Planetary` / `Galactic`)
 - 현재 Stage 공 족보
+- 현재 `stage_score / clear_score` 진행을 보여주는 점수 게이지
 
-점수 영역 안에서 Stage Score와 Run Score를 어떻게 병기할지는 UI 튜닝 대상으로 두되, HUD의 최상위 정보 종류를 불필요하게 늘리지 않는다. 활성 아이템이 없을 때는 빈 슬롯 또는 비활성 상태로 표시한다.
+점수 영역 안에서 Stage Score와 Run Score를 어떻게 병기할지는 UI 튜닝 대상으로 두되, HUD의 최상위 정보 종류를 불필요하게 늘리지 않는다. 점수 게이지는 authoritative `stage_score`와 현재 Stage의 `clear_score`만 읽고 진행률을 표시하며 Clear를 직접 판정하지 않는다. 활성 아이템이 없을 때는 빈 슬롯 또는 비활성 상태로 표시한다.
 
 공 족보는 수박게임의 진화표처럼 현재 Stage의 local 공 5종을 낮은 단계부터 최고 단계까지 **세로 방향**으로 보여준다. 플레이어가 같은 공 두 개를 합치면 다음에 어떤 공이 되는지 화면을 떠나지 않고 확인할 수 있어야 한다.
 
@@ -143,7 +144,7 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 - 결과 velocity는 두 입력의 mass-weighted average를 계승하고, 최종 runtime speed cap을 적용한다. 즉 무거운 입력 공의 기존 움직임을 조금 더 많이 반영하되, Merge가 공 속도를 무한히 키우지 않는다.
 - 다음 물리 프레임부터 재머지 가능
 - 점수 가치와 비주얼 레벨 상승
-- Stage 최고 공 여부 확인
+- Stage local Lv3·Lv4 최초 생성 CUT-IN 대상 여부 확인. Ground/Planetary local Lv4 생성은 즉시 Clear를 요청하지 않는다.
 
 ---
 
@@ -176,7 +177,7 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 
 `base_color`는 BallDefinition의 기본 식별색 seed다. 다중 색상 텍스처·후광·파티클은 Presentation이 이 값을 보조 팔레트와 함께 해석해 표현한다. 실제 gameplay 공의 visual/collision 반지름은 현재 Stage의 local level로 계산한다. 각 Stage의 기본공은 반지름 `4`(지름 8 logical pixel)로 다시 시작하고, 같은 Stage 안에서 `4 → 8 → 16 → 32 → 64`로 2배씩 성장한다. 따라서 Ground의 최고공 Moon은 Ground에서 반지름 `64`지만 Planetary의 기본공으로 다시 등장할 때는 반지름 `4`이며, Planetary 최고공 Galaxy도 Galactic 진입 시 같은 방식으로 초기화된다. 화면과 충돌 반지름은 항상 같은 값을 사용한다. BallDefinition의 기존 `radius`는 catalog/fallback seed이며 Stage runtime 크기의 source of truth가 아니다. 질량은 전역 BallDefinition 데이터를 유지한다.
 
-`fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Nebula(Lv9)부터 Event Horizon(Lv13)은 3, Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. Ground/Planetary 최고 공은 Stage Clear 연출을, Galactic Lv14는 Black Hole Phase 전환 연출을 우선한다.
+`fx_tier`는 일반 Merge/Cashout의 기본 연출 우선순위이며 전역 `BallDefinition`이 소유한다. Snowflake(Lv0)는 0, Snowball(Lv1)부터 Giant Snowball(Lv3)은 1, Moon(Lv4)부터 Supernova(Lv8)는 2, Nebula(Lv9)부터 Event Horizon(Lv13)은 3, Black Hole(Lv14)은 4를 사용한다. Moon과 Galaxy가 다음 Stage의 기본 공으로 재사용되어도 같은 전역 tier를 유지한다. 각 Stage의 local Lv3·Lv4 첫 생성은 Run당 한 번 `FIRST CONTACT` CUT-IN 대상이다.
 
 ---
 
@@ -229,7 +230,7 @@ Time Bonus를 BallDefinition의 고정값으로 저장하지 않는다.
 | Local Lv3 | +1s |
 | Local Lv4 | +2s |
 
-최고 local 공은 일반 Active Cashout 대상이 아니다. Ground의 Moon과 Planetary의 Galaxy는 생성 즉시 Stage Clear가 잠기고, Galactic의 Lv14 Black Hole은 아래 Black Hole 최종 국면 계약에 따라 이동 기믹으로 전환된다.
+Ground의 Moon과 Planetary의 Galaxy를 포함한 local Lv4도 일반 Active Cashout 대상이 될 수 있다. 생성 즉시 Stage Clear를 잠그지 않는다. Galactic의 Lv14 Black Hole은 아래 Black Hole 최종 국면 계약에 따라 이동 기믹으로 전환된다.
 
 목표:
 
@@ -283,24 +284,11 @@ spawn_rate
 
 ---
 
-## 10. Stage Clear — Top Ball Clear
+## 10. 최고 공 발견과 Stage Clear
 
-현재 Stage 최고 공을 만들면 즉시 Stage 성공 판정한다. 단, 마지막 Galactic의 Lv14 Black Hole은 예외이며 첫 생성은 Stage Clear가 아니라 Black Hole 최종 국면을 활성화한다.
+현재 Stage의 local Lv4를 만들면 해당 공의 Run 내 최초 생성 여부를 기록하고 `FIRST CONTACT` CUT-IN을 요청한다. Ground의 Moon과 Planetary의 Galaxy는 생성만으로 Stage Clear를 잠그지 않으며 일반 gameplay와 Active Cashout 대상에 남는다.
 
-예:
-
-```text
-Ground
-Snowflake → Snowball → Big Snowball → Giant Snowball → Moon
-
-Moon Created
-→ STAGE CLEAR
-```
-
-점수컷은 보지 않는다.
-
-최고 공 자체는 먼저 정상적으로 생성된 뒤 성공 이벤트를 발생시킨다.
-성공 판정은 `CLEAR_LOCKED`로 즉시 잠그지만, Scale Shift는 Final Settlement 완료 후 실행한다.
+non-final Stage의 Clear는 Time Up 뒤 Final Settlement를 완료하고 `final_stage_score >= clear_score`일 때만 확정한다. Galactic의 첫 Black Hole은 FIRST CONTACT 연출 뒤 별도 Black Hole 최종 국면 계약으로 전환한다.
 
 ---
 
@@ -312,7 +300,7 @@ Moon Created
 Time Up은 physics tick 시작 시각만으로 판정하지 않는다.
 해당 tick의 Merge와 Active Cashout을 먼저 확정해 Time Bonus까지 반영한 뒤 종료 여부를 판단한다.
 따라서 시간이 잠시 0 이하가 되어도 같은 tick의 Cashout으로 양수가 되면 플레이를 계속한다.
-같은 tick에 Top Ball이 생성되면 Top Ball Clear가 Time Up보다 우선한다.
+같은 tick에 local Lv4가 생성되어도 이를 이유로 Time Up을 취소하지 않는다. Merge와 Active Cashout을 모두 반영한 뒤 남은 시간이 `0` 이하면 Time Up을 확정한다.
 
 Final Stage Score:
 
@@ -364,7 +352,7 @@ Settlement는 활성 공 snapshot을 한 번 만들고 점수를 일괄 계산�
 
 ## 13. SCALE SHIFT
 
-Stage 성공 후 Settlement가 끝나면 Scale Shift.
+Stage 성공 후 Settlement가 끝나면 축하 메시지로 gameplay를 정지한다. 플레이어의 matching `Next Stage` 요청을 받은 뒤에만 Scale Shift를 시작한다.
 
 다음 Stage 진입 시:
 
@@ -443,7 +431,7 @@ Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole
 
 ### 첫 번째 Black Hole
 
-Galactic에서 첫 Lv14 `Black Hole` Ball을 만들면 일반 Top Ball Clear를 발생시키지 않는다.
+Galactic에서 첫 Lv14 `Black Hole` Ball을 만들면 FIRST CONTACT CUT-IN 뒤 Black Hole Phase 전환을 시작한다.
 
 1. 생성된 Lv14 Ball을 이동 Black Hole 기믹으로 전환한다.
 2. `Black Hole Phase Transition`으로 Frame과 실제 Play Field를 L2 `880`에서 L3 `1040`으로 함께 확장한다.
@@ -575,9 +563,9 @@ Fire 공:
 
 각 Stage의 local 5종 중 마지막 두 단계가 고등급 공 강조 대상이다.
 
-- 4단계 공(`local_level = 3`)을 해당 Stage에서 처음 만들면 일반 고등급 CUT-IN을 사용한다.
-- 5단계 최고 공(`local_level = 4`)은 Stage Clear / Scale Shift 또는 Galactic Black Hole Phase 전환 연출이 같은 역할을 대신한다. 별도의 일반 CUT-IN을 중복 재생하지 않는다.
-- CUT-IN과 최고 공 전환 연출에 표시되는 공은 실제 Merge 결과로 생성된 gameplay 공의 형태와 일치해야 한다.
+- local Lv3와 local Lv4를 해당 Run에서 처음 만들면 `FIRST CONTACT` 고등급 CUT-IN을 사용한다.
+- 대상은 Ground의 `Giant Snowball`·`Moon`, Planetary의 `Supernova`·`Galaxy`, Galactic의 `Event Horizon`·`Black Hole`로 정확히 6종이다.
+- CUT-IN에 표시되는 공은 실제 Merge 결과로 생성된 gameplay 공의 형태와 일치해야 한다.
 
 - 현재 게임 이벤트 먼저 확정
 - 현재 장면 전체 freeze
@@ -593,7 +581,7 @@ Fire 공:
 0.45 ~ 0.70초
 ```
 
-Stage 최고 공은 곧 Stage Clear / Scale Shift 또는 Black Hole Phase로 이어지므로 일반 CUT-IN과 중복하지 않는다.
+Moon과 Galaxy의 CUT-IN 종료 뒤에는 gameplay를 재개한다. Black Hole의 CUT-IN 종료 뒤에는 같은 Galactic 안의 Black Hole Phase 전환을 이어서 실행한다.
 
 ---
 
@@ -632,11 +620,11 @@ Cashout으로 얻는 평균 추가 시간이 소비 시간보다 너무 커서 �
 
 ### Known balancing observation — Controllable Merge and Stage Shift pacing
 
-> **향후 플레이테스트 관찰용 메모이며 확정 게임 계약, Task 또는 구현 승인이 아니다. 현재 Merge/Stage Clear 규칙은 유지한다.**
+> **이 관찰에서 local Lv4 즉시 Clear 제거와 `Next Stage` 확인이 확정 계약으로 승격됐다. 구현은 S3-G7과 S5-G6/G6I에서 진행한다.**
 
 현재 플레이에서 같은 등급 공의 자동 Merge가 연쇄적으로 일어나고 최고공 또는 clear score에 너무 빨리 도달하면, 플레이어는 패들로 합체를 만들었다기보다 게임이 스스로 Phase Shift했다고 느낄 수 있다. 이는 Snowball Effect가 지향하는 `통제 가능한 폭주`와 어긋날 위험이 있다.
 
-특히 현재의 `최고 공 생성 → Clear Lock → Settlement → Scale Shift` 자동 전환은 Ground에서 Giant Snowball 두 개가 Moon으로 합쳐지는 순간처럼, 플레이어에게 예상보다 갑작스러운 Stage 전환으로 읽힐 수 있다. **현재 구현과 확정 계약은 변경하지 않는다.** 다만 최고 공 생성 후 즉시 전환을 계속 유지할지, Clear 확인 연출·플레이어의 후속 행동·다른 전환 조건을 둘지는 이후 플레이테스트에서 별도로 비교한다.
+`최고 공 생성 → Clear Lock → Settlement → Scale Shift` 자동 전환은 폐기한다. Ground/Planetary의 local Lv4는 FIRST CONTACT 뒤 gameplay를 계속하고, Time Up Score Clear 뒤에는 축하 메시지와 `Next Stage` 확인을 거친다.
 
 향후 검토의 기준 루프는 다음과 같다.
 
