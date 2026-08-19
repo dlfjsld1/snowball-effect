@@ -79,11 +79,12 @@ script = ExtResource("3_motion")
 [node name="ScoreLabel" type="Label" parent="SlidePanel"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 507.0
-offset_top = 335.0
-offset_right = 1086.0
-offset_bottom = 450.0
+offset_left = 535.0
+offset_top = 330.0
+offset_right = 1080.0
+offset_bottom = 448.0
 text = "0"
+clip_text = true
 horizontal_alignment = 1
 vertical_alignment = 1
 theme_override_colors/font_color = Color(0.72, 0.88, 0.54, 1)
@@ -130,29 +131,29 @@ mouse_filter = 2
 
 [node name="MergeCount" type="Label" parent="SlidePanel/StatsRow"]
 layout_mode = 0
-offset_left = 660.0
-offset_top = 657.0
-offset_right = 770.0
-offset_bottom = 693.0
+offset_left = 699.0
+offset_top = 649.0
+offset_right = 795.0
+offset_bottom = 687.0
 text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
 theme_override_colors/font_color = Color(0.68, 0.84, 0.45, 1)
 theme_override_fonts/font = SubResource("PixelValueFont")
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 24
 
 [node name="RunTime" type="Label" parent="SlidePanel/StatsRow"]
 layout_mode = 0
-offset_left = 1045.0
-offset_top = 657.0
-offset_right = 1158.0
-offset_bottom = 693.0
+offset_left = 1065.0
+offset_top = 649.0
+offset_right = 1180.0
+offset_bottom = 687.0
 text = "00:00"
 horizontal_alignment = 1
 vertical_alignment = 1
 theme_override_colors/font_color = Color(0.68, 0.84, 0.45, 1)
 theme_override_fonts/font = SubResource("PixelValueFont")
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 24
 
 [node name="RetryButton" type="Button" parent="SlidePanel"]
 unique_name_in_owner = true

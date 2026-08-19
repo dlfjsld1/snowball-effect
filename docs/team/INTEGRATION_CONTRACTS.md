@@ -14,8 +14,8 @@
 | Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration, Content AudioManager | Clear 표시·상태 잠금·audio event 선택 |
 | Core Settlement → Integration StageManager | `final_settlement_started(amount: float)`, `final_settlement_finished(amount: float)` | Integration GameManager, Content AudioManager | SettlementService의 내부 신호를 StageManager가 한 번 전달한다. GameManager는 각각 `settlement_start`/`settlement_finish` audio event로만 매핑하며 점수·상태는 변경하지 않는다. |
-| Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation | data 적용과 Stage World 변경 |
-| Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager | 시작, Pause modal 행동과 화면 전환 요청 |
+| Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation, Content Music | data 적용, Stage World와 BGM 변경 |
+| Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager, Content Music | 시작, Pause modal 행동·화면 전환 요청과 BGM 상태 전환 |
 | Presentation Clear UI | `next_stage_requested(clear_id)` | Integration StageManager | non-final Score Clear 축하 화면의 사용자 확인 요청. matching `clear_id`에서만 Scale Shift를 시작하고 중복·stale 요청은 무시한다. |
 | Content ItemManager | `item_planet_damaged(item_type, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |
 | Content ItemManager | `item_planet_broken(item_type, world_position)` | Presentation | 최종 파괴 FX. 이 신호 자체는 획득·CUT-IN·activation을 의미하지 않음 |
@@ -27,7 +27,7 @@
 | Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시한다. S5-G3는 이 Presentation 완료 계약을 전제로 먼저 구현됐다. S5-G4 전 Main의 임시 adapter가 같은 API를 deferred 한 번 호출하며, Presentation 연결 시 Integration이 adapter를 제거한다. |
 | Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | 첫 Lv14→Black Hole 전환과 Galactic 내부 L2→L3 국면 시작; 새 Stage가 아님 |
 | Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용. S8-G5 연결 전에는 Integration-owned 임시 adapter가 동일한 완료 API를 deferred 한 번 호출할 수 있으며 실제 producer 연결 시 제거한다. |
-| Core simulation / Stage runtime | `black_hole_finale_started(contact_snapshot)` → `black_hole_finale_locked(result_snapshot)` | Integration, Presentation, Content/Systems | 두 Black Hole의 earliest contact를 simulation이 한 번 잠그고, Stage runtime이 `contact_position`, 두 Black Hole의 position/velocity/radius, `stage_index`, `stage_score`, `run_score`를 읽기 전용 final result snapshot으로 확정한다. Integration은 이 신호 뒤 gameplay commit을 재개하지 않는다. |
+| Core simulation / Stage runtime | `black_hole_finale_started(contact_snapshot)` → `black_hole_finale_locked(result_snapshot)` | Integration, Presentation, Content/Systems | 두 Black Hole의 earliest contact를 simulation이 한 번 잠그고, Stage runtime이 `contact_position`, 두 Black Hole의 position/velocity/radius, `stage_index`, `stage_score`, `run_score`, `optional_stats.merge_count`, `optional_stats.run_time_seconds`를 읽기 전용 final result snapshot으로 확정한다. Integration은 이 신호 뒤 gameplay commit을 재개하지 않는다. |
 
 ### S8-G4 선행 Integration 골격
 
@@ -38,7 +38,7 @@
 
 ## S6 FX·audio ownership
 
-- Content/Systems는 S6-G1, S6-G3, S6-G4를 순서대로 소유한다. S6-G1의 대상은 `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/content/s6_g1_**`이며, S6-G3/G4의 대상은 `assets/audio/**`, `resources/audio/**`, `scripts/presentation/audio_manager.gd`다.
+- Content/Systems는 S6-G1, S6-G3, S6-G4, S6-G5를 소유한다. S6-G1의 대상은 `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/content/s6_g1_**`이며, S6-G3/G4/G5의 대상은 `assets/audio/**`, `resources/audio/**`, `scripts/presentation/audio_manager.gd`다.
 - Content AudioManager는 기존 gameplay event를 read-only로 구독하고 S6-G3 catalog의 event key를 재생한다. 점수·타이머·Stage 상태를 변경하거나 새 gameplay signal을 만들지 않는다.
 - Content/Systems는 S6-G1에서 시각 FX의 event tier와 budget을 확정한다. tier-to-audio-key 매핑, priority/polyphony, Web 첫 입력 이후 audio 활성화도 Content/Systems가 구현한다. Presentation은 S6-G2 CUT-IN과 화면 연출을 소유한다.
 - S6-G1이 완료되기 전에는 필수 audio key 목록을 확정하거나 S6-G3/G4를 `IN PROGRESS` 또는 완료로 변경하지 않는다.
@@ -53,6 +53,13 @@
 - `EffectManager.priority_event_reserved(event_key, priority)`는 상위 Presentation에 표현 slot이 예약됐음을 알리는 read-only 신호다. S6-G1은 CUT-IN·Scale Shift·Black Hole finale 자체를 실행하지 않는다.
 - Transition 예약은 낮은 gameplay FX를 정리하고 새 Merge/Cashout FX를 억제한다. `resume_gameplay_fx()` 후에만 다시 허용한다. Terminal 예약은 일반 resume으로 해제되지 않고, 비-Terminal 이벤트나 낮거나 같은 Terminal 이벤트가 덮어쓰지 못한다. 더 높은 Terminal만 승격할 수 있다. 권위 있는 Stage source가 Terminal 뒤 `PLAYING`으로 재진입하면 `EffectManager`가 FX와 Run 단위 진단 카운터를 초기화한다. 또한 `stage_changed`의 Stage index가 이전과 같거나 낮아지는 Retry/Restart도 동일하게 초기화한다. 더 높은 index로 이동하는 일반 Stage Shift와 `stage_changed` 없이 같은 Galactic을 재개하는 Black Hole Phase는 카운터를 유지한다.
 - S6-G3/G4는 이 priority/tier를 audio key와 polyphony 정책의 입력으로 사용하되 시각 budget 수치를 오디오 재생 수로 그대로 복제하지 않는다.
+
+### S6-G5 BGM contract
+
+- Content Music은 기존 `stage_changed`, Content screen request, `black_hole_phase_started`, `black_hole_finale_locked`와 terminal/Main Menu/Retry 흐름을 read-only로 소비한다. 새로운 gameplay signal이나 Integration-owned 파일 변경을 요구하지 않는다.
+- music channel에는 `bgm_title`, `bgm_ground`, `bgm_planetary`, `bgm_galactic`, `bgm_pause`, `bgm_result` 중 하나만 활성화한다. Pause는 현재 Stage BGM을 정지하고 track key·재생 위치를 저장하며, Resume는 저장 위치에서 동일 track을 재개한다.
+- Black Hole Phase는 `bgm_galactic`을 정지하고 기존 `black_hole_loop`만 활성화한다. Final Result, Retry, Main Menu, terminal reset은 이전 BGM/loop를 정리하고 authoritative 상태의 track만 선택한다.
+- Web 첫 사용자 입력 전에는 BGM을 자동 재생하지 않는다. unlock 뒤 현재 상태의 track을 시작하거나 재개하며, BGM은 점수·타이머·Stage state를 변경하지 않는다.
 
 ## Integration Goal 조건
 

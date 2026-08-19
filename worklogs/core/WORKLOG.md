@@ -649,3 +649,12 @@ Owner: Core
 ### 제외 / 다음 작업
 
 - Result/Title/Main Menu UI는 S8-G3, Black Hole phase/finale visual은 S8-G5, Main signal wiring·logical L3 bounds·Retry reset은 S8-G4 Integration 범위다.
+
+## 2026-08-19 — S8-G2 Result Run 통계 snapshot 확장
+
+Owner: Core (교차 영역 변경 승인됨)
+
+- `StageRuntime`에 Run 단위 성공 Merge 누적값과 `PLAYING` 시간 누적값을 추가했다.
+- Stage 진입은 통계를 유지하고 Retry Run/Main Screen용 `reset_run_statistics()`만 초기화한다.
+- Black Hole terminal snapshot의 `optional_stats`에 `merge_count`와 `run_time_seconds`를 deep-copy 가능한 값으로 고정했다.
+- S8-G2 검증에서 Stage 재진입 보존, terminal snapshot 값, 기존 terminal-once/normal-commit 차단을 확인했고 Godot 4.7.1 headless exit 0이었다.

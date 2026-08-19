@@ -36,6 +36,25 @@ static func format_score(value: float) -> String:
 	return sign + _format_decimal(rounded_value, decimal_places) + _SUFFIXES[suffix_index]
 
 
+## Result-terminal formatting. Values beyond reliable integer precision are
+## expanded from the same three-significant-digit scientific representation
+## used by the compact formatter, avoiding meaningless float noise digits.
+static func format_score_full(value: float) -> String:
+	if is_nan(value):
+		return "0"
+	if is_inf(value):
+		return "-∞" if value < 0.0 else "∞"
+
+	var sign := "-" if value < 0.0 else ""
+	var absolute_value := absf(value)
+	var integer_text: String
+	if absolute_value < 1.0e15:
+		integer_text = str(int(round(absolute_value)))
+	else:
+		integer_text = _expand_scientific_integer(_format_scientific(absolute_value))
+	return sign + _add_group_separators(integer_text)
+
+
 static func _format_scientific(value: float) -> String:
 	var exponent := int(floor(log(value) / log(10.0)))
 	var mantissa := value / pow(10.0, exponent)
@@ -52,6 +71,34 @@ static func _format_scientific(value: float) -> String:
 		exponent += 1
 
 	return _format_fixed_two_decimals(rounded_mantissa) + "e" + ("+" if exponent >= 0 else "") + str(exponent)
+
+
+static func _expand_scientific_integer(scientific: String) -> String:
+	var exponent_marker := scientific.find("e")
+	if exponent_marker == -1:
+		return scientific
+	var mantissa := scientific.substr(0, exponent_marker)
+	var exponent := int(scientific.substr(exponent_marker + 1))
+	var decimal_marker := mantissa.find(".")
+	var fractional_digits := 0
+	if decimal_marker != -1:
+		fractional_digits = mantissa.length() - decimal_marker - 1
+		mantissa = mantissa.replace(".", "")
+	var trailing_zero_count := maxi(exponent - fractional_digits, 0)
+	return mantissa + "0".repeat(trailing_zero_count)
+
+
+static func _add_group_separators(integer_text: String) -> String:
+	var grouped := ""
+	var first_group_size := integer_text.length() % 3
+	if first_group_size == 0:
+		first_group_size = 3
+	grouped = integer_text.substr(0, first_group_size)
+	var cursor := first_group_size
+	while cursor < integer_text.length():
+		grouped += "," + integer_text.substr(cursor, 3)
+		cursor += 3
+	return grouped
 
 
 static func _format_fixed_two_decimals(value: float) -> String:

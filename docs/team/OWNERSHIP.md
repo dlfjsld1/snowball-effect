@@ -48,7 +48,7 @@ assets/shaders/**
 tests/presentation/**
 ```
 
-예외: S6-G1은 Content/Systems가 `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/content/s6_g1_**`를 소유해 시각 FX event tier와 budget을 확정한다. `scripts/presentation/audio_manager.gd`는 S6-G4에 한해 Content/Systems-owned다. S6-G2의 CUT-IN 관련 Presentation 소유권은 유지한다.
+예외: S6-G1은 Content/Systems가 `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/content/s6_g1_**`를 소유해 시각 FX event tier와 budget을 확정한다. `scripts/presentation/audio_manager.gd`는 S6-G4/G5에 한해 Content/Systems-owned다. S6-G2의 CUT-IN 관련 Presentation 소유권은 유지한다.
 
 ## Content/Systems-owned
 
@@ -68,7 +68,7 @@ resources/audio/**
 scripts/presentation/effect_manager.gd  # S6-G1 FX budget ownership exception
 scenes/effects/**                       # S6-G1 ownership exception; S6-G2 CUT-IN은 Presentation-owned
 assets/particles/**                     # S6-G1 FX budget ownership exception
-scripts/presentation/audio_manager.gd  # S6-G4 audio ownership exception
+scripts/presentation/audio_manager.gd  # S6-G4 SFX / S6-G5 BGM ownership exception
 export_presets.cfg
 tests/content/**
 tests/release/**

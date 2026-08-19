@@ -5,9 +5,9 @@ extends Control
 
 const DESIGN_SIZE := Vector2(1672.0, 941.0)
 const LEFT_TUBE := Rect2(173.0, 302.0, 43.0, 145.0)
-const RIGHT_TUBE := Rect2(1385.0, 302.0, 43.0, 145.0)
+const RIGHT_TUBE := Rect2(1456.0, 302.0, 43.0, 145.0)
 const LEFT_GAUGE_CENTER := Vector2(194.0, 493.0)
-const RIGHT_GAUGE_CENTER := Vector2(1406.0, 493.0)
+const RIGHT_GAUGE_CENTER := Vector2(1478.0, 493.0)
 
 var _left_bubbles: Array[Dictionary] = []
 var _right_bubbles: Array[Dictionary] = []

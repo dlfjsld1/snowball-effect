@@ -636,3 +636,20 @@ Locked files: `scripts/core/game_manager.gd`, `scripts/presentation/gameplay_fra
 
 - Primary validate 3/3 통과.
 - Primary Main runtime에서 L3 profile과 simulation/Paddle logical rect가 모두 `Rect2(280, 50, 1040, 768)`이고, 우측 하단 UI panel은 `Rect2(1406, 796, 152, 104)`로 field 바깥에 남는 것을 확인했다. runtime error 0.
+
+## 2026-08-19 — S8-G4 Result Run 통계 연결
+
+Owner: Integration (잠금 담당 승인됨)
+
+- `StageManager`가 기존 `ball_merged(result_level, world_position)`를 구독해 성공 Merge를 한 건씩 누적한다. tick용 `simulation_metrics.merges`는 총합으로 사용하지 않는다.
+- `StageManager._physics_process()`의 `PLAYING` tick에서만 Run Time을 누적한다. Black Hole Phase lock과 terminal 상태에서는 증가하지 않는다.
+- Start/Retry와 Main Screen 종료에서 통계를 초기화하고 Stage 진입에서는 유지한다.
+- S8-G4 검증에서 첫 Black Hole 생성 Merge 1회, `0.1s` PLAYING 시간, phase lock 중 `2.0s` 미증가, terminal snapshot 전달, Retry 0 초기화를 확인했고 Godot 4.7.1 headless exit 0이었다.
+
+## 2026-08-19 — S8-G4 Result Retry Button wiring
+
+Owner: Integration (잠금 담당 승인됨)
+
+- ResultPanel의 실제 `retry_requested` 신호를 기존 authoritative `_on_retry_requested()` handler에 연결했다.
+- Integration verification이 Result의 실제 Retry Button을 눌러 Ground `PLAYING`, stage index 0, terminal snapshot clear, Merge/Run Time 0 reset을 확인한다.
+- Result의 실제 Main Button도 active Run을 안전하게 종료하고 Title을 표시하는 기존 handler를 계속 사용한다.

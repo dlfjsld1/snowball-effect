@@ -61,6 +61,23 @@ Stage local 5종 중 마지막 두 단계(`local_level = 3`, `local_level = 4`)�
 
 ---
 
+## BGM 상태 전환
+
+배경음은 효과음 pool과 분리된 music channel에서 한 번에 하나만 재생한다. 확정 key는 `bgm_title`, `bgm_ground`, `bgm_planetary`, `bgm_galactic`, `bgm_pause`, `bgm_result`다.
+
+| 상태 | 재생 | 전환 |
+|---|---|---|
+| Title | `bgm_title` | Main Title 표시 |
+| Ground / Planetary / Galactic | 각 Stage BGM | `stage_changed`에 맞춰 교체 |
+| Pause | `bgm_pause` | Stage BGM을 정지하고 track key·재생 위치 저장 |
+| Resume | 저장한 Stage BGM | 저장 위치에서 재개 |
+| Black Hole Phase | `black_hole_loop` | `bgm_galactic`을 정지하고 단독 재생 |
+| Final Result | `bgm_result` | `black_hole_loop`을 정지한 뒤 재생 |
+
+Retry, Main Menu, terminal lock은 남은 BGM/loop를 정리한다. Web 첫 사용자 입력 전에는 어떤 BGM도 자동 재생하지 않으며, unlock 뒤 현재 상태에 맞는 track만 시작한다.
+
+---
+
 ## CUT-IN 구현
 
 필수:

@@ -8,6 +8,7 @@ const EXPECTED_EVENT_KEYS := [
 	&"settlement_start", &"settlement_finish", &"stage_clear", &"stage_fail", &"scale_shift",
 	&"ui_click", &"ui_pause", &"ui_resume", &"ui_retry", &"ui_start", &"ui_menu",
 	&"black_hole_phase", &"black_hole_loop", &"black_hole_absorb", &"black_hole_finale", &"run_end",
+	&"bgm_title", &"bgm_ground", &"bgm_planetary", &"bgm_galactic", &"bgm_pause", &"bgm_result",
 ]
 
 var _failures := 0
@@ -27,7 +28,7 @@ func _ready() -> void:
 		seen_keys[event.event_key] = true
 		_expect(event.stream is AudioStreamOggVorbis, "Each event must load as an Ogg Vorbis stream.")
 		_expect(event.stream.resource_path.ends_with(".ogg"), "Each event must reference a Web-supported OGG source asset.")
-		_expect(event.loop == (event.event_key == &"black_hole_loop"), "Only black_hole_loop may be marked for looping.")
+		_expect(event.loop == (event.event_key == &"black_hole_loop" or String(event.event_key).begins_with("bgm_")), "Only black_hole_loop and BGM tracks may be marked for looping.")
 
 	for event_key in EXPECTED_EVENT_KEYS:
 		_expect(catalog.has_event(event_key), "Every required event key must resolve from the catalog.")

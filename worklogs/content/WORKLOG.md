@@ -834,3 +834,49 @@ Status: `IN PROGRESS — final verification dependency missing`
 - Main의 Black Hole Phase는 아직 실제 Presentation producer가 아니라 `_complete_temporary_black_hole_phase()` 임시 adapter로 완료된다. `docs/goals/STATUS.md`의 S8-G5도 `PENDING`이므로 L2→L3 frame 전환, finale 회전·폭발, HUD 제거 후 Result 등장까지 이어지는 실제 최종 흐름은 검증 대상 자체가 완성되지 않았다.
 - 브라우저 제어 초기화가 `Trusted RPC dependency must resolve within a configured trusted code path` tooling 오류로 실패해 Canvas와 console 검증을 수행하지 못했다. Export/HTTP 성공을 실제 Browser 검증으로 대체하지 않는다.
 - 따라서 S8-G3는 `IN PROGRESS`를 유지한다. S8-G5 구현과 S8-G4의 임시 adapter 제거·실제 producer 연결 뒤 Desktop/Web 전체 finale를 다시 검증해야 한다.
+
+## 2026-08-19 — S6-G5 BGM 상태 전환
+
+Owner: Content/Systems/Release 담당
+Status: `IMPLEMENTED` (Web QA 대기)
+
+### 변경
+
+- 사용자 제공 음악 6개를 `bgm_title`, `bgm_ground`, `bgm_planetary`, `bgm_galactic`, `bgm_pause`, `bgm_result` OGG 카탈로그 항목으로 등록했다.
+- `AudioManager`에 SFX pool과 독립된 music player를 추가했다. Title/Start/Stage 변경/Retry/Main Menu, Pause·Resume 위치 복원, Black Hole loop 전환, Final Result BGM을 기존 read-only Signal consumer 경로로 연결했다.
+- S6-G5 전용 자동 검증을 추가하고 기존 S6-G3 catalog 검증이 BGM 6개와 loop 정책을 함께 확인하도록 확장했다.
+
+### 확인
+
+- Godot 4.7.1 Primary validate: AudioManager, S6-G3/G4/G5 verification script와 S6-G5 scene 5/5 valid.
+- S6-G3/G4/G5 자동 검증 scene은 모두 exit 0. 짧은 scene이 MCP bridge 준비 전에 종료되어 stdout을 수집하지 못한 것은 tooling timing으로 분류했다.
+- 실제 Main runtime: first-input unlock 후 `bgm_planetary` 재생, Pause의 `bgm_pause` 전환·저장 위치 `19.97s`, Resume의 Planetary 재개, Black Hole Phase의 music stop+`black_hole_loop`, finale의 loop stop+`bgm_result` 재생을 관찰했다.
+- Runtime 종료 로그의 parse warning 1건은 첫 diagnostic `run_script`의 Variant type-warning이며, 이후 수정된 diagnostic과 게임 runtime에는 오류가 없었다.
+
+### 다음 작업 / 주의
+
+- 새 BGM을 포함한 Web export와 실제 Browser 첫 입력 AudioContext/전환 확인은 S9-G2 Release QA에서 수행한다. 이 확인 전 S6-G5를 `VERIFIED`로 올리지 않는다.
+
+### Web export 재확인
+
+- Godot 4.7.1 CLI `--headless --export-release Web build/web/index.html`이 새 BGM import 6개를 포함해 성공했다.
+- 로컬 HTTP에서 `index.html`(5,447 bytes), `index.js`(279,815), `index.wasm`(39,513,091), `index.pck`(31,128,012)가 모두 HTTP 200이었다.
+- Codex Browser 연결은 `Trusted RPC dependency must resolve within a configured trusted code path` 환경 오류로 초기화되지 않았다. 따라서 실제 Browser Canvas, 첫 입력 AudioContext unlock, console error 관찰은 수행하지 못했으며 export/HTTP 결과로 대체하지 않는다.
+
+## 2026-08-19 — S8-G3 Result 후속 조정·S6-G5 BGM 가독성
+
+Owner: Content/Systems/Release 담당
+
+### 변경
+
+- Result Clear Score 전용 전체 십진수·3자리 쉼표 포맷을 추가했다. 초대형 float는 기존 과학 표기의 유효 3자리를 십진 확장해 의미 없는 부동소수점 오차 자릿수를 노출하지 않는다.
+- 긴 Clear Score는 검은 패널 내부에서 3줄 균형 배치와 자동 글자 크기를 사용한다. Total Merges와 Run Time 값은 원본 픽셀 표시창의 광학 중심으로 재배치했다.
+- Result 우측 시험관·게이지 장식 좌표를 원본 `1672×941` 기준 좌우 대칭 위치로 수정했다.
+- BGM music channel 기본 음량을 `0 dB`에서 `-14 dB`로 낮추고 실제 player 적용값을 S6-G5 검증에 추가했다. SFX/UI 음량 정책은 유지했다.
+- Main 초기화가 gameplay를 즉시 시작하지 않고 Title `READY` 상태에서 대기하도록 승인된 Integration 변경을 반영했다. Web 첫 사용자 입력 전 BGM 금지 계약 때문에 초기 Title BGM은 입력 unlock 전 재생되지 않으며, Main Menu 복귀 시에는 이미 unlock 상태라 즉시 재생된다.
+
+### 확인
+
+- Godot 4.7.1 headless: S2-G4 ScoreFormatter, S6-G4 AudioManager, S6-G5 BGM, S8-G3 terminal UI, S8-G4 Integration 검증 exit 0.
+- Result 검증은 전체 점수 십진 확장, 3줄 배치, 글자 크기 축소, 값 표시창 좌표, 좌우 시험관·게이지 대칭을 고정한다.
+- 최신 Web release export exit 0. Godot editor settings 저장 오류와 Windows root certificate store 오류는 프로젝트 외 sandbox/환경 오류이며 export 및 검증 exit code에는 영향을 주지 않았다.

@@ -96,8 +96,30 @@ AudioManager
  ├─ 합체음
  ├─ 회수음
  ├─ 아이템음
- └─ 스테이지 전환음
+ ├─ 스테이지 전환음
+ └─ BGM 상태 전환
 ```
+
+---
+
+## 3.0 BGM 상태 계약
+
+BGM은 Content/Systems-owned AudioManager의 별도 music channel에서 한 번에 하나만 재생한다. 효과음의 priority/polyphony pool과 BGM 재생 상태를 섞지 않으며, BGM은 gameplay score, timer, Stage state를 변경하지 않는다.
+
+| 상태 | BGM key | 전환 규칙 |
+|---|---|---|
+| Main Title | `bgm_title` | Title 표시 시 재생 |
+| Ground | `bgm_ground` | Ground Stage 진입 시 재생 |
+| Planetary | `bgm_planetary` | Planetary Stage 진입 시 재생 |
+| Galactic | `bgm_galactic` | Galactic Stage 진입 시 재생 |
+| Pause | `bgm_pause` | 현재 Stage BGM을 정지하고 track key와 재생 위치를 저장한 뒤 재생 |
+| Final Result | `bgm_result` | terminal Result 표시 시 재생 |
+
+- Resume는 `bgm_pause`를 정지하고, 저장한 Stage BGM을 저장한 재생 위치에서 재개한다.
+- Black Hole Phase는 `bgm_galactic`을 정지하고 기존 loop asset `black_hole_loop`만 재생한다. 두 소리는 겹치지 않는다.
+- Black Hole Final Result는 `black_hole_loop`을 정지한 뒤 `bgm_result`를 재생한다.
+- Retry, Main Menu, Stage 변경, terminal lock은 현재 BGM/loop를 정리한 뒤 현재 authoritative 상태의 track만 선택한다.
+- Web에서는 첫 사용자 입력 전 BGM을 자동 재생하지 않으며, unlock 뒤 현재 authoritative 상태의 track을 시작하거나 재개한다.
 
 ---
 
@@ -612,7 +634,7 @@ Black Hole entity끼리는 일반 공용 force/absorption loop와 분리해 상�
 
 흡수 contact가 확정되면 일반 Cashout commit 전에 해당 공을 한 번 소비한다. StageRuntime은 첫 Black Hole phase 시작 시 Run Score baseline을 한 번 snapshot하고, `min(calculate_cashout_score(ball) × 0.125, phase_entry_run_score × 0.25)`를 stage/run score에서 각각 차감한다. baseline은 이후 Cashout이나 흡수로 갱신하지 않는다. `stage_score`는 0에서 clamp하고, 계산 결과 `run_score <= 0`이면 `run_score = 0`으로 고정한 뒤 즉시 failure lock과 Run End를 요청한다. Time Bonus, Cashout 전용 popup, Merge, Settlement 중복 반영은 없다.
 
-두 Black Hole의 earliest contact가 확정되면 terminal lock을 한 번만 세우고 이후 공 simulation 결과를 더 commit하지 않는다. Presentation은 두 중심의 상호 인력·회전·폭발을 재생하며 gameplay HUD를 숨기고 `SNOWBALL EFFECT` 타이틀, 그 아래 `CLEAR SCORE` 최종 run score와 `MAIN MENU` 버튼을 표시한다.
+두 Black Hole의 earliest contact가 확정되면 terminal lock을 한 번만 세우고 이후 공 simulation 결과를 더 commit하지 않는다. terminal snapshot은 최종 run score와 함께 현재 Run의 성공 Merge 누적 횟수 `merge_count`, `PLAYING` 상태에서만 누적한 `run_time_seconds`를 불변 복사로 제공한다. Stage Shift, Black Hole Phase 전환, Pause, Result 체류 시간은 Run Time에서 제외하고 Stage 사이에는 유지하며 Retry Run/Main Screen에서 초기화한다. Presentation은 두 중심의 상호 인력·회전·폭발을 재생하며 gameplay HUD를 숨기고 `SNOWBALL EFFECT` 타이틀, 그 아래 `CLEAR SCORE` 최종 run score, Merge 횟수, Run Time과 실제 `RETRY RUN`·`MAIN` 버튼을 표시한다. Result 장식 motion은 read-only UI이며 좌우 실험관 기포, 최대치 부근의 독립 게이지 떨림, 화면 아래에서 위로 올라오는 진입 Tween을 포함한다.
 
 ---
 

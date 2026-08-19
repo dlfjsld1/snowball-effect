@@ -89,8 +89,9 @@ func _initialize_runtime() -> void:
 	_pause_menu.resume_requested.connect(_on_resume_requested)
 	_pause_menu.main_menu_requested.connect(_on_main_menu_requested)
 	_title_screen.start_requested.connect(_on_start_requested)
+	_result_panel.retry_requested.connect(_on_retry_requested)
 	_result_panel.main_menu_requested.connect(_on_main_menu_requested)
-	_start_run()
+	_enter_title_screen()
 	_initialized = true
 
 
@@ -152,6 +153,19 @@ func _start_run() -> void:
 	_hud.reset_view()
 	_pause_menu.set_paused(false)
 	_spawn_ball()
+
+
+func _enter_title_screen() -> void:
+	get_tree().paused = false
+	_terminal_result_snapshot.clear()
+	_stage_manager.end_run_to_main_menu()
+	_paddle.set_physics_process(false)
+	_hud.reset_view()
+	_hud.visible = false
+	_pause_menu.visible = false
+	_pause_menu.set_paused(false)
+	_result_panel.hide_result()
+	_title_screen.show_title()
 
 
 func _on_stage_changed(definition: StageDefinition) -> void:
@@ -267,13 +281,4 @@ func _on_start_requested() -> void:
 
 
 func _on_main_menu_requested() -> void:
-	get_tree().paused = false
-	_terminal_result_snapshot.clear()
-	_stage_manager.end_run_to_main_menu()
-	_paddle.set_physics_process(false)
-	_hud.reset_view()
-	_hud.visible = false
-	_pause_menu.visible = false
-	_pause_menu.set_paused(false)
-	_result_panel.hide_result()
-	_title_screen.show_title()
+	_enter_title_screen()

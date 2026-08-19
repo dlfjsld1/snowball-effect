@@ -56,6 +56,7 @@ func _ready() -> void:
 	add_child(_settlement_service)
 	_settlement_service.configure(_stage_runtime.score_ledger)
 	_simulation.cashout_completed.connect(_on_cashout_completed)
+	_simulation.ball_merged.connect(_on_ball_merged)
 	_simulation.top_ball_created.connect(_on_top_ball_created)
 	_simulation.black_hole_absorbed.connect(_on_black_hole_absorbed)
 	_simulation.black_hole_finale_started.connect(_on_black_hole_finale_started)
@@ -79,6 +80,7 @@ func _physics_process(delta: float) -> void:
 
 	_pending_cashouts.clear()
 	_top_ball_created = false
+	_stage_runtime.advance_run_time(delta)
 	_stage_runtime.stage_time_left -= delta
 	_stage_runtime.stage_time_changed.emit(_stage_runtime.stage_time_left)
 	_simulation.step_simulation(delta)
@@ -94,6 +96,7 @@ func start_run() -> void:
 	_pending_black_hole_phase_id = -1
 	_pending_black_hole_logical_rect = Rect2()
 	_stage_runtime.score_ledger.reset_runtime()
+	_stage_runtime.reset_run_statistics()
 	_enter_stage(_stage_catalog.get_stage(current_stage_index))
 
 
@@ -116,6 +119,8 @@ func get_runtime_snapshot() -> Dictionary:
 		"stage_time_left": _stage_runtime.stage_time_left,
 		"stage_score": _stage_runtime.score_ledger.stage_score,
 		"run_score": _stage_runtime.score_ledger.run_score,
+		"run_merge_count": _stage_runtime.get_run_statistics()["merge_count"],
+		"run_time_seconds": _stage_runtime.get_run_statistics()["run_time_seconds"],
 		"pending_shift_id": _pending_shift_id,
 		"pending_black_hole_phase_id": _pending_black_hole_phase_id,
 		"black_hole_finale_locked": _stage_runtime.is_black_hole_finale_locked(),
@@ -187,6 +192,7 @@ func end_run_to_main_menu() -> void:
 	_simulation.reset_runtime()
 	_settlement_service.reset_for_stage()
 	_stage_runtime.score_ledger.reset_runtime()
+	_stage_runtime.reset_run_statistics()
 	_set_state(READY)
 
 
@@ -202,6 +208,11 @@ func _enter_stage(definition: StageDefinition) -> void:
 func _on_cashout_completed(score_amount: float, global_level: int, _world_position: Vector2) -> void:
 	if current_state == PLAYING:
 		_pending_cashouts.append({"score_amount": score_amount, "global_level": global_level})
+
+
+func _on_ball_merged(_result_level: int, _world_position: Vector2) -> void:
+	if current_state == PLAYING or current_state == BLACK_HOLE_PHASE_LOCKED:
+		_stage_runtime.record_run_merge()
 
 
 func _on_top_ball_created(global_level: int) -> void:

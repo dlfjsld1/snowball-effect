@@ -28,6 +28,7 @@ func _ready() -> void:
 	game_manager.auto_complete_black_hole_phase_presentation = false
 	game_manager.black_hole_phase_started.connect(_on_phase_started)
 	game_manager.terminal_result_available.connect(_on_terminal_result_available)
+	_verify_initial_title_flow(game_manager, stage_manager, simulation, title_screen)
 
 	var galactic := StageCatalogScript.new().get_stage(2) as StageDefinition
 	stage_manager._enter_stage(galactic)
@@ -39,6 +40,16 @@ func _ready() -> void:
 	get_tree().quit(_failures)
 
 
+func _verify_initial_title_flow(game_manager: GameManager, stage_manager: StageManager, simulation: BallSimulationManager, title_screen: TitleScreenScript) -> void:
+	_expect(title_screen.visible, "Main must reveal Title before starting a run.")
+	_expect(stage_manager.current_state == StageManager.READY, "Main must remain READY while Title is waiting for input.")
+	_expect(simulation.get_active_count() == 0, "Main must not spawn gameplay balls before Start Run.")
+	title_screen.start_button.pressed.emit()
+	_expect(stage_manager.current_state == StageManager.PLAYING, "Title Start must begin Ground gameplay.")
+	_expect(not title_screen.visible, "Title must hide after Start Run.")
+	_expect(simulation.get_active_count() == 1, "Start Run must spawn the initial Ground ball exactly once.")
+
+
 func _verify_phase_mediation(game_manager: GameManager, stage_manager: StageManager, simulation: BallSimulationManager, paddle: Paddle, gameplay_frame: GameplayFrame) -> void:
 	var radius := simulation.get_runtime_radius_for_level(13)
 	simulation.spawn_ball(Vector2(760.0, 320.0), Vector2.ZERO, radius, 13)
@@ -47,6 +58,9 @@ func _verify_phase_mediation(game_manager: GameManager, stage_manager: StageMana
 	stage_manager._physics_process(0.1)
 	_expect(stage_manager.current_state == StageManager.BLACK_HOLE_PHASE_LOCKED, "Phase start must lock gameplay.")
 	_expect(stage_manager.current_state != StageManager.FAILED, "Black Hole phase must preempt same-tick Time Up.")
+	var locked_run_time: float = stage_manager.get_runtime_snapshot()["run_time_seconds"]
+	stage_manager._physics_process(2.0)
+	_expect(is_equal_approx(stage_manager.get_runtime_snapshot()["run_time_seconds"], locked_run_time), "Black Hole Phase lock must not add Run Time.")
 	_expect(_phase_ids.size() == 1, "Phase start must publish one phase id.")
 	var phase_id := _phase_ids[0]
 	_expect(not game_manager.accept_black_hole_phase_presentation_finished(phase_id + 1), "Stale phase completion must be rejected.")
@@ -68,17 +82,23 @@ func _verify_finale_lock_and_resets(game_manager: GameManager, stage_manager: St
 	_expect(stage_manager.current_state == StageManager.RUN_ENDED, "Finale contact must lock Run End.")
 	_expect(_terminal_snapshots.size() == 1, "Terminal result must publish exactly once.")
 	_expect(game_manager.get_terminal_result_snapshot().get("run_score", -1.0) >= 0.0, "Terminal snapshot must include the final run score.")
+	var result_stats: Dictionary = game_manager.get_terminal_result_snapshot().get("optional_stats", {})
+	_expect(int(result_stats.get("merge_count", -1)) == 1, "Terminal snapshot must include the successful Black Hole-producing Merge.")
+	_expect(float(result_stats.get("run_time_seconds", -1.0)) >= 0.1, "Terminal snapshot must include accumulated PLAYING time.")
 	_expect(result_panel.visible and result_panel.get_result_snapshot() == game_manager.get_terminal_result_snapshot(), "Finale snapshot must be shown by the mounted Result Panel.")
 	simulation.black_hole_finale_started.emit(contact_snapshot)
 	_expect(_terminal_snapshots.size() == 1, "Duplicate finale contacts must not republish a result.")
 	stage_manager._physics_process(1.0)
 	_expect(stage_manager.current_state == StageManager.RUN_ENDED, "Terminal lock must block later gameplay commits.")
 
-	game_manager._on_retry_requested()
+	result_panel.retry_button.pressed.emit()
 	_expect(stage_manager.current_state == StageManager.PLAYING, "Retry must restart Ground gameplay.")
 	_expect(stage_manager.current_stage_index == 0, "Retry must return to Ground.")
 	_expect(game_manager.get_terminal_result_snapshot().is_empty(), "Retry must clear the terminal snapshot.")
+	var reset_snapshot := stage_manager.get_runtime_snapshot()
+	_expect(reset_snapshot["run_merge_count"] == 0 and is_zero_approx(reset_snapshot["run_time_seconds"]), "Retry must reset Run Merge count and Run Time.")
 
+	result_panel.show_result({"run_score": 0.0})
 	result_panel.main_menu_button.pressed.emit()
 	_expect(stage_manager.current_state == StageManager.READY, "Main menu request must end the active run safely.")
 	_expect(simulation.get_active_count() == 0, "Main menu request must clear active simulation state.")

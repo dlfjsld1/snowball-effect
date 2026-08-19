@@ -44,6 +44,15 @@
 - Verification: sound priority/polyphony 제한, late density에서 Paddle/공/HUD 가독성, Web 첫 입력 후 audio.
 - Do Not Modify: Web export 설정, gameplay event 조건, HUD 구현.
 
+### S6-G5 BGM 상태 전환
+
+- Owner: Content/Systems/Release
+- Owned Files: `scripts/presentation/audio_manager.gd`, `assets/audio/**`, `resources/audio/**`, `tests/content/**`
+- Integration Point: 기존 read-only `stage_changed`, Content screen request, Black Hole phase/finale 및 terminal snapshot을 소비한다. 새 gameplay signal이나 Integration-owned 파일 변경이 필요하면 별도 요청한다.
+- Dependencies: S6-G3 audio catalog, S6-G4 Web first-input audio 계약, S8-G4 terminal wiring.
+- Verification: `bgm_title`, `bgm_ground`, `bgm_planetary`, `bgm_galactic`, `bgm_pause`, `bgm_result`의 유효 asset/catalog 등록; Stage 전환 단일 BGM; Pause에서 Stage BGM 위치 저장·`bgm_pause` 교체·Resume 위치 재개; Black Hole Phase에서 `bgm_galactic` 정지 후 `black_hole_loop` 단독 재생; Final Result에서 loop 정리 후 `bgm_result`; Retry/Main Menu/terminal cleanup; Desktop과 실제 Web 첫 입력 unlock·console 확인.
+- Do Not Modify: gameplay event 조건, 점수·시간·Stage state, `project.godot`, Main scene.
+
 ## Exit Gate
 
 Q-S6와 Web burst smoke 통과.
