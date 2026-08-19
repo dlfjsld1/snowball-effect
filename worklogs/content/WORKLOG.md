@@ -775,3 +775,62 @@ Status: `IMPLEMENTED`
 - Main runtime에서 Main Menu를 통해 Title을 표시하고 Start 기본 focus, Settings 실제 Button, 1600×900 화면을 확인했다. Screenshot: `.mcp/screenshots/screenshot_1787047440_964.png`.
 - Start 버튼 입력 뒤 Title이 숨고 HUD가 표시되어 기존 Title→Ground Integration 흐름이 유지됨을 확인했다. 전체 finale와 Web 검증은 S8-G4/S8-G5 이후에 남는다.
 - `ppt-master`는 필수 `attribution_guard.py`를 실행할 Python runtime이 없어 무결성 Gate를 통과하지 못했으므로 실행 파이프라인 사용을 중단했다. 문서 12와 기존 runtime 자산을 source of truth로 사용했다.
+
+## 2026-08-19 — S8-G3 확정 Title UI 실제 버튼 전환
+
+Owner: Content/Systems/Release 담당
+Status: `IN PROGRESS`
+
+- 사용자가 최종 승인한 Ground 기계실 Title 시안을 `title_mechanical_ground.webp` 런타임 배경으로 채택했다. `1600×900` viewport에서 nearest filtering과 정수 hit rect를 사용한다.
+- 중앙 창의 눈, 좌우 독립 무작위 게이지, 각 게이지 값에 연동되는 전등을 `TitleMechanicalMotion` 장식 레이어로 분리했다. 눈은 중앙 창 Rect 안으로 제한하고 장식 레이어는 입력을 받지 않으며 Title이 숨으면 processing을 멈춘다.
+- 이미지에 보이는 `START RUN`과 `SETTINGS` 면 위에 실제 Godot `Button`을 배치했다. 마우스 hit area, 키보드 focus 이동, hover/pressed/focus outline을 제공하면서 기존 `start_requested`와 `settings_requested` 신호 계약을 그대로 사용한다.
+- `tests/content/s8_g3_terminal_ui_verification.gd`가 확정 아트·장식 레이어·실제 Button·pointer ownership을 확인하도록 갱신했다.
+- Integration-owned `GameManager`, `Main`, `StageManager`는 수정하지 않았다. 기존 `StartButton → start_requested → GameManager._on_start_requested()` 연결은 유지된다. Settings는 기존 `settings_requested` 요청까지만 제공되며 설정 화면 consumer는 아직 구현되지 않았다.
+- Godot 4.7.1 editor project load, 신규 WebP import, `TitleMechanicalMotion` GDScript class 등록이 성공했다. 샌드박스 내부 기존 Scene runner는 `user://logs` 접근 실패 뒤 signal 11로 종료되어 tooling 문제로 분류했다.
+- workspace 외부가 아닌 임시 log 경로를 지정한 전용 runtime verification은 exit 0과 `S8_G3_TITLE_BUTTONS_VERIFIED actual_buttons=true start_request=1 settings_request=1`을 기록했으며 runtime script error는 0건이었다.
+- 전체 S8-G3 UI verification도 exit 0과 `S8_G3_VERIFIED title=true pause_modal=true result_snapshot=read_only requests=once`를 기록했다. S8-G4 skeleton 회귀는 `phase_id=true terminal_once=true reset_safe=true`로 exit 0이었다.
+
+## 2026-08-19 — S8-G3 Result Merge·Run Time 표시
+
+Owner: Content/Systems/Release 담당
+
+- Result Panel에 `TOTAL MERGES`와 `RUN TIME` 통계 행을 추가했다.
+- `optional_stats.merge_count`는 음수 방어 뒤 정수로, `run_time_seconds`는 음수 방어와 내림 뒤 `MM:SS` 또는 1시간 이상 `H:MM:SS`로 표시한다.
+- Result UI는 snapshot을 deep copy해 읽기만 하며 통계 값이 하나도 없는 fixture에서는 통계 행을 숨긴다.
+- S8-G3 전체 UI 검증에서 `148`, `766.9s → 12:46`, 누락 통계 숨김, score·Pause·Title·Main Menu 요청 회귀를 확인했고 Godot 4.7.1 headless exit 0이었다.
+
+## 2026-08-19 — S8-G3 Galactic Terminal Result UI
+
+Owner: Content/Systems/Release 담당
+Status: `IN PROGRESS`
+
+- 사용자 승인 Result 시안을 동적 텍스트가 없는 `1600×900` pixel-art background plate로 정리해 프로젝트 자산으로 저장했다. 점수·통계·행동 텍스트는 이미지에 굽지 않고 Godot 노드가 표시한다.
+- Result 전체가 `0.82s` 동안 화면 아래에서 위로 올라오는 entrance Tween을 추가했다.
+- 좌우 실험관에 서로 다른 개수·속도·위상의 기포를 올리고, 양쪽 게이지 바늘은 최대치 부근에서 서로 다른 주기로 미세하게 떨리도록 별도 `ResultMechanicalMotion` 입력 무시 레이어를 구현했다. Result가 숨으면 processing을 중단한다.
+- `RETRY RUN`과 `MAIN`을 실제 Godot `Button`으로 만들고 focus/hover/pressed 상태를 제공했다. 기존 `MAIN SCREEN` 표기는 사용자 지시에 따라 `MAIN`으로 변경했다.
+- S8-G3 Content verification과 S8-G4 Integration verification이 Godot 4.7.1 headless에서 모두 exit 0이었다. Retry는 fresh Ground Run과 통계 reset, Main은 안전한 Run 종료와 Title 표시를 확인했다.
+- 전체 Black Hole finale의 실제 화면 전환과 Web browser 검증은 S8-G5 및 최종 통합 뒤 남는다.
+
+## 2026-08-19 — S8-G3 확정 Title·Result UI 자동 검증 갱신
+
+Owner: Content/Systems/Release 담당
+Status: `IN PROGRESS`
+
+- S8-G3 자동 검증의 Result 기대값을 최종 UI의 값 전용 출력(`1.23M`, `148`, `12:46`)에 맞춰 갱신해 배경에 포함된 고정 라벨과의 중복 표시를 회귀 방지한다.
+- Title의 `START RUN`/`SETTINGS`와 Result의 `RETRY RUN`/`MAIN`이 실제 Godot Button이고 빈 tooltip, 입력 소유 hit area, 투명한 normal/hover/pressed/focus StyleBox를 유지하는지 검증한다.
+- 장식 motion layer가 pointer 입력을 무시하며, 각 버튼의 커스텀 면 내부 hover·press 상태가 진입·해제되는지 검증한다. Result의 승인된 Retry/Main hit rect 위치와 크기도 고정했다.
+- Godot 4.7.1 CLI/headless에서 `tests/content/s8_g3_terminal_ui_verification.tscn`을 단독 실행해 exit 0과 `S8_G3_VERIFIED title=true pause_modal=true result_snapshot=read_only actual_buttons=true hover=face_only requests=once`를 확인했다.
+- Windows root certificate store 읽기 오류가 한 번 출력됐으나 테스트 script/runtime error 없이 종료됐으므로 프로젝트 실패가 아닌 환경 경고로 분류한다.
+- Integration-owned 파일은 변경하지 않았다. 전체 finale 관찰과 Web 검증은 후속 순차 단계로 남긴다.
+
+## 2026-08-19 — S8-G3 최종 통합 검증 시도
+
+Owner: Content/Systems/Release 담당
+Status: `IN PROGRESS — final verification dependency missing`
+
+- Godot 4.7.1 CLI/headless에서 S8-G2 Core, S8-G3 Content, S8-G4 Integration 검증 Scene을 순차 실행했다. 각각 exit 0과 `terminal=once`, `actual_buttons=true hover=face_only requests=once`, `S8_G4_SKELETON_VERIFIED phase_id=true terminal_once=true reset_safe=true`를 기록했다.
+- Main을 180 frame headless smoke로 실행해 프로젝트 load/runtime script error 없이 exit 0을 확인했다.
+- Web release export가 exit 0으로 완료됐고 로컬 HTTP에서 `index.html`, `index.js`, `index.wasm`, `index.pck`가 모두 200을 반환했다.
+- Main의 Black Hole Phase는 아직 실제 Presentation producer가 아니라 `_complete_temporary_black_hole_phase()` 임시 adapter로 완료된다. `docs/goals/STATUS.md`의 S8-G5도 `PENDING`이므로 L2→L3 frame 전환, finale 회전·폭발, HUD 제거 후 Result 등장까지 이어지는 실제 최종 흐름은 검증 대상 자체가 완성되지 않았다.
+- 브라우저 제어 초기화가 `Trusted RPC dependency must resolve within a configured trusted code path` tooling 오류로 실패해 Canvas와 console 검증을 수행하지 못했다. Export/HTTP 성공을 실제 Browser 검증으로 대체하지 않는다.
+- 따라서 S8-G3는 `IN PROGRESS`를 유지한다. S8-G5 구현과 S8-G4의 임시 adapter 제거·실제 producer 연결 뒤 Desktop/Web 전체 finale를 다시 검증해야 한다.

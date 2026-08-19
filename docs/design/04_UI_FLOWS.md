@@ -29,7 +29,7 @@ Playing
 
 Result
   ├─ Retry Run → full reset → Stage 1 Playing
-  └─ Main Screen → Main Screen
+  └─ Main → Main Screen
 ```
 
 Presentation은 request/finished signal과 read-only snapshot만 사용하고 gameplay state를 직접 변경하지 않는다.
@@ -149,7 +149,7 @@ Settlement score가 이미 run score에 반영되는 authoritative event를 표�
 | Trigger | Stage | After Final Settlement | Presentation destination |
 |---|---|---|---|
 | local Lv4 first discovery | non-final | `PLAYING` | FIRST CONTACT CUT-IN → Playing |
-| Two Black Holes contact | final | terminal snapshot | mutual orbit·폭발 뒤 gameplay UI 제거, `SNOWBALL EFFECT`, `CLEAR SCORE`, `MAIN MENU` |
+| Two Black Holes contact | final | terminal snapshot | mutual orbit·폭발 뒤 gameplay UI 제거, `SNOWBALL EFFECT`, `CLEAR SCORE`, `RETRY RUN`, `MAIN` |
 | Time Up + score clear | non-final | `CLEARED` | Congratulations pause → `Next Stage` → Scale Shift |
 | Time Up + score miss | non-final | `FAILED` | Failure → Run Result |
 | Time Up | final | final result snapshot | Final Result; no next Stage |
@@ -162,9 +162,12 @@ Settlement score가 이미 run score에 반영되는 authoritative event를 표�
 ## 9. Result and Full Retry
 
 - Result는 final Run Score, highest Stage, highest Ball을 필수로 표시한다.
+- Result는 현재 Run의 성공 Merge 누적 횟수 `merge_count`와 실제 gameplay 진행 시간 `run_time_seconds`를 필수 통계로 표시한다.
+- `run_time_seconds`는 `PLAYING` 상태이며 SceneTree가 paused가 아닐 때만 증가한다. Stage Shift, Black Hole Phase 전환, Pause, Result 체류 시간은 포함하지 않고 Stage 사이에는 유지하며 Retry Run/Main Screen에서 초기화한다.
 - 추가 통계는 result snapshot에 실제 값이 있을 때만 보조 영역에 표시한다.
 - primary action `RETRY RUN`은 전체 Run을 Stage 1부터 초기화한다.
-- secondary action `MAIN SCREEN`은 Main으로 이동한다.
+- secondary action `MAIN`은 Main Screen으로 이동한다.
+- Final Result는 화면 아래에서 위로 진입한다. 좌우 실험관의 기포는 계속 상승하고, 양쪽 게이지는 최대치 부근에서 서로 다른 위상으로 미세하게 떨린다. 이 장식 연출은 gameplay state를 변경하지 않고 Result가 숨으면 processing을 멈춘다.
 - full Retry 뒤에는 Ball array, score, timer, snapshot, Settlement/Shift, item, Presentation/audio lock이 남지 않는다.
 - Result scene/script는 Content/Systems-owned, reset wiring은 Integration-owned다.
 
@@ -180,9 +183,11 @@ ResultViewState
 - highest_ball_id: StringName
 - highest_ball_visual_key: StringName
 - optional_stats: Dictionary
+  - merge_count: int
+  - run_time_seconds: float
 ```
 
-필수 identity와 score 필드는 typed field로 고정한다. `optional_stats`는 값이 있는 통계만 보조 영역에 그리기 위한 확장 영역이며 gameplay 판정을 담지 않는다. Presentation은 같은 `run_id` Result를 두 번 열지 않고 이전 `run_epoch` snapshot을 거부한다.
+필수 identity와 score 필드는 typed field로 고정한다. `optional_stats` 안에서도 `merge_count`와 `run_time_seconds`는 Result 필수 표시값이며, 그 밖의 값이 있는 통계만 보조 영역에 그린다. 통계는 gameplay 판정을 담지 않는다. Presentation은 같은 `run_id` Result를 두 번 열지 않고 이전 `run_epoch` snapshot을 거부한다.
 
 ## 10. Focus, Input, and Copy
 
