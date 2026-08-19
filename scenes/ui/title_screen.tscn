@@ -1,9 +1,63 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/title_screen.gd" id="1_title"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/stage_world/runtime/background_ground_1600x900.png" id="2_ground"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/field_bezel_v2_910x900.png" id="3_field_bezel"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/left_wing_v2_200x900.png" id="4_left_wing"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/right_wing_v2_200x900.png" id="5_right_wing"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/c4/field_bezel_96.png" id="6_button_bezel"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v1/tiles/bolt_8.png" id="7_bolt"]
+
+[sub_resource type="SystemFont" id="PixelProxyFont"]
+font_names = PackedStringArray("Consolas", "Courier New", "monospace")
+font_weight = 700
+antialiasing = 0
+hinting = 0
+subpixel_positioning = 0
+
+[sub_resource type="StyleBoxFlat" id="StyleSignalPanel"]
+bg_color = Color(0.0235, 0.0784, 0.0863, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2353, 0.4196, 0.3922, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+bg_color = Color(0.3765, 0.6824, 0.4824, 0.2)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7137, 0.8118, 0.5569, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+bg_color = Color(0.9647, 0.9059, 0.6118, 0.22)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9647, 0.9059, 0.6118, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.9647, 0.9059, 0.6118, 1)
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
 
 [node name="TitleScreen" type="Control"]
 visible = false
+texture_filter = 1
+custom_minimum_size = Vector2(1600, 900)
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,7 +67,7 @@ grow_vertical = 2
 mouse_filter = 0
 script = ExtResource("1_title")
 
-[node name="Dim" type="ColorRect" parent="."]
+[node name="GroundBackground" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,9 +75,30 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.02, 0.03, 0.06, 0.88)
+texture = ExtResource("2_ground")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="BackdropTint" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0196, 0.0275, 0.0667, 0.34)
+
+[node name="FieldGlass" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 520.0
+offset_top = 50.0
+offset_right = 1080.0
+offset_bottom = 850.0
+mouse_filter = 2
+color = Color(0.0196, 0.0353, 0.0667, 0.72)
+
+[node name="Cabinet" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,32 +107,302 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="Center"]
-layout_mode = 2
-custom_minimum_size = Vector2(560, 360)
+[node name="LeftWing" type="TextureRect" parent="Cabinet"]
+layout_mode = 0
+offset_left = 258.0
+offset_right = 458.0
+offset_bottom = 900.0
+mouse_filter = 2
+texture = ExtResource("4_left_wing")
 
-[node name="Content" type="VBoxContainer" parent="Center/Panel"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 18
+[node name="RightWing" type="TextureRect" parent="Cabinet"]
+layout_mode = 0
+offset_left = 1142.0
+offset_right = 1342.0
+offset_bottom = 900.0
+mouse_filter = 2
+texture = ExtResource("5_right_wing")
 
-[node name="Title" type="Label" parent="Center/Panel/Content"]
+[node name="FieldBezel" type="NinePatchRect" parent="Cabinet"]
+layout_mode = 0
+offset_left = 470.0
+offset_right = 1130.0
+offset_bottom = 900.0
+mouse_filter = 2
+texture = ExtResource("3_field_bezel")
+draw_center = false
+patch_margin_left = 50
+patch_margin_top = 50
+patch_margin_right = 50
+patch_margin_bottom = 50
+
+[node name="StatusPanel" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 608.0
+offset_top = 92.0
+offset_right = 992.0
+offset_bottom = 132.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleSignalPanel")
+
+[node name="Status" type="Label" parent="StatusPanel"]
 layout_mode = 2
-text = "SNOWBALL EFFECT"
+text = "GROUND SYSTEM  //  READY"
 horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
-theme_override_font_sizes/font_size = 34
-
-[node name="Guide" type="Label" parent="Center/Panel/Content"]
-layout_mode = 2
-text = "A / D  MOVE\nLEFT / RIGHT  TILT\nMERGE SAME-LEVEL BALLS\nDROPPED BALLS BECOME SCORE"
-horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_fonts/font = SubResource("PixelProxyFont")
 theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="Marquee" type="Control" parent="."]
+layout_mode = 0
+offset_left = 580.0
+offset_top = 152.0
+offset_right = 1020.0
+offset_bottom = 336.0
+mouse_filter = 2
+
+[node name="Glass" type="ColorRect" parent="Marquee"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0235, 0.0784, 0.0863, 0.96)
+
+[node name="Bezel" type="NinePatchRect" parent="Marquee"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_button_bezel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+draw_center = false
+
+[node name="Title" type="Label" parent="Marquee"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+text = "SNOWBALL\nEFFECT"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_fonts/font = SubResource("PixelProxyFont")
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_colors/font_outline_color = Color(0.1216, 0.1412, 0.2941, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 48
+
+[node name="Subtitle" type="Label" parent="Marquee"]
+layout_mode = 1
+anchors_preset = 12
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -36.0
+offset_right = -24.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+text = "ARCADE MERGE CONTROL"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_fonts/font = SubResource("PixelProxyFont")
+theme_override_colors/font_color = Color(0.3765, 0.6824, 0.4824, 1)
 theme_override_font_sizes/font_size = 14
 
-[node name="StartButton" type="Button" parent="Center/Panel/Content"]
-unique_name_in_owner = true
+[node name="GuidePanel" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 608.0
+offset_top = 368.0
+offset_right = 992.0
+offset_bottom = 512.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleSignalPanel")
+
+[node name="Guide" type="Label" parent="GuidePanel"]
 layout_mode = 2
-custom_minimum_size = Vector2(260, 54)
-text = "START"
+text = "A / D              MOVE\nLEFT / RIGHT        TILT\nMATCH BALLS         MERGE\nDROP BALLS          SCORE"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_fonts/font = SubResource("PixelProxyFont")
+theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="StartButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 620.0
+offset_top = 548.0
+offset_right = 980.0
+offset_bottom = 612.0
+focus_neighbor_bottom = NodePath("../SettingsButton")
+mouse_default_cursor_shape = 2
+text = "START RUN"
+theme_override_fonts/font = SubResource("PixelProxyFont")
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_colors/font_hover_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_colors/font_pressed_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_colors/font_focus_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+
+[node name="Glass" type="ColorRect" parent="StartButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0235, 0.0784, 0.0863, 1)
+
+[node name="Bezel" type="NinePatchRect" parent="StartButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_button_bezel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+draw_center = false
+modulate = Color(1, 0.88, 0.58, 1)
+
+[node name="BoltTopLeft" type="TextureRect" parent="StartButton"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 14.0
+offset_bottom = 14.0
+mouse_filter = 2
+texture = ExtResource("7_bolt")
+
+[node name="BoltBottomRight" type="TextureRect" parent="StartButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -14.0
+offset_top = -14.0
+offset_right = -6.0
+offset_bottom = -6.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("7_bolt")
+
+[node name="SettingsButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 660.0
+offset_top = 636.0
+offset_right = 940.0
+offset_bottom = 688.0
+focus_neighbor_top = NodePath("../StartButton")
+mouse_default_cursor_shape = 2
+text = "SETTINGS"
+theme_override_fonts/font = SubResource("PixelProxyFont")
+theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+theme_override_colors/font_hover_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_colors/font_pressed_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_colors/font_focus_color = Color(0.9647, 0.9059, 0.6118, 1)
 theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+
+[node name="Glass" type="ColorRect" parent="SettingsButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0235, 0.0784, 0.0863, 1)
+
+[node name="Bezel" type="NinePatchRect" parent="SettingsButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_button_bezel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+draw_center = false
+modulate = Color(0.72, 0.53, 0.29, 1)
+
+[node name="BoltTopLeft" type="TextureRect" parent="SettingsButton"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 14.0
+offset_bottom = 14.0
+mouse_filter = 2
+texture = ExtResource("7_bolt")
+
+[node name="BoltBottomRight" type="TextureRect" parent="SettingsButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -14.0
+offset_top = -14.0
+offset_right = -6.0
+offset_bottom = -6.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("7_bolt")
+
+[node name="Footer" type="Label" parent="."]
+layout_mode = 0
+offset_left = 580.0
+offset_top = 748.0
+offset_right = 1020.0
+offset_bottom = 780.0
+mouse_filter = 2
+text = "ENTER / CLICK  //  AUDIO UNLOCKS ON INPUT"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_fonts/font = SubResource("PixelProxyFont")
+theme_override_colors/font_color = Color(0.3765, 0.6824, 0.4824, 1)
+theme_override_font_sizes/font_size = 14

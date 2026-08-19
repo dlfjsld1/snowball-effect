@@ -6,6 +6,7 @@ const ResultPanelScene = preload("res://scenes/ui/result_panel.tscn")
 
 var _failures := 0
 var _start_requests := 0
+var _title_settings_requests := 0
 var _pause_requests := 0
 var _resume_requests := 0
 var _retry_requests := 0
@@ -23,6 +24,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 
 	title.start_requested.connect(func() -> void: _start_requests += 1)
+	title.settings_requested.connect(func() -> void: _title_settings_requests += 1)
 	pause_menu.pause_requested.connect(func() -> void: _pause_requests += 1)
 	pause_menu.resume_requested.connect(func() -> void: _resume_requests += 1)
 	pause_menu.retry_requested.connect(func() -> void: _retry_requests += 1)
@@ -43,8 +45,14 @@ func _ready() -> void:
 func _verify_title(title) -> void:
 	title.show_title()
 	_expect(title.visible, "Title API must reveal the title screen.")
+	_expect(title.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST, "Title pixel assets must use nearest filtering.")
+	_expect(title.get_node("GroundBackground").texture != null, "Title must present the Ground stage background.")
+	_expect(title.get_node("Cabinet/FieldBezel").texture != null, "Title must reuse the Paper-8 field bezel.")
+	_expect(title.start_button.has_focus(), "Title must focus the primary Start action when shown.")
 	title.start_button.pressed.emit()
 	_expect(_start_requests == 1, "Title start action must emit exactly one request.")
+	title.settings_button.pressed.emit()
+	_expect(_title_settings_requests == 1, "Title settings action must emit exactly one request.")
 	title.hide_title()
 	_expect(not title.visible, "Title API must hide the title screen.")
 
