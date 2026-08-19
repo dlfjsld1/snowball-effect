@@ -761,3 +761,17 @@ Owner: Content/Systems/Release 담당
 - 첫 Canvas 입력 뒤 6개 policy sound가 `dropped=0`으로 동시에 활성화됐으며, 이어진 `run_end`가 6개를 선점하고 terminal 단독 재생되는 것을 확인했다. Web console warning/error는 0건이었다.
 - 임시 probe와 로컬 서버 파일을 제거한 뒤 clean Web build를 다시 export하고 정상 Main smoke를 확인했다. S6-G4의 남은 보류 항목이 없어 `VERIFIED`로 갱신했다.
 - 최종 clean 저장소에서 Godot 4.7.1 CLI/headless S6-G4 verification scene과 Main 120-frame smoke가 모두 exit 0이었다.
+
+## 2026-08-18 — S8-G3 Title Pixel UI 완성
+
+Owner: Content/Systems/Release 담당
+Status: `IMPLEMENTED`
+
+- `docs/design/12_PIXEL_DESIGN_GUIDELINES.md`의 1600×900 authoring, 정수 좌표, 4px 간격 계열, 최소 2px 기능 경계, nearest filtering 원칙을 Title에 적용했다.
+- Ground runtime background와 실제 Paper-8 v2 L0 `left/right wing`, `field_bezel`을 그대로 재사용해 플레이 화면과 Title 사이의 픽셀 밀도·팔레트·프레임 실루엣 차이를 제거했다.
+- AI 생성 목업은 production asset으로 사용하지 않았다. 기능 텍스트는 Godot Label, `START RUN`과 `SETTINGS`는 실제 Button으로 유지했다.
+- Title에 `settings_requested` 요청-only signal을 추가했고 기존 `start_requested`와 함께 독립 검증에서 각각 한 번만 발행됨을 확인했다. Integration-owned Main/GameManager는 수정하지 않았다.
+- Primary `godot` validate에서 Title scene/script, S8-G3 test script/scene, Main scene 5/5 valid. S8-G3 verification scene은 bridge 초기화 전 exit 0으로 종료됐고, bridge shutdown warning은 짧은 test 종료에 따른 tooling 경고로 분류했다.
+- Main runtime에서 Main Menu를 통해 Title을 표시하고 Start 기본 focus, Settings 실제 Button, 1600×900 화면을 확인했다. Screenshot: `.mcp/screenshots/screenshot_1787047440_964.png`.
+- Start 버튼 입력 뒤 Title이 숨고 HUD가 표시되어 기존 Title→Ground Integration 흐름이 유지됨을 확인했다. 전체 finale와 Web 검증은 S8-G4/S8-G5 이후에 남는다.
+- `ppt-master`는 필수 `attribution_guard.py`를 실행할 Python runtime이 없어 무결성 Gate를 통과하지 못했으므로 실행 파이프라인 사용을 중단했다. 문서 12와 기존 runtime 자산을 source of truth로 사용했다.
