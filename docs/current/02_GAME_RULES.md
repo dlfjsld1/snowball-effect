@@ -288,19 +288,18 @@ spawn_rate
 
 현재 Stage의 local Lv4를 만들면 해당 공의 Run 내 최초 생성 여부를 기록하고 `FIRST CONTACT` CUT-IN을 요청한다. Ground의 Moon과 Planetary의 Galaxy는 생성만으로 Stage Clear를 잠그지 않으며 일반 gameplay와 Active Cashout 대상에 남는다.
 
-non-final Stage의 Clear는 Time Up 뒤 Final Settlement를 완료하고 `final_stage_score >= clear_score`일 때만 확정한다. Galactic의 첫 Black Hole은 FIRST CONTACT 연출 뒤 별도 Black Hole 최종 국면 계약으로 전환한다.
+non-final Stage의 Clear는 tick의 Merge와 Active Cashout을 반영한 `stage_score >= clear_score` 순간 확정한다. 남은 시간과 local Lv4 생성 여부는 이 판정을 막지 않는다. 확정 뒤 Final Settlement를 한 번 처리하고 자동으로 Scale Shift를 시작한다. Galactic의 첫 Black Hole은 FIRST CONTACT 연출 뒤 별도 Black Hole 최종 국면 계약으로 전환한다.
 
 ---
 
 ## 11. Stage Clear — Score Clear
 
-최고 공을 만들기 전에 Stage 시간이 `0` 이하로 확정되면
-`TIME_UP_LOCKED` 후 `FINAL SETTLEMENT`로 이동한다.
+최고 공 생성은 Clear 조건이 아니다. non-final Stage는 `stage_score >= clear_score`가 되면 시간과 무관하게 `CLEAR_LOCKED` 후 `FINAL SETTLEMENT`로 이동하고, 정산 직후 자동으로 `SCALE SHIFT`를 시작한다.
 
 Time Up은 physics tick 시작 시각만으로 판정하지 않는다.
 해당 tick의 Merge와 Active Cashout을 먼저 확정해 Time Bonus까지 반영한 뒤 종료 여부를 판단한다.
 따라서 시간이 잠시 0 이하가 되어도 같은 tick의 Cashout으로 양수가 되면 플레이를 계속한다.
-같은 tick에 local Lv4가 생성되어도 이를 이유로 Time Up을 취소하지 않는다. Merge와 Active Cashout을 모두 반영한 뒤 남은 시간이 `0` 이하면 Time Up을 확정한다.
+같은 tick에 local Lv4가 생성되어도 이를 이유로 Clear하지 않는다. Merge와 Active Cashout을 모두 반영한 뒤 clear score를 채우면 Score Clear가 Time Up보다 우선한다. clear score 미달이고 남은 시간이 `0` 이하면 Time Up을 확정한다.
 
 Final Stage Score:
 
@@ -352,7 +351,7 @@ Settlement는 활성 공 snapshot을 한 번 만들고 점수를 일괄 계산�
 
 ## 13. SCALE SHIFT
 
-Stage 성공 후 Settlement가 끝나면 축하 메시지로 gameplay를 정지한다. 플레이어의 matching `Next Stage` 요청을 받은 뒤에만 Scale Shift를 시작한다.
+non-final Stage가 clear score에 도달하면 Settlement를 한 번 처리한 직후 자동으로 Scale Shift를 시작한다. 사용자 확인 UI는 gameplay state를 지연시키지 않는다.
 
 다음 Stage 진입 시:
 
@@ -401,7 +400,7 @@ Snowflake → Snowball → Big Snowball → Giant Snowball → Moon
 
 초기 Spawn: 약 `6/s`
 
-초기 `clear_score`: `4e6` (Giant Snowball 4개 Cashout 상당)
+초기 `clear_score`: `4e8` (Moon 4개 Cashout 상당)
 
 ### Planetary
 
@@ -620,11 +619,11 @@ Cashout으로 얻는 평균 추가 시간이 소비 시간보다 너무 커서 �
 
 ### Known balancing observation — Controllable Merge and Stage Shift pacing
 
-> **이 관찰에서 local Lv4 즉시 Clear 제거와 `Next Stage` 확인이 확정 계약으로 승격됐다. 구현은 S3-G7과 S5-G6/G6I에서 진행한다.**
+> **이 관찰에서 local Lv4 즉시 Clear 제거는 유지한다. 이후 사용자 규칙 변경으로 non-final clear score 도달 시 자동 Scale Shift가 확정됐다.**
 
 현재 플레이에서 같은 등급 공의 자동 Merge가 연쇄적으로 일어나고 최고공 또는 clear score에 너무 빨리 도달하면, 플레이어는 패들로 합체를 만들었다기보다 게임이 스스로 Phase Shift했다고 느낄 수 있다. 이는 Snowball Effect가 지향하는 `통제 가능한 폭주`와 어긋날 위험이 있다.
 
-`최고 공 생성 → Clear Lock → Settlement → Scale Shift` 자동 전환은 폐기한다. Ground/Planetary의 local Lv4는 FIRST CONTACT 뒤 gameplay를 계속하고, Time Up Score Clear 뒤에는 축하 메시지와 `Next Stage` 확인을 거친다.
+`최고 공 생성 → Clear Lock → Settlement → Scale Shift`는 최고 공 생성 자체에는 적용하지 않는다. Ground/Planetary의 local Lv4는 FIRST CONTACT 뒤 gameplay를 계속하며, clear score가 도달했을 때만 자동 Scale Shift를 시작한다.
 
 향후 검토의 기준 루프는 다음과 같다.
 

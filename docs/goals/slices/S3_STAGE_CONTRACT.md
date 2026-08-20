@@ -32,7 +32,7 @@ Stage Timer, Time Bonus, Top Ball, Time Up, Final Settlement가 확정 계약대
 - Owned Files: `scripts/core/stage_runtime.gd`, `scripts/simulation/ball_simulation_manager.gd`, `tests/core/**`
 - Integration Point: `end_decision_requested(reason)`을 StageManager에 제공.
 - Dependencies: S3-G2와 S2-G3 Merge commit.
-- Historical Verification: 시간 차감→물리/Merge→Top Ball→Cashout→종료 판정과 Top Ball 우선. 이 완료 증거는 기존 구현 기록이며, 최신 local Lv4 비종료 계약은 S3-G7이 대체 검증한다.
+- Verification: 시간 차감→물리/Merge→Cashout→종료 판정. non-final `stage_score >= clear_score`는 Time Up보다 먼저 `SCORE_CLEAR`를 한 번 요청한다. local Lv4 생성은 종료 사유가 아니다.
 - Do Not Modify: StageManager state transition과 Presentation.
 
 ### S3-G4 Snapshot Settlement
@@ -50,7 +50,7 @@ Stage Timer, Time Bonus, Top Ball, Time Up, Final Settlement가 확정 계약대
 - Owned Files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`
 - Integration Point: Core의 end decision/settlement API와 Presentation의 clear/settlement 완료 signal을 순서대로 연결.
 - Dependencies: S3-G2~G4 API와 문서화된 Integration signal 계약.
-- Historical Verification: Top Ball `CLEAR_LOCKED→SETTLING→CLEARED`; Time Up `TIME_UP_LOCKED→SETTLING→CLEARED/FAILED`; 완료 신호 중복에도 전이 한 번. Top Ball 경로는 S3-G7 완료 뒤 사용하지 않는다.
+- Verification: Score Clear `CLEAR_LOCKED→SETTLING→CLEARED→SHIFTING`; clear score 미달 Time Up은 `TIME_UP_LOCKED→SETTLING→FAILED`; 완료 신호 중복에도 전이 한 번.
 - Do Not Modify: Core 계산 내부와 Presentation animation 내부.
 
 ### S3-G6 Stage HUD

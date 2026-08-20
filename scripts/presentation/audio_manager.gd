@@ -11,6 +11,7 @@ const AudioCatalogResource = preload("res://resources/audio/audio_catalog.tres")
 const BallCatalog = preload("res://scripts/data/ball_catalog.gd")
 
 const STAGE_PLAYING: StringName = &"PLAYING"
+const STAGE_READY: StringName = &"READY"
 const STAGE_CLEAR_LOCKED: StringName = &"CLEAR_LOCKED"
 const STAGE_CLEARED: StringName = &"CLEARED"
 const STAGE_FAILED: StringName = &"FAILED"
@@ -35,7 +36,7 @@ const EVENT_POLICIES := {
 	&"settlement_start": {"group": &"settlement", "priority": 70, "polyphony": 1, "cooldown": 0.0, "volume_db": -3.0},
 	&"settlement_finish": {"group": &"settlement", "priority": 72, "polyphony": 1, "cooldown": 0.0, "volume_db": -2.0},
 	&"stage_clear": {"group": &"stage_clear", "priority": 80, "polyphony": 1, "cooldown": 0.0, "volume_db": -1.0},
-	&"scale_shift": {"group": &"scale_shift", "priority": 85, "polyphony": 1, "cooldown": 0.0, "volume_db": -1.0},
+	&"scale_shift": {"group": &"scale_shift", "priority": 85, "polyphony": 1, "cooldown": 0.0, "volume_db": -7.0},
 	&"black_hole_loop": {"group": &"black_hole_loop", "priority": 88, "polyphony": 1, "cooldown": 0.0, "volume_db": -14.0},
 	&"black_hole_phase": {"group": &"black_hole_phase", "priority": 90, "polyphony": 1, "cooldown": 0.0, "volume_db": -4.0},
 	&"stage_fail": {"group": &"terminal", "priority": 95, "polyphony": 1, "cooldown": 0.0, "volume_db": 0.0, "terminal": true},
@@ -52,6 +53,7 @@ const EVENT_POLICIES := {
 
 @export var player_pool_size := 8
 @export var audio_bus: StringName = &"Master"
+@export_range(-40.0, 0.0, 0.5) var sfx_volume_offset_db := -6.0
 @export_range(-40.0, 0.0, 0.5) var music_volume_db := -14.0
 
 var catalog: AudioCatalog = AudioCatalogResource
@@ -140,7 +142,7 @@ func play_event(event_key: StringName) -> bool:
 		return false
 	player.stream = definition.stream
 	player.bus = audio_bus
-	player.volume_db = float(policy["volume_db"])
+	player.volume_db = float(policy["volume_db"]) + sfx_volume_offset_db
 	player.set_meta(&"audio_event_key", event_key)
 	player.set_meta(&"audio_event_loop", definition.loop)
 	player.set_meta(&"audio_event_group", group)
@@ -197,6 +199,7 @@ func get_debug_snapshot() -> Dictionary:
 		"black_hole_loop_playing": _black_hole_loop_player != null and is_instance_valid(_black_hole_loop_player) and _black_hole_loop_player.playing,
 		"music_playing": _music_player != null and is_instance_valid(_music_player) and _music_player.playing,
 		"current_music_key": _current_music_key,
+		"sfx_volume_offset_db": sfx_volume_offset_db,
 		"music_volume_db": music_volume_db,
 		"music_player_volume_db": _music_player.volume_db if _music_player != null and is_instance_valid(_music_player) else 0.0,
 		"paused_stage_music_key": _paused_stage_music_key,
@@ -302,6 +305,7 @@ func _connect_pause_menu_source() -> void:
 	if not is_instance_valid(_pause_menu_source):
 		return
 	_connect_signal(_pause_menu_source, &"pause_requested", _on_pause_requested)
+	_connect_signal(_pause_menu_source, &"resume_requested", _on_resume_requested)
 	_connect_signal(_pause_menu_source, &"retry_requested", _on_retry_requested)
 	_connect_signal(_pause_menu_source, &"settings_requested", _on_settings_requested)
 	_connect_signal(_pause_menu_source, &"main_menu_requested", _on_main_menu_requested)
@@ -323,6 +327,7 @@ func _disconnect_sources() -> void:
 	_disconnect_signal(_stage_source, &"stage_shift_started", _on_stage_shift_started)
 	_disconnect_signal(_stage_source, &"stage_changed", _on_stage_changed)
 	_disconnect_signal(_pause_menu_source, &"pause_requested", _on_pause_requested)
+	_disconnect_signal(_pause_menu_source, &"resume_requested", _on_resume_requested)
 	_disconnect_signal(_pause_menu_source, &"retry_requested", _on_retry_requested)
 	_disconnect_signal(_pause_menu_source, &"settings_requested", _on_settings_requested)
 	_disconnect_signal(_pause_menu_source, &"main_menu_requested", _on_main_menu_requested)
@@ -355,7 +360,13 @@ func _on_cashout_completed(_score_amount: float, global_level: int, _world_posit
 
 func _on_stage_state_changed(state: StringName) -> void:
 	_gameplay_suppressed = state != STAGE_PLAYING
-	if state == STAGE_CLEAR_LOCKED:
+	if state == STAGE_READY:
+		_pause_toggle_is_paused = false
+		_paused_stage_music_key = &""
+		_paused_stage_music_position = 0.0
+		stop_loop()
+		_request_music(BGM_TITLE)
+	elif state == STAGE_CLEAR_LOCKED:
 		_play_stage_clear_once()
 	elif state == STAGE_CLEARED:
 		_play_stage_clear_once()
@@ -381,12 +392,19 @@ func _on_stage_changed(definition: Resource) -> void:
 
 
 func _on_pause_requested() -> void:
-	_pause_toggle_is_paused = not _pause_toggle_is_paused
 	if _pause_toggle_is_paused:
-		play_event(&"ui_pause")
-		_pause_stage_music()
-	else:
-		_resume_stage_music()
+		return
+	_pause_toggle_is_paused = true
+	play_event(&"ui_pause")
+	_pause_stage_music()
+
+
+func _on_resume_requested() -> void:
+	if not _pause_toggle_is_paused:
+		return
+	_pause_toggle_is_paused = false
+	play_event(&"ui_resume")
+	_resume_stage_music()
 
 
 func _on_retry_requested() -> void:

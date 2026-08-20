@@ -100,7 +100,7 @@ func apply_active_cashout(score_amount: float, global_level: int) -> float:
 	return time_bonus
 
 
-func process_tick(delta: float, top_ball_created: bool, cashouts: Array[Dictionary]) -> StringName:
+func process_tick(delta: float, _top_ball_created: bool, cashouts: Array[Dictionary]) -> StringName:
 	assert(current_stage != null, "Tick processing requires an entered Stage.")
 	if _end_decision_locked:
 		return &""
@@ -111,8 +111,11 @@ func process_tick(delta: float, top_ball_created: bool, cashouts: Array[Dictiona
 	for cashout in cashouts:
 		apply_active_cashout(cashout["score_amount"], cashout["global_level"])
 
-	if top_ball_created:
-		return _request_end_decision(&"TOP_BALL_CLEAR")
+	# Non-final stages clear as soon as their score target is reached.  This is
+	# deliberately evaluated after same-tick Cashouts and before Time Up, so a
+	# target-reaching Cashout wins even when the timer has just expired.
+	if current_stage.clear_score > 0.0 and score_ledger.stage_score >= current_stage.clear_score:
+		return _request_end_decision(&"SCORE_CLEAR")
 	if stage_time_left <= 0.0:
 		return _request_end_decision(&"TIME_UP")
 	return &""

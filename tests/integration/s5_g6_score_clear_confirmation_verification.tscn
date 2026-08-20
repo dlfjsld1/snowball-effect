@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/integration/s5_g6_score_clear_confirmation_verification.gd" id="1_script"]
+
+[node name="S5G6ScoreClearConfirmationVerification" type="Node"]
+script = ExtResource("1_script")

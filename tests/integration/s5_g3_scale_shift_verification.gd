@@ -17,19 +17,18 @@ func _ready() -> void:
 	stage_manager.stage_changed.connect(_on_stage_changed)
 	stage_manager.stage_shift_started.connect(_on_stage_shift_started)
 	stage_manager.start_run()
-	_verify_top_clear_enters_shift_once()
+	_verify_score_clear_enters_shift_once()
 	if _failures == 0:
 		print("S5_G3_VERIFIED clear_to_shifting=true duplicate_safe=true planetary_entered=true")
 	get_tree().quit(_failures)
 
 
-func _verify_top_clear_enters_shift_once() -> void:
-	simulation.spawn_ball(Vector2(100.0, 100.0), Vector2.ZERO, 16.0, 3)
-	simulation.spawn_ball(Vector2(106.0, 100.0), Vector2.ZERO, 16.0, 3)
+func _verify_score_clear_enters_shift_once() -> void:
+	stage_manager.get_score_ledger().apply_score_event(stage_manager.get_current_stage().clear_score)
 	stage_manager._physics_process(0.1)
 
-	_expect(_states.has(StageManager.CLEARED), "Top Ball must enter CLEARED before SHIFTING.")
-	_expect(stage_manager.current_state == StageManager.SHIFTING, "Ground clear must wait in SHIFTING for presentation completion.")
+	_expect(_states.has(StageManager.CLEARED), "Score Clear must enter CLEARED before presentation handoff.")
+	_expect(stage_manager.current_state == StageManager.SHIFTING, "Ground clear must start Scale Shift immediately.")
 	_expect(_shift_id > 0, "SHIFTING must issue a positive shift id.")
 	_expect(simulation.get_active_count() == 0, "Settlement must remove active balls before the presentation wait.")
 	var frozen_time: float = stage_manager.get_runtime_snapshot()["stage_time_left"]
@@ -42,7 +41,7 @@ func _verify_top_clear_enters_shift_once() -> void:
 	_expect(stage_manager.current_stage_index == 1, "Ground must advance to Planetary exactly once.")
 	_expect(stage_manager.get_current_stage().display_name == "Planetary", "Next Stage must use the ordered StageCatalog entry.")
 	_expect(is_equal_approx(stage_manager.get_score_ledger().stage_score, 0.0), "Next Stage score must reset.")
-	_expect(is_equal_approx(stage_manager.get_score_ledger().run_score, 100000000.0), "Run score must preserve the settled Ground top-ball value.")
+	_expect(is_equal_approx(stage_manager.get_score_ledger().run_score, 4000000.0), "Run score must preserve the cleared Ground score.")
 	_expect(not stage_manager.accept_stage_shift_presentation_finished(_shift_id), "Duplicate completion must be ignored.")
 	_expect(_stage_changed_count == 2, "Initial Ground and one Planetary entry are the only Stage changes.")
 

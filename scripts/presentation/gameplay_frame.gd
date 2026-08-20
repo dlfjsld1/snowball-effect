@@ -62,6 +62,16 @@ func get_field_visual_rect_for_profile(value: int) -> Rect2:
 	return Rect2(field_x, FRAME_INSET, field_width, FIELD_HEIGHT)
 
 
+func get_field_visual_rect_lerp(from_profile: int, to_profile: int, weight: float) -> Rect2:
+	var clamped_weight := clampf(weight, 0.0, 1.0)
+	var from_rect := get_field_visual_rect_for_profile(from_profile)
+	var to_rect := get_field_visual_rect_for_profile(to_profile)
+	return Rect2(
+		from_rect.position.lerp(to_rect.position, clamped_weight),
+		from_rect.size.lerp(to_rect.size, clamped_weight)
+	)
+
+
 func get_field_bezel_rect() -> Rect2:
 	return _get_field_bezel_rect(profile_index)
 

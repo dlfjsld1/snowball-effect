@@ -658,3 +658,15 @@ Owner: Core (교차 영역 변경 승인됨)
 - Stage 진입은 통계를 유지하고 Retry Run/Main Screen용 `reset_run_statistics()`만 초기화한다.
 - Black Hole terminal snapshot의 `optional_stats`에 `merge_count`와 `run_time_seconds`를 deep-copy 가능한 값으로 고정했다.
 - S8-G2 검증에서 Stage 재진입 보존, terminal snapshot 값, 기존 terminal-once/normal-commit 차단을 확인했고 Godot 4.7.1 headless exit 0이었다.
+
+## 2026-08-20 — S3-G7 local Lv4 비종료 계약 마이그레이션
+
+- `StageRuntime.process_tick()`에서 `TOP_BALL_CLEAR` 종료 분기를 제거했다. local Lv4와 Time Up이 같은 tick에 생성되면 Cashout 반영 뒤 `TIME_UP` 한 번으로 중재한다.
+- Core verification은 Cashout 시간 회복, top-ball 비종료, same-tick Time Up, 종료 lock을 검사한다.
+- Primary Godot validate와 headless verification exit 0을 확인했다.
+
+## 2026-08-20 — 즉시 Score Clear 규칙 변경
+
+- 사용자 최신 규칙에 따라 `StageRuntime.process_tick()`은 non-final `stage_score >= clear_score`를 Cashout 반영 뒤, Time Up보다 먼저 `SCORE_CLEAR`로 확정한다.
+- local Lv4 생성은 계속 종료 사유가 아니다. clear score 미달인 경우에만 Time Up 경로를 사용한다.
+- Primary validate와 S3-G3 verification scene exit 0을 확인했다. 이 환경의 직접 CLI/headless는 `user://logs` 접근 실패 뒤 Godot signal 11로 종료되어 도구 환경 문제로 분리했다.

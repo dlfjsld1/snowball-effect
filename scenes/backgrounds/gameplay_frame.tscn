@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://deic2cryapcmb"]
+[gd_scene load_steps=13 format=3 uid="uid://deic2cryapcmb"]
 
 [ext_resource type="Script" uid="uid://bkmtnd1dgffmf" path="res://scripts/presentation/gameplay_frame.gd" id="1_frame"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/field_bezel_v2_910x900.png" id="2_bezel"]
@@ -9,8 +9,9 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_genealogy_v2_176x400.png" id="7_genealogy"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_score_v2_176x112.png" id="8_score"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_item_v2_176x300.png" id="9_item"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_pause_v2_176x104.png" id="10_pause"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_pause_b_v2_176x104.png" id="10_pause"]
 [ext_resource type="Script" path="res://scripts/presentation/presentation_manager.gd" id="11_presentation"]
+[ext_resource type="PackedScene" path="res://scenes/effects/black_hole_presentation_overlay.tscn" id="12_black_hole_overlay"]
 
 [node name="GameplayFrame" type="Control" unique_id=1995335417]
 texture_filter = 1
@@ -57,10 +58,10 @@ offset_bottom = 900.0
 mouse_filter = 2
 texture = ExtResource("2_bezel")
 draw_center = false
-patch_margin_left = 50
-patch_margin_top = 50
-patch_margin_right = 50
-patch_margin_bottom = 50
+patch_margin_left = 90
+patch_margin_top = 90
+patch_margin_right = 90
+patch_margin_bottom = 90
 
 [node name="CrtShells" type="Control" parent="."]
 mouse_filter = 2
@@ -141,6 +142,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("11_presentation")
+
+[node name="BlackHoleOverlay" parent="PresentationManager" instance=ExtResource("12_black_hole_overlay")]
+unique_name_in_owner = true
 
 [node name="ShiftFlash" type="ColorRect" parent="PresentationManager"]
 unique_name_in_owner = true

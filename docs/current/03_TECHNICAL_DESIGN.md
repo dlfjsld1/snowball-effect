@@ -849,11 +849,12 @@ Stage 종료 판정은 다음 순서를 따른다.
 3. Merge 확정 및 local Lv3/Lv4 최초 생성 여부 기록
 4. Active Cashout 점수와 Time Bonus 반영
 5. 종료 판정
+   - non-final이고 stage_score >= clear_score → SCORE_CLEAR
    - stage_time_left <= 0 → TIME_UP
    - 그 외 → PLAYING 유지
 ```
 
-같은 tick의 Cashout으로 시간이 다시 양수가 되면 Time Up을 취소한다.
+같은 tick의 Cashout으로 시간이 다시 양수가 되면 Time Up을 취소한다. clear score를 채운 Cashout은 시간이 0 이하인 경우에도 SCORE_CLEAR를 먼저 요청한다.
 local Lv4 생성은 종료 사유가 아니다. 같은 tick에 local Lv4와 Time Up이 함께 발생하면 Merge/Cashout commit과 최초 발견 기록을 마친 뒤 Time Up 경로를 사용한다.
 
 ### Local Lv4 first discovery
@@ -862,15 +863,21 @@ local Lv4 생성은 종료 사유가 아니다. 같은 tick에 local Lv4와 Time
 
 ### Time Up
 
-tick의 Cashout 반영 후에도 시간이 0 이하이면:
+non-final Stage는 tick의 Cashout 반영 뒤 `stage_score >= clear_score`이면:
+
+1. `CLEAR_LOCKED`
+2. Final Settlement
+3. `CLEARED → SHIFTING`
+
+Scale Shift는 사용자 확인 UI를 기다리지 않고 즉시 시작한다.
+
+clear score 미달이고 tick의 Cashout 반영 후에도 시간이 0 이하이면:
 
 1. 새 공 Spawn 정지
 2. 플레이 입력/물리 진행 정지 또는 짧게 감속
 3. Final Settlement
-4. 마지막 Stage가 아니면 `final_stage_score >= clear_score` 판정
-5. 성공 → 축하 메시지와 `Next Stage` 확인 대기
-6. matching `Next Stage` 요청 → Scale Shift
-7. 실패 → Run End
+4. non-final → Run End
+5. 마지막 Stage → Run End
 
 ### Final Settlement
 

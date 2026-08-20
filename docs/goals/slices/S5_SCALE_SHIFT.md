@@ -32,7 +32,7 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 - Owned Files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`
 - Integration Point: Core `CLEARED`, `stage_shift_started(next_definition, shift_id)`, Presentation `stage_shift_presentation_finished(shift_id)`, Content StageCatalog를 연결. S5-G4 전에는 Main의 임시 adapter가 같은 완료 API를 deferred 한 번 호출한다.
 - Dependencies: S5-G1, S5-G2와 `INTEGRATION_CONTRACTS.md`의 Shift signal 계약.
-- Historical Verification: `CLEARED` 뒤 `SHIFTING`; spawn/timer stop→Settlement→연출/임시 adapter→다음 Stage; 잘못되거나 중복된 `shift_id`에도 Shift 한 번. 최신 계약의 사용자 확인 gate는 S5-G6I가 추가한다.
+- Verification: non-final clear score 도달 뒤 `CLEARED→SHIFTING`; spawn/timer stop→Settlement→연출→다음 Stage; 잘못되거나 중복된 `shift_id`에도 Shift 한 번.
 - Do Not Modify: Core 계산, StageDefinition 값, Presentation animation.
 
 ### S5-G4 Stage World와 Shift presentation
@@ -68,22 +68,22 @@ Presentation은 `stage_shift_started(next_definition, shift_id)`를 받은 뒤�
 - Verification: 임시 `auto_complete_shift_presentation`을 끈 상태에서 Shift 시작 직후 Stage가 바뀌지 않고, Presentation 완료 뒤 한 번만 다음 Stage에 진입하며 stale/duplicate 완료는 거부됨.
 - Do Not Modify: StageManager 상태 계산, StageDefinition 값, Presentation animation 내부.
 
-### S5-G6 Stage Clear 축하 확인 UI
+### S5-G6 Stage Clear 축하 UI (retired)
 
 - Owner: Presentation
 - Owned Files: `scripts/ui/**`, `scenes/ui/**`, `tests/presentation/**`
-- Integration Point: authoritative non-final Score Clear snapshot을 표시하고 `next_stage_requested(clear_id)`만 발행한다.
+- Integration Point: 2026-08-20 사용자 규칙 변경으로 자동 Scale Shift가 확정되어 런타임 경로에서 제거됐다.
 - Dependencies: S3-G7, S3-G8, S5-G3.
-- Verification: Settlement 성공 뒤 gameplay가 정지된 채 축하 메시지와 `Next Stage` 버튼 표시; 버튼/입력 중복은 동일 `clear_id`로 한 번만 요청; 실패/최종 Result에는 표시하지 않음; UI가 Shift나 Stage 변경을 직접 실행하지 않음.
+- Verification: retired; Scale Shift 진행 여부는 S5-G3의 authoritative state와 presentation `shift_id` handoff로 검증한다.
 - Do Not Modify: StageManager/GameManager, score/settlement 계산, Stage resource.
 
-### S5-G6I Next Stage 확인 wiring
+### S5-G6I Automatic Score Clear wiring
 
 - Owner: Integration
 - Owned Files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`
-- Integration Point: Presentation `next_stage_requested(clear_id)`를 matching clear state에서 수락한 뒤 기존 `stage_shift_started(next_definition, shift_id)`를 발행한다.
-- Dependencies: S5-G6, 기존 S5-G3/G4I Shift handoff.
-- Verification: Score Clear 직후에는 Shift/Stage activation 없음; matching `Next Stage` 뒤 한 번만 SHIFTING; stale/duplicate/wrong `clear_id` 거부; Retry/Main Menu가 대기 lock을 초기화.
+- Integration Point: Core `SCORE_CLEAR`를 `CLEAR_LOCKED→SETTLING→CLEARED→SHIFTING`으로 연결하고 기존 `stage_shift_started(next_definition, shift_id)`를 즉시 발행한다.
+- Dependencies: S3-G3, 기존 S5-G3/G4I Shift handoff.
+- Verification: Score Clear는 시간·사용자 입력과 무관하게 한 번만 SHIFTING; stale/duplicate `shift_id` 완료 거부; Retry/Main Menu가 전환 lock을 초기화.
 - Do Not Modify: Core score/settlement 계산, Presentation 내부 animation, StageDefinition 값.
 
 ### S5-G7 Galactic 투명 Stage World

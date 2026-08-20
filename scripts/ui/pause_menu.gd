@@ -44,7 +44,7 @@ func set_paused(is_paused: bool) -> void:
 
 
 func apply_frame_layout(right_bottom_panel: Rect2) -> void:
-	$Buttons.position = right_bottom_panel.position + Vector2(16.0, 16.0)
+	$Buttons.position = right_bottom_panel.position + Vector2(16.0, 17.0)
 
 
 func _request_pause() -> void:

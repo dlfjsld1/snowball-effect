@@ -30,7 +30,6 @@ signal terminal_result_available(result_snapshot: Dictionary)
 @export var lv1_ball_radius := 4.0
 @export var lv1_spawn_speed_world_units_per_second := 160.0
 @export_range(0.0, 89.0, 0.1) var lv1_spawn_angle_degrees := 20.0
-@export var auto_complete_black_hole_phase_presentation := true
 
 var retry_count := 0
 
@@ -50,6 +49,7 @@ var _spawn_accumulator := 0.0
 var _random := RandomNumberGenerator.new()
 var _initialized := false
 var _terminal_result_snapshot: Dictionary = {}
+var _terminal_result_published := false
 
 
 func _ready() -> void:
@@ -74,12 +74,16 @@ func _initialize_runtime() -> void:
 	_simulation.set_paddle_collision_provider(_paddle)
 	_stage_manager.stage_changed.connect(_on_stage_changed)
 	_stage_manager.stage_shift_started.connect(_presentation_manager.play_stage_shift)
+	_stage_manager.stage_run_ended.connect(_on_stage_run_ended)
 	_stage_manager.final_settlement_started.connect(_on_final_settlement_started)
 	_stage_manager.final_settlement_finished.connect(_on_final_settlement_finished)
 	_stage_manager.black_hole_phase_started.connect(_on_black_hole_phase_started)
 	_stage_manager.black_hole_phase_gameplay_resumed.connect(_on_black_hole_phase_gameplay_resumed)
 	_stage_manager.black_hole_finale_locked.connect(_on_black_hole_finale_locked)
 	_presentation_manager.stage_shift_presentation_finished.connect(_on_stage_shift_presentation_finished)
+	_presentation_manager.visual_field_rect_changed.connect(_on_visual_field_rect_changed)
+	_presentation_manager.black_hole_phase_presentation_finished.connect(_on_black_hole_phase_presentation_finished)
+	_presentation_manager.black_hole_finale_presentation_finished.connect(_on_black_hole_finale_presentation_finished)
 	_simulation.black_hole_phase_requested.connect(_on_black_hole_phase_requested)
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
 	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu, _title_screen)
@@ -112,8 +116,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not key_event.pressed or key_event.echo or get_tree().paused:
 		return
 	match key_event.physical_keycode:
-		KEY_F6:
-			_stage_manager.debug_force_top_ball_clear()
 		KEY_F7:
 			_stage_manager.debug_force_score_clear()
 
@@ -143,6 +145,8 @@ func _start_run() -> void:
 	_random.seed = 1337
 	_spawn_accumulator = 0.0
 	_terminal_result_snapshot.clear()
+	_terminal_result_published = false
+	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.start_run()
 	_paddle.reset_runtime()
 	_paddle.set_physics_process(true)
@@ -158,6 +162,8 @@ func _start_run() -> void:
 func _enter_title_screen() -> void:
 	get_tree().paused = false
 	_terminal_result_snapshot.clear()
+	_terminal_result_published = false
+	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.end_run_to_main_menu()
 	_paddle.set_physics_process(false)
 	_hud.reset_view()
@@ -172,10 +178,22 @@ func _on_stage_changed(definition: StageDefinition) -> void:
 	spawn_rate = definition.spawn_rate
 	_apply_stage_frame(definition.stage_index)
 	_presentation_manager.apply_stage(definition)
+	_paddle.set_physics_process(true)
 
 
 func _on_stage_shift_presentation_finished(shift_id: int) -> void:
 	_stage_manager.accept_stage_shift_presentation_finished(shift_id)
+
+
+func _on_stage_run_ended(result_snapshot: Dictionary) -> void:
+	_paddle.set_physics_process(false)
+	_hud.visible = false
+	_pause_menu.visible = false
+	_result_panel.show_result(result_snapshot)
+
+
+func _on_visual_field_rect_changed(visual_field_rect: Rect2) -> void:
+	_apply_backdrop_visual_rect(visual_field_rect)
 
 
 func accept_black_hole_phase_presentation_finished(phase_id: int) -> bool:
@@ -201,11 +219,10 @@ func _on_black_hole_phase_requested() -> void:
 func _on_black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2) -> void:
 	_paddle.set_physics_process(false)
 	black_hole_phase_started.emit(phase_id, from_rect, to_rect)
-	if auto_complete_black_hole_phase_presentation:
-		call_deferred("_complete_temporary_black_hole_phase", phase_id)
+	_presentation_manager.play_black_hole_phase(phase_id, from_rect, to_rect)
 
 
-func _complete_temporary_black_hole_phase(phase_id: int) -> void:
+func _on_black_hole_phase_presentation_finished(phase_id: int) -> void:
 	accept_black_hole_phase_presentation_finished(phase_id)
 
 
@@ -216,10 +233,17 @@ func _on_black_hole_phase_gameplay_resumed(_phase_id: int, logical_rect: Rect2) 
 
 
 func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
+	if not _terminal_result_snapshot.is_empty():
+		return
 	_terminal_result_snapshot = result_snapshot.duplicate(true)
 	_paddle.set_physics_process(false)
-	_hud.visible = false
-	_pause_menu.visible = false
+	_presentation_manager.play_black_hole_finale(get_terminal_result_snapshot())
+
+
+func _on_black_hole_finale_presentation_finished() -> void:
+	if _terminal_result_snapshot.is_empty() or _terminal_result_published:
+		return
+	_terminal_result_published = true
 	_result_panel.show_result(get_terminal_result_snapshot())
 	terminal_result_available.emit(get_terminal_result_snapshot())
 
@@ -235,14 +259,18 @@ func _apply_play_field_layout(field_rect: Rect2) -> void:
 	_simulation.play_field_rect = field_rect
 	_paddle.play_field_rect = field_rect
 	_paddle.clamp_to_play_field()
+	_apply_backdrop_visual_rect(visual_field_rect)
+	_hud.apply_frame_layout(_gameplay_frame.get_left_wing_rect(), _gameplay_frame.get_right_wing_rect())
+	_pause_menu.apply_frame_layout(_gameplay_frame.get_right_bottom_panel_rect())
+
+
+func _apply_backdrop_visual_rect(visual_field_rect: Rect2) -> void:
 	_play_field_backdrop.polygon = PackedVector2Array([
 		visual_field_rect.position,
 		Vector2(visual_field_rect.end.x, visual_field_rect.position.y),
 		visual_field_rect.end,
 		Vector2(visual_field_rect.position.x, visual_field_rect.end.y),
 	])
-	_hud.apply_frame_layout(_gameplay_frame.get_left_wing_rect(), _gameplay_frame.get_right_wing_rect())
-	_pause_menu.apply_frame_layout(_gameplay_frame.get_right_bottom_panel_rect())
 
 
 func _spawn_ball() -> void:

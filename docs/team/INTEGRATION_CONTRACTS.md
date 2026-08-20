@@ -16,17 +16,18 @@
 | Core Settlement → Integration StageManager | `final_settlement_started(amount: float)`, `final_settlement_finished(amount: float)` | Integration GameManager, Content AudioManager | SettlementService의 내부 신호를 StageManager가 한 번 전달한다. GameManager는 각각 `settlement_start`/`settlement_finish` audio event로만 매핑하며 점수·상태는 변경하지 않는다. |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation, Content Music | data 적용, Stage World와 BGM 변경 |
 | Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager, Content Music | 시작, Pause modal 행동·화면 전환 요청과 BGM 상태 전환 |
-| Presentation Clear UI | `next_stage_requested(clear_id)` | Integration StageManager | non-final Score Clear 축하 화면의 사용자 확인 요청. matching `clear_id`에서만 Scale Shift를 시작하고 중복·stale 요청은 무시한다. |
 | Content ItemManager | `item_planet_damaged(item_type, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |
 | Content ItemManager | `item_planet_broken(item_type, world_position)` | Presentation | 최종 파괴 FX. 이 신호 자체는 획득·CUT-IN·activation을 의미하지 않음 |
 | Content ItemManager | `item_orb_spawned(item_type, world_position)` | Presentation | 아이템별로 구분되는 획득용 Orb 표시 |
 | Content ItemManager | `item_collected(item_type, world_position)` | Presentation, Integration | Paddle 획득 뒤 CUT-IN과 1회 activation 중재 |
 | Content ItemManager | `item_orb_missed(item_type, world_position)` | Presentation | 열린 하단 이탈 소멸 표현; activation 없음 |
 | Content ItemManager | `active_items_changed(read_only_snapshot)` | Presentation HUD | 현재 활성 아이템 표시 |
-| Integration StageManager | `stage_shift_started(next_definition, shift_id)` | Presentation | matching `Next Stage` 요청으로 `SHIFTING` 진입한 뒤 Stage World/HUD 연출 시작 요청. Presentation은 gameplay state를 직접 변경하지 않는다. |
+| Integration StageManager | `stage_shift_started(next_definition, shift_id)` | Presentation | non-final Stage가 `clear_score`에 도달해 Final Settlement를 마친 직후 `SHIFTING` 진입과 함께 Stage World/HUD 연출을 시작한다. Presentation은 gameplay state를 직접 변경하지 않는다. |
 | Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시한다. S5-G3는 이 Presentation 완료 계약을 전제로 먼저 구현됐다. S5-G4 전 Main의 임시 adapter가 같은 API를 deferred 한 번 호출하며, Presentation 연결 시 Integration이 adapter를 제거한다. |
+| Presentation | `visual_field_rect_changed(visual_rect: Rect2)` | Integration GameManager | Scale Shift와 Black Hole L2→L3 보간 중 프레임 내부의 장식용 Backdrop만 같은 visual rect로 갱신한다. Simulation·Paddle·Cashout logical rect와 Stage state는 이 신호로 변경하지 않는다. |
 | Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | 첫 Lv14→Black Hole 전환과 Galactic 내부 L2→L3 국면 시작; 새 Stage가 아님 |
 | Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용. S8-G5 연결 전에는 Integration-owned 임시 adapter가 동일한 완료 API를 deferred 한 번 호출할 수 있으며 실제 producer 연결 시 제거한다. |
+| Presentation | `black_hole_finale_presentation_finished()` | Integration GameManager | S8-G5의 Black Hole 공전·폭발 overlay가 끝난 뒤 Result UI를 한 번만 표시할 수 있게 한다. Integration은 terminal snapshot을 보존하고 이 완료 전에는 Result 표시·Retry/Main 입력을 열지 않는다. |
 | Core simulation / Stage runtime | `black_hole_finale_started(contact_snapshot)` → `black_hole_finale_locked(result_snapshot)` | Integration, Presentation, Content/Systems | 두 Black Hole의 earliest contact를 simulation이 한 번 잠그고, Stage runtime이 `contact_position`, 두 Black Hole의 position/velocity/radius, `stage_index`, `stage_score`, `run_score`, `optional_stats.merge_count`, `optional_stats.run_time_seconds`를 읽기 전용 final result snapshot으로 확정한다. Integration은 이 신호 뒤 gameplay commit을 재개하지 않는다. |
 
 ### S8-G4 선행 Integration 골격

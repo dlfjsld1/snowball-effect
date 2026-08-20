@@ -26,23 +26,30 @@ func _run_verification() -> void:
 	_expect(_end_reasons.is_empty(), "Recovered time must not request an end decision.")
 
 	stage_runtime.enter_stage(ground)
+	stage_runtime.stage_time_left = 5.0
+	stage_runtime.score_ledger.apply_score_event(ground.clear_score)
+	var score_clear := stage_runtime.process_tick(0.0, false, [])
+	_expect(score_clear == &"SCORE_CLEAR", "Reaching clear score must immediately request Score Clear before Time Up.")
+	_expect(_end_reasons == [&"SCORE_CLEAR"], "Score Clear must emit exactly once on a fresh Stage.")
+
+	stage_runtime.enter_stage(ground)
 	stage_runtime.stage_time_left = 0.03
 	var top_ball := stage_runtime.process_tick(0.1, true, [])
-	_expect(top_ball == &"TOP_BALL_CLEAR", "Top Ball must take priority over expired time in the same tick.")
-	_expect(_end_reasons == [&"TOP_BALL_CLEAR"], "Top Ball end request must emit once.")
+	_expect(top_ball == &"TIME_UP", "Same-tick Top Ball must use the Time Up route.")
+	_expect(_end_reasons == [&"SCORE_CLEAR", &"TIME_UP"], "Top Ball must not emit a separate Clear request.")
 	_expect(stage_runtime.process_tick(1.0, false, []) == &"", "End lock must ignore later tick decisions.")
-	_expect(_end_reasons.size() == 1, "End decision must remain locked after the first request.")
+	_expect(_end_reasons.size() == 2, "End decision must remain locked after the first request.")
 
 	stage_runtime.enter_stage(ground)
 	stage_runtime.stage_time_left = 0.03
 	var time_up := stage_runtime.process_tick(0.1, false, [])
 	_expect(time_up == &"TIME_UP", "Expired time without Cashout or Top Ball must request Time Up.")
-	_expect(_end_reasons == [&"TOP_BALL_CLEAR", &"TIME_UP"], "Time Up must emit once after a fresh stage entry.")
+	_expect(_end_reasons == [&"SCORE_CLEAR", &"TIME_UP", &"TIME_UP"], "Time Up must emit once after a fresh stage entry.")
 	_expect(stage_runtime.is_current_stage_top_ball(4), "Ground's configured top global level must be recognized.")
 	_expect(not stage_runtime.is_current_stage_top_ball(14), "Catalog final level must not override the current Stage top level.")
 
 	if _failures == 0:
-		print("S3_G3_VERIFIED cashout_recovery=true top_ball_priority=true end_lock=true")
+		print("S3_G7_VERIFIED cashout_recovery=true score_clear_immediate=true top_ball_non_terminal=true same_tick_time_up=true")
 	get_tree().quit(_failures)
 
 

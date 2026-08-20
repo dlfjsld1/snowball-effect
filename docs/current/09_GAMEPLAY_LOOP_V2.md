@@ -313,16 +313,12 @@ Final Stage Score >= Clear Target
 
 # 8. Stage 종료 흐름
 
-## Time Up Score Clear
+## Immediate Score Clear
 
 ```text
-Time Up
+clear_score 도달
 ↓
 남은 공 Final Settlement
-↓
-Final Stage Score >= Clear Target
-↓
-축하 메시지 + `Next Stage`
 ↓
 SCALE SHIFT → Next Stage
 ```
