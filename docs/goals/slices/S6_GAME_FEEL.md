@@ -53,6 +53,24 @@
 - Verification: `bgm_title`, `bgm_ground`, `bgm_planetary`, `bgm_galactic`, `bgm_pause`, `bgm_result`의 유효 asset/catalog 등록; Stage 전환 단일 BGM; Pause에서 Stage BGM 위치 저장·`bgm_pause` 교체·Resume 위치 재개; Black Hole Phase에서 `bgm_galactic` 정지 후 `black_hole_loop` 단독 재생; Final Result에서 loop 정리 후 `bgm_result`; Retry/Main Menu/terminal cleanup; Desktop과 실제 Web 첫 입력 unlock·console 확인.
 - Do Not Modify: gameplay event 조건, 점수·시간·Stage state, `project.godot`, Main scene.
 
+### S6-G6 Minimal Final Settlement presentation
+
+- Owner: Presentation
+- Owned Files: `scripts/presentation/effect_manager.gd`, `scripts/presentation/final_settlement_effect.gd`, `scripts/ui/hud.gd`, `scenes/effects/final_settlement_effect.tscn`, `tests/presentation/s6_g6_**`
+- Integration Point: 기존 `final_settlement_started(amount)`와 simulation `get_render_snapshot()`을 read-only로 소비하고 `final_settlement_presentation_finished()`를 한 번 제공한다.
+- Dependencies: S3-G4, S6-G1.
+- Verification: 단일 draw node가 최대 64개 visual sample로 active snapshot을 `0.5s` 안에 pixel dissolve·Stage Score 방향 stream으로 표현; HUD Stage Score count-up; 완료 signal exactly once; score/state/simulation 불변.
+- Do Not Modify: Settlement 계산, Clear/Failure 판정, `StageManager`, Main scene, Scale Shift.
+
+### S6-G6I Final Settlement handoff wiring
+
+- Owner: Integration
+- Owned Files: `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s6_g6i_**`
+- Integration Point: S6-G6의 완료 signal을 기다린 뒤 기존 Clear/Failure 판정과 Shift를 이어간다.
+- Dependencies: S6-G6, 활성 S8-G4 Integration lock 해제.
+- Verification: `TIME_UP_LOCKED → SETTLING`에서 presentation 완료 전 상태·Shift가 진행되지 않고, matching 완료 뒤 기존 score 판정이 exactly once 실행됨.
+- Do Not Modify: Settlement 점수 계산, Presentation 내부 모션, Black Hole terminal flow.
+
 ## Exit Gate
 
 Q-S6와 Web burst smoke 통과.

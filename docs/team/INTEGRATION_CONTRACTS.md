@@ -14,6 +14,7 @@
 | Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration, Content AudioManager | Clear 표시·상태 잠금·audio event 선택 |
 | Core Settlement → Integration StageManager | `final_settlement_started(amount: float)`, `final_settlement_finished(amount: float)` | Integration GameManager, Content AudioManager | SettlementService의 내부 신호를 StageManager가 한 번 전달한다. GameManager는 각각 `settlement_start`/`settlement_finish` audio event로만 매핑하며 점수·상태는 변경하지 않는다. |
+| Presentation EffectManager | `final_settlement_presentation_finished()` | Integration StageManager | 최대 0.5초의 batch dissolve·Stage Score count-up 완료 알림. S6-G6I에서 matching pending Settlement에만 수락하며, 연결 전 기존 Core 상태 순서는 변경하지 않는다. |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation, Content Music | data 적용, Stage World와 BGM 변경 |
 | Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager, Content Music | 시작, Pause modal 행동·화면 전환 요청과 BGM 상태 전환 |
 | Presentation Clear UI | `next_stage_requested(clear_id)` | Integration StageManager | non-final Score Clear 축하 화면의 사용자 확인 요청. matching `clear_id`에서만 Scale Shift를 시작하고 중복·stale 요청은 무시한다. |

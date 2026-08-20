@@ -2,12 +2,16 @@ class_name EffectManager
 extends Control
 
 const BallCatalog = preload("res://scripts/data/ball_catalog.gd")
+const FinalSettlementEffectScript = preload("res://scripts/presentation/final_settlement_effect.gd")
 const MergeEffectScene = preload("res://scenes/effects/merge_effect.tscn")
 const CashoutEffectScene = preload("res://scenes/effects/cashout_effect.tscn")
+const FinalSettlementEffectScene = preload("res://scenes/effects/final_settlement_effect.tscn")
 
 signal merge_effect_spawned(result_level: int, world_position: Vector2)
 signal cashout_effect_spawned(global_level: int, world_position: Vector2)
 signal priority_event_reserved(event_key: StringName, priority: int)
+signal final_settlement_visual_started(duration: float)
+signal final_settlement_presentation_finished
 
 const PHASE_PLAYING: StringName = &"PLAYING"
 const PHASE_TRANSITION: StringName = &"TRANSITION"
@@ -52,6 +56,8 @@ var _effect_sequence := 0
 var _last_priority_event: StringName = &""
 var _reserved_priority := -1
 var _last_stage_index := -1
+var _settlement_target: Control
+var _active_settlement_effect: Node2D
 
 
 func _ready() -> void:
@@ -84,10 +90,16 @@ func set_stage_source(stage_source: Node) -> void:
 		_stage_source.stage_state_changed.connect(_on_stage_state_changed)
 	if _stage_source.has_signal("stage_changed"):
 		_stage_source.stage_changed.connect(_on_stage_changed)
+	if _stage_source.has_signal("final_settlement_started"):
+		_stage_source.final_settlement_started.connect(_on_final_settlement_started)
 	if _stage_source.has_method("get_runtime_snapshot"):
 		var snapshot: Dictionary = _stage_source.get_runtime_snapshot()
 		_last_stage_index = int(snapshot.get("stage_index", -1))
 		_on_stage_state_changed(StringName(snapshot.get("state", &"")))
+
+
+func set_settlement_target(target: Control) -> void:
+	_settlement_target = target
 
 
 func notify_priority_event(event_key: StringName) -> bool:
@@ -206,6 +218,28 @@ func _on_cashout_completed(score_amount: float, global_level: int, world_positio
 	effect.setup(visual_position, definition.display_name, score_amount, _get_effect_color(definition.base_color, tier), tier)
 	cashout_effect_count += 1
 	cashout_effect_spawned.emit(global_level, world_position)
+
+
+func _on_final_settlement_started(_amount: float) -> void:
+	if not is_instance_valid(_simulation_source) or not _simulation_source.has_method("get_render_snapshot"):
+		final_settlement_presentation_finished.emit()
+		return
+	if is_instance_valid(_active_settlement_effect):
+		_active_settlement_effect.queue_free()
+	var snapshot: Dictionary = _simulation_source.get_render_snapshot()
+	var target_position := get_viewport_rect().size * Vector2(0.82, 0.12)
+	if is_instance_valid(_settlement_target):
+		target_position = _settlement_target.global_position + _settlement_target.size * 0.5
+	_active_settlement_effect = FinalSettlementEffectScene.instantiate()
+	add_child(_active_settlement_effect)
+	_active_settlement_effect.finished.connect(_on_final_settlement_effect_finished, CONNECT_ONE_SHOT)
+	_active_settlement_effect.setup(snapshot, target_position)
+	final_settlement_visual_started.emit(_active_settlement_effect.duration)
+
+
+func _on_final_settlement_effect_finished() -> void:
+	_active_settlement_effect = null
+	final_settlement_presentation_finished.emit()
 
 
 func _reserve_gameplay_effect(tier: int) -> bool:
@@ -361,6 +395,8 @@ func _disconnect_stage_source() -> void:
 		_stage_source.stage_state_changed.disconnect(_on_stage_state_changed)
 	if _stage_source.has_signal("stage_changed") and _stage_source.stage_changed.is_connected(_on_stage_changed):
 		_stage_source.stage_changed.disconnect(_on_stage_changed)
+	if _stage_source.has_signal("final_settlement_started") and _stage_source.final_settlement_started.is_connected(_on_final_settlement_started):
+		_stage_source.final_settlement_started.disconnect(_on_final_settlement_started)
 
 
 func _exit_tree() -> void:

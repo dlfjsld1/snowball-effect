@@ -23,6 +23,8 @@
 
 | Goal | Owner | 상태 | Evidence / 남은 검증 |
 |---|---|---|---|
+| S6-G6 Minimal Final Settlement presentation | Presentation | IMPLEMENTED | 2026-08-19 단일 draw node가 100공 snapshot을 최대 64 visual sample로 제한하고 0.5초 pixel dissolve·Stage Score count-up 뒤 완료 signal을 1회 발행한다. Godot 4.7.1 CLI `S6_G6_VERIFIED samples=64 duration=0.5 score_countup=true completion=1 core_readonly=true`; S6-G1/S3-G6 회귀 통과, Main smoke runtime error 0. Native Main에서 F7 확인 경로를 실행했다. Integration 대기는 활성 S8-G4 lock 때문에 S6-G6I PENDING이다. |
+| S6-G6I Final Settlement handoff wiring | Integration | PENDING | S8-G4 Integration lock 해제 뒤 `stage_manager.gd`가 S6-G6 완료 signal을 기다리도록 연결한다. |
 | S0-G1 프로젝트 부트 | Integration | VERIFIED | 2026-08-09 Godot 4.7.1 CLI headless run exit 0. Primary `godot` MCP runtime launch은 strict elicitation 미지원으로 차단; baseline 통과 후 fallback `godot_fallback` debug run 성공(치명 runtime error 없음). WASAPI 출력 장치 실패로 dummy audio fallback만 기록됨. |
 | S0-G2 입력·공유 씬 골격 | Integration | VERIFIED | Input Map 6개 action과 공유 mount tree 확인. Godot 4.7.1 CLI editor load/Main run exit 0, `godot` MCP scene tree 조회 성공. 실제 A/D+회전 동시 동작 검증은 입력 소비자가 존재하는 S1-G2로 이동. |
 | S0-G3 Web smoke | Content/Systems | VERIFIED | Godot 4.7.1 single-threaded Web release export exit 0. 로컬 HTTP에서 HTML/JS/WASM/PCK 모두 200. 새 브라우저 탭에서 Godot 4.7.1 WebGL2 기동, Canvas 1280×720→1024×768 resize, Canvas focus 유지 및 A/← 입력 전달, console warning/error 0건. |

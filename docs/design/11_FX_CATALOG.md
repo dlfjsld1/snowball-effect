@@ -97,10 +97,23 @@ Score Milestone의 정확한 threshold와 event signature는 아직 미확정이
 | ID | FX | Tier | 상태 | 이벤트/입력 | 모션·역할 | 핵심 제약 |
 |---|---|---:|---|---|---|---|
 | SG-01 | Stage Clear Lock | T3 | REQUIRED | `stage_clear_decided` | simulation 정지와 최고 공 강조 | gameplay 결과를 Presentation이 계산하지 않음 |
-| SG-02 | Final Settlement | T3 | REQUIRED | settlement start/finish | active snapshot의 집계 수렴과 Stage Score count-up | Time Bonus·추가 Merge처럼 보이지 않음 |
+| SG-02 | Final Settlement | T2 | REQUIRED | settlement start/finish | 기존 Cashout 소멸을 재사용한 active snapshot 일괄 제거와 Stage Score count-up | 독립 대형 FX를 만들지 않으며 Clear·Failure 결과를 표현하지 않음 |
 | SG-03 | Scale Shift 충전 | T4 | REQUIRED | `stage_shift_started` | 중앙에서 좌우 rail로 energy 전달 | 일반 CUT-IN보다 우선 |
 | SG-04 | Frame·Play Field 확장 | T4 | REQUIRED | shift presentation | frame과 실제 field edge가 좌우로 이동 | camera zoom으로 대체 금지 |
 | SG-05 | 다음 Stage World 공개 | T4 | REQUIRED | matching shift id | 새 배경 layer reveal과 HUD Stage 갱신 | 완료 signal exactly once |
+
+### 승인 방향 — Minimal Settlement Feedback
+
+SG-02는 새로운 전용 일러스트나 복잡한 particle family를 만들지 않는다. 상태 변화가 누락이나 버그처럼 보이지 않게 하는 최소 피드백만 사용한다.
+
+1. `TIME_UP_LOCKED` 뒤 활성 공의 움직임을 정지한다.
+2. snapshot 공을 기존 Cashout 계열의 작은 pixel dissolve로 일괄 정리한다.
+3. dissolve와 함께 Stage Score를 짧게 count-up한다.
+4. 전체 presentation은 약 `0.5s` 안에 끝내고 settlement 완료 상태로 전환한다.
+
+이 시퀀스는 추가 Merge, Time Bonus, Clear, Failure, 축하 메시지, `Next Stage`를 표현하지 않는다. 수천 개 공에도 개별 고비용 Tween/Node를 생성하지 않고 batch 표현을 우선한다.
+
+검토 목업: [`mockups/drafts/final-settlement-minimal-v1.png`](mockups/drafts/final-settlement-minimal-v1.png)
 
 ## 8. Galactic Black Hole FX
 
@@ -126,7 +139,7 @@ Score Milestone의 정확한 threshold와 event signature는 아직 미확정이
 | 1 | Merge hierarchy | MG-01~05 | T1/T2/T3 비교 state sheet, CUT-IN storyboard |
 | 2 | Item feedback | IT-01~11 | rarity/crack/break sheet, active field sheet |
 | 3 | Score·Time·Failure | ST-01~04 | HUD/cabinet reaction storyboard |
-| 4 | Clear·Settlement·Shift | SG-01~05 | 연결된 7-beat storyboard/animatic |
+| 4 | Stage 진행 | SG-01~05 | Settlement 최소 시퀀스와 Shift 독립 storyboard |
 | 5 | Black Hole finale | BH-01~10 | L2→L3와 terminal sequence storyboard |
 | 6 | Basic polish | BP-01~06 | 필요할 때만 저비용 sprite/particle sheet |
 

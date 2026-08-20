@@ -1,4 +1,4 @@
-# Presentation Worklog
+﻿# Presentation Worklog
 
 > Append-only. 실제 작업과 검증만 기록한다.
 
@@ -251,3 +251,27 @@ Branch: `fx-design`
 - S6-G2 runtime controller, pause/handoff, Run-scoped 중복 억제는 구현하지 않았다.
 - S3-G7/S3-G8/S5-G6/S5-G6I/S5-G7은 PENDING 문서 계약이며 runtime 파일을 수정하지 않았다.
 - 사용자가 별도로 결정한 Stage Restart 계약은 변경하지 않았다.
+
+## 2026-08-19 — S6-G6 Minimal Final Settlement presentation
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- `TIME_UP_LOCKED` 뒤 simulation render snapshot을 read-only로 캡처해, 단일 `Node2D`가 최대 64개 표본만 그리는 0.5초 pixel dissolve·score stream을 구현했다.
+- HUD Stage Score는 authoritative score를 변경하지 않고 presentation 동안 표시값만 count-up한 뒤 최종값에 고정한다.
+- `final_settlement_presentation_finished()`를 exactly once 제공하며 Settlement 계산·공 제거·Clear/Failure 판정은 수정하지 않았다.
+- 실제 순서 대기는 `S6-G6I`로 분리했다. 활성 `S8-G4` Integration lock 때문에 `stage_manager.gd`와 Main scene은 변경하지 않았다.
+
+### 검증
+
+- Godot 4.7.1 CLI: `S6_G6_VERIFIED samples=64 duration=0.5 score_countup=true completion=1 core_readonly=true`.
+- S6-G1 FX budget, S3-G6 Stage HUD 회귀 통과.
+- Main 120-frame smoke는 runtime error 없이 종료했으며 기존 ObjectDB 3개/resource 1개 leak 경고가 남았다.
+- Native Main을 실행해 `F7` Time Up Score 경로로 확인할 수 있게 했다.
+
+### 제외
+
+- Presentation 완료 전 Core의 Clear/Failure/Shift 진행을 대기시키는 Integration wiring.
+- Web Browser 시각 검증과 최종 성능 Gate.
