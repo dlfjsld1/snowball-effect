@@ -132,6 +132,30 @@ SG-02는 새로운 전용 일러스트나 복잡한 particle family를 만들지
 
 화면 왜곡 shader는 품질 후보이며 필수 구현이 아니다. 회전 링, 별·먼지 왜곡, 곡선 잔상만으로 상태가 읽히면 생략할 수 있다.
 
+### 검토 초안 — BH-01 Horizon Collapse
+
+- 상태: `REVIEW DRAFT ASSET / S8-G5 RUNTIME REFERENCE` — 원본 이미지는 최종 art 승인이 아니지만, 2026-08-20 S8-G5 구현 지시가 core·cyan/teal horizon 방향의 runtime 사용을 승인했다.
+- 목업: [`mockups/drafts/bh-01-horizon-collapse-storyboard-v1.png`](mockups/drafts/bh-01-horizon-collapse-storyboard-v1.png)
+- 3-frame 흐름: `BLACK HOLE BALL → HORIZON COLLAPSE → MOVING BLACK HOLE`.
+- 첫 Black Hole의 Run 최초 `FIRST CONTACT` CUT-IN 직후, 정지한 Lv14 Ball의 표면광이 중심으로 압축되고 black core와 cyan/teal Event Horizon ring만 남아 이동 기믹으로 읽힌다.
+- 같은 Galactic 카메라와 고정 Play Field를 유지하며 BH-02 Frame 확장, 흡수, 두 번째 Black Hole, finale·Result는 포함하지 않는다.
+
+### 검토 초안 — BH-03/BH-04 Gravitational-Field Readability
+
+- 상태: `REVIEW DRAFT ASSET / S8-G5 RUNTIME REFERENCE` — 원본 이미지는 최종 art 승인이 아니지만, 2026-08-20 S8-G5 구현 지시가 compact core·influence·near-field 계층의 runtime 사용을 승인했다.
+- 목업: [`mockups/drafts/bh-03-04-gravitational-field-readability-storyboard-v1.png`](mockups/drafts/bh-03-04-gravitational-field-readability-storyboard-v1.png)
+- 3-frame 흐름: `FIELD IDLE → INFLUENCE → NEAR FIELD`; black core와 cyan/teal ring을 고정하고 짧은 곡선 trail, 제한된 tidal stretch, sparse orbit pixel만 단계적으로 더한다.
+- 일반 공의 nominal 원형 판독과 중심·경로를 유지하며 전체 화면 왜곡, 흡수, 두 번째 Black Hole, Frame 확장, CUT-IN, finale·Result는 포함하지 않는다.
+
+### S8-G5 runtime recipe
+
+- `BlackHolePhaseEffect` 단일 draw node가 read-only `get_black_hole_snapshot()`의 최대 2개 entity를 그린다. gameplay radius를 변경하지 않고 black core, 4px cyan/teal event horizon, 300-unit dashed influence ring, near-field arc, 최대 4개 motion marker를 조립한다.
+- phase transition은 기본 `0.8s` 동안 L2 `880`→L3 `1040`을 중심 X `800` 기준 좌우 각 `80`씩 확장한다. Frame, 표시용 side fill, 고정 `200px` HUD housing이 같은 progress를 사용한다. 완료 뒤 `Galactic` HUD와 persistent Black Hole visual은 유지한다.
+- finale는 기본 `1.15s` 동안 두 core의 mutual orbit·압축 뒤 pixel ring/explosion을 재생하고 gameplay HUD/Pause를 숨긴다. S8-G3 Result 자체는 만들지 않으며 matching `black_hole_finale_presentation_finished(phase_id)` 뒤 Integration이 보관한 terminal snapshot을 S8-G3에 전달한다.
+- Reduced Effects는 phase `0.18s`, finale `0.34s`로 줄이고 motion trail을 생략하되 `BLACK HOLE PHASE`, `FINAL CONTACT`, exact field edge, core/horizon, orbit/explosion은 유지한다.
+- shader가 없는 procedural fallback이 정식 경로다. draw node, 상태 Label, Tween 각 1개를 재사용하며 개별 공/별 Node를 생성하지 않는다.
+- `reset_black_hole_presentation()`은 Tween을 kill하고 Run generation을 증가시켜 Retry 전 callback을 무효화한다. 같은 Run의 duplicate/stale phase/finale ID는 완료 신호로 재사용하지 않는다.
+
 ## 9. 제작 묶음과 권장 순서
 
 | 순서 | Design family | 포함 ID | 산출물 |

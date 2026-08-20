@@ -28,6 +28,7 @@
 | Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시한다. S5-G3는 이 Presentation 완료 계약을 전제로 먼저 구현됐다. S5-G4 전 Main의 임시 adapter가 같은 API를 deferred 한 번 호출하며, Presentation 연결 시 Integration이 adapter를 제거한다. |
 | Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | 첫 Lv14→Black Hole 전환과 Galactic 내부 L2→L3 국면 시작; 새 Stage가 아님 |
 | Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용. S8-G5 연결 전에는 Integration-owned 임시 adapter가 동일한 완료 API를 deferred 한 번 호출할 수 있으며 실제 producer 연결 시 제거한다. |
+| Presentation | `black_hole_finale_presentation_finished(phase_id)` | Integration GameManager | matching active Black Hole phase의 mutual orbit·explosion·gameplay HUD 제거 완료. Integration은 보관한 `black_hole_finale_locked(result_snapshot)`을 이 신호 뒤 S8-G3 Result에 한 번 전달하며 stale/duplicate ID를 무시한다. |
 | Core simulation / Stage runtime | `black_hole_finale_started(contact_snapshot)` → `black_hole_finale_locked(result_snapshot)` | Integration, Presentation, Content/Systems | 두 Black Hole의 earliest contact를 simulation이 한 번 잠그고, Stage runtime이 `contact_position`, 두 Black Hole의 position/velocity/radius, `stage_index`, `stage_score`, `run_score`, `optional_stats.merge_count`, `optional_stats.run_time_seconds`를 읽기 전용 final result snapshot으로 확정한다. Integration은 이 신호 뒤 gameplay commit을 재개하지 않는다. |
 
 ### S8-G4 선행 Integration 골격
@@ -36,6 +37,9 @@
 - 임시 adapter는 실제 계약과 같은 `phase_id` 완료 API만 사용한다. Presentation 완료를 임의의 다른 상태 변경으로 우회하거나 Result UI가 표시된 것처럼 완료 증거를 만들지 않는다.
 - Presentation과 Content/Systems는 각자의 Owned Files와 독립 test에서 실제 producer/consumer를 구현한다. Integration 골격 때문에 `scripts/presentation/**`, `scripts/ui/**`, `scenes/backgrounds/**`, `scenes/effects/**`를 잠그지 않는다.
 - S8-G4의 최종 `IMPLEMENTED`/`VERIFIED` 판정은 임시 adapter를 제거하고 실제 S8-G3/G5 및 모든 reset API를 Main에 연결한 뒤에만 가능하다.
+- S8-G5 연결 시 `PresentationManager.configure_black_hole_sources(stage_manager, simulation)`을 한 번 호출하고, `black_hole_phase_presentation_finished(phase_id)`를 기존 `GameManager.accept_black_hole_phase_presentation_finished(phase_id)`에 연결한다. 그 뒤 `auto_complete_black_hole_phase_presentation` 임시 adapter를 제거한다.
+- `black_hole_finale_locked(result_snapshot)`은 terminal snapshot을 보관하고 S8-G5 finale를 시작하는 입력이다. 현재처럼 즉시 HUD를 숨기고 Result를 표시하지 말고, matching `black_hole_finale_presentation_finished(phase_id)` 뒤 같은 snapshot을 S8-G3 Result에 한 번 전달한다.
+- Retry와 Main Screen handler는 `PresentationManager.reset_black_hole_presentation()`을 호출한다. 이 API는 Presentation Tween/visual/ID generation만 초기화하며 Core·Stage·Result state를 변경하지 않는다.
 
 ## S6 FX·audio ownership
 

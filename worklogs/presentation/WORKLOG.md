@@ -275,3 +275,32 @@ Branch: `fx-design`
 
 - Presentation 완료 전 Core의 Clear/Failure/Shift 진행을 대기시키는 Integration wiring.
 - Web Browser 시각 검증과 최종 성능 Gate.
+
+## 2026-08-20 — S8-G5 Black Hole Phase presentation
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- `black_hole_phase_started(phase_id, from_rect, to_rect)`를 소비하는 `PresentationManager` producer를 구현했다. L2 `880`에서 L3 `1040`으로 Frame, 표시용 Play Field side fill, 고정 200px HUD housing을 중심 X `800` 기준 좌우 각 80씩 함께 확장하고 matching `phase_id` 완료를 정확히 한 번 발행한다.
+- BH-01·BH-03/04 draft를 runtime 방향으로 사용해 단일 draw node에 compact black core, 4px cyan/teal event horizon, 300-unit dashed influence ring, near-field arc, sparse orbit pixel과 최대 4개 motion marker를 조립했다. shader나 개별 particle Node는 사용하지 않는다.
+- phase 완료 뒤 `Galactic` Stage 이름, gameplay HUD, persistent Black Hole visual을 유지한다. terminal snapshot은 두 core mutual orbit·압축→pixel ring/explosion을 재생하고 gameplay HUD/Pause를 숨긴 뒤 `black_hole_finale_presentation_finished(phase_id)`를 한 번 발행한다. S8-G3 Result UI 자체는 수정하지 않았다.
+- Reduced Effects는 phase 0.18초/finale 0.34초로 단축하고 trail을 생략하지만 상태명, exact field edge, core/horizon, orbit/explosion을 보존한다.
+- `reset_black_hole_presentation()`이 active Tween을 kill하고 Run generation을 증가시켜, Retry 뒤 같은 숫자의 phase ID가 재사용돼도 이전 Run callback이 완료로 들어오지 않게 했다.
+
+### 검증
+
+- Godot 4.7.1 CLI project editor load/parse: exit 0.
+- 전용 scene: `S8_G5_VERIFIED phase_completions=3 finale_completions=2 field=880_to_1040 symmetric=80 core_ring=true influence=true reduced=true stale_safe=true core_readonly=true`.
+- 회귀: S5-G4 Stage World Shift, S3-G6 HUD, S6-G6 Final Settlement 모두 exit 0. Main 120-frame headless smoke도 runtime error 없이 exit 0이며 기존 ObjectDB 3개/resource 1개 leak warning은 유지된다.
+- 기존 `s5_g4_frame_kit_verification.gd`는 이번 변경 전부터 현재 `32 logical units` safety strip과 불일치하는 구 assertion(`field.size.y == 800`, visual/logical Rect 동일)을 사용해 line 25에서 실패한다. `gameplay_frame.gd`는 S8-G5에서 수정하지 않았고 전용 test는 현행 logical Rect를 사용한다.
+- Native OpenGL Compatibility, Intel Arc 130V에서 1600×900 phase/finale 캡처를 확인했다. persistent phase 60-frame 측정은 평균 `61.3 FPS`, 최저 `54.9 FPS`, 최대 frame `18.21ms`였다.
+- 현재 세션에는 Primary `godot` MCP 도구가 제공되지 않아 MCP runtime 검증은 수행하지 않았다. CLI/native 성공을 프로젝트 기준선으로 사용했다.
+
+### Integration handoff / 제외
+
+- S8-G4가 `configure_black_hole_sources(stage_manager, simulation)`과 phase/finale 완료를 Main에 연결하고 `auto_complete_black_hole_phase_presentation` 임시 adapter를 제거해야 한다.
+- Integration은 terminal snapshot을 보관한 뒤 matching finale 완료에서만 S8-G3 Result를 표시하고, Retry/Main에서 `reset_black_hole_presentation()`을 호출해야 한다.
+- `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`, S8-G3 Result UI, S8-G4-owned 파일은 수정하지 않았다.
+- CUT-IN, Galactic 투명 배경, Stage Score gauge, Clear 확인, legacy local Lv4 종료 계약, Web Browser 전체 Run은 의도적으로 제외했다.

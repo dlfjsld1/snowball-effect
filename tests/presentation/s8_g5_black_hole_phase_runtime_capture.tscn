@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/presentation/s8_g5_black_hole_phase_runtime_capture.gd" id="1_capture"]
+
+[node name="S8G5BlackHolePhaseRuntimeCapture" type="Node"]
+script = ExtResource("1_capture")
