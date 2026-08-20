@@ -358,3 +358,31 @@ Branch: `fx-design`
 
 - Native와 Web screenshot, Web export/startup/Canvas/console Gate가 모두 충족되어 S5-G7을 `VERIFIED`로 변경했다.
 - Core/Integration files, project configuration, export preset, runtime implementation은 변경하지 않았다. disposable validation output은 `%TEMP%\s5-g7-web-validation-20260820`에 남겼다.
+
+## 2026-08-20 — S3-G8 Stage Score gauge
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- 기존 HUD Score CRT 안에 `stage_score / clear_score`를 0~100%로 표시하는 112×18 pixel gauge를 추가했다. 25/50/75% tick, percent label, 목표 달성 시 beige/gold fill을 사용해 Paper-8/CRT 스타일을 유지했다.
+- 기존 `score_changed(stage_score, run_score)`와 `StageDefinition.clear_score`만 read-only로 소비한다. 감소한 점수는 fill을 줄이고, 초과 점수는 100%로 clamp하며, Stage score reset은 0%로 되돌린다.
+- `clear_score <= 0`인 Galactic에서는 gauge 전체를 숨긴다. Presentation은 Clear/Failure/Shift를 판정하거나 Core state를 변경하지 않는다.
+- S6-G6 Final Settlement 중에는 authoritative 최종값으로 먼저 뛰지 않고 기존 Stage Score count-up의 presentation 값과 gauge를 함께 보간한 뒤 최종 authoritative 값에 고정한다.
+
+### 검증
+
+- Godot 4.7.1 editor load/parse: exit 0.
+- 전용 headless scene: `S3_G8_VERIFIED zero=true partial=true complete=true overflow_clamped=true decrease=true reset=true galactic_hidden=true core_readonly=true`.
+- 회귀: S1-G4 HUD, S3-G6 Stage HUD, S6-G6 Final Settlement, S8-G5 Black Hole Phase, S5-G4 Stage World Shift가 모두 exit 0.
+- Main 120-frame headless smoke는 exit 0이며 기존 shutdown-only ObjectDB 3개/resource 1개 leak warning은 유지된다.
+- Native OpenGL Compatibility, Intel Arc 130V에서 1600×900의 0%, 63%, 100%, Galactic hidden 캡처를 직접 확인했다. partial gauge 120-frame 측정은 평균 `60.8 FPS`, 최저 `51.6 FPS`, 최대 frame `19.40ms`였다.
+- 현재 세션에는 Primary `godot` MCP가 제공되지 않아 MCP 검증은 수행하지 않았다. CLI/headless와 실제 Native renderer를 기준선으로 사용했다.
+
+### 상태 / Integration handoff / 제외
+
+- S3-G8의 Goal-specific Verification과 Native 시각 확인을 충족해 `VERIFIED`로 변경했다.
+- 활성 S8-G4 Integration lock과 잠긴 파일은 사용하지 않았다. `project.godot`, Main scene, StageManager, GameManager, StageRuntime, StageDefinition, Integration test는 변경하지 않았다.
+- S3-G7 local Lv4 비종료 migration, S5-G6 Clear 확인 UI, S6-G6I Settlement wiring은 구현하지 않았다.
+- S3-G8 자체의 Goal Verification에는 Web Browser가 요구되지 않고 S3 Slice는 S3-G7 미완료로 종료할 수 없어 Web export/browser를 실행하지 않았다. S3 Slice Exit Web smoke는 후속 통합 Gate에 남는다.

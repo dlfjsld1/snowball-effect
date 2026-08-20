@@ -3,6 +3,7 @@ extends Control
 
 const BallCatalog = preload("res://scripts/data/ball_catalog.gd")
 const ScoreFormatter = preload("res://scripts/utils/score_formatter.gd")
+const STAGE_SCORE_GAUGE_INSET := 3.0
 
 @onready var stage_name_label: Label = $Readout/StageNameLabel
 @onready var time_label: Label = $Readout/TimeLabel
@@ -10,6 +11,9 @@ const ScoreFormatter = preload("res://scripts/utils/score_formatter.gd")
 @onready var run_score_label: Label = $Readout/RunScoreLabel
 @onready var clear_target_label: Label = $Readout/ClearTargetLabel
 @onready var ball_count_label: Label = $Readout/BallCountLabel
+@onready var stage_score_gauge: Control = $Readout/StageScoreGauge
+@onready var stage_score_gauge_fill: ColorRect = $Readout/StageScoreGauge/Fill
+@onready var stage_score_gauge_label: Label = $Readout/StageScoreGauge/PercentLabel
 @onready var effect_manager: EffectManager = $EffectManager
 @onready var genealogy_slots: Array[Label] = [
 	$Genealogy/Content/Slots/Slot0,
@@ -27,6 +31,8 @@ var _ordered_global_levels := PackedInt32Array()
 var _revealed_count := 0
 var _authoritative_stage_score := 0.0
 var _authoritative_run_score := 0.0
+var _current_clear_score := 0.0
+var _stage_score_gauge_progress := 0.0
 var _settlement_score_start := 0.0
 var _settlement_elapsed := 0.0
 var _settlement_duration := 0.0
@@ -68,6 +74,7 @@ func _process(delta: float) -> void:
 		var progress := _settlement_elapsed / maxf(_settlement_duration, 0.001)
 		var displayed_score := lerpf(_settlement_score_start, _authoritative_stage_score, progress)
 		stage_score_label.text = "STAGE SCORE %s" % ScoreFormatter.format_score(displayed_score)
+		_update_stage_score_gauge(displayed_score)
 
 
 func reset_view() -> void:
@@ -81,6 +88,7 @@ func apply_frame_layout(left_wing: Rect2, right_wing: Rect2) -> void:
 	time_label.position = left_wing.position + Vector2(24.0, 154.0)
 	$Genealogy.position = left_wing.position + Vector2(44.0, 248.0)
 	stage_score_label.position = right_wing.position + Vector2(44.0, 48.0)
+	stage_score_gauge.position = right_wing.position + Vector2(44.0, 96.0)
 
 
 func _exit_tree() -> void:
@@ -92,6 +100,7 @@ func _on_score_changed(stage_score: float, run_score: float) -> void:
 	_authoritative_run_score = run_score
 	if not _settlement_counting:
 		stage_score_label.text = "STAGE SCORE %s" % ScoreFormatter.format_score(stage_score)
+		_update_stage_score_gauge(stage_score)
 	run_score_label.text = "RUN SCORE %s" % ScoreFormatter.format_score(run_score)
 
 
@@ -100,11 +109,13 @@ func _on_final_settlement_visual_started(duration: float) -> void:
 	_settlement_elapsed = 0.0
 	_settlement_duration = duration
 	_settlement_counting = true
+	_update_stage_score_gauge(_settlement_score_start)
 
 
 func _on_final_settlement_presentation_finished() -> void:
 	_settlement_counting = false
 	stage_score_label.text = "STAGE SCORE %s" % ScoreFormatter.format_score(_authoritative_stage_score)
+	_update_stage_score_gauge(_authoritative_stage_score)
 
 
 func _on_ball_count_changed(active_count: int) -> void:
@@ -116,6 +127,8 @@ func _on_stage_changed(definition: StageDefinition) -> void:
 		return
 	stage_name_label.text = "STAGE %s" % definition.display_name.to_upper()
 	clear_target_label.text = "TARGET %s" % ScoreFormatter.format_score(definition.clear_score)
+	_current_clear_score = definition.clear_score
+	_update_stage_score_gauge(_authoritative_stage_score)
 	_ordered_global_levels = definition.local_ball_levels.duplicate()
 	_revealed_count = 1
 	_update_genealogy()
@@ -140,6 +153,26 @@ func _update_genealogy() -> void:
 			continue
 		var definition = _ball_catalog.get_definition(_ordered_global_levels[slot_index])
 		slot.text = definition.display_name if definition != null else ""
+
+
+func get_stage_score_gauge_progress() -> float:
+	return _stage_score_gauge_progress
+
+
+func _update_stage_score_gauge(displayed_stage_score: float) -> void:
+	var has_clear_target := _current_clear_score > 0.0
+	stage_score_gauge.visible = has_clear_target
+	if not has_clear_target:
+		_stage_score_gauge_progress = 0.0
+		stage_score_gauge_fill.size.x = 0.0
+		stage_score_gauge_label.text = ""
+		return
+
+	_stage_score_gauge_progress = clampf(displayed_stage_score / _current_clear_score, 0.0, 1.0)
+	var usable_width := maxf(stage_score_gauge.size.x - STAGE_SCORE_GAUGE_INSET * 2.0, 0.0)
+	stage_score_gauge_fill.size.x = snappedf(usable_width * _stage_score_gauge_progress, 1.0)
+	stage_score_gauge_fill.color = Color("f6e79c") if _stage_score_gauge_progress >= 1.0 else Color("b6cf8e")
+	stage_score_gauge_label.text = "CLEAR %d%%" % roundi(_stage_score_gauge_progress * 100.0)
 
 
 func _bind_main_stage_source() -> void:
