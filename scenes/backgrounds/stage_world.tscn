@@ -7,18 +7,46 @@
 z_index = -100
 script = ExtResource("1_manager")
 
-[node name="LayerA" type="Sprite2D" parent="."]
+[node name="LayerA" type="Node2D" parent="."]
 unique_name_in_owner = true
+
+[node name="Plate" type="Sprite2D" parent="LayerA"]
 texture_filter = 1
 centered = false
 
-[node name="LayerB" type="Sprite2D" parent="."]
-unique_name_in_owner = true
+[node name="Stars" type="Sprite2D" parent="LayerA"]
 texture_filter = 1
 centered = false
+
+[node name="Galaxy" type="Sprite2D" parent="LayerA"]
+texture_filter = 1
+centered = false
+
+[node name="Nebula" type="Sprite2D" parent="LayerA"]
+texture_filter = 1
+centered = false
+
+[node name="LayerB" type="Node2D" parent="."]
+unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
+
+[node name="Plate" type="Sprite2D" parent="LayerB"]
+texture_filter = 1
+centered = false
+
+[node name="Stars" type="Sprite2D" parent="LayerB"]
+texture_filter = 1
+centered = false
+
+[node name="Galaxy" type="Sprite2D" parent="LayerB"]
+texture_filter = 1
+centered = false
+
+[node name="Nebula" type="Sprite2D" parent="LayerB"]
+texture_filter = 1
+centered = false
 
 [node name="Ambient" type="Node2D" parent="."]
 unique_name_in_owner = true
-z_index = 1
+z_index = 2
 script = ExtResource("2_ambient")

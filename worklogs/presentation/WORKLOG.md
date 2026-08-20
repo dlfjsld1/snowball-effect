@@ -1,4 +1,4 @@
-﻿# Presentation Worklog
+# Presentation Worklog
 
 > Append-only. 실제 작업과 검증만 기록한다.
 
@@ -304,3 +304,57 @@ Branch: `fx-design`
 - Integration은 terminal snapshot을 보관한 뒤 matching finale 완료에서만 S8-G3 Result를 표시하고, Retry/Main에서 `reset_black_hole_presentation()`을 호출해야 한다.
 - `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`, S8-G3 Result UI, S8-G4-owned 파일은 수정하지 않았다.
 - CUT-IN, Galactic 투명 배경, Stage Score gauge, Clear 확인, legacy local Lv4 종료 계약, Web Browser 전체 Run은 의도적으로 제외했다.
+
+## 2026-08-20 — S5-G7 Galactic transparent Stage World
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- 기존 opaque Galactic 이미지를 runtime에서 제거하고 완전 투명 plate 위에 stars, galaxy, nebula를 각각 alpha-composite하는 네 Sprite layer 구조로 바꿨다. 생성 소스는 기존 승인 구도를 보존한 ImageGen background-extraction 결과이며, runtime asset은 1600×900, Paper-8 palette, nearest 2×2 grid로 정규화했다.
+- Ground/Planetary는 기존 단일 opaque texture 경로와 ambient behavior를 유지했다. Galactic의 중앙 gameplay negative space를 보존하고 galaxy/nebula alpha를 제한해 L2/L3 Balls, Paddle, moving Black Hole horizon, Frame, HUD 대비를 확보했다.
+- `BackgroundManager.set_reduced_effects(enabled)`는 Galactic composite alpha를 낮추고 ambient twinkle process를 중지한다. 상태·Frame·HUD·Black Hole horizon 같은 필수 cue는 제거하지 않는다.
+- `tests/presentation/s5_g7_galactic_stage_world_verification.*`와 runtime capture fixture를 추가하고 기존 S5-G4 test를 multi-layer manager 구조에 맞춰 갱신했다.
+- `project.godot`, Main Scene, Core, Integration tests, S8-G5 runtime 파일은 수정하지 않았다. 활성 S8-G4 Integration lock도 사용하지 않았다.
+
+### 검증
+
+- Godot 4.7.1 headless editor load/parse: exit 0. 기존 dirty S6 fixture의 누락 `.uid` cache 복구 warning 외 S5-G7 parse/runtime error는 없었다.
+- 전용 scene: `S5_G7_VERIFIED alpha_layers=4 plate_visible_blocks=0 stars=1493 galaxy=38941 nebula=63433 l2_avg_luma=0.0101 l2_bright_ratio=0.0033 l3_avg_luma=0.0127 l3_bright_ratio=0.0078 paddle_contrast_l3=15.21 horizon_contrast_l3=13.80 reduced=true ground_planetary_opaque=true`.
+- 회귀: `S5_G4_STAGE_WORLD_SHIFT_VERIFIED backgrounds=3 dynamic_ambient=true shift_once=true`, `S8_G5_VERIFIED phase_completions=3 finale_completions=2 field=880_to_1040 symmetric=80 core_ring=true influence=true reduced=true stale_safe=true core_readonly=true`, `S3_G6_VERIFIED stage_time=true score_readonly=true genealogy_reveal=true`, legacy `STAGE_WORLD_BACKGROUNDS_VERIFIED assets=3 canvas=1600x900 grid=2`.
+- Native OpenGL Compatibility, Intel Arc 130V에서 L2/L3/Reduced 1600×900 캡처를 확인했다. normal 120-frame 평균 `60.3 FPS`, 최저 `42.3 FPS`, 최대 frame `23.66ms`; reduced 120-frame 평균 `60.7 FPS`, 최저 `51.9 FPS`, 최대 frame `19.27ms`였다.
+- Primary `godot` MCP는 현재 세션에 제공되지 않아 별도 runtime MCP 검증은 수행하지 않았다.
+- Web debug export 명령 `Godot_v4.7.1-stable_win64_console.exe --headless --audio-driver Dummy --path . --export-debug Web build/s5-g7-web/index.html`은 Godot 4.7.1 export template `web_nothreads_debug.zip`과 `web_nothreads_release.zip`이 설치되지 않아 실패했다. 따라서 Browser screenshot/console Gate를 수행하지 못했고 Goal은 `IMPLEMENTED`로 유지한다.
+
+### Integration handoff / 제외
+
+- S8-G4가 향후 Reduced Effects 설정을 wiring할 때 기존 S8-G5 `PresentationManager.reduced_effects`와 함께 `BackgroundManager.set_reduced_effects(enabled)`를 동일 값으로 호출해야 한다. S8-G5-owned `presentation_manager.gd`를 이번 Goal에서 수정하지 않았다.
+- Galactic key, L2 `880`, L3 `1040`, frame/HUD source interface는 변경하지 않았으므로 S8-G4에 필요한 추가 display/source adjustment는 없다.
+- S6-G2, S3-G8, S5-G6, S6-G6I, legacy local Lv4 Stage-clear 계약은 구현하지 않았다.
+
+## 2026-08-20 — S5-G7 Web Browser Gate completion
+
+Owner: Presentation
+Branch: `fx-design`
+
+### Template setup
+
+- Godot executable은 `C:\Users\gktjd\AppData\Local\Programs\Godot\Godot_v4.7.1-stable_win64_console.exe`, runtime version은 `4.7.1.stable.official.a13da4feb`다.
+- 공식 `godotengine/godot-builds` 4.7.1-stable release의 `Godot_v4.7.1-stable_export_templates.tpz`를 사용했다. package SHA-256은 GitHub release digest와 일치한 `86409db6200b6f8fd3230989c2d2002851f3dd18acf11d7bdbafddf5a0dd0f72`다.
+- `%APPDATA%\Godot\export_templates\4.7.1.stable`에 official `version.txt`, `web_nothreads_debug.zip`, `web_nothreads_release.zip`만 설치했다. Web archive SHA-256은 각각 `eb6ca0ca168c405e73b20a4439d6dc048d74ae65eb31cc7675b6bc3cf7ad1815`, `b7b7d7da29fc6cc2f4934fdd26cc571a40e7af57f716ea3eb7e18da720dae28a`다.
+
+### Web export / Browser verification
+
+- dirty working tree를 보존한 채 `Godot_v4.7.1-stable_win64_console.exe --headless --audio-driver Dummy --path . --export-debug Web <scoped-temp>\index.html`을 실행해 exit 0을 확인했다. Main HTML/JS/WASM/PCK와 S5-G7 capture build의 같은 네 파일은 local HTTP에서 모두 200이었다.
+- actual browser는 Chrome `151.0.7922.138`, WebGL2 renderer는 Intel Arc 130V Direct3D11이었다. Main Canvas startup, focus, `A` 입력 전달 뒤 120 browser RAF는 평균 `60.47 FPS`, 최저 `59.17 FPS`, 최대 frame `16.90ms`; console warning/error, exception, network failure는 0이었다.
+- official Web binary는 command-line scene override를 막으므로 repository 밖 disposable project copy에서만 `run/main_scene`을 기존 `s5_g7_galactic_stage_world_runtime_capture.tscn`으로 바꿨다. Web debug의 `get_tree().quit()` keepalive assertion을 피하고 CDP가 pure L2를 캡처하도록 disposable copy의 fixture에만 Web hold/no-quit를 적용했다. 저장소의 `project.godot`, capture fixture, runtime implementation은 수정하지 않았다.
+- 1600×900 actual Web Canvas에서 L2 `880`, transition `880→1040`, L3 `1040`, Reduced screenshot을 확인했다. 투명 Galactic plate와 stars/galaxy/nebula가 바깥 void와 합성되고 Balls, Paddle, Black Hole horizon, Frame, HUD가 읽혔다.
+- fixture `S5_G7_CAPTURED`: normal 평균 `60.5 FPS`, 최저 `57.8 FPS`, 최대 frame `17.30ms`; reduced 평균 `60.4 FPS`, 최저 `57.5 FPS`, 최대 frame `17.40ms`. 최종 browser run의 console warning/error, exception, network failure는 모두 0이었다.
+- repository의 전용 CLI scene도 다시 실행해 `S5_G7_VERIFIED alpha_layers=4 plate_visible_blocks=0 stars=1493 galaxy=38941 nebula=63433 l2_avg_luma=0.0101 l3_avg_luma=0.0127 paddle_contrast_l3=15.21 horizon_contrast_l3=13.80 reduced=true ground_planetary_opaque=true`와 exit 0을 확인했다.
+- vendored gstack browse Windows bundle은 `server-node.mjs` 부재로 실행되지 않아 설치·수정하지 않았고, 이미 설치된 system Chrome을 CDP로 직접 제어했다. Primary `godot` MCP는 세션에 없었다.
+
+### 상태 / 제외
+
+- Native와 Web screenshot, Web export/startup/Canvas/console Gate가 모두 충족되어 S5-G7을 `VERIFIED`로 변경했다.
+- Core/Integration files, project configuration, export preset, runtime implementation은 변경하지 않았다. disposable validation output은 `%TEMP%\s5-g7-web-validation-20260820`에 남겼다.

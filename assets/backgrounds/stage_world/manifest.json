@@ -83,5 +83,22 @@
                                 ],
                        "stage":  "galactic"
                    }
-               ]
+               ],
+    "galactic_composite":  {
+                                "runtime_active":  true,
+                                "plate_alpha":  "transparent",
+                                "pixel_grid":  2,
+                                "size":  [
+                                             1600,
+                                             900
+                                         ],
+                                "layers":  [
+                                               "background_galactic_plate_1600x900.png",
+                                               "background_galactic_stars_1600x900.png",
+                                               "background_galactic_galaxy_1600x900.png",
+                                               "background_galactic_nebula_1600x900.png"
+                                           ],
+                                "legacy_opaque_runtime_reference":  "background_galactic_1600x900.png",
+                                "source":  "built-in ImageGen extraction from approved Galactic art; palette/alpha/grid normalized"
+                            }
 }

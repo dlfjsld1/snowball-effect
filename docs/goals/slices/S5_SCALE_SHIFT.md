@@ -89,7 +89,7 @@ Presentation은 `stage_shift_started(next_definition, shift_id)`를 받은 뒤�
 ### S5-G7 Galactic 투명 Stage World
 
 - Owner: Presentation
-- Owned Files: `assets/sprites/backgrounds/**`, `scenes/backgrounds/**`, `scripts/presentation/background_manager.gd`, `tests/presentation/**`
+- Owned Files: `assets/backgrounds/stage_world/**`, `assets/sprites/backgrounds/**`, `scenes/backgrounds/**`, `scripts/presentation/background_manager.gd`, `tests/presentation/**`
 - Integration Point: 기존 `background_key=galactic`와 L2/L3 read-only profile을 소비한다.
 - Dependencies: S5-G4, S8-G5의 Black Hole 가독성 요구.
 - Verification: Galactic 배경 판 alpha가 투명하고 별·은하·성운 레이어가 프레임 바깥 우주와 정상 합성; Ground/Planetary 불변; L2/L3에서 공·Black Hole·HUD 대비 유지; Native와 Web screenshot 확인.

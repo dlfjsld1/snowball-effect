@@ -123,7 +123,7 @@ Stage World는 “밝은 풍경 네 장”의 교체가 아니라 동일한 arca
 
 v1의 Ground/Planetary/Galactic progression을 사용하되 meadow·우주사진·검은 소용돌이 같은 직설적 배경에 묶이지 않는다. 이동 Black Hole 맵 기믹은 별도 네 번째 Stage가 아니라 Galactic L3 gameplay phase의 dominant map motif로 사용한다. Lv14 Black Hole Ball은 별도 gameplay object로 존재한다.
 
-향후 S5-G7에서는 Galactic Stage World의 배경 판을 투명하게 만들어 프레임 바깥 우주와 합성한다. gameplay 공·Black Hole·HUD의 가독성을 지키기 위해 별·은하·성운 레이어는 투명 PNG 또는 동등한 alpha 지원 texture로 분리하고, 투명도 변경은 Ground/Planetary 배경에 적용하지 않는다.
+S5-G7 Galactic Stage World는 완전 투명 plate와 별·은하·성운의 독립 alpha PNG를 합성해 프레임 바깥의 공통 void를 그대로 드러낸다. L2/L3 union 안에서는 각 레이어의 표시 alpha를 제한해 gameplay 공·Black Hole horizon·Paddle·HUD보다 낮은 대비를 유지한다. Reduced Effects는 세 정적 identity layer를 더 낮은 alpha로 유지하되 dynamic ambient twinkle motion을 정지한다. 이 투명도 변경은 Ground/Planetary 배경에 적용하지 않는다.
 
 ## 8. Balance and Input Dependencies
 
