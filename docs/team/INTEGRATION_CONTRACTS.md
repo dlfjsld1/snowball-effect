@@ -20,9 +20,10 @@
 | Presentation EffectManager | `final_settlement_presentation_finished()` | Presentation HUD·verification | 최대 0.5초의 batch dissolve·Stage Score count-up 완료 알림. Core `Final Settlement → CLEARED`를 지연시키거나 gameplay state를 변경하지 않는 read-only presentation completion이다. S5-G6의 확인 대기는 Settlement logic이 아니라 `CLEARED→SHIFTING` 경계에만 적용한다. |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation, Content Music | data 적용, Stage World와 BGM 변경 |
 | Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager, Content Music | 시작, Pause modal 행동·화면 전환 요청과 BGM 상태 전환 |
-| Content ItemManager | `item_planet_damaged(item_type: StringName, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |
-| Content ItemManager | `item_planet_broken(item_type: StringName, world_position)` | Presentation | 최종 파괴 FX. 이 신호 자체는 획득·CUT-IN·activation을 의미하지 않음 |
-| Content ItemManager | `item_orb_spawned(item_type: StringName, world_position)` | Presentation | 아이템별로 구분되는 획득용 Orb 표시 |
+| Content ItemManager | `item_planet_spawned(item_type: StringName, world_position, radius)` | Content S7-G2 Blizzard visual | Blizzard Item Ball의 최초 표시용 read-only 신호. spawn/score/simulation을 변경하지 않는다. |
+| Content ItemManager | `item_planet_damaged(item_type: StringName, current_hits, required_hits, world_position)` | Presentation, Content S7-G2 Blizzard visual | hit별 균열·픽셀 파편 단계 표현 |
+| Content ItemManager | `item_planet_broken(item_type: StringName, world_position)` | Presentation, Content S7-G2 Blizzard visual | 최종 파괴 FX. 이 신호 자체는 획득·CUT-IN·activation을 의미하지 않음 |
+| Content ItemManager | `item_orb_spawned(item_type: StringName, world_position)` | Presentation, Content S7-G2 Blizzard visual | 아이템별로 구분되는 획득용 Orb 표시 |
 | Content ItemManager | `item_collected(item_type: StringName, world_position)` | Presentation, Integration | Paddle 획득 뒤 CUT-IN과 1회 activation 중재 |
 | Content ItemManager | `item_orb_missed(item_type: StringName, world_position)` | Presentation | 열린 하단 이탈 소멸 표현; activation 없음 |
 | Content ItemManager | `active_items_changed(read_only_snapshot)` | Presentation HUD | 현재 활성 아이템 표시 |
@@ -30,6 +31,7 @@
 | Presentation S6-G2 | `GameManager.accept_item_cutin_activation_cue(event_id)` 또는 `skip_item_cutin(event_id)` | Integration ItemEffectGateway | matching event만 1회 activation request로 commit한다. cue/skip 중복과 Retry 이전 stale event는 거부한다. |
 | Integration ItemEffectGateway | `item_effect_activation_requested(event_id: int, item_type: StringName, world_position)` | Content S7-G2~G4 | 실제 Blizzard/Fire Core/Magnet 효과의 유일한 activation request다. Gateway는 점수·Settlement·simulation을 직접 변경하지 않는다. |
 | Content S7-G2 Blizzard | `activate(item_blizzard.tres)`, `advance(delta)`, `reset_runtime()`; `spawn_multiplier_changed(multiplier)` | Integration spawn controller | matching Blizzard activation만 수락한다. Integration은 base Stage spawn rate에 multiplier를 한 번 적용하고 `1.0`에서 정확히 복구한다. 재획득은 남은 시간을 갱신할 뿐 multiplier를 누적하지 않는다. |
+| Content S7-G2 Blizzard | `active_state_changed(snapshot)` | Content-owned Blizzard visual, Integration Main wiring | Blizzard 전용 `BLIZZARD!` cue와 장식 눈은 active snapshot만 read-only로 소비한다. Item Ball/Orb의 Blizzard styling은 producer events만 표시하며 activation, score, timer, spawn multiplier를 변경하지 않는다. |
 | Integration StageManager | `stage_clear_ready(clear_snapshot: Dictionary, clear_id: int)` | Presentation S5-G6 | non-final `SCORE_CLEAR`의 Final Settlement 완료 뒤 `CLEARED`에서 read-only snapshot과 process-lifetime monotonic ID를 한 번 공개한다. Galactic/failure/Result에는 발행하지 않는다. |
 | Presentation S5-G6 | `next_stage_requested(clear_id: int)` | Integration S5-G6I | 현재 열린 Clear의 실제 `NEXT STAGE` Button 첫 press만 request한다. Presentation은 Shift, Stage, score, timer, spawn, Paddle 또는 simulation을 변경하지 않는다. |
 | Integration StageManager | `stage_shift_started(next_definition, shift_id)` | Presentation | matching `next_stage_requested(clear_id)`가 수락된 뒤 새 `shift_id`로 `SHIFTING`에 진입하고 Stage World/HUD 연출을 시작한다. Presentation은 gameplay state를 직접 변경하지 않는다. |
