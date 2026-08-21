@@ -785,3 +785,22 @@ Owner: Integration
 - StageManager가 full callback `delta`가 아니라 deadline 전 유효 구간만 Simulation에 step하고, 그 구간에서 발생한 Cashout만 StageRuntime으로 중재하도록 연결했다.
 - 통합 verification은 deadline 전 Lv3 Cashout이 시간을 연장하는 경우와, deadline 뒤 하단 crossing은 Time Bonus 없이 Final Settlement base score만 반영하고 Fail lock으로 가는 경우를 분리해 확인했다.
 - Godot 4.7.1 CLI headless S3-G2/G3/G4/G5와 S5-G3/G5/G6 회귀 exit 0, Primary validate 7/7, Main runtime error 0, clean Web Browser gameplay/console warning·error 0을 확인했다.
+
+## 2026-08-21 — S5-G6I Next Stage confirmation and failed-run Result handoff
+
+Owner: Integration
+
+- Non-final Score Clear는 이제 `CLEARED`에서 monotonic `clear_id`와 copied display snapshot을 한 번 발행하고, `StageClearPanel`의 matching `NEXT STAGE` request가 올 때까지 gameplay/Paddle을 잠근다. 잘못된·중복 request는 StageManager와 Panel 양쪽에서 수락하지 않는다.
+- 수락된 request만 기존 Scale Shift `shift_id` flow를 시작한다. Retry/Main reset은 pending confirmation을 지우지만, old delayed callback과 충돌하지 않도록 clear ID high-water mark는 유지한다.
+- 같은 terminal handoff 누락을 함께 복구했다. non-final Time Up failure 및 Black Hole score-depletion failure도 `stage_run_ended` snapshot을 통해 ResultPanel로 간다. 따라서 gameplay가 멈춘 채 검은 화면으로 남지 않는다.
+- Verification: Godot 4.7.1 CLI editor/headless project load exit 0, S3-G5 headless integration verification exit 0. Primary `godot` runtime에서 Ground Score Clear panel, real NEXT STAGE click 뒤 Planetary `PLAYING`, Planetary Time Up 뒤 visible ResultPanel, score 0 Black Hole run-end 뒤 visible ResultPanel을 확인했다. MCP 종료 뒤 clean Web release export를 localhost browser에서 로드해 `1280×720` Canvas, focus 뒤 F7 입력 전달, browser console warning/error 0을 확인했다.
+
+## 2026-08-21 — S6-G2I FIRST_CONTACT CUT-IN pause and Black Hole handoff
+
+Owner: Integration
+
+- `GameManager`가 run-scoped epoch와 schema/roster-valid FIRST_CONTACT payload FIFO를 중재한다. CUT-IN은 end-of-tick deferred arbitration 뒤 head event만 Presentation consumer에 요청하며, 수락 전에 Stage timer/simulation/spawn 및 Paddle physics를 lock한다.
+- 정상 CUT-IN의 matching `(event_id, run_epoch)` finish만 같은 `PLAYING`으로 복귀한다. wrong/stale/duplicate finish와 terminal state는 거부되고, Retry/Main/fresh Run은 queue·active payload·pause lock과 old epoch를 함께 무효화한다.
+- 첫 Black Hole request는 readiness로만 저장한다. matching CUT-IN finish 전에는 phase ID를 만들지 않으며, 완료 때만 기존 `begin_black_hole_phase → Presentation → matching phase finish` path를 시작한다. 이에 따라 S8-G4 regression fixture도 새 upstream gate를 통과한 뒤 downstream phase/finale를 검증하도록 갱신했다.
+- Verification: Godot 4.7.1 CLI/headless project load exit 0. Primary `godot` S6-G2I fixture exit 0 (`fifo=true pause=true stale_rejected=true black_hole_gate=true reset=true`) 및 updated S8-G4 integration regression exit 0. MCP bridge shutdown-only warning은 test process 종료 시 발생한 tooling warning이며 game error는 없었다.
+- Presentation `S6-G2` controller는 아직 미구현이다. 따라서 실제 Main은 producer API가 연결되기 전까지 FIRST_CONTACT를 visible CUT-IN/lock으로 소비하지 않으며, 다음 Presentation Goal에서 `play_first_contact_cutin(payload)`와 `first_contact_cutin_finished(event_id, run_epoch)`를 제공해야 한다.

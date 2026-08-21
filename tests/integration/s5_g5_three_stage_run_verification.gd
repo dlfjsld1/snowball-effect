@@ -20,6 +20,7 @@ func _ready() -> void:
 	var background: BackgroundManager = main.get_node("StageWorld/BackgroundManager")
 	var frame: GameplayFrame = main.get_node("UI/GameplayFrame")
 	var hud: Hud = main.get_node("UI/HUDMount/HUD")
+	var clear_panel: StageClearPanel = main.get_node("UI/StageClearPanel")
 
 	_expect(not simulation.is_physics_processing(), "StageManager must be the only Main physics driver for BallSimulationManager.")
 	game_manager.set_physics_process(false)
@@ -34,7 +35,10 @@ func _ready() -> void:
 	simulation.reset_runtime()
 	stage_manager.get_score_ledger().apply_score_event(stage_manager.get_current_stage().clear_score)
 	stage_manager._physics_process(0.1)
-	_expect(stage_manager.current_state == StageManager.SHIFTING, "Ground Score Clear must enter SHIFTING.")
+	_expect(stage_manager.current_state == StageManager.CLEARED, "Ground Score Clear must wait for NEXT STAGE.")
+	_expect(clear_panel.visible, "Ground Score Clear must open the confirmation panel.")
+	_expect(clear_panel.request_next_stage(clear_panel.get_active_clear_id()), "Ground NEXT STAGE request must be accepted once.")
+	_expect(stage_manager.current_state == StageManager.SHIFTING, "Accepted Ground confirmation must enter SHIFTING.")
 	var ground_stage_time: float = stage_manager.get_runtime_snapshot()["stage_time_left"]
 	await get_tree().create_timer(0.12).timeout
 
@@ -61,7 +65,9 @@ func _ready() -> void:
 	_expect(stage_manager.get_score_ledger().stage_score < stage_manager.get_current_stage().clear_score, "Three Planetary Cashouts must remain below clear score.")
 	stage_manager.get_score_ledger().apply_score_event(stage_manager.get_current_stage().clear_score - stage_manager.get_score_ledger().stage_score)
 	stage_manager._physics_process(0.02)
-	_expect(stage_manager.current_state == StageManager.SHIFTING, "Planetary Score Clear must enter SHIFTING immediately.")
+	_expect(stage_manager.current_state == StageManager.CLEARED, "Planetary Score Clear must wait for NEXT STAGE.")
+	_expect(clear_panel.request_next_stage(clear_panel.get_active_clear_id()), "Planetary NEXT STAGE request must be accepted once.")
+	_expect(stage_manager.current_state == StageManager.SHIFTING, "Accepted Planetary confirmation must enter SHIFTING.")
 	await get_tree().create_timer(0.12).timeout
 
 	_verify_stage_entry(stage_manager, simulation, background, frame, hud, 2, &"galactic", "GALACTIC", 35.0)
@@ -76,7 +82,7 @@ func _ready() -> void:
 	_expect(stage_manager.current_state == StageManager.PLAYING, "Retry must resume Ground gameplay.")
 	_expect(_stage_entries == ["Planetary", "Galactic", "Ground"], "Stage entry order must be Planetary, Galactic, then retry Ground.")
 	_expect(stage_manager.debug_force_score_clear(), "F7 must invoke the Debug Score Clear route.")
-	_expect(stage_manager.current_state == StageManager.SHIFTING, "F7 must invoke immediate Score Clear.")
+	_expect(stage_manager.current_state == StageManager.CLEARED, "F7 must invoke Score Clear awaiting confirmation.")
 
 	if _failures == 0:
 		print(

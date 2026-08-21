@@ -15,10 +15,10 @@ func _ready() -> void:
 	_verify_postdeadline_cashout_settles_without_time_bonus()
 	_verify_time_up_fails()
 	_verify_top_ball_keeps_playing()
-	_verify_score_clear_shifts_immediately()
+	_verify_score_clear_waits_for_confirmation()
 	_verify_retry_resets_runtime()
 	if _failures == 0:
-		print("S3_G5_VERIFIED predeadline_cashout=true postdeadline_settlement=true time_up_failed=true top_non_terminal=true score_clear_shifts=true retry_clean=true")
+		print("S3_G5_VERIFIED predeadline_cashout=true postdeadline_settlement=true time_up_failed=true top_non_terminal=true score_clear_waits=true retry_clean=true")
 	get_tree().quit(_failures)
 
 
@@ -58,11 +58,11 @@ func _verify_top_ball_keeps_playing() -> void:
 	_expect(simulation.get_active_count() == 1, "Top ball must remain Active Cashout eligible.")
 
 
-func _verify_score_clear_shifts_immediately() -> void:
+func _verify_score_clear_waits_for_confirmation() -> void:
 	stage_manager.start_run()
 	stage_manager.get_score_ledger().apply_score_event(stage_manager.get_current_stage().clear_score)
 	stage_manager._physics_process(0.1)
-	_expect(stage_manager.current_state == StageManager.SHIFTING, "Score Clear must start Scale Shift without waiting for Time Up or confirmation.")
+	_expect(stage_manager.current_state == StageManager.CLEARED, "Score Clear must wait for the Next Stage confirmation before Shift.")
 
 
 func _verify_retry_resets_runtime() -> void:
