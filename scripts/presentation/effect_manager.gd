@@ -131,6 +131,7 @@ func resume_gameplay_fx() -> void:
 
 
 func reset_runtime_fx(reset_counters := false) -> void:
+	_cancel_active_settlement_effect()
 	for child in get_children():
 		if _is_active_effect(child):
 			_retire_effect(child)
@@ -224,22 +225,35 @@ func _on_final_settlement_started(_amount: float) -> void:
 	if not is_instance_valid(_simulation_source) or not _simulation_source.has_method("get_render_snapshot"):
 		final_settlement_presentation_finished.emit()
 		return
-	if is_instance_valid(_active_settlement_effect):
-		_active_settlement_effect.queue_free()
+	_cancel_active_settlement_effect()
 	var snapshot: Dictionary = _simulation_source.get_render_snapshot()
 	var target_position := get_viewport_rect().size * Vector2(0.82, 0.12)
 	if is_instance_valid(_settlement_target):
 		target_position = _settlement_target.global_position + _settlement_target.size * 0.5
 	_active_settlement_effect = FinalSettlementEffectScene.instantiate()
 	add_child(_active_settlement_effect)
-	_active_settlement_effect.finished.connect(_on_final_settlement_effect_finished, CONNECT_ONE_SHOT)
+	_active_settlement_effect.finished.connect(
+		_on_final_settlement_effect_finished.bind(_active_settlement_effect),
+		CONNECT_ONE_SHOT
+	)
 	_active_settlement_effect.setup(snapshot, target_position)
 	final_settlement_visual_started.emit(_active_settlement_effect.duration)
 
 
-func _on_final_settlement_effect_finished() -> void:
+func _on_final_settlement_effect_finished(effect: Node2D) -> void:
+	if effect != _active_settlement_effect:
+		return
 	_active_settlement_effect = null
 	final_settlement_presentation_finished.emit()
+
+
+func _cancel_active_settlement_effect() -> void:
+	if not is_instance_valid(_active_settlement_effect):
+		_active_settlement_effect = null
+		return
+	_active_settlement_effect.set_process(false)
+	_active_settlement_effect.queue_free()
+	_active_settlement_effect = null
 
 
 func _reserve_gameplay_effect(tier: int) -> bool:

@@ -46,8 +46,18 @@ func _ready() -> void:
 	_expect(hud.stage_score_label.text == "STAGE SCORE 100", "HUD must show the authoritative final score after the visual.")
 	_expect(stage_manager.get_score_ledger().stage_score == 100.0, "Visual completion must not duplicate score.")
 
+	hud.effect_manager._on_final_settlement_started(0.0)
+	var canceled_effect: Node2D = hud.effect_manager._active_settlement_effect
+	_expect(is_instance_valid(canceled_effect), "A repeated Settlement fixture must create a visual before reset.")
+	canceled_effect.duration = 0.05
+	hud.effect_manager.reset_runtime_fx(true)
+	_expect(hud.effect_manager._active_settlement_effect == null, "Retry/Main reset must release the active Settlement visual immediately.")
+	await get_tree().create_timer(0.1).timeout
+	_expect(not is_instance_valid(canceled_effect), "Retry/Main reset must retire the stale Settlement draw node.")
+	_expect(_finished_count == 1, "A canceled Settlement visual must not emit completion into the next Run.")
+
 	if _failures == 0:
-		print("S6_G6_VERIFIED samples=64 duration=0.5 score_countup=true completion=1 core_readonly=true")
+		print("S6_G6_VERIFIED samples=64 duration=0.5 score_countup=true completion=1 reset_stale_safe=true core_readonly=true")
 	get_tree().quit(_failures)
 
 

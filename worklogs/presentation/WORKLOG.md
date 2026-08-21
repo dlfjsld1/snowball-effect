@@ -506,3 +506,11 @@ Owner: Presentation
 - 출고 전 리뷰에서 `BlackHolePhaseEffect`가 작성·검증됐지만 active `GameplayFrame`은 reconciliation 이전의 중앙 placeholder overlay를 계속 mount하고 있음을 확인했다.
 - active scene을 `BlackHolePhaseEffect`로 교체하고 PresentationManager가 read-only simulation snapshot, phase field progress, finale progress를 이 단일 draw node에 전달하도록 정렬했다. Main/Core/Integration 신호와 gameplay state는 변경하지 않았다.
 - S8-G5 verification은 active node type과 그 node의 실제 visual metrics를 직접 확인하도록 보강했다. no-argument finale 완료 handoff와 run-generation/stale callback 방어는 유지한다.
+
+## 2026-08-21 — S6-G6 Settlement reset 출고 리뷰 보정
+
+Owner: Presentation
+
+- Final Settlement draw node가 metadata 기반 gameplay FX registry 밖에서 관리되어 Retry/Main reset 중 남을 수 있던 lifecycle 누락을 수정했다.
+- `reset_runtime_fx()`와 반복 Settlement 시작이 active draw node의 processing을 중지하고 retire하며, 완료 callback은 현재 active instance와 일치할 때만 한 번 수락한다.
+- S6-G6 verification에 effect 진행 중 reset 뒤 stale draw node 제거와 다음 Run으로 completion이 유출되지 않는 회귀를 추가했다. Settlement 계산·점수·Stage state는 변경하지 않았다.
