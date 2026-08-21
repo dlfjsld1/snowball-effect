@@ -45,8 +45,8 @@ Purpose: 분산된 gameplay feedback 요구사항을 하나의 디자인·제작
 | MG-01 | 일반 Merge | T1 | REQUIRED | `ball_merged(result_level, world_position)` | 결과 위치의 pixel burst와 얇은 링 | event 1회당 effect 1회 |
 | MG-02 | 고등급 Merge | T2 | REQUIRED | 같은 event + result level | 더 큰 ring, 파편, 짧은 압력파 | Ball silhouette 보존 |
 | MG-03 | 중요 공 생성 | T3 | REQUIRED | high-tier result | 짧은 hit-stop 후보, Corona 강화 | cooldown/priority 적용 |
-| MG-04 | local Lv4 최초 발견 | T3 | REQUIRED | authoritative Run-scoped discovery | FIRST CONTACT 뒤 공에 시선 집중 | 생성만으로 Clear/Shift를 요청하지 않음; Black Hole만 Phase로 handoff |
-| MG-05 | Stage 고등급 공 최초 생성 CUT-IN | T3 | CONDITIONAL | 현재 Run에서 지정 공 최초 생성 | 현재 16:9 화면 위 공통 배경, `FIRST CONTACT` 문구, 공 초상 | Stage별 local Lv3·Lv4만 1회, 0.45~0.70초, 기본 1초 미만 |
+| MG-04 | local Lv3/Lv4 최초 발견 | T3 | REQUIRED | S3-G9 `first_contact_discovered(payload v1)` | FIRST CONTACT 뒤 공에 시선 집중 | 승인 6 identity만 Run당 1회; 생성만으로 Clear/Shift를 요청하지 않음 |
+| MG-05 | Stage 고등급 공 최초 생성 CUT-IN | T3 | CONDITIONAL | S6-G2I가 pause 수락 뒤 전달한 payload v1 | 현재 16:9 화면 위 공통 배경, `FIRST CONTACT` 문구, 공 초상 | Stage별 local Lv3·Lv4만 1회, 0.45~0.70초, Black Hole은 matching 완료 뒤 S8 Phase |
 
 MG-05 대상은 Stage마다 두 종으로 고정한다.
 
@@ -60,6 +60,7 @@ MG-05 대상은 Stage마다 두 종으로 고정한다.
 - Moon은 Ground에서, Galaxy는 Planetary에서만 대상이므로 다음 Stage의 local Lv0 재등장으로 CUT-IN을 반복하지 않는다.
 - 여섯 CUT-IN은 공통 배경 하나와 공별 문구·공 초상 레이어를 조립한다.
 - 이전 후보였던 Galaxy Cluster와 Quasar는 현재 MG-05 대상이 아니다.
+- Presentation은 `ball_merged`/`top_ball_created`를 직접 해석하지 않고 `first_contact_id`를 layer key로만 사용한다. S3-G9와 S6-G2I가 실제 Evidence를 얻기 전에는 S6-G2 runtime controller를 구현하지 않는다.
 
 현재 2인자 Merge 계약으로는 두 source Ball의 contraction, slot 기반 잔상, merge score 숫자를 만들지 않는다. 해당 표현이 필요하면 Core payload와 Goal 계약을 먼저 확장한다.
 

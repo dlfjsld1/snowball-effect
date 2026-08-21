@@ -768,3 +768,12 @@ Owner: Integration / senior integration
 
 - `GameManager`가 ItemManager와 ItemEffectGateway를 global `class_name`으로 annotation/cast하던 의존을 제거하고 두 mounted node를 `Node`로 참조하게 했다.
 - 이는 다른 workspace/MCP가 새 global script class cache를 만들기 전에 `game_manager.gd`를 단독 파싱해 실패하던 load-order 결함을 막는다. Gateway/Manager의 class declaration, signal API, scene mount와 gameplay contract는 변경하지 않았다.
+
+## 2026-08-21 — S6-G2I FIRST_CONTACT pause·S8 handoff 계약 준비
+
+Owner: Integration planning / Goal status `PENDING`
+
+- Integration이 current `run_epoch`, end-of-tick arbitration, visible CUT-IN 전 timer/spawn/simulation/Paddle lock과 event-id FIFO를 소유하도록 경계를 확정했다.
+- normal matching finish는 같은 `PLAYING`을 재개하고, 첫 Black Hole matching finish는 gameplay를 중간 재개하지 않은 채 기존 S8-G4 `begin_black_hole_phase → phase_id` downstream으로 넘긴다.
+- Retry/Main/fresh Run은 old epoch·queue·pause lock·Panel callback을 함께 무효화한다. wrong/stale/duplicate finish와 Result/Failure/Shift state는 수락하지 않는다.
+- 기존 S8-G4의 phase 이후/finale/Retry Evidence는 보존하지만 CUT-IN 이전 gate 증거로 소급하지 않는다. 이번 기록은 계약 준비이며 Integration lock, runtime 변경, 자동/수동 검증 Evidence가 없다.

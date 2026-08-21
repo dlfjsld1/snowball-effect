@@ -670,3 +670,12 @@ Owner: Core (교차 영역 변경 승인됨)
 - 사용자 최신 규칙에 따라 `StageRuntime.process_tick()`은 non-final `stage_score >= clear_score`를 Cashout 반영 뒤, Time Up보다 먼저 `SCORE_CLEAR`로 확정한다.
 - local Lv4 생성은 계속 종료 사유가 아니다. clear score 미달인 경우에만 Time Up 경로를 사용한다.
 - Primary validate와 S3-G3 verification scene exit 0을 확인했다. 이 환경의 직접 CLI/headless는 `user://logs` 접근 실패 뒤 Godot signal 11로 종료되어 도구 환경 문제로 분리했다.
+
+## 2026-08-21 — S3-G9 FIRST_CONTACT producer 계약 준비
+
+Owner: Core planning / Goal status `PENDING`
+
+- S3-G7의 기존 증거를 local Lv4 비종료와 Score Clear 중재로 한정했다. 전용 discovery producer가 있었다고 소급하지 않는다.
+- S3-G9는 승인된 여섯 `first_contact_id`, payload schema v1, process-lifetime monotonic `event_id`, Integration-issued `run_epoch`, Run seen set과 deterministic order만 소유한다.
+- 기존 `ball_merged`/`top_ball_created`는 FIRST_CONTACT source가 아니며, 첫 Black Hole payload는 entity ordinal과 S8 handoff 의도만 전달한다.
+- 이번 기록은 계약/Goal 준비이며 runtime 구현·테스트·Godot 검증 Evidence가 없다. 상태를 `PENDING`으로 유지한다.

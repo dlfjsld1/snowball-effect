@@ -286,7 +286,7 @@ spawn_rate
 
 ## 10. 최고 공 발견과 Stage Clear
 
-현재 Stage의 local Lv4를 만들면 해당 공의 Run 내 최초 생성 여부를 기록하고 `FIRST CONTACT` CUT-IN을 요청한다. Ground의 Moon과 Planetary의 Galaxy는 생성만으로 Stage Clear를 잠그지 않으며 일반 gameplay와 Active Cashout 대상에 남는다.
+현재 Stage의 local Lv3·Lv4 중 승인된 여섯 공을 만들면 committed Merge 결과를 기준으로 해당 `FIRST_CONTACT` identity의 Run 내 최초 생성 여부를 기록한다. 대상은 Ground의 Giant Snowball·Moon, Planetary의 Supernova·Galaxy, Galactic의 Event Horizon·Black Hole뿐이다. Moon과 Galaxy가 다음 Stage local Lv0로 재등장하는 경우는 새 발견이 아니다. Ground의 Moon과 Planetary의 Galaxy는 생성만으로 Stage Clear를 잠그지 않으며 일반 gameplay와 Active Cashout 대상에 남는다.
 
 non-final Stage의 Clear는 tick의 Merge와 Active Cashout을 반영한 `stage_score >= clear_score` 순간 확정한다. 남은 시간과 local Lv4 생성 여부는 이 판정을 막지 않는다. 확정 뒤 `CLEAR_LOCKED → SETTLING`과 Final Settlement를 즉시 한 번 처리하고 `CLEARED`에 머문다. 축하 UI의 matching `NEXT STAGE(clear_id)` 요청이 도착한 뒤에만 Scale Shift를 시작한다. Galactic의 첫 Black Hole은 FIRST CONTACT 연출 뒤 별도 Black Hole 최종 국면 계약으로 전환한다.
 
@@ -463,9 +463,11 @@ Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole
 
 Galactic에서 첫 Lv14 `Black Hole` Ball을 만들면 FIRST CONTACT CUT-IN 뒤 Black Hole Phase 전환을 시작한다.
 
-1. 생성된 Lv14 Ball을 이동 Black Hole 기믹으로 전환한다.
-2. `Black Hole Phase Transition`으로 Frame과 실제 Play Field를 L2 `880`에서 L3 `1040`으로 함께 확장한다.
-3. 전환 중에만 spawn·timer·input을 잠그고, 완료 후 같은 Galactic gameplay를 재개한다.
+1. Merge 결과를 commit하고 생성된 Lv14 Ball을 첫 이동 Black Hole entity로 전환한다.
+2. Run-scoped `galactic_black_hole` discovery를 확정하되, CUT-IN 완료 전에는 Black Hole Phase와 `phase_id`를 시작하지 않는다.
+3. 같은 physics tick의 Cashout/종료 중재를 마친 뒤 FIRST_CONTACT pause lock을 먼저 수락하고 CUT-IN을 표시한다.
+4. matching `(run_epoch, event_id)` CUT-IN 완료 뒤에만 기존 `Black Hole Phase Transition`을 시작해 Frame과 실제 Play Field를 L2 `880`에서 L3 `1040`으로 함께 확장한다.
+5. CUT-IN부터 Phase 완료까지 spawn·timer·simulation·Paddle gameplay input을 잠그고, matching Phase 완료 후 같은 Galactic gameplay를 재개한다. CUT-IN과 Phase 사이에 gameplay를 한 frame 재개하지 않는다.
 
 Frame의 바닥 장식과 Paddle/공의 실제 충돌 영역을 분리한다. 모든 Frame profile의 logical Play Field는 시각적 개구부보다 하단 `32 logical units` 위에서 끝나며, 남은 strip은 Cashout/프레임 안전 여백이다. Paddle은 회전한 전체 외곽이 이 logical 경계를 넘지 않도록 X·Y 모두 clamp한다.
 
@@ -596,14 +598,21 @@ Fire 공:
 - local Lv3와 local Lv4를 해당 Run에서 처음 만들면 `FIRST CONTACT` 고등급 CUT-IN을 사용한다.
 - 대상은 Ground의 `Giant Snowball`·`Moon`, Planetary의 `Supernova`·`Galaxy`, Galactic의 `Event Horizon`·`Black Hole`로 정확히 6종이다.
 - CUT-IN에 표시되는 공은 실제 Merge 결과로 생성된 gameplay 공의 형태와 일치해야 한다.
+- identity는 `ground_giant_snowball`, `ground_moon`, `planetary_supernova`, `planetary_galaxy`, `galactic_event_horizon`, `galactic_black_hole`로 고정한다.
+- 한 identity는 한 Run에서 discovery를 정확히 한 번만 발행한다. Stage Shift는 기록을 유지하고 Retry/fresh Run은 새 `run_epoch`에서 다시 발견할 수 있다. Main 이동은 이전 Run을 무효화한다.
+- discovery `event_id`는 process lifetime에서 증가하며 Retry/Main에서 재사용하지 않는다. `run_epoch`, `event_id`, Stage/global/local level, world position과 identity를 묶은 versioned payload가 유일한 CUT-IN 입력이다.
 
-- 현재 게임 이벤트 먼저 확정
-- 현재 장면 전체 freeze
+- 현재 physics tick의 Merge/Cashout/종료 판정을 먼저 확정
+- Integration이 current Run과 `PLAYING`을 다시 확인하고 pause lock 수락
+- pause 수락 뒤에만 현재 장면 전체 freeze와 visible CUT-IN
 - Play Field와 Stage World 전체 dim
 - Pixel Machine 패널 진입
 - 공 이름 / 이미지 / VALUE 또는 효과
 - 빠르게 퇴장
-- 즉시 플레이 재개
+- matching `event_id`와 `run_epoch` 완료만 수락
+- 일반 5종은 즉시 같은 gameplay 재개, 첫 Black Hole은 gameplay 재개 없이 기존 S8 Phase로 handoff
+
+pause lock은 SceneTree 전체 pause가 아니다. CUT-IN Tween과 Retry/Main cleanup은 계속 동작하되 timer, spawn, simulation commit, Paddle physics와 gameplay input을 잠근다. 같은 tick의 중재 결과가 `CLEAR_LOCKED`, `TIME_UP_LOCKED`, `FAILED`, `RUN_ENDED`, Result 또는 Shift면 해당 discovery를 화면에 열지 않고 authoritative 결과를 우선한다. wrong/stale/duplicate 완료는 gameplay resume이나 Black Hole Phase를 만들지 않는다. Retry/Main/fresh Run은 열린 Panel과 queue를 숨기고 이전 callback을 무효화한다.
 
 초기 총 길이:
 
@@ -611,7 +620,7 @@ Fire 공:
 0.45 ~ 0.70초
 ```
 
-Moon과 Galaxy의 CUT-IN 종료 뒤에는 gameplay를 재개한다. Black Hole의 CUT-IN 종료 뒤에는 같은 Galactic 안의 Black Hole Phase 전환을 이어서 실행한다.
+Giant Snowball, Moon, Supernova, Galaxy, Event Horizon의 CUT-IN 종료 뒤에는 gameplay를 재개한다. 첫 Black Hole은 matching CUT-IN 종료 뒤에만 같은 Galactic 안의 Black Hole Phase 전환을 이어서 실행한다. Presentation은 resume이나 Phase를 직접 실행하지 않고 `(event_id, run_epoch)` 완료만 반환한다.
 
 ---
 
