@@ -3,10 +3,12 @@ extends Node
 const SimulationManager = preload("res://scripts/simulation/ball_simulation_manager.gd")
 const StageCatalog = preload("res://scripts/data/stage_catalog.gd")
 const StageRuntime = preload("res://scripts/core/stage_runtime.gd")
+const PaddleScene = preload("res://scenes/gameplay/paddle.tscn")
 const TEST_DELTA := 1.0 / 60.0
 
 @onready var simulation: SimulationManager = $BallSimulationManager
 @onready var stage_runtime: StageRuntime = $StageRuntime
+@onready var paddle = PaddleScene.instantiate()
 
 var _failures := 0
 var _phase_count := 0
@@ -16,6 +18,10 @@ var _run_end_count := 0
 
 
 func _ready() -> void:
+	paddle.position = Vector2(800.0, 450.0)
+	paddle.play_field_rect = simulation.play_field_rect
+	add_child(paddle)
+	await get_tree().process_frame
 	var galactic = StageCatalog.new().get_stage(2)
 	simulation.apply_stage_definition(galactic)
 	stage_runtime.enter_stage(galactic)
@@ -25,6 +31,7 @@ func _ready() -> void:
 	stage_runtime.black_hole_run_end_requested.connect(_on_black_hole_run_end_requested)
 	_verify_first_conversion_and_absorption()
 	_verify_pull_and_bottom_reflection()
+	_verify_paddle_reflection()
 	_verify_thousand_ball_force_regression()
 	if _failures == 0:
 		print("S8_G1_VERIFIED phase=once absorption=score_deducted pull_cap=%s mutual=450 bottom_reflect=true stress=1000" % SimulationManager.BLACK_HOLE_TOTAL_PULL_CAP)
@@ -105,6 +112,20 @@ func _verify_thousand_ball_force_regression() -> void:
 	_expect(simulation.get_active_count() <= 1000, "Force-only stress must not create extra normal Balls.")
 	_expect(average_ms < 16.0, "1,000 Ball Black Hole force regression must remain below the 60 FPS physics budget.")
 	print("S8_G1_STRESS active=1000 average_physics_ms=%.3f" % average_ms)
+
+
+func _verify_paddle_reflection() -> void:
+	simulation.reset_runtime()
+	simulation.apply_stage_definition(StageCatalog.new().get_stage(2))
+	simulation.cashout_enabled = false
+	simulation.set_paddle_collision_provider(paddle)
+	paddle.position = Vector2(800.0, 450.0)
+	paddle.rotation = 0.0
+	paddle._reset_motion_history()
+	paddle.apply_input(0.0, 0.0, TEST_DELTA)
+	simulation._create_black_hole(Vector2(800.0, 400.0), Vector2(0.0, 300.0))
+	simulation.step_simulation(TEST_DELTA)
+	_expect(simulation._black_hole_velocities[0].y < 0.0, "A Black Hole must reflect from the Paddle with the ordinary Paddle collision contract.")
 
 
 func _on_black_hole_phase_requested() -> void:

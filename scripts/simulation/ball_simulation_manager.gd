@@ -815,7 +815,17 @@ func _step_black_holes(delta: float) -> void:
 			if other_index != index:
 				velocity -= _get_pull_from_source(position, previous_positions[other_index], BLACK_HOLE_MUTUAL_REPULSION_ACCELERATION) * delta
 		velocity = velocity.limit_length(maximum_ball_runtime_speed)
-		position += velocity * delta
+		if is_instance_valid(_paddle_collision_provider):
+			var collision: Dictionary = _paddle_collision_provider.resolve_continuous_ball_collision(
+				position,
+				velocity,
+				_black_hole_radii[index],
+				delta
+			)
+			position = collision["position"]
+			velocity = collision["velocity"]
+		else:
+			position += velocity * delta
 		next_velocities.append(velocity)
 		next_positions.append(position)
 

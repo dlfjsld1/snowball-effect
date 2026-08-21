@@ -487,6 +487,7 @@ Frame의 바닥 장식과 Paddle/공의 실제 충돌 영역을 분리한다. �
 ### 이동·흡수·인력
 
 - Black Hole은 Play Field 안을 공처럼 이동한다.
+- Black Hole은 일반 Snowball과 같은 Paddle continuous collision·접촉점 velocity·speed cap 계약으로 반사된다. 따라서 패들 강타로 척력을 이기고 다른 Black Hole 쪽으로 보낼 수 있다.
 - 주변 공이 가까워지면 제한된 인력으로 궤도를 휘게 한다.
 - Galactic의 모든 일반 Snowball은 Black Hole 접촉 시 흡수된다. 이미 전환된 Black Hole runtime entity는 이 대상이 아니다.
 - Black Hole은 다른 Black Hole을 제외한 어떤 공과도 Merge하지 않고 성장하지 않는다.

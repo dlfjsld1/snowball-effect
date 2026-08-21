@@ -42,6 +42,7 @@ Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성�
 ## 블랙홀 이동
 
 - Play Field 안을 공처럼 이동한다.
+- 일반 Snowball과 동일한 Paddle continuous collision으로 반사된다. 패들 이동·회전의 실제 contact velocity를 받아 척력을 이기고 다른 Black Hole을 향해 강타할 수 있다.
 - Black Hole 외형을 유지하되 gameplay footprint는 사람 기준 Galactic 3단계 공 Quasar(`local_level = 2`) 크기를 기준으로 한다.
 - 이동 속도와 범위는 tuning 데이터다.
 - 논리 위치와 시각 중심을 일치시킨다.
@@ -128,6 +129,7 @@ strong contact lock
 - 모든 일반 공이 실제 Black Hole contact에서 흡수됨
 - Black Hole이 하단 Cashout되지 않음
 - Black Hole 하단 반사, 비성장, 일반 Merge 제외
+- Black Hole Paddle 반사와 강한 충돌 finale
 - 인력이 강해도 두 번째 Black Hole 제작 gameplay가 계속 가능
 - 흡수 패널티가 Cashout 가치 `12.5%`와 phase-entry Run Score `25%` 상한으로 계산되어 stage/run에서 차감되고, run score가 0이 되면 즉시 Game Over
 - Galactic 최종 국면의 생성량에서 성능 확인
