@@ -799,3 +799,9 @@ Owner: Core
 - Raised ordinary-ball influence radius `300 → 480`, per-source acceleration `450 → 1200`, and multi-source cap `900 → 1500` world units/s².
 - Kept Black Hole mutual pull at `450`, the ball runtime speed cap, actual-contact-only absorption, score penalty, and all terminal rules unchanged.
 - Added a force fixture assertion that a ball 300 logical units from a Black Hole receives non-zero pull. These remain playtest tuning values, not final balance.
+## 2026-08-21 — Black Hole All-Level Absorption
+
+- User requested that the Black Hole absorb high-level Snowballs too, not only the former `local_level <= 2` subset.
+- Removed the local-level filter: any active normal Ball that makes actual contact with a Black Hole is consumed. Converted Black Hole entities remain excluded.
+- This intentionally raises the risk of protecting Event Horizon pairs long enough to create the second Black Hole; no remote absorption radius was added.
+- Updated the S8 force fixture to cover a contacted high-level Ball. Revised runtime verification remains pending.

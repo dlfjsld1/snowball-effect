@@ -722,7 +722,7 @@ func get_black_hole_position() -> Vector2
 func get_black_hole_pull(position: Vector2) -> Vector2
 ```
 
-논리 인력과 `local_level <= 2` 공 흡수는 BallSimulationManager에서 적용한다. Black Hole 자체는 일반 Merge와 하단 Cashout scan에서 제외하고, Play Field 하단을 전용 반사 경계로 사용한다. Black Hole은 흡수로 radius·mass·force를 키우지 않는다.
+논리 인력과 모든 일반 Snowball 흡수는 BallSimulationManager에서 적용한다. Black Hole 자체는 일반 Merge와 하단 Cashout scan에서 제외하고, Play Field 하단을 전용 반사 경계로 사용한다. Black Hole은 흡수로 radius·mass·force를 키우지 않는다.
 배경 셰이더와 논리 좌표가 크게 어긋나지 않아야 한다.
 
 성능상 공마다 `sqrt`를 줄이고 싶다면 거리 제곱 기반 완만한 함수 사용 가능하다.  

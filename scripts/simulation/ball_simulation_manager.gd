@@ -906,9 +906,6 @@ func _commit_black_hole_absorptions() -> void:
 		return
 	var absorbed_indices: Array[int] = []
 	for index in active_indices:
-		var local_level := _stage_ball_levels.find(global_levels[index])
-		if local_level < 0 or local_level > 2:
-			continue
 		for black_hole_index in range(_black_hole_positions.size()):
 			var contact_radius := radii[index] + _black_hole_radii[black_hole_index]
 			if positions[index].distance_squared_to(_black_hole_positions[black_hole_index]) <= contact_radius * contact_radius:
