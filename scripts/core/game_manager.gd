@@ -13,6 +13,8 @@ const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd"
 
 signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
 signal terminal_result_available(result_snapshot: Dictionary)
+signal item_cutin_requested(event_id: int, item_type: StringName, world_position: Vector2)
+signal item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2)
 
 @export var simulation_path: NodePath
 @export var paddle_path: NodePath
@@ -26,6 +28,8 @@ signal terminal_result_available(result_snapshot: Dictionary)
 @export var background_manager_path: NodePath
 @export var presentation_manager_path: NodePath
 @export var audio_manager_path: NodePath
+@export var item_manager_path: NodePath
+@export var item_effect_gateway_path: NodePath
 @export var spawn_rate := 6.0
 @export var lv1_ball_radius := 4.0
 @export var lv1_spawn_speed_world_units_per_second := 160.0
@@ -45,6 +49,8 @@ var _play_field_backdrop: Polygon2D
 var _background_manager: BackgroundManager
 var _presentation_manager: PresentationManager
 var _audio_manager: AudioManagerScript
+var _item_manager: Node
+var _item_effect_gateway: Node
 var _spawn_accumulator := 0.0
 var _random := RandomNumberGenerator.new()
 var _initialized := false
@@ -66,6 +72,8 @@ func _ready() -> void:
 	_background_manager = get_node(background_manager_path) as BackgroundManager
 	_presentation_manager = get_node(presentation_manager_path) as PresentationManager
 	_audio_manager = get_node(audio_manager_path) as AudioManagerScript
+	_item_manager = get_node(item_manager_path)
+	_item_effect_gateway = get_node(item_effect_gateway_path)
 	call_deferred("_initialize_runtime")
 
 
@@ -85,6 +93,9 @@ func _initialize_runtime() -> void:
 	_presentation_manager.black_hole_phase_presentation_finished.connect(_on_black_hole_phase_presentation_finished)
 	_presentation_manager.black_hole_finale_presentation_finished.connect(_on_black_hole_finale_presentation_finished)
 	_simulation.black_hole_phase_requested.connect(_on_black_hole_phase_requested)
+	_item_manager.item_collected.connect(_on_item_collected)
+	_item_effect_gateway.item_cutin_requested.connect(_on_item_cutin_requested)
+	_item_effect_gateway.item_effect_activation_requested.connect(_on_item_effect_activation_requested)
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
 	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu, _title_screen)
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation, _stage_manager)
@@ -107,6 +118,7 @@ func _physics_process(delta: float) -> void:
 	while _spawn_accumulator >= 1.0:
 		_spawn_accumulator -= 1.0
 		_spawn_ball()
+	_process_item_runtime(delta)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -140,12 +152,21 @@ func get_terminal_result_snapshot() -> Dictionary:
 	return _terminal_result_snapshot.duplicate(true)
 
 
+func accept_item_cutin_activation_cue(event_id: int) -> bool:
+	return _item_effect_gateway.accept_cutin_activation_cue(event_id)
+
+
+func skip_item_cutin(event_id: int) -> bool:
+	return _item_effect_gateway.skip_cutin(event_id)
+
+
 func _start_run() -> void:
 	get_tree().paused = false
 	_random.seed = 1337
 	_spawn_accumulator = 0.0
 	_terminal_result_snapshot.clear()
 	_terminal_result_published = false
+	_item_effect_gateway.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.start_run()
 	_paddle.reset_runtime()
@@ -163,6 +184,8 @@ func _enter_title_screen() -> void:
 	get_tree().paused = false
 	_terminal_result_snapshot.clear()
 	_terminal_result_published = false
+	_item_manager.reset_runtime()
+	_item_effect_gateway.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.end_run_to_main_menu()
 	_paddle.set_physics_process(false)
@@ -178,6 +201,11 @@ func _on_stage_changed(definition: StageDefinition) -> void:
 	spawn_rate = definition.spawn_rate
 	_apply_stage_frame(definition.stage_index)
 	_presentation_manager.apply_stage(definition)
+	_item_manager.enter_stage(
+		definition,
+		_simulation.play_field_rect,
+		_simulation.get_runtime_radius_for_level(definition.local_ball_levels[2])
+	)
 	_paddle.set_physics_process(true)
 
 
@@ -286,6 +314,40 @@ func _spawn_ball() -> void:
 	var spawn_direction := Vector2(sin(spawn_angle), cos(spawn_angle))
 	var spawn_velocity := spawn_direction * lv1_spawn_speed_world_units_per_second
 	_simulation.spawn_ball(spawn_position, spawn_velocity, spawn_radius, spawn_global_level)
+
+
+func _process_item_runtime(delta: float) -> void:
+	_item_manager.advance(delta)
+	if not _item_manager.get_item_ball_snapshot().is_empty():
+		_item_manager.process_ball_snapshots(_simulation.get_active_item_collision_snapshots())
+	_try_collect_item_orb()
+
+
+func _try_collect_item_orb() -> void:
+	var orb: Dictionary = _item_manager.get_item_orb_snapshot()
+	if orb.is_empty():
+		return
+	var orb_position: Vector2 = orb["position"]
+	var orb_radius: float = orb["radius"]
+	var local_position := _paddle.to_local(orb_position)
+	var closest := Vector2(
+		clampf(local_position.x, -_paddle.paddle_width * 0.5, _paddle.paddle_width * 0.5),
+		clampf(local_position.y, -_paddle.paddle_thickness * 0.5, _paddle.paddle_thickness * 0.5)
+	)
+	if local_position.distance_squared_to(closest) <= orb_radius * orb_radius:
+		_item_manager.try_collect_orb(orb_position, 0.0)
+
+
+func _on_item_collected(item_type: StringName, world_position: Vector2) -> void:
+	_item_effect_gateway.queue_item_collected(item_type, world_position)
+
+
+func _on_item_cutin_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
+	item_cutin_requested.emit(event_id, item_type, world_position)
+
+
+func _on_item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
+	item_effect_activation_requested.emit(event_id, item_type, world_position)
 
 
 func _on_pause_requested() -> void:

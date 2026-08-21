@@ -745,6 +745,15 @@ Owner: Integration
 - L2→L3 뒤 Galactic 재개과 Result `RETRY RUN`의 fresh Ground reset, `MAIN`의 Title 복귀까지 확인해 terminal snapshot handoff와 reset mediation의 최종 경로를 닫았다.
 - 기존 S8-G4/S8-G2 CLI integration regressions 및 Web export evidence와 함께 S8-G4를 `VERIFIED`로 갱신했다.
 
+## 2026-08-21 — S7-G1 Item gateway integration
+
+Owner: Integration
+
+- `ItemManager`와 `ItemEffectGateway`를 Main에 mount했다. Stage 진입마다 ItemManager가 현재 logical Play Field와 local Lv2 runtime radius로 reset되고, 활성 Item Ball 동안 중앙 simulation의 read-only ball collision snapshot을 소비한다. Orb pickup은 회전된 Paddle OBB와 Orb 원의 현재 접촉으로만 producer에 전달한다.
+- Gateway는 `item_collected` 이후에만 monotonic `event_id` CUT-IN request를 발행한다. matching activation cue 또는 explicit skip이 도착할 때만 effect activation request를 한 번 emit하며, duplicate/stale cue 및 Retry/Main reset 뒤의 이전 event를 거부한다. Item Ball 파괴와 Orb miss는 activation 경로에 연결하지 않았다.
+- Verification: Godot 4.7.1 CLI Gateway scene exit 0 (`collection=cue_only`, `activation=once`, `skip_fallback=once`, `reset_stale_rejected=true`); S7-G1C producer regression exit 0; Primary `godot` validate에서 Gateway/GameManager/Simulation/Main/test 5/5 valid; Primary Main runtime에서 ItemManager/Gateway mount, Title start 뒤 `PLAYING`, runtime errors 0을 확인했다.
+- 상태: `IMPLEMENTED`. S6-G2 CUT-IN producer와 S7-G2~G4 effect consumer가 없어 실제 cue→effect 결과와 Web 관찰은 이후 Integration close에서 검증한다.
+
 ## 2026-08-21 — fx-design/latest Main Integration 계약 병합 해소
 
 Owner: Integration / senior integration
@@ -754,3 +763,8 @@ Owner: Integration / senior integration
 - Godot 4.7.1 CLI/headless에서 S3-G7 Core/Integration, S5-G5 three-stage, S5-G6I automatic clear, S8-G4 Integration 및 S8-G5 두 Presentation 회귀가 모두 exit 0이었다. Main headless·Native smoke와 Web release export도 exit 0이었다.
 - 기존 latest Main fixture의 stale assertion 세 건과 shutdown-only leak warning은 merge-induced failure가 아니므로 수정하지 않았다. 브라우저 smoke는 `browse` Windows 서버 번들 부재로 미검증이며, Primary Godot MCP도 현재 세션에 제공되지 않았다.
 - Integration lock은 `released` 상태이며 새 lock을 잡지 않았다. Time CRT 디자인 파일은 편집·스테이징 대상에서 제외했다.
+
+## 2026-08-21 — S7-G1 clean class-load repair
+
+- `GameManager`가 ItemManager와 ItemEffectGateway를 global `class_name`으로 annotation/cast하던 의존을 제거하고 두 mounted node를 `Node`로 참조하게 했다.
+- 이는 다른 workspace/MCP가 새 global script class cache를 만들기 전에 `game_manager.gd`를 단독 파싱해 실패하던 load-order 결함을 막는다. Gateway/Manager의 class declaration, signal API, scene mount와 gameplay contract는 변경하지 않았다.

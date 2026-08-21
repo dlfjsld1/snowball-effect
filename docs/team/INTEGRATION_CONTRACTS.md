@@ -17,12 +17,15 @@
 | Presentation EffectManager | `final_settlement_presentation_finished()` | Presentation HUD·verification | 최대 0.5초의 batch dissolve·Stage Score count-up 완료 알림. 최신 automatic Score Clear 계약에서는 Core `Final Settlement → CLEARED → SHIFTING`을 지연시키거나 gameplay state를 변경하지 않는 read-only presentation completion이다. |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation, Content Music | data 적용, Stage World와 BGM 변경 |
 | Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager, Content Music | 시작, Pause modal 행동·화면 전환 요청과 BGM 상태 전환 |
-| Content ItemManager | `item_planet_damaged(item_type, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |
-| Content ItemManager | `item_planet_broken(item_type, world_position)` | Presentation | 최종 파괴 FX. 이 신호 자체는 획득·CUT-IN·activation을 의미하지 않음 |
-| Content ItemManager | `item_orb_spawned(item_type, world_position)` | Presentation | 아이템별로 구분되는 획득용 Orb 표시 |
-| Content ItemManager | `item_collected(item_type, world_position)` | Presentation, Integration | Paddle 획득 뒤 CUT-IN과 1회 activation 중재 |
-| Content ItemManager | `item_orb_missed(item_type, world_position)` | Presentation | 열린 하단 이탈 소멸 표현; activation 없음 |
+| Content ItemManager | `item_planet_damaged(item_type: StringName, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |
+| Content ItemManager | `item_planet_broken(item_type: StringName, world_position)` | Presentation | 최종 파괴 FX. 이 신호 자체는 획득·CUT-IN·activation을 의미하지 않음 |
+| Content ItemManager | `item_orb_spawned(item_type: StringName, world_position)` | Presentation | 아이템별로 구분되는 획득용 Orb 표시 |
+| Content ItemManager | `item_collected(item_type: StringName, world_position)` | Presentation, Integration | Paddle 획득 뒤 CUT-IN과 1회 activation 중재 |
+| Content ItemManager | `item_orb_missed(item_type: StringName, world_position)` | Presentation | 열린 하단 이탈 소멸 표현; activation 없음 |
 | Content ItemManager | `active_items_changed(read_only_snapshot)` | Presentation HUD | 현재 활성 아이템 표시 |
+| Integration ItemEffectGateway | `item_cutin_requested(event_id: int, item_type: StringName, world_position)` | Presentation S6-G2 | Orb 획득 뒤에만 CUT-IN을 요청한다. Item Ball 파괴는 이 요청을 만들지 않는다. |
+| Presentation S6-G2 | `GameManager.accept_item_cutin_activation_cue(event_id)` 또는 `skip_item_cutin(event_id)` | Integration ItemEffectGateway | matching event만 1회 activation request로 commit한다. cue/skip 중복과 Retry 이전 stale event는 거부한다. |
+| Integration ItemEffectGateway | `item_effect_activation_requested(event_id: int, item_type: StringName, world_position)` | Content S7-G2~G4 | 실제 Blizzard/Fire Core/Magnet 효과의 유일한 activation request다. Gateway는 점수·Settlement·simulation을 직접 변경하지 않는다. |
 | Integration StageManager | `stage_shift_started(next_definition, shift_id)` | Presentation | non-final Stage가 `clear_score`에 도달해 Final Settlement를 마친 직후 `SHIFTING` 진입과 함께 Stage World/HUD 연출을 시작한다. Presentation은 gameplay state를 직접 변경하지 않는다. |
 | Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시하며 실제 Presentation producer가 연결된 현재 Main에는 임시 adapter가 없다. |
 | Presentation | `visual_field_rect_changed(visual_rect: Rect2)` | Integration GameManager | Scale Shift와 Black Hole L2→L3 보간 중 프레임 내부의 장식용 Backdrop만 같은 visual rect로 갱신한다. Simulation·Paddle·Cashout logical rect와 Stage state는 이 신호로 변경하지 않는다. |

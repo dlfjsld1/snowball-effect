@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
@@ -12,6 +12,8 @@
 [ext_resource type="PackedScene" path="res://scenes/backgrounds/gameplay_frame.tscn" id="10_frame"]
 [ext_resource type="PackedScene" path="res://scenes/backgrounds/stage_world.tscn" id="11_stage_world"]
 [ext_resource type="Script" path="res://scripts/presentation/audio_manager.gd" id="12_audio_manager"]
+[ext_resource type="Script" path="res://scripts/gameplay/item_manager.gd" id="13_item_manager"]
+[ext_resource type="Script" path="res://scripts/core/item_effect_gateway.gd" id="14_item_gateway"]
 
 [node name="Main" type="Node2D"]
 
@@ -30,6 +32,8 @@ play_field_backdrop_path = NodePath("../PlayField/Backdrop")
 background_manager_path = NodePath("../StageWorld/BackgroundManager")
 presentation_manager_path = NodePath("../UI/GameplayFrame/PresentationManager")
 audio_manager_path = NodePath("../AudioManager")
+item_manager_path = NodePath("../ItemManager")
+item_effect_gateway_path = NodePath("../ItemEffectGateway")
 
 [node name="StageManager" type="Node" parent="."]
 script = ExtResource("2_stage_manager")
@@ -38,6 +42,12 @@ simulation_path = NodePath("../PlayField/SimulationMount/BallSimulationManager")
 [node name="AudioManager" type="Node" parent="."]
 process_mode = 3
 script = ExtResource("12_audio_manager")
+
+[node name="ItemManager" type="Node" parent="."]
+script = ExtResource("13_item_manager")
+
+[node name="ItemEffectGateway" type="Node" parent="."]
+script = ExtResource("14_item_gateway")
 
 [node name="StageWorld" type="Node2D" parent="."]
 
