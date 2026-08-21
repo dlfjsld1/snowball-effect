@@ -757,3 +757,21 @@ Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `scripts/simulatio
 - Changed the spatial broad phase and contact commit path so cross-level pairs, plus same-level Stage-top pairs that cannot merge, use the existing swept circle contact, mass/current-velocity response, and separation correction.
 - Same-level pairs with a valid next Stage level remain Merge-only; no extra collision is applied to them.
 - S2-G2, S2-G3, and S4-G1 are `IMPLEMENTED` until the revised fixtures and runtime evidence are re-run.
+## 2026-08-21 — S1-G2 Paddle tip opposite-end teleport regression
+
+Owner: Core
+
+### 변경
+
+- 영상에서 큰 공이 Paddle 끝과 겹친 뒤 반대쪽 끝으로 재배치되는 현상을 확인했다.
+- starts-inside fallback이 실제 closest edge/tip을 버리고 sweep preferred normal의 축과 부호로 최종 접촉점을 다시 만들던 원인을 수정했다.
+- 공 중심이 OBB 바깥이면 실제 closest point 방향, 내부면이면 nearest face를 사용한다. preferred normal은 면 거리가 같은 경우에만 tie-break로 사용한다.
+- starts-inside contact도 충돌 1회로 commit해 local surface 밖으로 분리하며, 기존 contact lock·impact cap·ball runtime speed cap은 유지한다.
+- reflection fixture에 오른쪽 tip overlap에 반대 normal이 들어와도 같은 쪽에서 짧게 보정되고 Paddle 전체 길이를 횡단하지 않는 회귀를 추가했다.
+
+### 확인
+
+- Primary `godot` validate: `paddle.gd`, `reflection_test.gd` 2/2 valid.
+- Godot 4.7.1 CLI/headless reflection fixture: `S1_G2_VERIFIED`, tip-local correction 포함 exit 0.
+- Godot 4.7.1 CLI/headless mouse fixture: `S1_G2_MOUSE_VERIFIED`, exit 0.
+- S8-G1 force fixture의 기존 Paddle 검증은 radius 16 공을 접촉 거리 밖에서 1 tick만 진행하는 stale assertion으로 별도 확인이 필요하며, 이번 S1-G2 수정의 회귀로 판정하지 않았다.

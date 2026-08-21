@@ -405,7 +405,7 @@ translation 거리를 작은 고정 step으로만 나누는 방식은 Mouse 직�
 
 같은 Paddle sweep에서 한 공의 가장 이른 접촉을 한 번만 commit한다. 반사 후 contact normal 방향으로 separation epsilon을 적용하고, 공이 해당 면에서 분리되기 전에는 같은 접촉을 다시 반사하지 않는다. 이는 양면에 동일하게 적용한다.
 
-direct Mouse sweep 또는 Merge 직후 큰 공 때문에 tick 시작 시 이미 Paddle과 겹친 경우에도, 단순히 공 중심 근처의 면을 고르지 않는다. Paddle의 실제 sweep 방향에서 얻은 entry normal을 유지하고 **현재 tick의 최종 Paddle transform** 기준으로 공을 surface 바깥으로 보정한다. 따라서 Paddle이 큰 공을 가로질러 이동해도 공이 반대/내부 면으로 튀거나 다음 tick까지 Paddle 내부에 남지 않는다.
+direct Mouse sweep 또는 Merge 직후 큰 공 때문에 tick 시작 시 이미 Paddle과 겹친 경우에는 **현재 tick의 최종 Paddle transform에서 실제로 겹친 가장 가까운 edge/tip**으로 최소 보정한다. 공 중심이 OBB 바깥이면 closest point가 정한 실제 접촉 feature의 normal을 사용하고, 공 중심이 OBB 내부면이면 가장 가까운 면을 사용한다. sweep 방향의 preferred normal은 동일 거리 tie-break에만 사용하며, 공을 Paddle 전체 길이 너머 반대쪽 끝으로 옮기는 보정은 금지한다. starts-inside contact도 한 번의 충돌로 commit해 surface 밖으로 분리하되 contact lock과 separation epsilon으로 반복 반사를 막는다.
 
 ### 회전 접촉점 속도
 

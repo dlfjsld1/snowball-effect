@@ -18,6 +18,7 @@ func _ready() -> void:
 	_verify_mouse_recontact_uses_raw_sweep_velocity()
 	_verify_mouse_recontact_releases_simulation_lock()
 	_verify_large_overlap_correction()
+	_verify_tip_overlap_correction_stays_local()
 	_verify_rotation_sweep()
 	_verify_angular_contact_velocity()
 	if failures == 0:
@@ -124,7 +125,7 @@ func _verify_large_overlap_correction() -> void:
 	var right_sweep := paddle.resolve_continuous_ball_collision(Vector2(550.0, 400.0), Vector2.ZERO, large_radius, 0.001)
 	_expect(right_sweep.collided, "A direct Paddle sweep must resolve a deeply overlapping large ball.")
 	if right_sweep.collided:
-		_expect(right_sweep.normal.x > 0.0 and right_sweep.velocity.x > 0.0, "A rightward Paddle sweep must eject the large ball through its right entry face.")
+		_expect(right_sweep.normal.x < 0.0 and right_sweep.position.x < paddle.position.x, "A completed rightward sweep must separate the large ball through the nearest final face.")
 		_expect(paddle.is_ball_separated(right_sweep.position, large_radius), "Large-ball correction must leave the Paddle before the next tick.")
 
 	paddle.position = Vector2(400.0, 400.0)
@@ -133,7 +134,7 @@ func _verify_large_overlap_correction() -> void:
 	var left_sweep := paddle.resolve_continuous_ball_collision(Vector2(250.0, 400.0), Vector2.ZERO, large_radius, 0.001)
 	_expect(left_sweep.collided, "A reverse direct Paddle sweep must resolve a deeply overlapping large ball.")
 	if left_sweep.collided:
-		_expect(left_sweep.normal.x < 0.0 and left_sweep.velocity.x < 0.0, "A leftward Paddle sweep must eject the large ball through its left entry face.")
+		_expect(left_sweep.normal.x > 0.0 and left_sweep.position.x > paddle.position.x, "A completed leftward sweep must separate the large ball through the nearest final face.")
 		_expect(paddle.is_ball_separated(left_sweep.position, large_radius), "Reverse large-ball correction must leave the Paddle before the next tick.")
 
 	paddle.position = Vector2(400.0, 400.0)
@@ -141,6 +142,28 @@ func _verify_large_overlap_correction() -> void:
 	paddle.apply_input(0.0, 0.0, 0.001, 680.0)
 	var rotated_sweep := paddle.resolve_continuous_ball_collision(Vector2(550.0, 400.0), Vector2.ZERO, large_radius, 0.001)
 	_expect(rotated_sweep.collided and paddle.is_ball_separated(rotated_sweep.position, large_radius), "Large-ball correction must also separate at a rotated Paddle orientation.")
+
+
+func _verify_tip_overlap_correction_stays_local() -> void:
+	paddle.position = Vector2(400.0, 400.0)
+	paddle.rotation = 0.0
+	var ball_radius := 32.0
+	var right_tip_ball := paddle.position + Vector2(paddle.paddle_width * 0.5 + 12.0, 0.0)
+	var correction := paddle._resolve_inside_ball_overlap(
+		right_tip_ball,
+		paddle.position,
+		paddle.rotation,
+		ball_radius,
+		Vector2.LEFT
+	)
+	_expect(correction.overlapping, "A ball overlapping a Paddle tip must be corrected.")
+	if correction.overlapping:
+		_expect(correction.normal.x > 0.0, "Right-tip overlap correction must use the contacted right tip, not the opposite end.")
+		_expect(correction.corrected_position.x > paddle.position.x, "Right-tip overlap correction must remain on the contacted side of the Paddle.")
+		_expect(
+			right_tip_ball.distance_to(correction.corrected_position) <= ball_radius + paddle.separation_epsilon,
+			"Paddle tip correction must not teleport a ball across the Paddle body."
+		)
 
 
 func _verify_rotation_sweep() -> void:
