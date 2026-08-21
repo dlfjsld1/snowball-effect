@@ -52,7 +52,7 @@ Ground의 Moon과 Planetary의 Galaxy를 포함한 local Lv4는 생성 즉시 St
 
 초기 `base_time` 테스트 seed는 Ground 45초, Planetary 40초, Galactic 35초다. Lv14 Black Hole은 Galactic top Ball이며, 첫 Lv14는 마지막 Galactic Stage 안의 이동 Black Hole runtime 기믹으로 전환된다.
 기본 Run의 ordered Stage chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7 `Red Giant`와 Lv9 `Nebula`는 15종 BallCatalog에 보존하지만, 최근 팀 합의에 따라 기본 Run에서는 의도적으로 제외한다. 이는 누락이나 Resource drift가 아니며 Stage별 정확히 5종의 족보를 유지하기 위한 콘텐츠 배치다.
-`clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. Ground는 Moon(`1e8`) 기준 `4e8`, Planetary는 Supernova(`5e17`) 기준 `2e18`을 초기값으로 사용한다. local Lv4 생성 여부와 무관하게 tick의 Cashout까지 반영한 `stage_score`가 이 값에 도달하면 즉시 Clear를 확정한다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
+`clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. Ground는 Moon(`1e8`) 기준 `4e8`, Planetary는 Galaxy(`1e25`) 기준 `4e25`를 초기값으로 사용한다. 두 Stage 모두 최고 공 Active Cashout 점수의 4배를 목표로 한다. local Lv4 생성 여부와 무관하게 tick의 Cashout까지 반영한 `stage_score`가 이 값에 도달하면 즉시 Clear를 확정한다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
 둘 다 플레이테스트 전 확정값이 아니다.
 
 초기 구현에는 Stage 시간 cap을 넣지 않는다.

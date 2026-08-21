@@ -410,7 +410,7 @@ Moon → Earth → Sun → Supernova → Galaxy
 
 초기 Spawn: 약 `15/s`
 
-초기 `clear_score`: `2e18` (Supernova 4개 Cashout 상당)
+초기 `clear_score`: `4e25` (Galaxy 4개 Cashout 상당)
 
 ### Galactic
 

@@ -1036,3 +1036,13 @@ Goal: S8-G3 Title·Main·Terminal UI
 - Result의 `RETRY RUN`을 누르면 fresh Ground Run으로 재시작되고, `MAIN`을 누르면 Title UI로 복귀하는 것을 두 환경에서 확인했다.
 - 기존 Godot 4.7.1 CLI/headless S8-G3 자동 검증의 `title=true`, `pause_modal=true`, `result_snapshot=read_only`, `actual_buttons=true`, `hover=face_only`, `requests=once` 증거와 합쳐 Desktop/Web 수동 검증 Gate를 충족했다.
 - S8-G3을 `VERIFIED`로 닫는다. S8-G4 Integration과 S8-G5 Presentation의 별도 Goal 상태는 수정하지 않았다.
+
+## 2026-08-21 — Planetary Clear Score 비율 조정
+
+Owner: Content/Systems/Release
+Goal: S3-G1 Stage data maintenance
+Owned files: `resources/stages/stage_01_planetary.tres`, Stage data content verification 및 관련 설계 문서
+
+- 사용자 승인에 따라 Planetary `clear_score`를 `2e18`에서 `4e25`로 조정했다. Ground의 `4e8 / Moon 1e8 = 4` 비율을 Planetary의 최고 기본 Run 공 Galaxy(`1e25`)에 동일 적용한 값이다.
+- Stage HUD와 Score Clear runtime은 `StageDefinition.clear_score`를 read-only로 소비하므로, 물리·점수 판정·Presentation 구현은 바꾸지 않았다. Galactic의 `0`도 유지했다.
+- Godot 4.7.1 CLI/headless `s3_g1_stage_catalog_verification.tscn`과 `s5_g5_three_stage_run_verification.tscn`이 통과했다. 후자는 Planetary의 현재 `clear_score`를 이용한 Score Clear→Shift 경로를 포함한다. Primary `godot` MCP의 두 scene validation도 통과했다.
