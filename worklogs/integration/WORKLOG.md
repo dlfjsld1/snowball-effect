@@ -804,3 +804,12 @@ Owner: Integration
 - 첫 Black Hole request는 readiness로만 저장한다. matching CUT-IN finish 전에는 phase ID를 만들지 않으며, 완료 때만 기존 `begin_black_hole_phase → Presentation → matching phase finish` path를 시작한다. 이에 따라 S8-G4 regression fixture도 새 upstream gate를 통과한 뒤 downstream phase/finale를 검증하도록 갱신했다.
 - Verification: Godot 4.7.1 CLI/headless project load exit 0. Primary `godot` S6-G2I fixture exit 0 (`fifo=true pause=true stale_rejected=true black_hole_gate=true reset=true`) 및 updated S8-G4 integration regression exit 0. MCP bridge shutdown-only warning은 test process 종료 시 발생한 tooling warning이며 game error는 없었다.
 - Presentation `S6-G2` controller는 아직 미구현이다. 따라서 실제 Main은 producer API가 연결되기 전까지 FIRST_CONTACT를 visible CUT-IN/lock으로 소비하지 않으며, 다음 Presentation Goal에서 `play_first_contact_cutin(payload)`와 `first_contact_cutin_finished(event_id, run_epoch)`를 제공해야 한다.
+
+## 2026-08-21 — S7-G1 Blizzard spawn consumer wiring
+
+Owner: Integration
+
+- Main에 Content-owned `ItemBlizzard` runtime을 mount하고, Gateway의 authoritative `item_effect_activation_requested`에서 matching `blizzard`만 `item_blizzard.tres`로 activate하도록 연결했다. 다른 item type은 spawn rate를 바꾸지 않는다.
+- GameManager는 Stage base spawn rate와 effect multiplier를 별도 상태로 유지한다. `spawn_multiplier_changed(3.0/1.0)`은 effective spawn rate만 바꾸며, active Blizzard 중 Stage 변경은 새 base rate에 같은 multiplier를 적용한다. expiry, Retry, Main은 `1.0`으로 정확히 복구한다.
+- Verification: Godot 4.7.1 CLI/headless project load exit 0. Primary `godot` integration fixture exit 0 (`activation=once spawn_x3=true stage_rebase=true expiry_retry_main_reset=true`)에서 Ground `6→18`, spawn loop의 실제 3배 commit, Planetary `15→45`, expiry `45→15`, Retry/Main `→6`을 확인했다. Primary Main Start Run runtime error 0.
+- Presentation S6-G2의 actual item CUT-IN producer가 아직 없으므로 Orb 획득→visible CUT-IN→cue의 사용자 경로와 Web smoke는 미검증으로 남긴다. Gateway skip fallback 경로는 검증됐다.
