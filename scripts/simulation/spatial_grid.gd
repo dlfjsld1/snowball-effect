@@ -77,6 +77,50 @@ func fill_overlapping_pairs(
 	pairs.sort()
 
 
+func fill_non_merge_contact_pairs(
+		previous_positions: PackedVector2Array,
+		positions: PackedVector2Array,
+		radii: PackedFloat32Array,
+		global_levels: PackedInt32Array,
+		stage_top_global_level: int,
+		travel_padding: float,
+		pairs: Array[Vector2i]
+) -> void:
+	pairs.clear()
+	_candidate_check_count = 0
+
+	for first_index in _sorted_indices:
+		for level_value in _cells_by_level:
+			var level: int = level_value
+			if level == global_levels[first_index] and level != stage_top_global_level:
+				continue
+			var level_cells: Dictionary = _cells_by_level[level]
+			var search_radius: float = radii[first_index] + float(_maximum_radius_by_level[level]) + travel_padding
+			var minimum_position := Vector2(
+				minf(previous_positions[first_index].x, positions[first_index].x),
+				minf(previous_positions[first_index].y, positions[first_index].y)
+			) - Vector2(search_radius, search_radius)
+			var maximum_position := Vector2(
+				maxf(previous_positions[first_index].x, positions[first_index].x),
+				maxf(previous_positions[first_index].y, positions[first_index].y)
+			) + Vector2(search_radius, search_radius)
+			var minimum_cell := _position_to_cell(minimum_position)
+			var maximum_cell := _position_to_cell(maximum_position)
+
+			for cell_y in range(minimum_cell.y, maximum_cell.y + 1):
+				for cell_x in range(minimum_cell.x, maximum_cell.x + 1):
+					var indices: Array = level_cells.get(Vector2i(cell_x, cell_y), [])
+					for second_index_value in indices:
+						var second_index: int = second_index_value
+						# One lower index owns each cross-level contact pair.
+						if second_index <= first_index:
+							continue
+						_candidate_check_count += 1
+						pairs.append(Vector2i(first_index, second_index))
+
+	pairs.sort()
+
+
 func get_candidate_check_count() -> int:
 	return _candidate_check_count
 

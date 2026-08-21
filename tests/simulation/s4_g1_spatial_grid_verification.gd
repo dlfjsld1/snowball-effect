@@ -9,6 +9,7 @@ var _failures := 0
 
 func _ready() -> void:
 	_verify_level_aware_neighbors()
+	_verify_non_merge_contact_lookup()
 	_verify_large_ball_search_range()
 	_verify_sparse_candidate_reduction()
 
@@ -37,6 +38,20 @@ func _verify_large_ball_search_range() -> void:
 	var second := simulation.spawn_ball(Vector2(220.0, 200.0), Vector2.ZERO, 64.0, 4)
 	var pairs := simulation.get_merge_candidate_pairs()
 	_expect(pairs == [Vector2i(first, second)], "Large balls must search beyond one neighboring cell when their radius requires it.")
+
+
+func _verify_non_merge_contact_lookup() -> void:
+	simulation.reset_runtime()
+	simulation.configure_stage_ball_levels(PackedInt32Array([0, 1, 2]))
+	var top := simulation.spawn_ball(Vector2(200.0, 200.0), Vector2.ZERO, 16.0, 2)
+	var lower := simulation.spawn_ball(Vector2(220.0, 200.0), Vector2.ZERO, 4.0, 0)
+	var other_top := simulation.spawn_ball(Vector2(230.0, 200.0), Vector2.ZERO, 16.0, 2)
+	var unrelated := simulation.spawn_ball(Vector2(500.0, 500.0), Vector2.ZERO, 4.0, 1)
+	var pairs := simulation.get_non_merge_contact_pairs()
+	_expect(pairs.has(Vector2i(lower, unrelated)) == false, "Distant different-level Balls must not enter contact candidates.")
+	_expect(pairs.has(Vector2i(top, lower)), "Stage top lookup must include overlapping lower-level Balls across level buckets.")
+	_expect(pairs.has(Vector2i(top, other_top)), "Stage top lookup must include same-level top Balls once.")
+	_expect(not pairs.any(func(pair: Vector2i) -> bool: return pair.x == unrelated or pair.y == unrelated), "Distant Balls must not enter Stage-top contact candidates.")
 
 
 func _verify_sparse_candidate_reduction() -> void:

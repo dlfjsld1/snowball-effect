@@ -31,6 +31,7 @@ func _run_verification():
 	renderer.refresh_render_snapshot()
 	await get_tree().process_frame
 	var metrics := renderer.get_render_metrics()
+	_expect(metrics["clip_rect"] == simulation.play_field_rect, "Every standard batch must use the active logical Play Field as its clip rect.")
 	_expect(metrics["standard_ball_count"] == 5, "Levels 0 through 13 must use MultiMesh batches.")
 	_expect(metrics["special_fallback_count"] == 1, "Lv14 Black Hole must stay on the special fallback path.")
 	var visible_counts: PackedInt32Array = metrics["batch_visible_counts"]

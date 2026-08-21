@@ -14,7 +14,7 @@ Merge 경로가 모든 공 쌍을 검사하지 않고 Web release 필수 규모�
 - Owned Files: `scripts/simulation/spatial_grid.gd`, `scripts/simulation/ball_simulation_manager.gd`, `tests/simulation/**`
 - Integration Point: debug 지표 `candidate_count/grid_cell_count`를 Presentation/Release에 read-only 제공.
 - Dependencies: S2 완료.
-- Verification: level-aware grid, 필요한 인접 cell만 조회, release path에 전수 O(N²) 없음.
+- Verification: level-aware Merge lookup과 현재 Stage 최고공의 cross-level contact lookup이 필요한 인접 cell만 조회; 최고공 자기/다른 일반 공 contact 후보 누락 없음; 최고공이 아닌 다른 level pair는 후보에서 제외; release path에 전수 O(N²) 없음.
 - Do Not Modify: HUD layout와 release 설정.
 
 ### S4-G2 슬롯 재사용과 allocation 점검
@@ -32,7 +32,7 @@ Merge 경로가 모든 공 쌍을 검사하지 않고 Web release 필수 규모�
 - Owned Files: `tests/simulation/stress_test_scene.tscn`, `tests/simulation/**`
 - Integration Point: Content/Systems가 Web 환경 측정을 반복할 수 있는 stress mode와 metric schema 제공.
 - Dependencies: S4-G2; Content/Systems의 측정 환경 계약.
-- Verification: 100/500/1,000개 평균·최저 FPS, 후보 수, allocation 기록. 실제 Web에서 500개 최저 30 FPS 이상이면 필수 Gate를 통과한다. 1,000개는 stretch/torture 결과와 병목을 정직하게 기록하되 30 FPS 미달만으로 Goal을 막지 않는다.
+- Verification: Merge를 켠 100/500/1,000개 평균·최저 FPS, 후보 수, allocation 기록. 실제 Web에서 500개 최저 30 FPS 이상이면 필수 Gate를 통과한다. 1,000개는 stretch/torture 결과와 병목을 정직하게 기록하되 30 FPS 미달만으로 Goal을 막지 않는다. 최고공 contact 구현 뒤에는 대표 최고공 혼합 scenario를 회귀 확인한다.
 - Do Not Modify: Web export preset.
 
 ### S4-G4 일반 Snowball MultiMesh renderer
@@ -41,7 +41,7 @@ Merge 경로가 모든 공 쌍을 검사하지 않고 Web release 필수 규모�
 - Owned Files: `scripts/simulation/ball_renderer.gd`, `scripts/simulation/ball_renderer_circle.gdshader`, `scripts/simulation/ball_simulation_manager.gd`, `tests/simulation/**`
 - Integration Point: simulation의 read-only render snapshot(`positions/radii/global_levels`)만 소비한다. Presentation은 향후 level별 Texture2D/머티리얼 binding을 제공할 수 있으나 simulation 배열을 직접 수정하지 않는다.
 - Dependencies: S4-G3, S2 Ball catalog와 S5 local runtime radius 계약.
-- Verification: 일반 Lv0~13은 global level별 reusable MultiMesh batch로 표시하고, runtime position/radius·Stage re-baseline/reset을 정확히 반영한다. Lv14 Black Hole은 전용 fallback 경로를 유지한다. 실제 Web에서 500개 Merge ON과 1,000개 stretch를 재측정하며 기존 S2/S4 simulation 회귀와 console error가 없다.
+- Verification: 일반 Lv0~13은 global level별 reusable MultiMesh batch로 표시하고, runtime position/radius·Stage re-baseline/reset을 정확히 반영한다. 모든 일반 공 본체는 active logical Play Field에서 clip되어 Cashout 중 Stage World/기계 배경 위로 새지 않는다. Lv14 Black Hole은 전용 fallback 경로를 유지한다. 실제 Web에서 500개 Merge ON과 대표 최고공 contact, 1,000개 stretch를 확인하며 기존 S2/S4 simulation 회귀와 console error가 없다.
 - Do Not Modify: Merge/Cashout/Stage rules, Item Ball/Black Hole 전용 gameplay·visual 구현, Presentation FX asset.
 
 ## Exit Gate

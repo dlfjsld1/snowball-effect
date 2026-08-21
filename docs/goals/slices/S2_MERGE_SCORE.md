@@ -4,7 +4,7 @@
 
 ## 결과
 
-같은 global level 공만 결정적으로 합체하고 데이터 기반 점수와 표시가 동작한다.
+같은 global level의 성장 가능한 공은 결정적으로 합체하고, Merge하지 않는 공 pair는 물리적으로 접촉하며 데이터 기반 점수와 표시가 동작한다.
 
 ## Goals
 
@@ -17,22 +17,22 @@
 - Verification: global level 0~14의 15종에서 radius, mass, base `score_value`, visual key가 로드됨; Lv6 Sun, Lv7 Red Giant, Lv9 Nebula, Lv10 Galaxy, Lv14 `Black Hole`/`black_hole`가 catalog와 일치함; 이동 Black Hole 맵 기믹은 BallDefinition이 아님; Time Bonus 필드 없음. 15종은 데이터 범위이며 종류 축소 시 Goal 계약을 함께 갱신.
 - Do Not Modify: Merge 로직, renderer, HUD.
 
-### S2-G2 같은 레벨 후보 탐색
+### S2-G2 Merge·non-Merge contact 후보 탐색
 
 - Owner: Core
 - Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `tests/simulation/**`
 - Integration Point: S2-G1의 BallCatalog를 read-only로 소비.
 - Dependencies: S2-G1 API와 S1-G1 배열 구조.
-- Verification: 같은 global level의 겹친 공만 후보; 다른 level은 통과; tie-break 재현 가능.
+- Verification: Spatial Grid 최적화 전 기능 기준선에서 같은 global level의 성장 가능한 pair는 Merge 후보, 서로 다른 level pair와 현재 Stage 최고공 pair는 non-Merge contact 후보로 구분; 같은 pair 중복 없음; tie-break 재현 가능.
 - Do Not Modify: Resource 값과 Presentation.
 
-### S2-G3 결정적 Merge commit
+### S2-G3 결정적 Merge·non-Merge contact commit
 
 - Owner: Core
 - Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `tests/simulation/**`
 - Integration Point: 정확히 두 인자의 `ball_merged(result_level, world_position)`와 `top_ball_created(global_level)` 이벤트 제공. score amount나 `special_type`을 `ball_merged`에 추가하지 않음.
 - Dependencies: S2-G2.
-- Verification: 입력 둘 제거·출력 하나 생성, 한 공은 tick당 한 번만 소비, 동일 seed 결과 재현.
+- Verification: Merge pair는 입력 둘 제거·출력 하나 생성하고 한 공은 tick당 한 번만 소비; 서로 다른 level 및 현재 Stage 최고공 pair는 mass/current velocity 기반 반사와 penetration correction 후 분리; 동일 seed 결과 재현.
 - Do Not Modify: Stage 전환, Merge FX.
 
 ### S2-G4 Score formatter

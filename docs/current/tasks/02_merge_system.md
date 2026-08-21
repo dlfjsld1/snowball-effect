@@ -18,6 +18,7 @@ Task 01이 실행 가능해야 한다.
 - global_level
 - 레벨별 반지름·색·점수
 - 같은 레벨 근접 판정
+- 현재 Stage 최고공과 일반 공의 물리 contact 판정
 - merge lock
 - 합체 요청 큐
 - 상위 공 생성
@@ -79,6 +80,8 @@ Task 02에서는 공 수를 제한하고 단순 후보 검사로 기능을 먼�
 - 결과 레벨 정의가 없으면 더 합체하지 않음
 - 새 공은 다음 물리 프레임부터 합체 가능
 
+Merge 가능한 같은 level pair는 Merge가 우선한다. 서로 다른 level pair와 더 성장할 수 없는 현재 Stage 최고공 pair는 원형 물리 collision으로 반사·분리하며 Merge하지 않는다. 이 contact는 mass와 현재 runtime velocity를 사용하며 Spawn/base speed로 되돌리지 않는다. Item Ball과 이동 Black Hole은 전용 계약을 따른다.
+
 합체 위치:
 
 ```text
@@ -101,7 +104,9 @@ result_velocity = clamp_length(result_velocity, maximum_ball_runtime_speed)
 - 같은 레벨 두 공이 하나의 상위 공으로 합쳐짐
 - 공 수가 2 감소 후 1 증가
 - 중복 합체 없음
-- 다른 레벨은 통과
+- Lv0 + Lv1은 합체하지 않고 물리적으로 반사·분리
+- Ground Moon + Moon, Planetary Galaxy + Galaxy는 더 성장하지 않고 물리적으로 반사·분리
+- 최고공 + 다른 일반 공도 서로 통과하지 않음
 - 합체 후 렌더 외형과 점수가 바뀜
 - 바닥 회수 시 정의된 점수 사용
 - 최고 생성 레벨 HUD 표시
@@ -127,7 +132,8 @@ result_velocity = clamp_length(result_velocity, maximum_ball_runtime_speed)
 - Lv1 두 개 → Lv2
 - Planetary에서 Lv6 두 개 → Lv8, Lv8 두 개 → Lv10
 - 기본 Stage chain에서 Lv7·Lv9가 Merge 결과로 생성되지 않음
-- Lv0 + Lv1 → 합체 안 함
+- Lv0 + Lv1 → 합체하지 않고 물리 접촉 후 분리
+- Stage 최고공 + 같은 최고공 및 다른 일반 공 → 통과·Merge 없이 물리 접촉 후 분리
 - 세 개가 동시에 겹쳐도 하나의 합체만 발생
 - 새 공이 즉시 같은 프레임 재합체하지 않음
 - 고레벨 점수 표시가 K/M/B/T로 정상
