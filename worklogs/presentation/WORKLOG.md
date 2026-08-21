@@ -522,3 +522,10 @@ Owner: Presentation / design-only
 - `export_filter="all_resources"`에서 문서용 mockup PNG가 Web payload로 import될 수 있어 `docs/design/mockups/.gdignore`로 전체 mockup tree를 runtime import/export 대상에서 제외했다. repository 문서와 Markdown 링크는 유지한다.
 - Time CRT 승인 계약에 Reduced Effects의 정적 황색 outline·상태 문구 fallback과 Time Up 감광 cleanup 경계를 추가했다.
 - 런타임 HUD/Time 구현이나 Core/Integration 판정은 변경하지 않았으며 후속 구현 상태는 계속 `PENDING`이다.
+
+## 2026-08-21 — Presentation lifecycle 최종 출고 보정
+
+Owner: Presentation
+
+- Main Menu의 실제 `StageManager.READY` 전환에서도 active Final Settlement draw node를 즉시 retire하도록 EffectManager 상태 소비를 보강하고, verification이 직접 reset helper 대신 이 READY 경로를 실행하도록 수정했다.
+- S8-G5 renderer 교체 뒤 consumer가 사라진 기존 `BlackHolePresentationOverlay` scene/script/UID를 제거했다. active `BlackHolePhaseEffect`와 외부 Core/Integration handoff는 그대로 유지한다.

@@ -164,8 +164,8 @@ SG-02는 새로운 전용 일러스트나 복잡한 particle family를 만들지
 ### S8-G5 runtime recipe
 
 - `BlackHolePhaseEffect` 단일 draw node가 read-only `get_black_hole_snapshot()`의 최대 2개 entity를 그린다. gameplay radius를 변경하지 않고 black core, 4px cyan/teal event horizon, 300-unit dashed influence ring, near-field arc, 최대 4개 motion marker를 조립한다.
-- phase transition은 기본 `0.8s` 동안 L2 `880`→L3 `1040`을 중심 X `800` 기준 좌우 각 `80`씩 확장한다. Frame, 표시용 side fill, 고정 `200px` HUD housing이 같은 progress를 사용한다. 완료 뒤 `Galactic` HUD와 persistent Black Hole visual은 유지한다.
-- finale는 기본 `1.15s` 동안 두 core의 mutual orbit·압축 뒤 pixel ring/explosion을 재생하고 gameplay HUD/Pause를 숨긴다. S8-G3 Result 자체는 만들지 않으며 no-argument `black_hole_finale_presentation_finished()` 뒤 Integration이 보관한 terminal snapshot을 S8-G3에 전달한다.
+- phase transition은 기본 `0.9s` 동안 L2 `880`→L3 `1040`을 중심 X `800` 기준 좌우 각 `80`씩 확장한다. Frame, 표시용 side fill, 고정 `200px` HUD housing이 같은 progress를 사용한다. 완료 뒤 `Galactic` HUD와 persistent Black Hole visual은 유지한다.
+- finale는 기본 `1.35s` 동안 두 core의 mutual orbit·압축 뒤 pixel ring/explosion을 재생하고 gameplay HUD/Pause를 숨긴다. S8-G3 Result 자체는 만들지 않으며 no-argument `black_hole_finale_presentation_finished()` 뒤 Integration이 보관한 terminal snapshot을 S8-G3에 전달한다.
 - Reduced Effects는 phase `0.18s`, finale `0.34s`로 줄이고 motion trail을 생략하되 `BLACK HOLE PHASE`, `FINAL CONTACT`, exact field edge, core/horizon, orbit/explosion은 유지한다.
 - shader가 없는 procedural fallback이 정식 경로다. draw node, 상태 Label, Tween 각 1개를 재사용하며 개별 공/별 Node를 생성하지 않는다.
 - `reset_black_hole_presentation()`은 Tween을 kill하고 Run generation을 증가시켜 Retry 전 callback을 무효화한다. 같은 Run의 duplicate/stale phase/finale ID는 완료 신호로 재사용하지 않는다.
