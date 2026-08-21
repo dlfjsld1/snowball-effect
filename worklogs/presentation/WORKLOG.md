@@ -514,3 +514,11 @@ Owner: Presentation
 - Final Settlement draw node가 metadata 기반 gameplay FX registry 밖에서 관리되어 Retry/Main reset 중 남을 수 있던 lifecycle 누락을 수정했다.
 - `reset_runtime_fx()`와 반복 Settlement 시작이 active draw node의 processing을 중지하고 retire하며, 완료 callback은 현재 active instance와 일치할 때만 한 번 수락한다.
 - S6-G6 verification에 effect 진행 중 reset 뒤 stale draw node 제거와 다음 Run으로 completion이 유출되지 않는 회귀를 추가했다. Settlement 계산·점수·Stage state는 변경하지 않았다.
+
+## 2026-08-21 — Design mockup export·Time CRT handoff 보정
+
+Owner: Presentation / design-only
+
+- `export_filter="all_resources"`에서 문서용 mockup PNG가 Web payload로 import될 수 있어 `docs/design/mockups/.gdignore`로 전체 mockup tree를 runtime import/export 대상에서 제외했다. repository 문서와 Markdown 링크는 유지한다.
+- Time CRT 승인 계약에 Reduced Effects의 정적 황색 outline·상태 문구 fallback과 Time Up 감광 cleanup 경계를 추가했다.
+- 런타임 HUD/Time 구현이나 Core/Integration 판정은 변경하지 않았으며 후속 구현 상태는 계속 `PENDING`이다.

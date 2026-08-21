@@ -98,6 +98,8 @@ ST-02와 ST-03은 `CRT Pulse` 단독 방향을 사용한다.
 - 정상 상태에서는 Time CRT의 숫자와 scanline을 안정적으로 유지한다.
 - 시간 부족 상태에서는 Time CRT 내부의 숫자 점멸, 제한된 phosphor halo, 짧은 scanline jitter만 사용한다.
 - Time Up 확정 시 Time CRT 문구를 `TIME UP`으로 고정하고 화면의 나머지 요소를 약하게 감광해 입력과 simulation이 잠겼음을 표현한다.
+- Reduced Effects에서는 숫자 점멸과 jitter를 끄고 정적인 황색 CRT outline과 `LOW TIME`/`TIME UP` 문구로 같은 상태를 구분한다.
+- Time Up 전역 감광은 terminal lock 동안만 유지하며 Settlement·Clear·Failure handoff, Retry, Main, 새 Run 시작 전에 반드시 해제한다.
 - frame 경고등, 모서리 잠금, rail 전체 발광은 이 방향에 포함하지 않는다.
 - Settlement, Clear, Failure 결과를 예고하거나 함께 표현하지 않는다.
 - 승인 목업은 [`mockups/approved-fx/time-crt-pulse-v1.png`](mockups/approved-fx/time-crt-pulse-v1.png)이며, 실제 HUD 구조가 아닌 Time CRT 상태 변화의 시각 기준으로 사용한다.
