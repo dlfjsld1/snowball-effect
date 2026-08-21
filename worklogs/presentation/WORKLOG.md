@@ -489,3 +489,12 @@ Owner: Presentation/UI
 - Native OpenGL Compatibility / Intel Arc 130V capture: PNG error 0, 120 frames 평균 `60.1 FPS`, 최대 frame `19.56ms`. Capture: `C:/Users/gktjd/AppData/Roaming/Godot/app_userdata/Snowball Effect/s5_g6_stage_clear_panel_capture.png`.
 - 상태는 `IMPLEMENTED`다. Main mount, `stage_clear_ready`, matching request consumer, 별도 `shift_id` 발급, reset wiring과 Desktop/Web 3-Stage 확인은 Integration-owned S5-G6I `PENDING`으로 남겼다. 개별 producer 계약은 Native layout capture까지이며 Main이 mount하지 않아 Browser에서 도달할 수 없으므로 이번 Goal에서 Web export/browser 검증을 요구하거나 주장하지 않는다.
 - Integration-owned 파일과 Integration tests는 변경하지 않았다. Integration lock은 없으며 `project.godot`, Main, StageManager, GameManager는 untouched다. 기존 dirty Time CRT `docs/design/11_FX_CATALOG.md`와 `docs/design/mockups/approved-fx/`도 보존했다.
+
+## 2026-08-21 — Time CRT Pulse 승인 디자인
+
+Owner: Presentation / design-only
+
+- ST-02 시간 부족 경고와 ST-03 Time Up Lock의 승인 방향을 `A · CRT PULSE`로 확정했다. normal → low-time → time-up 상태 변화는 Time CRT 숫자, 제한된 phosphor halo, 짧은 scanline jitter 안에서만 표현한다.
+- cabinet frame, corner lamp, side rail을 전역 경보처럼 점멸하지 않으며 Settlement, Score Clear, 실패를 예고하거나 Core 판정을 대신하지 않는다.
+- 승인 기준 이미지는 `docs/design/mockups/approved-fx/time-crt-pulse-v1.png`, 사용 범위와 비계약 요소는 같은 폴더의 `README.md`, authoritative FX 규칙은 `docs/design/11_FX_CATALOG.md`에 기록했다.
+- 이번 기록은 문서와 디자인 에셋 승인만 다룬다. HUD/Time CRT runtime 구현, Core/Integration 시간 판정, Web/Native runtime evidence는 추가하거나 변경하지 않았으며 후속 구현 전까지 `PENDING`이다.

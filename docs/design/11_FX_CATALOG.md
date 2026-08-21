@@ -91,6 +91,17 @@ S7 Optional Item Layer가 release 범위에 포함될 때만 이 묶음 전체�
 | ST-03 | Time Up Lock | T3 | REQUIRED | `TIME_UP_LOCKED` | 입력·상태 고정이 읽히는 frame cue | Settlement보다 앞서되 결과를 예단하지 않음 |
 | ST-04 | Stage Failure | T3 | REQUIRED | authoritative failed state | control loss와 failure label | Clear/Shift motion과 구분 |
 
+### 승인 방향 — CRT Pulse
+
+ST-02와 ST-03은 `CRT Pulse` 단독 방향을 사용한다.
+
+- 정상 상태에서는 Time CRT의 숫자와 scanline을 안정적으로 유지한다.
+- 시간 부족 상태에서는 Time CRT 내부의 숫자 점멸, 제한된 phosphor halo, 짧은 scanline jitter만 사용한다.
+- Time Up 확정 시 Time CRT 문구를 `TIME UP`으로 고정하고 화면의 나머지 요소를 약하게 감광해 입력과 simulation이 잠겼음을 표현한다.
+- frame 경고등, 모서리 잠금, rail 전체 발광은 이 방향에 포함하지 않는다.
+- Settlement, Clear, Failure 결과를 예고하거나 함께 표현하지 않는다.
+- 승인 목업은 [`mockups/approved-fx/time-crt-pulse-v1.png`](mockups/approved-fx/time-crt-pulse-v1.png)이며, 실제 HUD 구조가 아닌 Time CRT 상태 변화의 시각 기준으로 사용한다.
+
 Score Milestone의 정확한 threshold와 event signature는 아직 미확정이다. 계약이 생기지 않으면 ST-01은 구현하지 않는다.
 
 ## 7. Stage 진행 FX
