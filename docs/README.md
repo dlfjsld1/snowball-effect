@@ -84,6 +84,8 @@ non-final `SCORE_CLEAR`의 잠금과 Final Settlement는 즉시 처리한다. `C
 
 - Godot 4.x와 Web Export를 기준으로 한다.
 - 기본 공은 지속 중력 없이 Spawn velocity로 이동하며 좌·우·상단에서 반사하고 열린 하단을 통과하면 Cashout한다.
+- 일반 Snowball은 Merge 가능한 같은 Stage level이면 Merge한다. Merge하지 않는 서로 다른 level pair와 더 성장할 수 없는 현재 Stage 최고공 pair는 물리적으로 반사·분리한다.
+- 일반 Snowball 본체는 active logical Play Field에서 clip되어 Cashout 중 외부 Stage World/기계 배경 위로 새지 않는다.
 - Spawn/base speed는 초기 기준일 뿐 runtime speed를 고정하지 않으며 Paddle과 명시적 gameplay interaction이 runtime velocity를 변경할 수 있다.
 - 저레벨 공을 개별 `RigidBody2D`, 개별 씬, 개별 `_physics_process`로 만들지 않는다.
 - 중앙 배열 기반 시뮬레이션과 비활성 슬롯 재사용을 유지한다.

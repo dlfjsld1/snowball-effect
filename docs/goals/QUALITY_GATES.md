@@ -32,9 +32,9 @@
 |---|---|
 | Q-S0 | Godot 4에서 Main 씬이 1600×900 기준으로 열림; Web smoke |
 | Q-S1 | 100개 활성 공, gravity 0과 무상호작용 velocity 유지, 좌·우·상단 반사/열린 하단, Mouse logical-X 직접 반영 및 키보드 fallback, 이동+무제한 회전 동시 입력, previous/current transform 기반 continuous 양면 Paddle collision, center+angular contact velocity 후 impact cap, 중심/끝·회전 방향별 반사, penetration/contact lock, Cashout 1회 반영 |
-| Q-S2 | 동일 레벨만 Merge, 입력 둘 제거·출력 하나 생성, 한 쌍 한 번 처리 |
+| Q-S2 | 성장 가능한 동일 레벨만 Merge, 입력 둘 제거·출력 하나 생성, 한 쌍 한 번 처리; 서로 다른 레벨과 더 성장할 수 없는 최고공 pair는 Merge 없이 mass/current velocity 기반 물리 반사·분리하며 통과·붙음·중복 반사 없음 |
 | Q-S3 | Cashout 시간 구조, local Lv4 비종료, 중복 Settlement, score source-of-truth와 gauge 회귀; S3-G9 payload v1의 승인 6 identity Run당 exact-once·Stage preserve·Retry/new Run reset·monotonic event/order 테스트 |
-| Q-S4 | release path에 전수 O(N²) 없음, 실제 Web 동시 활성 500개에서 최저 30 FPS 이상, 1,000개 stretch FPS·allocation·병목 관찰 기록 |
+| Q-S4 | Merge와 non-Merge ball contact의 release path에 전수 O(N²) 없음, 일반 Snowball MultiMesh가 active Play Field 밖으로 새지 않음, 실제 Web 동시 활성 500개에서 최저 30 FPS 이상, 1,000개 stretch FPS·allocation·병목 관찰 기록 |
 | Q-S5 | ordered Stage chain(`6→8→10`)과 5종 세로 progressive HUD, Stage별 reset/preserve, read-only Clear snapshot의 Stage/Stage Score/Run Score 축하 UI와 실제 `NEXT STAGE` Button, matching `clear_id` 확인 뒤 별도 `shift_id` Shift, Galactic/failure/Result 제외, reduced-effects, Galactic alpha 배경, 세 Stage 연속 완주 |
 | Q-S6 | burst에서도 패들·공 가독성, FX budget 작동, 중요한 이벤트 우선; FIRST_CONTACT visible 전 pause 수락, 6종 layer 조립, `(run_epoch,event_id)` matching finish, duplicate/stale/reset, 일반 resume와 Black Hole S8 handoff 분리 |
 | Q-S7 | Stage당 Item Ball 1회, local Lv2+ 공의 유효 5-hit 파괴, 파괴 후 item별 Orb 생성, Paddle 획득 뒤 CUT-IN·1회 activation, 하단 miss 시 미적용·소멸, 아이템 비활성화 시 Core 결과 동일, Fire modifier가 Settlement에 침투하지 않음 |

@@ -327,9 +327,11 @@ cell_index = cell_y * columns + cell_x
 
 각 셀은 공 인덱스 목록을 가진다.
 
-### 레벨 분리
+### Merge와 non-Merge contact 후보
 
-같은 레벨끼리만 합체하므로 다음 중 하나를 사용한다.
+같은 레벨 Merge와 Merge하지 않는 공의 물리 contact를 같은 broad phase에서 찾는다. release path에서 contact만을 위해 모든 공 쌍을 다시 순회하지 않는다.
+
+Merge lookup은 level별 bucket을 유지할 수 있다.
 
 ```text
 grid[cell][level] -> indices
@@ -341,7 +343,7 @@ grid[cell][level] -> indices
 grids_by_level[level][cell] -> indices
 ```
 
-실제 구현은 메모리 할당을 줄이는 형태를 선택한다.
+non-Merge contact lookup은 서로 다른 level bucket과 더 성장할 수 없는 최고공 bucket을 인접 cell에서 조회한다. 같은 level의 성장 가능한 pair는 Merge 후보로만 남긴다. 한 공을 Merge/contact 구조에 중복 등록하더라도 hot path의 대형 allocation을 반복하지 않는다. 최종 후보 pair는 공 index와 contact time에 기반한 안정적인 순서를 사용해 같은 입력에서 같은 결과를 만든다.
 
 ### 셀 크기
 
@@ -354,6 +356,8 @@ grids_by_level[level][cell] -> indices
 ### 중복 쌍 방지
 
 - `b_index > a_index` 조건
+- Merge 가능한 같은 level pair는 Merge를 우선하고 같은 tick의 물리 반사를 별도로 적용하지 않음
+- 서로 다른 level pair와 더 성장할 수 없는 현재 Stage 최고공 pair는 non-Merge physical contact로 처리
 - 각 공은 한 프레임에 한 번만 합체
 - `merge_locks`로 예약
 
@@ -417,11 +421,11 @@ impact_velocity = clamp_length(raw_contact_velocity, maximum_impact_velocity)
 
 Godot 2D의 회전 부호와 화면 좌표계에 맞춰 동일한 cross-product 결과를 사용한다. Paddle 끝은 중심보다 `|r|`가 크므로 같은 angular velocity에서도 더 큰 표면속도를 갖고, 회전 방향이 바뀌면 angular contribution 방향도 바뀐다. Wheel event delta 자체를 impact로 사용하지 않고 physics tick에 실제 적용된 angle displacement로만 계산한다.
 
-impact cap은 linear/angular contribution을 각각 자른 뒤 더하는 방식이 아니라 **합산한 raw contact velocity에 한 번** 적용한다. 이후 순서는 다음과 같다.
+impact cap은 linear/angular contribution을 각각 자른 뒤 더하는 방식이 아니라 **합산한 raw contact velocity에 한 번** 적용한다. contact 접근 여부는 실제 swept transform의 uncapped `raw_contact_velocity`로 판정하고, 공에 전달하는 반사량만 capped `impact_velocity`를 사용한다. 이후 순서는 다음과 같다.
 
-1. capped `impact_velocity`로 ball relative velocity 계산
-2. TOI contact normal을 향해 접근 중인지 판정
-3. relative velocity 반사
+1. uncapped `raw_contact_velocity`로 TOI contact normal을 향해 실제 접근 중인지 판정
+2. capped `impact_velocity`로 반사용 ball relative velocity 계산
+3. capped relative velocity 반사
 4. capped impact velocity와 contact-position shaping을 기존 반사 계약에 따라 반영
 5. 마지막에 ball runtime speed cap 적용
 
@@ -440,6 +444,19 @@ if positions[a].distance_squared_to(positions[b]) <= min_distance * min_distance
 ```
 
 Merge commit은 현재 `StageDefinition.local_ball_levels`에서 입력 `global_level`의 index를 찾고 다음 항목을 결과 level로 사용한다. 기본 Run은 Planetary `[4, 5, 6, 8, 10]`처럼 비연속 사슬을 허용하므로 `global_level + 1`을 결과로 계산하지 않는다. 입력 level이 현재 Stage 목록에 없거나 마지막 항목이면 요청을 거부한다.
+
+### Non-Merge 공 물리 contact
+
+Merge 가능한 같은 level pair는 Merge한다. 서로 다른 global level pair와 현재 Stage 최고공끼리의 same-level pair는 원형 collision으로 처리한다. 따라서 일반 크기 차이가 있는 공도 서로 통과하지 않으며, 최고공은 더 성장하지 않고 물리 contact만 한다.
+
+- broad phase는 Spatial Grid의 인접 cell 후보만 사용하며 최종 구조에 O(N²) 전수 비교를 두지 않는다.
+- narrow phase는 두 공의 tick trajectory와 반지름 합으로 contact/overlap을 판정한다. 작은 공과 최대 runtime speed에서도 tunneling을 방치하지 않도록 swept circle/relative TOI 또는 동등한 연속 판정을 사용한다.
+- 상대속도가 contact normal을 향해 접근 중일 때만 normal 성분을 mass 기반으로 교환·반사한다. tangential 성분은 유지하고 최종 velocity에 기존 `maximum_ball_runtime_speed`를 적용한다.
+- 이미 겹친 pair는 mass를 고려한 최소 penetration correction으로 분리한다. 같은 pair를 한 tick에 중복 반사하지 않고, 분리 중인 pair에는 새 충격을 주지 않는다.
+- Merge 가능한 같은 level pair는 이 반사보다 Merge가 우선하며, Merge 입력으로 예약된 공을 같은 tick의 다른 물리 contact가 다시 소비하거나 위치를 중복 commit하지 않는다.
+- Galactic Lv14가 이동 Black Hole 기믹으로 전환된 뒤에는 일반 Snowball contact 대상에서 빠지고 S8 전용 충돌 계약을 따른다.
+
+정확한 restitution과 correction 비율은 플레이테스트 tuning 값이다. 다만 `0` restitution으로 공을 붙이거나 Spawn/base speed로 runtime velocity를 재설정해서는 안 된다.
 
 ### 속도
 
@@ -505,6 +522,7 @@ func format_score(value: float) -> String
 - Stage 전환에서는 현재 Stage의 ordered level과 텍스처 binding을 교체하고 batch/buffer를 재사용한다.
 - 공 이미지가 완성되기 전에는 중앙이 정렬된 procedural placeholder 또는 임시 투명 Texture2D로 구현·검증할 수 있다. 최종 Texture2D의 source pixel 크기는 gameplay radius의 source of truth가 아니다.
 - 일반 Snowball의 후광·Merge burst·Cashout debris 같은 일시적 효과는 공 본체 batch에 합치지 않고 기존 FX/pool 계층에서 처리한다.
+- 모든 일반 Snowball batch는 현재 활성 logical `play_field_rect`를 공통 clip 경계로 사용한다. 하단 Cashout 판정 전후에 공 본체가 Stage World나 기계 배경 위에 그려지지 않아야 한다. clip 구현은 shader, Canvas clipping 또는 동등한 batch-safe 방식 중 선택할 수 있으나 공별 Node를 만들거나 simulation radius를 시각용으로 축소하지 않는다.
 
 적용 대상은 Item Ball과 Lv14 Black Hole Ball/전환된 Black Hole runtime entity를 제외한 일반 Snowball이다. Item Ball은 균열·파괴 상태를, Black Hole은 고유 ring/왜곡/흡수 표현을 가지므로 전용 렌더러를 유지한다. Galactic에서는 일반 Lv10~13 batch와 Black Hole 전용 렌더러가 함께 존재한다.
 

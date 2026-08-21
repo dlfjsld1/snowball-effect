@@ -41,10 +41,10 @@ These are deliberate product decisions and must not be changed without an explic
 - `A / D`: move paddle horizontally
 - `Left / Right Arrow`: change paddle angle
 - Movement and rotation can be used simultaneously
-- Balls with the same `global_level` merge
+- Same-`global_level` ordinary Snowballs merge when the current Stage chain has a next level. Different levels normally pass through each other. The current Stage's top ordinary Snowball is the exception: it physically collides with every ordinary Snowball, including another top ball, and does not merge further.
 - Falling below the paddle is an intentional cash-out, not a life loss; during active Stage play it grants Score + the current Stage local-level Time Bonus
 - Score values intentionally explode by roughly 100x, 1000x, or other hand-tuned jumps; do not replace them with a conserved `2^level` formula
-- Creating Ground/Planetary's top ball immediately decides that the Stage is cleared; `SCALE SHIFT` occurs only after Final Settlement
+- Creating Ground/Planetary's top ball does not immediately clear the Stage; Score Clear or Time Up decides the outcome, and `SCALE SHIFT` occurs only after the matching clear confirmation
 - The previous stage's top ball becomes the next stage's default falling ball
 - Spawn density increases as scale rises
 - In the final Galactic Stage, the first Lv14 `Black Hole` ball converts into the moving Black Hole gimmick; it reflects at the bottom, never grows or normally merges, and contact with a second Black Hole triggers the terminal finale
@@ -83,7 +83,7 @@ These are core game rules.
   - the current Stage local-level Time Bonus
 - `time_bonus_by_local_level` belongs to StageDefinition; Local Lv0 starts at 0 and time grows much more slowly than score.
 - A player may intentionally miss a high-grade ball to convert it into Score + Time.
-- Creating the current Ground/Planetary Stage's top ball immediately clears that Stage; Galactic's first Lv14 is the Black Hole phase exception.
+- Creating the current Ground/Planetary Stage's top ball does not immediately clear that Stage; it remains an ordinary gameplay ball until Score Clear or Time Up. Galactic's first Lv14 is the Black Hole phase exception.
 - If the Stage timer reaches zero first, perform `FINAL SETTLEMENT`.
 - Final Settlement converts all active gameplay balls into **Score only**.
 - Final Settlement never grants Time Bonus.
@@ -100,6 +100,8 @@ These are core game rules.
 - An Active Cashout that crosses the bottom before the deadline keeps its normal Score + Time Bonus. If that valid bonus leaves positive time, keep the Stage in `PLAYING`; this is a last-moment success, not a post-timeout revival.
 - If no pre-deadline Cashout extends time, enter `TIME_UP_LOCKED` at zero. Do not accept later bottom crossings as Active Cashout; surviving balls use Final Settlement with no Time Bonus.
 - Ground/Planetary Top Ball creation is not a Stage-end condition. Commit only pre-deadline Merge/discovery/Cashout events, then use the Time Up path when no time remains. Galactic Black Hole phase timing is governed by the S8 contract.
+- Different-level ordinary Snowballs normally pass through each other. A same-level pair with a valid next Stage level merges; the current Stage top ball instead uses physical circle contact with every ordinary Snowball, including another top ball, and never merges further.
+- Clip ordinary Snowball bodies to the active logical Play Field so Cashout motion never renders over the Stage World or machine background below the field.
 
 Do not restore the old design where the whole run uses one fixed 180-second timer.
 Do not make surviving balls grant Time Bonus during Final Settlement.
@@ -112,7 +114,7 @@ Core flow and optional items are separate. The core is Merge, Cashout, Time Bonu
 - Do not use deprecated APIs.
 - Do not create thousands of gameplay balls as individual `RigidBody2D` nodes or scene instances.
 - Low-level balls must be managed by a central data-oriented simulation.
-- Do not use all-pairs O(N^2) collision checks for the production merge system.
+- Do not use all-pairs O(N^2) checks for the production Merge or Stage-top contact system.
 - Use a Uniform Grid / Spatial Hash or equivalent neighbor structure for merge candidates.
 - Reuse inactive slots rather than repeatedly instantiating and freeing large numbers of gameplay objects.
 - Keep gameplay state separate from GPU particles and presentation-only effects.

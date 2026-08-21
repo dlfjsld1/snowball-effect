@@ -244,7 +244,10 @@ func resolve_continuous_ball_collision(
 			contact_point = penetration["contact_position"]
 			corrected_position = penetration["corrected_position"]
 		var impact_velocity := _contact_impact_velocity(contact_point - paddle_center)
-		var relative_velocity := ball_velocity - impact_velocity
+		# Contact validity follows the actual swept Paddle transform. The impact cap limits
+		# only the energy transferred after a hit; it must not make a fast Mouse sweep look
+		# stationary and let a ball remain inside the Paddle.
+		var relative_velocity := ball_velocity - _raw_contact_velocity(contact_point - paddle_center)
 		if relative_velocity.dot(normal) >= 0.0:
 			if toi["starts_inside"]:
 				var remaining_time := delta * (1.0 - global_t)
@@ -295,6 +298,12 @@ func is_ball_separated(ball_position: Vector2, ball_radius: float) -> bool:
 	return (local_position - closest).length_squared() > pow(ball_radius + separation_epsilon, 2.0)
 
 
+func is_ball_reapproaching(ball_position: Vector2, ball_velocity: Vector2, contact_normal: Vector2) -> bool:
+	if contact_normal.is_zero_approx():
+		return false
+	return (ball_velocity - _raw_contact_velocity(ball_position - global_position)).dot(contact_normal) < -separation_epsilon
+
+
 func get_contact_impact_velocity(contact_world_position: Vector2) -> Vector2:
 	return _contact_impact_velocity(contact_world_position - global_position)
 
@@ -325,8 +334,12 @@ func _reflect_velocity(
 
 
 func _contact_impact_velocity(contact_offset: Vector2) -> Vector2:
+	return _raw_contact_velocity(contact_offset).limit_length(maximum_impact_velocity)
+
+
+func _raw_contact_velocity(contact_offset: Vector2) -> Vector2:
 	var angular_contact_velocity := angular_velocity * Vector2(-contact_offset.y, contact_offset.x)
-	return (linear_velocity + angular_contact_velocity).limit_length(maximum_impact_velocity)
+	return linear_velocity + angular_contact_velocity
 
 
 func _segment_expanded_obb_toi(start: Vector2, finish: Vector2, half_extents: Vector2) -> Dictionary:

@@ -97,11 +97,13 @@ const FIRST_CONTACT_PAYLOAD_KEYS := [
 ]
 
 var positions := PackedVector2Array()
+var previous_positions := PackedVector2Array()
 var velocities := PackedVector2Array()
 var radii := PackedFloat32Array()
 var global_levels := PackedInt32Array()
 var active_flags := PackedByteArray()
 var paddle_contact_locks := PackedByteArray()
+var paddle_contact_lock_normals := PackedVector2Array()
 var active_indices: Array[int] = []
 var free_indices: Array[int] = []
 var _paddle_collision_provider: Node
@@ -118,6 +120,7 @@ var _last_candidate_count := 0
 var _last_grid_cell_count := 0
 var _last_merge_count := 0
 var _merge_candidate_pairs: Array[Vector2i] = []
+var _non_merge_contact_pairs: Array[Vector2i] = []
 var _merge_plans: Array[Dictionary] = []
 var _consumed_merge_flags := PackedByteArray()
 var _pending_cashout_indices: Array[int] = []
@@ -167,19 +170,23 @@ func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0, glob
 	if free_indices.is_empty():
 		index = positions.size()
 		positions.append(position)
+		previous_positions.append(position)
 		velocities.append(velocity)
 		radii.append(radius)
 		global_levels.append(global_level)
 		active_flags.append(1)
 		paddle_contact_locks.append(0)
+		paddle_contact_lock_normals.append(Vector2.ZERO)
 	else:
 		index = free_indices.pop_back()
 		positions[index] = position
+		previous_positions[index] = position
 		velocities[index] = velocity
 		radii[index] = radius
 		global_levels[index] = global_level
 		active_flags[index] = 1
 		paddle_contact_locks[index] = 0
+		paddle_contact_lock_normals[index] = Vector2.ZERO
 
 	active_indices.append(index)
 	ball_count_changed.emit(active_indices.size())
@@ -192,6 +199,7 @@ func deactivate_ball(index: int) -> bool:
 
 	active_flags[index] = 0
 	paddle_contact_locks[index] = 0
+	paddle_contact_lock_normals[index] = Vector2.ZERO
 	free_indices.append(index)
 
 	var active_position := active_indices.find(index)
@@ -217,6 +225,7 @@ func get_capacity() -> int:
 
 func configure_stage_ball_levels(ordered_global_levels: PackedInt32Array) -> void:
 	_stage_ball_levels = ordered_global_levels.duplicate()
+	_stage_top_global_level = _stage_ball_levels[_stage_ball_levels.size() - 1] if not _stage_ball_levels.is_empty() else -1
 
 
 func apply_stage_definition(definition: StageDefinition) -> void:
@@ -346,6 +355,11 @@ func get_merge_candidate_pairs() -> Array[Vector2i]:
 	return _merge_candidate_pairs.duplicate()
 
 
+func get_non_merge_contact_pairs() -> Array[Vector2i]:
+	_rebuild_non_merge_contact_pairs(0.0)
+	return _non_merge_contact_pairs.duplicate()
+
+
 func _rebuild_merge_candidate_pairs() -> Array[Vector2i]:
 	_spatial_grid.cell_size = spatial_grid_cell_size
 	_spatial_grid.rebuild(positions, radii, global_levels, active_indices)
@@ -353,6 +367,23 @@ func _rebuild_merge_candidate_pairs() -> Array[Vector2i]:
 	_last_candidate_count = _spatial_grid.get_candidate_check_count()
 	_last_grid_cell_count = _spatial_grid.get_cell_count()
 	return _merge_candidate_pairs
+
+
+func _rebuild_non_merge_contact_pairs(delta: float) -> Array[Vector2i]:
+	_spatial_grid.cell_size = spatial_grid_cell_size
+	_spatial_grid.rebuild(positions, radii, global_levels, active_indices)
+	_spatial_grid.fill_non_merge_contact_pairs(
+		previous_positions,
+		positions,
+		radii,
+		global_levels,
+		_stage_top_global_level,
+		maximum_ball_runtime_speed * maxf(delta, 0.0),
+		_non_merge_contact_pairs
+	)
+	_last_candidate_count = _spatial_grid.get_candidate_check_count()
+	_last_grid_cell_count = _spatial_grid.get_cell_count()
+	return _non_merge_contact_pairs
 
 
 func get_spatial_metrics() -> Dictionary:
@@ -418,6 +449,120 @@ func commit_merge_candidates() -> int:
 	return _last_merge_count
 
 
+func _commit_non_merge_contacts(delta: float) -> void:
+	for pair in _rebuild_non_merge_contact_pairs(delta):
+		if not is_ball_active(pair.x) or not is_ball_active(pair.y):
+			continue
+		if global_levels[pair.x] == global_levels[pair.y] and global_levels[pair.x] != _stage_top_global_level:
+			continue
+		_resolve_non_merge_contact(pair.x, pair.y, delta)
+
+
+func _resolve_non_merge_contact(first_index: int, second_index: int, delta: float) -> void:
+	var first_previous := previous_positions[first_index]
+	var second_previous := previous_positions[second_index]
+	var first_position := positions[first_index]
+	var second_position := positions[second_index]
+	var first_motion := first_position - first_previous
+	var second_motion := second_position - second_previous
+	var relative_start := first_previous - second_previous
+	var relative_motion := first_motion - second_motion
+	var combined_radius := radii[first_index] + radii[second_index]
+	var contact_time := _get_circle_contact_time(relative_start, relative_motion, combined_radius)
+	if contact_time < 0.0:
+		return
+
+	var first_contact_position := first_previous + first_motion * contact_time
+	var second_contact_position := second_previous + second_motion * contact_time
+	var normal := (first_contact_position - second_contact_position).normalized()
+	if normal.is_zero_approx():
+		normal = (velocities[first_index] - velocities[second_index]).normalized()
+	if normal.is_zero_approx():
+		normal = Vector2.RIGHT
+
+	var relative_velocity := velocities[first_index] - velocities[second_index]
+	if relative_velocity.dot(normal) >= 0.0:
+		return
+
+	var first_mass := _get_ball_mass(first_index)
+	var second_mass := _get_ball_mass(second_index)
+	var total_mass := first_mass + second_mass
+	if total_mass <= 0.0:
+		return
+	var normal_speed := relative_velocity.dot(normal)
+	velocities[first_index] = (velocities[first_index] - normal * normal_speed * (2.0 * second_mass / total_mass)).limit_length(maximum_ball_runtime_speed)
+	velocities[second_index] = (velocities[second_index] + normal * normal_speed * (2.0 * first_mass / total_mass)).limit_length(maximum_ball_runtime_speed)
+
+	var remaining_time := delta * (1.0 - contact_time)
+	positions[first_index] = first_contact_position + velocities[first_index] * remaining_time
+	positions[second_index] = second_contact_position + velocities[second_index] * remaining_time
+	_apply_ball_bounds(first_index)
+	_apply_ball_bounds(second_index)
+	_separate_non_merge_contact(first_index, second_index, normal, combined_radius)
+
+
+func _get_circle_contact_time(relative_start: Vector2, relative_motion: Vector2, combined_radius: float) -> float:
+	var start_distance_squared := relative_start.length_squared()
+	var combined_radius_squared := combined_radius * combined_radius
+	if start_distance_squared <= combined_radius_squared:
+		return 0.0
+	var motion_length_squared := relative_motion.length_squared()
+	if motion_length_squared <= 0.000001:
+		return -1.0
+	var b := 2.0 * relative_start.dot(relative_motion)
+	var c := start_distance_squared - combined_radius_squared
+	var discriminant := b * b - 4.0 * motion_length_squared * c
+	if discriminant < 0.0:
+		return -1.0
+	var contact_time := (-b - sqrt(discriminant)) / (2.0 * motion_length_squared)
+	return contact_time if contact_time >= 0.0 and contact_time <= 1.0 else -1.0
+
+
+func _get_ball_mass(index: int) -> float:
+	var definition = _ball_catalog.get_definition(global_levels[index])
+	return definition.mass if definition != null else 1.0
+
+
+func _separate_non_merge_contact(first_index: int, second_index: int, normal: Vector2, combined_radius: float) -> void:
+	var distance := positions[first_index].distance_to(positions[second_index])
+	var penetration := combined_radius - distance
+	if penetration <= 0.0:
+		return
+	var separation_normal := normal
+	if distance > 0.0001:
+		separation_normal = (positions[first_index] - positions[second_index]) / distance
+	var first_mass := _get_ball_mass(first_index)
+	var second_mass := _get_ball_mass(second_index)
+	var total_mass := first_mass + second_mass
+	if total_mass <= 0.0:
+		return
+	var correction := separation_normal * (penetration + 0.01)
+	positions[first_index] += correction * (second_mass / total_mass)
+	positions[second_index] -= correction * (first_mass / total_mass)
+	_apply_ball_bounds(first_index)
+	_apply_ball_bounds(second_index)
+
+
+func _apply_ball_bounds(index: int) -> void:
+	var position := positions[index]
+	var velocity := velocities[index]
+	var radius := radii[index]
+	var left_bound := play_field_rect.position.x + radius
+	var right_bound := play_field_rect.end.x - radius
+	var top_bound := play_field_rect.position.y + radius
+	if position.x < left_bound:
+		position.x = left_bound
+		velocity.x = absf(velocity.x) * wall_restitution
+	elif position.x > right_bound:
+		position.x = right_bound
+		velocity.x = -absf(velocity.x) * wall_restitution
+	if position.y < top_bound:
+		position.y = top_bound
+		velocity.y = absf(velocity.y) * wall_restitution
+	positions[index] = position
+	velocities[index] = velocity
+
+
 func _get_next_stage_global_level(global_level: int) -> int:
 	var local_level := _stage_ball_levels.find(global_level)
 	if local_level < 0 or local_level + 1 >= _stage_ball_levels.size():
@@ -473,17 +618,20 @@ func set_paddle_collision_provider(provider: Node) -> void:
 
 func reset_runtime() -> void:
 	positions.clear()
+	previous_positions.clear()
 	velocities.clear()
 	radii.clear()
 	global_levels.clear()
 	active_flags.clear()
 	paddle_contact_locks.clear()
+	paddle_contact_lock_normals.clear()
 	active_indices.clear()
 	free_indices.clear()
 	_last_candidate_count = 0
 	_last_grid_cell_count = 0
 	_last_merge_count = 0
 	_merge_candidate_pairs.clear()
+	_non_merge_contact_pairs.clear()
 	_merge_plans.clear()
 	_consumed_merge_flags.clear()
 	_pending_cashout_indices.clear()
@@ -513,20 +661,27 @@ func step_simulation(delta: float) -> void:
 		return
 
 	for index in active_indices:
+		previous_positions[index] = positions[index]
+
+	for index in active_indices:
 		var velocity := velocities[index]
 		var position := positions[index]
 		var radius := radii[index]
 		velocity = (velocity + get_black_hole_pull(position) * delta).limit_length(maximum_ball_runtime_speed)
 
 		if is_instance_valid(_paddle_collision_provider):
-			if paddle_contact_locks[index] == 1 and _paddle_collision_provider.is_ball_separated(position, radius):
-				paddle_contact_locks[index] = 0
+			if paddle_contact_locks[index] == 1:
+				var lock_normal := paddle_contact_lock_normals[index]
+				if _paddle_collision_provider.is_ball_separated(position, radius) or _paddle_collision_provider.is_ball_reapproaching(position, velocity, lock_normal):
+					paddle_contact_locks[index] = 0
+					paddle_contact_lock_normals[index] = Vector2.ZERO
 			if paddle_contact_locks[index] == 0:
 				var collision: Dictionary = _paddle_collision_provider.resolve_continuous_ball_collision(position, velocity, radius, delta)
 				position = collision["position"]
 				velocity = collision["velocity"]
 				if collision["collided"]:
 					paddle_contact_locks[index] = 1
+					paddle_contact_lock_normals[index] = collision["normal"]
 			else:
 				position += velocity * delta
 		else:
@@ -555,6 +710,7 @@ func step_simulation(delta: float) -> void:
 	else:
 		_rebuild_merge_candidate_pairs()
 		_last_merge_count = 0
+	_commit_non_merge_contacts(delta)
 
 	_pending_cashout_indices.clear()
 	_pending_cashout_positions.clear()
@@ -592,6 +748,10 @@ func get_render_snapshot() -> Dictionary:
 	_render_snapshot["global_levels"] = _render_snapshot_global_levels
 	_render_snapshot["count"] = active_count
 	return _render_snapshot
+
+
+func get_active_play_field_rect() -> Rect2:
+	return play_field_rect
 
 
 func get_active_item_collision_snapshots() -> Array[Dictionary]:

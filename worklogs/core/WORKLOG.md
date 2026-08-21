@@ -707,3 +707,53 @@ Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `tests/simulation/
 ### 제외 / 다음 작업
 
 - `GameManager`의 epoch 발급, lifecycle 호출, FIFO CUT-IN pause/finish, 첫 Black Hole CUT-IN 완료 전 Phase 억제는 Integration `S6-G2I`가 소유한다.
+
+## 2026-08-21 — S1-G2 빠른 Mouse Paddle 재접촉 회귀 수정
+
+Owner: Core
+
+- direct Mouse 위치 이동이 빠른 경우, 이전 패들 접촉의 lock이 유지돼 공의 다음 continuous sweep을 건너뛸 수 있던 경로를 수정했다. lock마다 직전 contact normal을 보존하고, 실제 Paddle transform이 다시 공을 따라잡는 경우에만 lock을 풀어 새 TOI query를 수행한다.
+- relative approach 판정은 uncapped linear + angular contact velocity를 사용한다. `maximum_impact_velocity = 900`은 반사 후 전달할 impact에만 적용하므로, cap과 같은 속도로 이동 중인 공이 Paddle 안에 남지 않는다.
+- `reflection_test`에 capped-speed 공의 Mouse recontact와 Simulation contact-lock 재개방 회귀를 추가했다.
+
+### 확인
+
+- Primary `godot` validate: Paddle, BallSimulationManager, reflection test script/scene 4/4 valid.
+- Primary runtime reflection test exit 0: S1-G2 양면·translation·rotation·large-overlap·Mouse recontact 회귀 통과.
+- Main runtime에서 Start 뒤 빠른 Mouse 좌우 왕복 input을 수행했고 runtime error 0.
+
+## 2026-08-21 — Stage 최고공 물리 contact·Play Field clip 계약 갱신
+
+Owner: Core planning / runtime 미구현
+
+- 이후 사용자 정정으로 이 최고공 전용 해석은 폐기됐다. 모든 서로 다른 level 일반 Snowball도 mass/current velocity 기반 원형 물리 contact로 반사·분리한다.
+- contact broad phase는 기존 중앙 SoA/Spatial Grid를 유지하며 인접 cell의 모든 non-Merge pair를 조회하고, release path에 O(N²) 전수 비교를 허용하지 않는다.
+- 일반 Snowball MultiMesh 본체가 Cashout 중 Stage World/기계 배경 위로 새지 않도록 active logical Play Field clip을 렌더 계약에 추가했다. Cashout FX는 별도 Presentation 레이어로 유지한다.
+- 당시 runtime은 새 contact와 renderer clip 계약을 만족하지 않으므로 S2-G2/G3, S4-G1/G4를 `PENDING`으로 재개방했다. 기존 Web 성능 Evidence를 가진 S4-G3은 `VERIFIED`를 유지한다. 당시 작업은 문서 계약만 변경했으며 코드·Scene·테스트는 수정하지 않았다.
+
+## 2026-08-21 — 최고공 contact·Cashout render clip 구현
+
+Owner: Core
+Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `scripts/simulation/spatial_grid.gd`, `scripts/simulation/ball_renderer.gd`, `scripts/simulation/ball_renderer_circle.gdshader`, `tests/simulation/**`
+
+### 변경
+
+- 이 구현은 이후 사용자 정정으로 non-Merge contact path로 확장됐다. 기존 level-aware Merge Grid는 그대로 두며, 서로 다른 level 및 더 성장할 수 없는 최고공 pair를 swept 인접 cell에서 찾는다.
+- 최고공 contact는 relative swept circle의 earliest contact를 사용해 mass/current velocity 반사와 penetration correction을 적용한다. 최고공/하위공과 최고공/최고공 모두 Merge나 slot 소비 없이 반사·분리한다.
+- 일반 Snowball MultiMesh shader에 active logical Play Field uniform clip을 추가했다. Cashout 중 공 본체는 field 밖 fragment를 그리지 않으며, 별도 Cashout FX는 이 clip 대상이 아니다.
+
+### 확인
+
+- Godot 4.7.1 CLI headless S2-G2/G3/S4-G1/S4-G4 fixture exit 0. sandbox 환경의 `user://logs` signal 11은 동일 명령의 승인된 native 실행에서 재현되지 않아 환경 로그 권한 문제로 분류했다.
+- Primary `godot` validation: simulation, Grid, renderer와 4개 fixture 7/7 valid.
+- Primary runtime script: 최고공/하위공 상대 velocity 반전, 최고공/최고공 반사, active ball 4개 보존을 확인했다. Main은 Title→Ground 진입과 runtime error 0을 확인했다.
+
+### 남은 확인
+
+- clean Web release에서 Cashout 중 field 아래 Stage World/기계 배경 위로 일반 공 본체가 보이지 않는지 실제 browser로 확인해야 S4-G4를 `VERIFIED`로 올릴 수 있다.
+## 2026-08-21 — non-Merge Ball Contact Contract Correction
+
+- User corrected the prior top-ball-only interpretation: normal Snowballs at different levels must physically reflect rather than pass through.
+- Changed the spatial broad phase and contact commit path so cross-level pairs, plus same-level Stage-top pairs that cannot merge, use the existing swept circle contact, mass/current-velocity response, and separation correction.
+- Same-level pairs with a valid next Stage level remain Merge-only; no extra collision is applied to them.
+- S2-G2, S2-G3, and S4-G1 are `IMPLEMENTED` until the revised fixtures and runtime evidence are re-run.

@@ -29,6 +29,7 @@ var _special_radii := PackedFloat32Array()
 var _special_levels := PackedInt32Array()
 var _black_hole_positions := PackedVector2Array()
 var _black_hole_radii := PackedFloat32Array()
+var _clip_rect := Rect2()
 
 
 func _ready() -> void:
@@ -70,6 +71,8 @@ func refresh_render_snapshot() -> void:
 	_prepare_level_buckets(snapshot_count, snapshot_global_levels)
 	_update_standard_batches(snapshot_positions, snapshot_radii)
 	_update_special_fallback(snapshot_positions, snapshot_radii, snapshot_global_levels)
+	_clip_rect = _simulation.get_active_play_field_rect()
+	_update_clip_rect()
 	_update_black_holes()
 	queue_redraw()
 
@@ -81,6 +84,7 @@ func get_render_metrics() -> Dictionary:
 		"black_hole_count": _black_hole_positions.size(),
 		"batch_visible_counts": _level_counts.duplicate(),
 		"batch_capacities": _batch_capacities.duplicate(),
+		"clip_rect": _clip_rect,
 	}
 
 
@@ -126,7 +130,16 @@ func _create_circle_mesh() -> QuadMesh:
 func _create_circle_material() -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = CIRCLE_SHADER
+	material.set_shader_parameter("play_field_rect", Vector4(_clip_rect.position.x, _clip_rect.position.y, _clip_rect.end.x, _clip_rect.end.y))
 	return material
+
+
+func _update_clip_rect() -> void:
+	var shader_rect := Vector4(_clip_rect.position.x, _clip_rect.position.y, _clip_rect.end.x, _clip_rect.end.y)
+	for batch in _batches:
+		var material := batch.material as ShaderMaterial
+		if material != null:
+			material.set_shader_parameter("play_field_rect", shader_rect)
 
 
 func _prepare_level_buckets(snapshot_count: int, snapshot_global_levels: PackedInt32Array) -> void:
