@@ -70,6 +70,8 @@ func _verify_pull_and_bottom_reflection() -> void:
 	simulation.spawn_ball(Vector2(910.0, 300.0), Vector2.ZERO, radius, 13)
 	_expect(simulation.commit_merge_candidates() == 1, "Second Event Horizon pair must create the second Black Hole.")
 	_expect(simulation.get_black_hole_count() == 2, "Two Black Holes must coexist without generic Merge.")
+	var long_range_pull := simulation.get_black_hole_pull(simulation.get_black_hole_position(0) + Vector2(300.0, 0.0))
+	_expect(long_range_pull.length() > 0.0, "The tuned Black Hole pull must visibly influence Balls 300 logical units away.")
 	var combined_pull := simulation.get_black_hole_pull(Vector2(800.0, 300.0))
 	_expect(combined_pull.length() <= SimulationManager.BLACK_HOLE_TOTAL_PULL_CAP + 0.01, "Multi-source ordinary Ball pull must use the configured single cap.")
 	var first_before := simulation.get_black_hole_position(0)

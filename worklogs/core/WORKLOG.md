@@ -757,3 +757,9 @@ Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `scripts/simulatio
 - Changed the spatial broad phase and contact commit path so cross-level pairs, plus same-level Stage-top pairs that cannot merge, use the existing swept circle contact, mass/current-velocity response, and separation correction.
 - Same-level pairs with a valid next Stage level remain Merge-only; no extra collision is applied to them.
 - S2-G2, S2-G3, and S4-G1 are `IMPLEMENTED` until the revised fixtures and runtime evidence are re-run.
+## 2026-08-21 — Black Hole Pull Playtest Tuning
+
+- User feedback: the existing Black Hole pull was only barely noticeable, so nearby balls did not feel meaningfully threatened or drawn toward absorption.
+- Raised ordinary-ball influence radius `300 → 480`, per-source acceleration `450 → 1200`, and multi-source cap `900 → 1500` world units/s².
+- Kept Black Hole mutual pull at `450`, the ball runtime speed cap, actual-contact-only absorption, score penalty, and all terminal rules unchanged.
+- Added a force fixture assertion that a ball 300 logical units from a Black Hole receives non-zero pull. These remain playtest tuning values, not final balance.
