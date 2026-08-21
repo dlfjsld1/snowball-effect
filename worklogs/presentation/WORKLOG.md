@@ -322,3 +322,10 @@ Branch: `fx-design`
 
 - Final Settlement Score Clear 뒤 gameplay를 바꾸지 않는 `StageClearPanel`을 추가했다. panel은 authoritative snapshot의 Stage 이름/점수와 `NEXT STAGE` action만 표시하며 `clear_id` 요청을 한 번 발행한다.
 - 통합 검증에서 panel 표시, focus, matching request 이후 hide를 확인했다.
+
+## 2026-08-21 — S8-G5 final player-path verification
+
+Owner: Presentation
+
+- 사용자 실제 플레이로 첫 Black Hole Snowball 뒤 phase 진입·기믹 생성, L2→L3 Frame/HUD 확장 뒤 Galactic 재개, 두 번째 Black Hole 충돌 뒤 finale→Result 경로를 확인했다.
+- 기존 S8-G5 CLI phase/finale verification과 S5-G4 regression evidence를 합쳐 S8-G5를 `VERIFIED`로 갱신했다.

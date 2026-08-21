@@ -736,3 +736,11 @@ Owner: Integration (사용자 최신 규칙)
 - `StageManager`는 `SCORE_CLEAR`를 `CLEAR_LOCKED→SETTLING→CLEARED→SHIFTING`으로 한 번 연결하고, 사용자 `Next Stage` 확인 없이 기존 presentation `shift_id` handoff를 시작한다.
 - 제거된 확인 대기 API와 `StageClearPanel` mount를 Main/GameManager에서 함께 제거했다. Time Up 중 Settlement가 score cut을 넘는 경우도 같은 자동 Shift 경로를 사용한다.
 - Primary validate 9/9, S3-G5/S5-G3/S5-G5/S5-G6I verification scene exit 0을 확인했다. Main runtime에서 Ground clear score를 직접 반영한 직후 time `45`, state `SHIFTING`, shift id `1`, Clear panel 없음, runtime error 0이었다.
+
+## 2026-08-21 — S8-G4 final player-path verification
+
+Owner: Integration
+
+- 사용자 실제 플레이로 첫 Black Hole phase 진입·기믹 생성, 두 번째 Black Hole 충돌, finale 뒤 Result 표시를 확인했다.
+- L2→L3 뒤 Galactic 재개과 Result `RETRY RUN`의 fresh Ground reset, `MAIN`의 Title 복귀까지 확인해 terminal snapshot handoff와 reset mediation의 최종 경로를 닫았다.
+- 기존 S8-G4/S8-G2 CLI integration regressions 및 Web export evidence와 함께 S8-G4를 `VERIFIED`로 갱신했다.
