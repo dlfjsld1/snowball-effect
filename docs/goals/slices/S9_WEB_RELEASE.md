@@ -13,7 +13,7 @@
 - Owner: Content/Systems
 - Owned Files: `resources/stages/**`, `tests/release/**`, release 측정 문서.
 - Integration Point: Core의 read-only Stage 체류/Cashout/local level metric을 소비; data reload 요청은 Integration 계약 사용.
-- Dependencies: S6, S8 완료; S7은 선택.
+- Dependencies: S6-G1/G3/G4/G5와 S8 완료. S6-G2 CUT-IN은 RC의 gameplay rule·state dependency가 아니며, 사용자 결정으로 현재 RC에서는 제외하고 최종 presentation pass에서 재통합·재검증한다. S7은 선택.
 - Verification: 실제 Stage 체류, Cashout 총/초당 획득 시간, local level별 횟수 기록; 근거가 있을 때만 time cap 별도 제안.
 - Do Not Modify: Stage runtime와 telemetry 계산 내부.
 
@@ -22,7 +22,7 @@
 - Owner: Content/Systems
 - Owned Files: `export_presets.cfg`, `tests/release/**`, 로컬 `build/` 산출물.
 - Integration Point: `project.godot` 또는 Main wiring 변경은 lock된 Integration Goal로 요청.
-- Dependencies: S9-G1과 release candidate 통합 build.
+- Dependencies: S9-G1과 release candidate 통합 build. 현재 RC-1은 S6-G2 CUT-IN과 S7 Optional Items를 의도적으로 제외한다. 두 기능을 나중에 합류시키면 최종 build에서 동일 Web QA를 다시 수행한다.
 - Verification: Chrome/Edge incognito 완주; focus, resize, audio, console, Retry, late-game FPS 기록.
 - Do Not Modify: `project.godot`, Main scene, gameplay/presentation 내부.
 

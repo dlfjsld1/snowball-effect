@@ -1027,6 +1027,15 @@ Owned files: `resources/stages/stage_00_ground.tres`, `tests/content/s3_g1_stage
 - Primary `godot` validation 3/3, S3-G1 catalog verification scene exit 0을 확인했다. Main runtime에서 Ground에 `400,000,000` 점수를 반영하자 settlement 뒤 `stage_score=400,000,001`, 상태 `SHIFTING`, pending shift id 생성까지 확인했다.
 - MCP runtime을 종료한 clean 상태에서 Godot 4.7.1 Web release export를 완료했다. 로컬 HTTP로 `index.html`, `index.pck`, `index.wasm`이 모두 HTTP 200을 반환했다.
 
+## 2026-08-21 — 선택 1번 공압 램 패들 반영
+
+Owner: Content/Systems/Release (S9-G1 release visual tuning)
+
+- 팀 만장일치로 선택된 1번 시안을 `Paddle._draw()`의 정수 픽셀 드로잉으로 구현했다. 어두운 외곽선, 구리 바디/레일, 황동 캡·리벳, 중앙 녹색 CRT 상태창을 추가했다.
+- 시각 요소는 기존 물리 OBB 안에만 그렸다. `paddle_width=240`, `paddle_thickness=16`, 충돌·입력·반사 계산은 변경하지 않았다.
+- Primary `godot` validation에서 Paddle script/scene 및 mouse regression script 3/3 valid, `paddle_mouse_test.tscn` exit 0을 확인했다. Main runtime에서 240×16 값과 새 렌더링, runtime error 0을 확인했다.
+- MCP runtime 종료 뒤 Godot 4.7.1 Web release export를 완료하고, 로컬 HTTP에서 `index.html`, `index.pck`, `index.wasm`의 HTTP 200을 확인했다.
+
 ## 2026-08-21 — S8-G3 Desktop/Web 최종 수동 검증
 
 Owner: Content/Systems/Release
@@ -1057,3 +1066,152 @@ Owned files: `scripts/data/item_definition.gd`, `scripts/gameplay/item_*.gd`, `r
 - 5번째 유효 hit은 행성 파괴와 Orb 생성만 확정한다. Orb는 local Lv2 runtime radius와 수직 하강 velocity를 사용하며, Paddle pickup 또는 열린 하단 miss 중 하나만 signal한다. 효과 activation, CUT-IN, Core score/Settlement 변경은 의도적으로 구현하지 않았다.
 - Item producer signal의 `item_type`은 세 data key(`blizzard`, `fire_core`, `magnet`)를 보존하는 `StringName`으로 확정했고 기술/Integration 계약을 동기화했다. Q-S7의 stale `local Lv3+` 표기는 현재 게임 규칙의 `local Lv2+`로 정정했다.
 - Primary Godot validation 6/6 통과. Primary runtime에서 `S7_G1C_VERIFIED item_ball=once hits=5 orb=collect_or_miss`, exit 0을 확인했다. Godot CLI 실행 파일은 PATH와 표준 설치 경로에서 찾지 못해 CLI baseline은 tooling issue로 기록한다.
+
+## 2026-08-21 — S9-G1 Release tuning·telemetry 시작
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G1
+Owned files: `tests/release/**`, `docs/current/SUBMISSION/07_RELEASE_TELEMETRY.md`, `docs/goals/STATUS.md`
+
+- 실제 Stage 체류, Cashout, local level별 Time Bonus, simulation metric peak를 기록하는 release telemetry schema와 수동 표본 절차를 추가했다. Stage data에는 아직 실제 표본이 없으므로 `base_time`, `clear_score`, `spawn_rate` 또는 time cap을 변경하지 않았다.
+- 자동 검증은 Ground global Lv2→local Lv2/+0.5초, Planetary global Lv8→local Lv3/+1.0초, PLAYING 전용 dwell, metric peak 및 chain 밖 global level 거부를 확인하도록 만들었다.
+- Primary Godot validation에서 telemetry script/scene 및 기존 S3-G1 catalog script가 모두 valid였다. Primary runtime 실행은 test scene이 exit 0으로 bridge 초기화 전에 의도적으로 종료돼 runtime output을 수집하지 못했다. fallback debug launch도 즉시 종료되어 output을 보존하지 못했으므로, runtime sentinel은 미확인 상태로 남긴다.
+- 다음: clean Desktop/Web 자연 플레이 표본 최소 2 Run을 기록하고, 필요할 때만 StageDefinition tuning 변경을 제안한다. S9-G1은 `IN PROGRESS`를 유지한다.
+
+## 2026-08-21 — S9-G1 release-only telemetry runner
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G1
+Owned files: `tests/release/**`, `docs/current/SUBMISSION/07_RELEASE_TELEMETRY.md`, `docs/goals/STATUS.md`
+
+- Result UI와 gameplay state를 바꾸지 않는 `s9_g1_release_telemetry_runner.tscn`을 추가했다. Main의 Stage/Cashout/metric signal만 관찰해 Stage 종료마다 `S9_G1_TELEMETRY_SAMPLE` JSON을 console에 출력한다.
+- Primary Godot validation에서 runner·recorder·verification script와 두 scene이 모두 valid였다.
+- Primary runtime에서 runner readiness log는 확인했으나 Main은 S7 Integration-owned `GameManager`의 `ItemEffectGateway` type 누락 parse error로 script load에 실패했다. runner와 무관한 기존 Main/Integration 오류이므로 Core/Integration 파일은 수정하지 않았다. runtime을 종료했으며 자연 플레이 표본은 S7 Integration 복구 뒤에 수집한다.
+
+## 2026-08-21 — S9-G1 runner 최신 Main 재검증
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G1
+
+- 최신 Main commit `602ce25`의 gateway class-cache 의존성 수정 뒤 Primary Godot validation에서 `GameManager`, Main scene, telemetry runner script/scene, telemetry verification scene이 5/5 valid였다.
+- Primary runtime에서 runner가 Main의 read-only signal을 실제 구독했다. `S9_G1_TELEMETRY_READY` 뒤 Ground Stage 시작, Ground sample JSON 출력, Planetary Stage 진입을 확인했고 runtime error는 없었다.
+- 이 동작 검증에는 debug Score Clear를 사용했으므로 출력된 `10.8793s`/18 Cashout sample은 tuning evidence가 아니다. 자연 플레이 2 Run 이상의 Stage별 표본 수집과 tuning 결론은 계속 남아 있다.
+
+## 2026-08-21 — S9-G1 dwell source 정정
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G1
+
+- 두 자연 플레이 run의 output을 검토해 runner가 renderer `_process(delta)`를 누적한 dwell과 Core physics timer가 불일치함을 발견했다. Ground timer가 45→40초인데 runner dwell은 약 60초인 표본은 tuning 근거로 사용하지 않는다.
+- runner는 이제 renderer delta 대신 `StageManager.get_runtime_snapshot()["run_time_seconds"]`의 Stage 전후 차를 사용한다. 이 값은 Core가 `PLAYING` physics tick에서만 누적하므로 Pause/Shift/Result 및 renderer stall을 제외한다.
+- 수정 뒤 syntax/runtime observer 재검증과 자연 플레이 표본 재수집이 필요하다.
+
+## 2026-08-21 — S9-G1 Stage 종료 timer snapshot 정정
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G1
+
+- 수정 runner의 첫 자연 플레이 output에서 Ground `end_time=40`이 다음 Planetary의 base time과 같음을 발견했다. 원인은 `stage_changed`가 새 Stage를 초기화한 뒤 이전 표본을 flush해 이전 Stage 종료 timer를 읽지 못한 것이다.
+- Clear/Time Up/Failed/Run End lock 시점의 `stage_time_left`를 한 번 고정해 표본 flush에는 그 값을 사용하도록 수정했다. 기존 자연 플레이 표본은 종료 timer가 오염돼 tuning 근거로 사용하지 않는다.
+- 다음: syntax와 debug transition output을 재검증한 후 자연 플레이 표본을 다시 수집한다.
+
+## 2026-08-21 — S9-G1 자연 플레이 telemetry 결론
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G1
+
+- 수정 runner로 Debug Clear 없이 Desktop Primary runtime 자연 플레이 2 Run, Stage 6개 표본을 수집했다. 각 sample의 `start_time + time_bonus_total_seconds - playing_dwell_seconds = end_time`이 Ground/Planetary/Galactic 전체에서 일치했다.
+- Ground는 Time Up→Settlement Clear 1회와 즉시 Score Clear 1회로, Planetary는 즉시 Score Clear 2회로 Scale Shift했다. Ground 종료 잔여 시간은 `19.63s/17.12s`, Planetary는 `34.50s/28.22s`였고 Galactic은 두 Run 모두 Run End까지 도달했다.
+- 최고 active ball `156`, candidate `115`, grid cell `154`을 기록했다. 현 일반 플레이 peak 가정 300 및 Web Gate 500 아래이며, 이번 Desktop data에서 성능 tuning 필요성은 관찰되지 않았다.
+- Time Bonus로 Galactic timer가 약 50초까지 연장됐어도 actual PLAYING dwell은 약 32~35초이고 Black Hole finale로 Run이 닫혔다. time cap, base time, clear score, spawn rate를 변경하지 않는다.
+- S9-G1 산출물과 독립 evidence는 완료됐지만 S6-G2 CUT-IN이 `PENDING`이라 Goal dependency에 따라 `IMPLEMENTED`로 유지한다. S6-G2가 검증되면 이 evidence를 재사용해 S9-G1을 `VERIFIED`로 전환할 수 있다.
+
+## 2026-08-21 — RC-1 scope and S9-G2 start
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G1, S9-G2
+
+- 사용자 결정으로 S6-G2 CUT-IN과 S7 Optional Items를 현재 RC-1 범위에서 제외했다. 둘은 이후 presentation/item pass에서 합류하며, 그 시점에는 clean Web QA를 다시 수행한다.
+- S9-G1의 자연 플레이 telemetry evidence를 `VERIFIED`로 전환하고 S9-G2를 시작했다.
+- Godot 4.7.1 clean temporary Web export가 HTML/JS/WASM/PCK를 생성했다. in-app Browser와 Chrome automation은 Canvas/WebGL fallback만 제공해 실제 gameplay input·resize·audio·FPS·Retry 관찰은 검증하지 못했다. Godot headless Main은 `user://logs` 쓰기 실패 뒤 signal 11로 종료되어 tooling/environment issue로 분리한다.
+
+## 2026-08-21 — S9-G2 RC-1 native runtime smoke
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G2
+
+- 사용자 지시에 따라 RC-1 기준을 HEAD `602ce25`와 당시 작업 트리로 고정했다. 범위는 S6-G2 CUT-IN과 S7 Optional Items를 제외한다.
+- Primary `godot` background runtime에서 Title 화면 screenshot, `START RUN`, A/D 이동·← 기울기 입력, Pause modal, `R` keyboard Retry 뒤 fresh Ground 상태를 실제 화면으로 확인했다. runtime debug output은 error 0건이었고 MCP 종료도 정상 수행했다.
+- modal 내부 Retry button의 MCP click은 tool success에도 화면 상태가 바뀌지 않아 반복하지 않았다. 독립 keyboard Retry는 정상 reset을 확인했다.
+- 이 환경의 Chrome/in-app browser automation은 Canvas/WebGL을 지원하지 않아 S9-G2의 실제 Web focus·resize·audio·late-game FPS·Retry는 아직 검증하지 못했다. native smoke는 Web QA의 대체 증거가 아니다.
+
+## 2026-08-21 — S9-G2 clean RC-1 export and baseline validation
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G2
+
+- Primary MCP runtime을 종료한 뒤 새 temporary output directory에 RC-1 Web export를 수행했다. `index.html`, `index.js`, `index.wasm`, `index.pck`가 모두 생성됐고 MCP bridge port/key 문자열은 exported HTML/JS에서 발견되지 않았다.
+- Godot CLI/headless scene 실행은 user-data directory를 분리해도 전역 `user://logs` 접근 실패 뒤 signal 11로 종료됐다. 이는 이 환경의 Godot logging/tooling 문제로 기록하며 게임 오류로 취급하지 않는다.
+- Primary `godot` validate는 `scenes/main/main.tscn`, S9 telemetry verification, 3-stage integration verification, Paddle script를 4/4 valid로 확인했다.
+
+## 2026-08-21 — S9-G2 user Chrome Web QA
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G2
+
+- 사용자 Chrome의 `http://127.0.0.1:8080/`에서 RC-1 Web build가 실제 Canvas로 렌더링됨을 screenshot으로 확인했다. DOM의 canvas fallback 문구는 접근성 fallback일 뿐 화면 렌더링 실패가 아니었다.
+- Resume 뒤 실제 플레이 화면에서 `A`, `←` 입력에 따른 패들 이동/기울기, Pause modal, modal `RETRY`로 `TIME 44.0`·`STAGE SCORE 0` fresh Ground reset을 확인했다. 각 단계의 browser console error/warn은 0건이었다.
+- viewport를 1024×768으로 변경해 레이아웃이 유지되는 것을 screenshot으로 확인했고, 검증 뒤 기본 viewport로 되돌렸다.
+- Audio 청취와 자연 3-Stage 완주에 따른 late-game FPS는 이 세션에서 아직 계측/관찰하지 않았다. RC-1 Web QA는 이 두 항목을 남긴 채 `IN PROGRESS`를 유지한다.
+
+## 2026-08-21 — S9-G2 Web Audio 청취 확인
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G2
+
+- 사용자 Chrome 재생 환경에서 오디오가 실제로 들림을 사용자 관찰로 확인했다. Web Audio 청취 Gate를 충족했다.
+- 남은 검증은 자연 3-Stage 완주 중 late-game FPS 관찰뿐이다.
+
+## 2026-08-21 — S9-G2 late-game performance 관찰 완료
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G2
+
+- 사용자 실제 late-game 플레이에서 눈에 띄는 버벅임이 없음을 확인했다. Web export, input, resize, audio, Retry, console 및 체감 성능 Gate가 충족되어 S9-G2를 `VERIFIED`로 전환했다.
+- RC-1은 S6-G2 CUT-IN과 S7 Optional Items를 의도적으로 제외한 기준본이다. 두 범위가 합류하면 Web QA를 다시 수행한다.
+- 실제 Web Canvas·입력·resize·audio·late-game FPS·Retry는 현 자동화 browser의 Canvas/WebGL 부재로 계속 `UNVERIFIED`다.
+
+## 2026-08-21 — S9-G3 public-hosting handoff
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G3
+
+- 검증된 `build/web` RC-1 산출물(HTML/JS/WASM/PCK)을 독립 `gh-pages` 배포 브랜치로 push했다. 원격 branch HEAD는 `50ac78888e1541cc344222c14d89d83921ea4d59`이다.
+- GitHub CLI 계정은 `dlfjsld1/snowball-effect`에 push 권한은 있으나 admin 권한이 없었다. GitHub Pages REST 활성화 요청과 브라우저의 Pages Settings 접근이 모두 404로 거부되어, Pages 서비스 자체를 활성화하거나 공개 URL을 확정할 수 없었다.
+- 따라서 S9-G3은 `PENDING`을 유지한다. 저장소 소유자/관리자가 `gh-pages` branch의 root(`/`)를 GitHub Pages source로 활성화하거나, 접근 승인 없는 다른 정적 호스팅 대상을 지정해야 한다. 공개 URL 생성 뒤 새 세션에서 Start·완주·Retry·console을 재검증하고 submission checklist/media/form을 마무리한다.
+
+## 2026-08-21 — S9-G3 itch.io 공개 배포 검증 완료
+
+Owner: Content/Systems/Release 담당
+Goal: S9-G3
+
+- itch.io 공개 URL `https://kosh1668.itch.io/snowball-effect`를 배포 대상으로 확정했다. 공개 페이지의 설명과 커버 이미지가 정상 표시됨을 사용자가 확인했다.
+- 새 시크릿 창에서 URL을 직접 열어 캐시 없는 Canvas load 뒤 Start와 키보드 입력을 확인했다. 이어 실제 한 판을 완주해 Result 화면을 확인하고 Retry까지 수행했다.
+- 기존 S9-G2의 실제 Chrome console error 0, Canvas·입력·audio·resize·Retry·late-game 성능 evidence와 결합해 Public Web Build Gate를 충족했다.
+- Result: S9-G3을 `VERIFIED`로 전환한다.
+
+## 2026-08-21 — S7-G2 Blizzard content runtime
+
+Owner: Content/Systems/Release 담당
+Goal: S7-G2
+Owned files: `scripts/gameplay/item_blizzard.gd`, `tests/content/s7_g2_blizzard_verification.*`, `docs/team/INTEGRATION_CONTRACTS.md`, `docs/goals/STATUS.md`
+
+- `ItemBlizzard`가 `item_blizzard.tres`의 duration `5s`, spawn multiplier `×3`을 source of truth로 사용하도록 구현했다. 재획득은 남은 시간을 full duration으로 갱신하지만 multiplier를 중첩하지 않는다.
+- 만료와 run reset은 `spawn_multiplier_changed(1.0)`을 정확히 한 번 발행한다. 이 Content runtime은 GameManager·StageManager·simulation·score/settlement를 수정하지 않는다.
+- Integration contract에 Content `activate/advance/reset_runtime`와 `spawn_multiplier_changed(multiplier)`를 추가했다. Integration spawn controller가 base Stage spawn rate에 한 번 적용하고 normal `1.0`으로 복구해야 한다.
+
+### 확인
+
+- Primary `godot` validate: `item_blizzard.gd`, S7-G2 verification script/scene 3/3 valid.
+- Primary `godot` verification scene은 process exit 0으로 종료했다. 빠른 종료로 MCP bridge가 attach되기 전 닫혀 stdout sentinel을 수집하지 못했지만, Godot runtime error는 없었다.
+- Godot CLI는 이 환경에서 PATH/standard install location에 없어 baseline 실행을 못 했다. 실제 Main wiring·CUT-IN activation·Web smoke는 Integration consumer가 추가된 뒤 재검증한다.

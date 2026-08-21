@@ -67,11 +67,46 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _draw() -> void:
-	var rect := Rect2(
-		Vector2(-paddle_width * 0.5, -paddle_thickness * 0.5),
-		Vector2(paddle_width, paddle_thickness)
-	)
-	draw_rect(rect, paddle_color, true)
+	# The visual is deliberately contained inside the physics rectangle: 240 x 16 at
+	# the default tuning.  Collision remains the same single OBB used by the simulation.
+	var half_width := paddle_width * 0.5
+	var half_thickness := paddle_thickness * 0.5
+	var body := Rect2(Vector2(-half_width, -half_thickness), Vector2(paddle_width, paddle_thickness))
+	var outline := Color("101726")
+	var copper_dark := Color("5a2f3b")
+	var copper := Color("aa5f52")
+	var copper_highlight := Color("e29a73")
+	var brass_dark := Color("8f643e")
+	var brass := Color("d7a45a")
+	var brass_highlight := Color("ffe09a")
+	var crt_dark := Color("164d43")
+	var crt_green := Color("4cff9b")
+
+	draw_rect(body, outline, true)
+	draw_rect(body.grow(-2.0), copper_dark, true)
+	draw_rect(Rect2(-half_width + 4.0, -half_thickness + 3.0, paddle_width - 8.0, 10.0), copper, true)
+	draw_rect(Rect2(-half_width + 4.0, -half_thickness + 3.0, paddle_width - 8.0, 2.0), copper_highlight, true)
+	draw_rect(Rect2(-half_width + 4.0, half_thickness - 5.0, paddle_width - 8.0, 2.0), Color("713b42"), true)
+
+	# Brass collars and capped ends give the paddle the same machine language as the frame.
+	for side in [-1.0, 1.0]:
+		var cap_x: float = side * (half_width - 15.0)
+		draw_rect(Rect2(cap_x - 7.0, -half_thickness + 2.0, 14.0, paddle_thickness - 4.0), brass_dark, true)
+		draw_rect(Rect2(cap_x - 4.0, -half_thickness + 3.0, 8.0, paddle_thickness - 6.0), brass, true)
+		draw_rect(Rect2(cap_x - 2.0, -half_thickness + 3.0, 4.0, 2.0), brass_highlight, true)
+		draw_rect(Rect2(side * (half_width - 5.0) - 2.0, -2.0, 4.0, 4.0), crt_dark, true)
+		draw_rect(Rect2(side * (half_width - 5.0) - 1.0, -1.0, 2.0, 2.0), crt_green, true)
+
+	# Flush center CRT module from the approved pneumatic-ram concept.
+	draw_rect(Rect2(-25.0, -half_thickness + 1.0, 50.0, paddle_thickness - 2.0), outline, true)
+	draw_rect(Rect2(-22.0, -half_thickness + 3.0, 44.0, paddle_thickness - 6.0), brass_dark, true)
+	draw_rect(Rect2(-18.0, -3.0, 36.0, 6.0), crt_dark, true)
+	draw_rect(Rect2(-15.0, -1.0, 30.0, 2.0), crt_green, true)
+	draw_rect(Rect2(-13.0, -1.0, 8.0, 1.0), Color("d4ffe0"), true)
+
+	for rivet_x in [-88.0, -52.0, 52.0, 88.0]:
+		draw_rect(Rect2(rivet_x - 2.0, -2.0, 4.0, 4.0), brass_dark, true)
+		draw_rect(Rect2(rivet_x - 1.0, -1.0, 2.0, 2.0), brass_highlight, true)
 
 
 func prepare_physics_transform(delta: float) -> void:
