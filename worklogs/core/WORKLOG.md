@@ -793,3 +793,9 @@ Owner: Core
 - 이전 Paddle transform에서 이미 분리된 공은 stale lock을 해제해 새 continuous sweep을 수행한다. 반사 후 최종 transform 기준 separation correction을 한 번 적용하며, 추가 반사는 발생시키지 않는다.
 - reflection fixture에 이전 위쪽 lock이 남은 공을 빠른 수평 Mouse sweep으로 가로지르는 회귀를 추가했다.
 - Primary `godot` validation 4/4 통과, reflection fixture exit 0, Main runtime error 0. 재현 시나리오에서 Paddle velocity 16800에서도 공은 final Paddle 밖으로 분리되고 impact velocity는 900 cap을 유지했다.
+## 2026-08-21 — Black Hole Pull Playtest Tuning
+
+- User feedback: the existing Black Hole pull was only barely noticeable, so nearby balls did not feel meaningfully threatened or drawn toward absorption.
+- Raised ordinary-ball influence radius `300 → 480`, per-source acceleration `450 → 1200`, and multi-source cap `900 → 1500` world units/s².
+- Kept Black Hole mutual pull at `450`, the ball runtime speed cap, actual-contact-only absorption, score penalty, and all terminal rules unchanged.
+- Added a force fixture assertion that a ball 300 logical units from a Black Hole receives non-zero pull. These remain playtest tuning values, not final balance.

@@ -66,9 +66,9 @@ Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성�
 초기 플레이테스트 seed:
 
 ```text
-influence_radius = 300 world units
-maximum_pull_acceleration = 450 world units/s²
-total_pull_cap = 900 world units/s²
+influence_radius = 480 world units
+maximum_pull_acceleration = 1200 world units/s²
+total_pull_cap = 1500 world units/s²
 black_hole_mutual_pull_max = 450 world units/s²
 pull_falloff = (1 - distance / influence_radius)²
 ```

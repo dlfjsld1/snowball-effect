@@ -496,8 +496,8 @@ Frame의 바닥 장식과 Paddle/공의 실제 충돌 영역을 분리한다. �
 인력의 첫 플레이테스트 seed:
 
 ```text
-influence_radius = 300 world units
-maximum_pull_acceleration = 450 world units/s²
+influence_radius = 480 world units
+maximum_pull_acceleration = 1200 world units/s²
 pull_falloff = (1 - distance / influence_radius)²
 ```
 
@@ -506,8 +506,8 @@ pull_falloff = (1 - distance / influence_radius)²
 두 Black Hole이 존재하면 일반 공은 각 Black Hole이 만드는 pull vector를 합산해서 받는다. 따라서 항상 정확히 2배가 되는 것은 아니다. 두 힘이 같은 방향이면 강해지고, 두 Black Hole 사이에서는 일부 상쇄될 수 있다. 합산 결과에는 별도 cap을 한 번 적용한다.
 
 ```text
-ordinary_ball_pull_per_black_hole_max = 450 world units/s²
-ordinary_ball_total_pull_cap = 900 world units/s²
+ordinary_ball_pull_per_black_hole_max = 1200 world units/s²
+ordinary_ball_total_pull_cap = 1500 world units/s²
 black_hole_mutual_pull_max = 450 world units/s²
 ```
 

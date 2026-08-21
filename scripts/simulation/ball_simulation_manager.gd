@@ -23,9 +23,9 @@ signal simulation_metrics_updated(metrics: Dictionary)
 @export var stage_base_ball_radius := 4.0
 @export_range(1.0, 1024.0, 1.0, "or_greater") var spatial_grid_cell_size := 32.0
 
-const BLACK_HOLE_INFLUENCE_RADIUS := 300.0
-const BLACK_HOLE_MAX_PULL_ACCELERATION := 450.0
-const BLACK_HOLE_TOTAL_PULL_CAP := 900.0
+const BLACK_HOLE_INFLUENCE_RADIUS := 480.0
+const BLACK_HOLE_MAX_PULL_ACCELERATION := 1200.0
+const BLACK_HOLE_TOTAL_PULL_CAP := 1500.0
 const BLACK_HOLE_MUTUAL_PULL_ACCELERATION := 450.0
 const BLACK_HOLE_MAX_COUNT := 2
 const BLACK_HOLE_EPSILON_SQUARED := 0.0001

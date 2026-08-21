@@ -770,9 +770,9 @@ StageDefinition
 - background_id
 - global_force_scale (explicit Stage effect only; not default downward gravity)
 - black_hole_enabled
-- black_hole_influence_radius (initial seed: 300 world units)
-- black_hole_max_pull_acceleration (initial seed: 450 world units/s²)
-- black_hole_total_pull_cap (initial seed: 900 world units/s²)
+- black_hole_influence_radius (current playtest seed: 480 world units)
+- black_hole_max_pull_acceleration (current playtest seed: 1200 world units/s²)
+- black_hole_total_pull_cap (current playtest seed: 1500 world units/s²)
 - black_hole_mutual_pull_acceleration (initial seed: 450 world units/s²)
 
 ItemDefinition
