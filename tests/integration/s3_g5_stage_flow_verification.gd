@@ -11,24 +11,35 @@ var _failures := 0
 
 func _ready() -> void:
 	stage_manager.start_run()
-	_verify_cashout_recovers_time()
+	_verify_predeadline_cashout_recovers_time()
+	_verify_postdeadline_cashout_settles_without_time_bonus()
 	_verify_time_up_fails()
 	_verify_top_ball_keeps_playing()
 	_verify_score_clear_shifts_immediately()
 	_verify_retry_resets_runtime()
 	if _failures == 0:
-		print("S3_G7_VERIFIED cashout_recovery=true time_up_failed=true top_non_terminal=true score_clear_shifts=true retry_clean=true")
+		print("S3_G5_VERIFIED predeadline_cashout=true postdeadline_settlement=true time_up_failed=true top_non_terminal=true score_clear_shifts=true retry_clean=true")
 	get_tree().quit(_failures)
 
 
-func _verify_cashout_recovers_time() -> void:
+func _verify_predeadline_cashout_recovers_time() -> void:
 	stage_manager.start_run()
-	stage_manager.get_runtime_snapshot()["stage_time_left"]
 	stage_manager._stage_runtime.stage_time_left = 0.03
-	simulation.spawn_ball(Vector2(300.0, 610.0), Vector2(0.0, 100.0), 16.0, 3)
+	simulation.spawn_ball(Vector2(300.0, 615.0), Vector2(0.0, 100.0), 16.0, 3)
 	stage_manager._physics_process(0.1)
-	_expect(stage_manager.current_state == StageManager.PLAYING, "Same-tick Lv3 Cashout must keep the Stage playing.")
-	_expect(stage_manager.get_runtime_snapshot()["stage_time_left"] > 0.0, "Cashout Time Bonus must recover expired time.")
+	_expect(stage_manager.current_state == StageManager.PLAYING, "A Lv3 Cashout crossing before the deadline must keep the Stage playing.")
+	_expect(stage_manager.get_runtime_snapshot()["stage_time_left"] > 0.0, "A pre-deadline Cashout must grant its Time Bonus.")
+
+
+func _verify_postdeadline_cashout_settles_without_time_bonus() -> void:
+	stage_manager.start_run()
+	stage_manager._stage_runtime.stage_time_left = 0.03
+	var stage_score_before := stage_manager.get_score_ledger().stage_score
+	simulation.spawn_ball(Vector2(300.0, 610.0), Vector2(0.0, 200.0), 16.0, 3)
+	stage_manager._physics_process(0.1)
+	_expect(stage_manager.current_state == StageManager.FAILED, "A ball that reaches Cashout only after the deadline must use Time Up.")
+	_expect(is_equal_approx(stage_manager.get_score_ledger().stage_score, stage_score_before + 1000000.0), "Post-deadline balls must contribute only their base Settlement score.")
+	_expect(is_equal_approx(stage_manager.get_runtime_snapshot()["stage_time_left"], 0.0), "Settlement must not grant a post-deadline Time Bonus.")
 
 
 func _verify_time_up_fails() -> void:

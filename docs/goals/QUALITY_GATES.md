@@ -43,8 +43,8 @@
 
 ## S3 필수 회귀 시나리오
 
-1. `stage_time=0.03`인 tick에서 시간 차감 후 Cashout `+1.0` → `PLAYING` 유지.
-2. 같은 tick에 local Lv4와 `stage_time<=0` → Merge/Cashout commit 뒤 `TIME_UP_LOCKED`; local Lv4만 생성하면 `PLAYING` 유지.
+1. `stage_time=0.03`, `delta=0.1`에서 0.03초 안에 하단을 통과한 Cashout `+1.0` → Score/Time Bonus 반영 후 `PLAYING` 유지. 0.03초 이후에만 통과할 공 → Active Cashout/Time Bonus 없이 `TIME_UP_LOCKED` 후 Settlement.
+2. deadline 전 유효 구간에 local Lv4와 `stage_time<=0`이 함께 발생 → 유효 Merge/discovery/Cashout commit 뒤 남은 시간이 없으면 `TIME_UP_LOCKED`; local Lv4 생성 자체는 종료 사유가 아님.
 3. Settlement 완료 신호 두 번 → 점수 한 번만 증가.
 4. Cashout amount 10 → stage/run 각각 10 증가, Stage 종료 시 run 추가 증가 없음.
 5. Settlement 대상에 cashout-only modifier가 있어도 base `score_value`만 반영.

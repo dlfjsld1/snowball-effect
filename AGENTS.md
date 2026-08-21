@@ -217,10 +217,11 @@ Native 또는 MCP에서만 성공하고 Browser에서 확인하지 못한 Web �
 * 모든 점수 이벤트는 `stage_score`와 `run_score`에 같은 amount를 한 번씩 더한다.
 * Stage 종료 시 `run_score += stage_score`를 하지 않는다.
 * Time Bonus는 `StageDefinition.time_bonus_by_local_level`에서 현재 Stage의 local level로 구한다.
-* 한 physics tick은 시간 차감 → 이동/충돌/Merge → Merge 확정/local Lv3·Lv4 최초 생성 확인 → Active Cashout 반영 → 종료 판정 순서다.
-* 같은 tick의 Cashout 보너스로 `stage_time`이 다시 양수가 되면 Time Up을 취소한다.
-* 같은 tick에 local Lv4와 Time Up 조건이 함께 생겨도 local Lv4는 종료 사유가 아니며 Merge/Cashout commit 뒤 Time Up 경로를 사용한다.
-* Ground/Planetary의 local Lv4 Top Ball 생성은 더 이상 즉시 Clear 조건이 아니다. 일반 플레이는 계속되며 Stage 종료는 Time Up 뒤 Final Settlement와 `clear_score` 판정으로 결정한다.
+* 한 physics tick은 tick 시작 남은 시간 안의 **유효 gameplay 구간**과 정확한 제한시간 이후 구간을 구분한다. 이동/충돌/Merge/Active Cashout은 제한시간 전 유효 구간에서 발생한 이벤트만 commit한다.
+* 제한시간 전에 하단을 통과한 Active Cashout은 점수와 Time Bonus를 정상 적용하며, 보너스로 시간이 양수가 되면 `PLAYING`을 유지한다. 이는 제한시간 후 부활이 아니라 막판 Cashout 성공이다.
+* 제한시간 전에 시간을 연장한 유효 Cashout이 없으면 정확한 0초에 `TIME_UP_LOCKED`로 전환한다. 이후 하단 통과는 Active Cashout으로 인정하지 않고, 남은 공은 Time Bonus 없는 Final Settlement로 처리한다.
+* 유효 gameplay 구간 안에서 local Lv4가 생성되어도 local Lv4 자체는 종료 사유가 아니다. Merge/discovery와 제한시간 전 Cashout을 commit한 뒤 남은 시간이 없으면 Time Up 경로를 사용한다.
+* Ground/Planetary의 local Lv4 Top Ball 생성은 즉시 Clear 조건이 아니다. non-final Stage는 유효 Cashout 반영 후 `stage_score >= clear_score`면 즉시 Score Clear하고, 그전에 Time Up이 잠기면 Final Settlement 후 `clear_score` 성공/실패를 판정한다.
 * 마지막 Galactic의 첫 Lv14 Black Hole은 Run 내 최초 CUT-IN 뒤 이동 Black Hole 기믹으로 전환하고 L3 국면을 활성화하며, 두 번째 Black Hole과 충돌할 때 최종 Run End를 잠근다.
 * 이동 Black Hole은 하단에서 반사하고 성장·일반 Merge하지 않는다. `local_level <= 2` 공 흡수 패널티는 해당 Cashout 가치의 `12.5%`와 첫 Black Hole 등장 시점 Run Score의 `25%` 중 작은 값이며, `run_score`가 0이 되면 즉시 Run End다.
 * Final Settlement는 active ball snapshot의 base `score_value`만 한 번 반영하고 Time Bonus, Cashout 전용 modifier, 추가 Merge를 적용하지 않는다.

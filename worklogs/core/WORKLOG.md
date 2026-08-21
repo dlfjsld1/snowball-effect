@@ -670,3 +670,11 @@ Owner: Core (교차 영역 변경 승인됨)
 - 사용자 최신 규칙에 따라 `StageRuntime.process_tick()`은 non-final `stage_score >= clear_score`를 Cashout 반영 뒤, Time Up보다 먼저 `SCORE_CLEAR`로 확정한다.
 - local Lv4 생성은 계속 종료 사유가 아니다. clear score 미달인 경우에만 Time Up 경로를 사용한다.
 - Primary validate와 S3-G3 verification scene exit 0을 확인했다. 이 환경의 직접 CLI/headless는 `user://logs` 접근 실패 뒤 Godot signal 11로 종료되어 도구 환경 문제로 분리했다.
+
+## 2026-08-21 — S3-G3/G7 deadline-bounded gameplay commit
+
+Owner: Core
+
+- `StageRuntime.get_valid_play_delta()`로 callback 안의 실제 gameplay 구간을 `min(delta, max(stage_time_left, 0))`로 한정했다. StageManager가 그 구간만 Simulation/StageRuntime에 전달하므로 deadline을 지난 이동이나 하단 crossing은 Active Cashout과 Time Bonus가 될 수 없다.
+- `0.03s`가 남은 `0.1s` callback의 pre-deadline Lv3 Cashout은 `+1.0s`로 계속 PLAYING이 되고, local Lv4는 여전히 종료 원인이 아니며 시간이 남지 않았을 때만 Time Up으로 중재된다.
+- Godot 4.7.1 CLI headless S3-G2/G3/G4/G5와 S5-G3/G5/G6 회귀 exit 0, Primary `godot` validate 7/7 및 Main runtime error 0을 확인했다. MCP 종료 후 clean Web release export와 Browser gameplay/console warning·error 0도 확인했다.

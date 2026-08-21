@@ -20,10 +20,12 @@ func _run_verification() -> void:
 
 	stage_runtime.enter_stage(ground)
 	stage_runtime.stage_time_left = 0.03
-	var recovered := stage_runtime.process_tick(0.1, false, [{"score_amount": 10.0, "global_level": 3}])
-	_expect(recovered == &"", "Same-tick Cashout must cancel Time Up when time becomes positive.")
-	_expect(stage_runtime.stage_time_left > 0.0, "Cashout bonus must restore remaining time after the tick decrement.")
-	_expect(_end_reasons.is_empty(), "Recovered time must not request an end decision.")
+	var valid_delta := stage_runtime.get_valid_play_delta(0.1)
+	_expect(is_equal_approx(valid_delta, 0.03), "Tick processing must stop at the exact remaining-time boundary.")
+	var recovered := stage_runtime.process_tick(valid_delta, false, [{"score_amount": 10.0, "global_level": 3}])
+	_expect(recovered == &"", "A pre-deadline Cashout must keep the Stage playing when its Time Bonus is positive.")
+	_expect(stage_runtime.stage_time_left > 0.0, "A pre-deadline Cashout bonus must restore remaining Stage time.")
+	_expect(_end_reasons.is_empty(), "A valid last-moment Cashout must not request an end decision.")
 
 	stage_runtime.enter_stage(ground)
 	stage_runtime.stage_time_left = 5.0
@@ -34,7 +36,7 @@ func _run_verification() -> void:
 
 	stage_runtime.enter_stage(ground)
 	stage_runtime.stage_time_left = 0.03
-	var top_ball := stage_runtime.process_tick(0.1, true, [])
+	var top_ball := stage_runtime.process_tick(stage_runtime.get_valid_play_delta(0.1), true, [])
 	_expect(top_ball == &"TIME_UP", "Same-tick Top Ball must use the Time Up route.")
 	_expect(_end_reasons == [&"SCORE_CLEAR", &"TIME_UP"], "Top Ball must not emit a separate Clear request.")
 	_expect(stage_runtime.process_tick(1.0, false, []) == &"", "End lock must ignore later tick decisions.")
@@ -42,14 +44,14 @@ func _run_verification() -> void:
 
 	stage_runtime.enter_stage(ground)
 	stage_runtime.stage_time_left = 0.03
-	var time_up := stage_runtime.process_tick(0.1, false, [])
+	var time_up := stage_runtime.process_tick(stage_runtime.get_valid_play_delta(0.1), false, [])
 	_expect(time_up == &"TIME_UP", "Expired time without Cashout or Top Ball must request Time Up.")
 	_expect(_end_reasons == [&"SCORE_CLEAR", &"TIME_UP", &"TIME_UP"], "Time Up must emit once after a fresh stage entry.")
 	_expect(stage_runtime.is_current_stage_top_ball(4), "Ground's configured top global level must be recognized.")
 	_expect(not stage_runtime.is_current_stage_top_ball(14), "Catalog final level must not override the current Stage top level.")
 
 	if _failures == 0:
-		print("S3_G7_VERIFIED cashout_recovery=true score_clear_immediate=true top_ball_non_terminal=true same_tick_time_up=true")
+		print("S3_G3_VERIFIED deadline_bounded_tick=true predeadline_cashout_recovery=true score_clear_immediate=true time_up_once=true")
 	get_tree().quit(_failures)
 
 

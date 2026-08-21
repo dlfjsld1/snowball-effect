@@ -296,10 +296,13 @@ non-final Stage의 Clear는 tick의 Merge와 Active Cashout을 반영한 `stage_
 
 최고 공 생성은 Clear 조건이 아니다. non-final Stage는 `stage_score >= clear_score`가 되면 시간과 무관하게 `CLEAR_LOCKED` 후 `FINAL SETTLEMENT`로 이동하고, 정산 직후 자동으로 `SCALE SHIFT`를 시작한다.
 
-Time Up은 physics tick 시작 시각만으로 판정하지 않는다.
-해당 tick의 Merge와 Active Cashout을 먼저 확정해 Time Bonus까지 반영한 뒤 종료 여부를 판단한다.
-따라서 시간이 잠시 0 이하가 되어도 같은 tick의 Cashout으로 양수가 되면 플레이를 계속한다.
-같은 tick에 local Lv4가 생성되어도 이를 이유로 Clear하지 않는다. Merge와 Active Cashout을 모두 반영한 뒤 clear score를 채우면 Score Clear가 Time Up보다 우선한다. clear score 미달이고 남은 시간이 `0` 이하면 Time Up을 확정한다.
+Time Up은 physics callback 단위가 아니라 정확한 Stage 제한시간 경계로 판정한다. tick이 남은 시간을 넘는다면 제한시간 전의 유효 gameplay 구간과 그 이후를 구분한다.
+
+제한시간 전 유효 구간에서 발생한 Merge, discovery, 하단 통과만 commit한다. 해당 구간에서 성공한 Active Cashout은 정상적으로 Score와 Time Bonus를 주며, 보너스 후 시간이 양수면 `PLAYING`을 계속한다. 이는 제한시간 후 Cashout이 시간을 되살리는 것이 아니라 제한시간 직전의 유효한 성공이다.
+
+유효 Cashout으로 시간이 연장되지 않으면 정확한 0초에 `TIME_UP_LOCKED`를 적용한다. 그 뒤의 하단 통과는 Active Cashout으로 인정하지 않고, 남은 공은 Time Bonus 없는 Final Settlement로 보낸다.
+
+유효 구간의 local Lv4 생성은 종료 사유가 아니다. 유효 Merge와 Active Cashout을 반영한 뒤 clear score를 채우면 Score Clear가 Time Up보다 우선하고, clear score 미달이며 남은 시간이 없으면 Time Up을 확정한다.
 
 Final Stage Score:
 

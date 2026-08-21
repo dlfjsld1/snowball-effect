@@ -96,9 +96,10 @@ These are core game rules.
 - The previous Stage's top ball becomes the next Stage's default falling ball.
 - On Stage entry, reset `stage_score` to 0 and `stage_time` to that Stage's `base_time`; preserve `run_score`, statistics, and records.
 - Every score event adds the same amount once to `stage_score` and `run_score`. Never add `stage_score` to `run_score` again at Stage end.
-- Evaluate Time Up only after the current physics tick's merges and Active Cashouts have been committed.
-- A same-tick Cashout may restore positive time and keep the Stage in PLAYING.
-- Ground/Planetary Top Ball creation is not a Stage-end condition. If local Lv4 creation and Time Up occur in the same tick, commit Merge/Cashout and use the Time Up path. Galactic Black Hole phase timing is governed by the S8 contract.
+- Split a physics tick at the exact deadline. Only movement, collisions, merges, and bottom crossings inside the remaining pre-deadline gameplay interval may commit as gameplay events.
+- An Active Cashout that crosses the bottom before the deadline keeps its normal Score + Time Bonus. If that valid bonus leaves positive time, keep the Stage in `PLAYING`; this is a last-moment success, not a post-timeout revival.
+- If no pre-deadline Cashout extends time, enter `TIME_UP_LOCKED` at zero. Do not accept later bottom crossings as Active Cashout; surviving balls use Final Settlement with no Time Bonus.
+- Ground/Planetary Top Ball creation is not a Stage-end condition. Commit only pre-deadline Merge/discovery/Cashout events, then use the Time Up path when no time remains. Galactic Black Hole phase timing is governed by the S8 contract.
 
 Do not restore the old design where the whole run uses one fixed 180-second timer.
 Do not make surviving balls grant Time Bonus during Final Settlement.

@@ -78,13 +78,12 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_pending_cashouts.clear()
-	_stage_runtime.advance_run_time(delta)
-	_stage_runtime.stage_time_left -= delta
-	_stage_runtime.stage_time_changed.emit(_stage_runtime.stage_time_left)
-	_simulation.step_simulation(delta)
+	var valid_play_delta := _stage_runtime.get_valid_play_delta(delta)
+	_stage_runtime.advance_run_time(valid_play_delta)
+	_simulation.step_simulation(valid_play_delta)
 	if current_state != PLAYING:
 		return
-	_stage_runtime.process_tick(0.0, false, _pending_cashouts)
+	_stage_runtime.process_tick(valid_play_delta, false, _pending_cashouts)
 
 
 func start_run() -> void:

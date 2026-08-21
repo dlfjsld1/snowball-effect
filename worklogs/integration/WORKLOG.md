@@ -758,3 +758,11 @@ Owner: Integration
 
 - `GameManager`가 ItemManager와 ItemEffectGateway를 global `class_name`으로 annotation/cast하던 의존을 제거하고 두 mounted node를 `Node`로 참조하게 했다.
 - 이는 다른 workspace/MCP가 새 global script class cache를 만들기 전에 `game_manager.gd`를 단독 파싱해 실패하던 load-order 결함을 막는다. Gateway/Manager의 class declaration, signal API, scene mount와 gameplay contract는 변경하지 않았다.
+
+## 2026-08-21 — S3-G5 deadline-bounded StageManager integration
+
+Owner: Integration
+
+- StageManager가 full callback `delta`가 아니라 deadline 전 유효 구간만 Simulation에 step하고, 그 구간에서 발생한 Cashout만 StageRuntime으로 중재하도록 연결했다.
+- 통합 verification은 deadline 전 Lv3 Cashout이 시간을 연장하는 경우와, deadline 뒤 하단 crossing은 Time Bonus 없이 Final Settlement base score만 반영하고 Fail lock으로 가는 경우를 분리해 확인했다.
+- Godot 4.7.1 CLI headless S3-G2/G3/G4/G5와 S5-G3/G5/G6 회귀 exit 0, Primary validate 7/7, Main runtime error 0, clean Web Browser gameplay/console warning·error 0을 확인했다.

@@ -49,15 +49,15 @@ PLAYING
 
 마지막 Galactic은 예외다. 첫 Lv14 Black Hole은 `CLEARED`가 아니라 이동 Black Hole 최종 국면을 활성화하고, 두 번째 Black Hole과 충돌해야 타이틀 연출 뒤 Run이 끝난다. Time Up 종료는 기존 Final Settlement 경로를 유지한다.
 
-### 한 physics tick의 판정 순서
+### 한 physics tick의 시간 경계
 
-1. `stage_time -= delta`
-2. 이동 / 충돌 / Merge 처리
-3. Merge 확정 및 새 local 공 발견 확인
-4. 같은 tick의 Active Cashout 점수와 Time Bonus 반영
-5. `stage_time <= 0`이면 종료 판정
+1. tick 시작 남은 시간으로 제한시간 전 유효 gameplay 구간을 구한다.
+2. 유효 구간 안의 이동 / 충돌 / Merge / 하단 통과만 commit한다.
+3. 제한시간 전 Active Cashout에 점수와 Time Bonus를 반영한다.
+4. 보너스 후 시간이 양수면 `PLAYING`을 유지한다.
+5. 유효 Cashout으로 시간이 연장되지 않으면 0초에 `TIME_UP_LOCKED`를 적용한다.
 
-시간이 0 이하가 된 tick에서도 Cashout 보너스로 시간이 양수가 되면 플레이를 계속한다. Ground/Planetary의 local Lv4가 생성돼도 Stage를 즉시 끝내지 않는다.
+제한시간 이후의 하단 통과는 Active Cashout이 아니다. 남은 공은 Final Settlement에서 base score만 주고 Time Bonus를 주지 않는다. Ground/Planetary의 local Lv4가 생성돼도 Stage를 즉시 끝내지 않는다.
 
 ### 점수와 Settlement
 
