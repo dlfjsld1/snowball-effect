@@ -100,20 +100,26 @@ func apply_active_cashout(score_amount: float, global_level: int) -> float:
 	return time_bonus
 
 
+func get_valid_play_delta(delta: float) -> float:
+	assert(delta >= 0.0, "Physics delta must not be negative.")
+	return minf(delta, maxf(stage_time_left, 0.0))
+
+
 func process_tick(delta: float, _top_ball_created: bool, cashouts: Array[Dictionary]) -> StringName:
 	assert(current_stage != null, "Tick processing requires an entered Stage.")
+	assert(delta >= 0.0, "Tick delta must not be negative.")
 	if _end_decision_locked:
 		return &""
 
-	stage_time_left -= delta
+	stage_time_left = maxf(stage_time_left - delta, 0.0)
 	stage_time_changed.emit(stage_time_left)
 
 	for cashout in cashouts:
 		apply_active_cashout(cashout["score_amount"], cashout["global_level"])
 
-	# Non-final stages clear as soon as their score target is reached.  This is
-	# deliberately evaluated after same-tick Cashouts and before Time Up, so a
-	# target-reaching Cashout wins even when the timer has just expired.
+	# StageManager only supplies cashouts committed inside the deadline-bounded
+	# simulation interval. A target-reaching valid Cashout therefore wins before
+	# Time Up without allowing post-deadline recovery.
 	if current_stage.clear_score > 0.0 and score_ledger.stage_score >= current_stage.clear_score:
 		return _request_end_decision(&"SCORE_CLEAR")
 	if stage_time_left <= 0.0:

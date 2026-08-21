@@ -32,7 +32,7 @@ Stage Timer, Time Bonus, Top Ball, Time Up, Final Settlement가 확정 계약대
 - Owned Files: `scripts/core/stage_runtime.gd`, `scripts/simulation/ball_simulation_manager.gd`, `tests/core/**`
 - Integration Point: `end_decision_requested(reason)`을 StageManager에 제공.
 - Dependencies: S3-G2와 S2-G3 Merge commit.
-- Verification: 시간 차감→물리/Merge→Cashout→종료 판정. non-final `stage_score >= clear_score`는 Time Up보다 먼저 `SCORE_CLEAR`를 한 번 요청한다. local Lv4 생성은 종료 사유가 아니다.
+- Verification: tick의 deadline 전 `valid_play_delta`만 물리/Merge/Cashout을 commit하고 이후 구간의 하단 통과는 Active Cashout으로 인정하지 않음; deadline 전 Cashout Time Bonus는 `PLAYING`을 연장할 수 있음; non-final `stage_score >= clear_score`는 Time Up보다 먼저 `SCORE_CLEAR`를 한 번 요청; local Lv4 생성은 종료 사유가 아님.
 - Do Not Modify: StageManager state transition과 Presentation.
 
 ### S3-G4 Snapshot Settlement
@@ -50,7 +50,7 @@ Stage Timer, Time Bonus, Top Ball, Time Up, Final Settlement가 확정 계약대
 - Owned Files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`
 - Integration Point: Core의 end decision/settlement API와 Presentation의 clear/settlement 완료 signal을 순서대로 연결.
 - Dependencies: S3-G2~G4 API와 문서화된 Integration signal 계약.
-- Verification: Score Clear `CLEAR_LOCKED→SETTLING→CLEARED`까지 즉시 한 번 처리하고 matching `NEXT STAGE(clear_id)` 전에는 Shift하지 않음; 요청 수락 뒤에만 `SHIFTING`; clear score 미달 Time Up은 `TIME_UP_LOCKED→SETTLING→FAILED`; wrong/stale/duplicate 요청과 완료 신호 중복에도 전이 한 번.
+- Verification: StageManager가 deadline 이후 gameplay를 step하지 않고 deadline 전 Cashout만 Core에 전달; Score Clear `CLEAR_LOCKED→SETTLING→CLEARED`까지 즉시 한 번 처리하고 matching `NEXT STAGE(clear_id)` 전에는 Shift하지 않으며 요청 수락 뒤에만 `SHIFTING`; clear score 미달 Time Up은 `TIME_UP_LOCKED→SETTLING→FAILED`; timeout 시 남은 공은 Time Bonus 없는 Settlement; wrong/stale/duplicate 요청과 완료 신호 중복에도 전이 한 번.
 - Do Not Modify: Core 계산 내부와 Presentation animation 내부.
 
 ### S3-G6 Stage HUD
@@ -68,7 +68,7 @@ Stage Timer, Time Bonus, Top Ball, Time Up, Final Settlement가 확정 계약대
 - Owned Files: `scripts/core/stage_runtime.gd`, `scripts/simulation/ball_simulation_manager.gd`, `tests/core/**`
 - Integration Point: 기존 `ball_merged(result_level, world_position)`, `top_ball_created(global_level)`, `end_decision_requested(reason)` 경계를 유지한다. 전용 FIRST_CONTACT producer는 이 Goal의 완료 범위가 아니며 S3-G9가 소유한다.
 - Dependencies: S3-G3, S5-G2, S8-G1.
-- Verification: Ground Moon과 Planetary Galaxy 생성은 Stage Clear/Settlement를 요청하지 않고 PLAYING을 유지하며 Active Cashout 가능; 같은 tick local Lv4+Time Up은 Merge/Cashout commit 뒤 Time Up 한 번; 첫 Galactic Black Hole은 Stage Clear가 아니라 기존 Black Hole entity/phase readiness 경로로만 이어짐.
+- Verification: Ground Moon과 Planetary Galaxy 생성은 Stage Clear/Settlement를 요청하지 않고 PLAYING을 유지하며 Active Cashout 가능; deadline 전 local Lv4+Time Up은 유효 Merge와 기존 discovery/Cashout commit 뒤 남은 시간이 없을 때 Time Up 한 번; 첫 Galactic Black Hole은 Stage Clear가 아니라 기존 Black Hole entity/phase readiness 경로로만 이어짐. 전용 FIRST_CONTACT producer Evidence는 S3-G9 범위다.
 - Do Not Modify: StageManager, HUD/CUT-IN, StageDefinition 값.
 
 #### S3-G7 증거 범위 — 역사 보존
@@ -108,4 +108,4 @@ payload v1의 필드·순서·reset 계약은 [`../../team/INTEGRATION_CONTRACTS
 
 ## Exit Gate
 
-[`../QUALITY_GATES.md`](../QUALITY_GATES.md)의 S3 필수 회귀 5개, Integration Gate, Desktop/Web smoke 통과.
+[`../QUALITY_GATES.md`](../QUALITY_GATES.md)의 S3 필수 회귀 시나리오 전체, Integration Gate, Desktop/Web smoke 통과.

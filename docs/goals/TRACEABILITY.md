@@ -6,7 +6,7 @@
 | 같은 global level만 Merge | S2-G2/G3 | 동일/상이 레벨 충돌 |
 | 점수 데이터 폭증·formatter | S2-G1/G4 | 고레벨 값 표시 |
 | Stage local Time Bonus | S3-G1/G2 | 같은 global ball의 Stage별 보너스 |
-| Cashout이 같은 tick Time Up 구조 | S3-G3 | Q-S3 시나리오 1 |
+| deadline 전 Cashout 연장·이후 Settlement 경계 | S3-G3/G5 | Q-S3 시나리오 1 |
 | local Lv4 비종료·Time Up 중재 | S3-G7 | Q-S3 시나리오 2 |
 | Settlement snapshot/idempotence | S3-G4 | Q-S3 시나리오 3/5 |
 | stage/run score source-of-truth | S3-G2/G4 | Q-S3 시나리오 4 |

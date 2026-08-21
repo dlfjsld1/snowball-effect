@@ -140,7 +140,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - Final Settlement = Score Only
 - Settlement snapshot / 중복 잠금
 - `stage_score` / `run_score` 점수 source of truth
-- 동일 tick Cashout 회복과 local Lv4 비종료 중재
+- deadline 전 Cashout 연장과 local Lv4 비종료 중재
 - Score Clear / Fail
 - 마지막 Stage 예외 흐름
 
@@ -148,6 +148,7 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 
 - 고등급 공을 Cashout하면 Score와 시간이 함께 증가
 - Final Settlement에서는 시간이 증가하지 않음
+- deadline 이후 하단 통과가 Active Cashout/Time Bonus로 처리되지 않음
 - Final Settlement에서는 Active Cashout 전용 modifier가 적용되지 않음
 - Settlement 재호출 시 점수가 중복되지 않음
 - Ground/Planetary 최고 공 제작 뒤 PLAYING 유지와 FIRST CONTACT discovery

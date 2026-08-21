@@ -679,3 +679,11 @@ Owner: Core planning / Goal status `PENDING`
 - S3-G9는 승인된 여섯 `first_contact_id`, payload schema v1, process-lifetime monotonic `event_id`, Integration-issued `run_epoch`, Run seen set과 deterministic order만 소유한다.
 - 기존 `ball_merged`/`top_ball_created`는 FIRST_CONTACT source가 아니며, 첫 Black Hole payload는 entity ordinal과 S8 handoff 의도만 전달한다.
 - 이번 기록은 계약/Goal 준비이며 runtime 구현·테스트·Godot 검증 Evidence가 없다. 상태를 `PENDING`으로 유지한다.
+
+## 2026-08-21 — S3-G3/G7 deadline-bounded gameplay commit
+
+Owner: Core
+
+- `StageRuntime.get_valid_play_delta()`로 callback 안의 실제 gameplay 구간을 `min(delta, max(stage_time_left, 0))`로 한정했다. StageManager가 그 구간만 Simulation/StageRuntime에 전달하므로 deadline을 지난 이동이나 하단 crossing은 Active Cashout과 Time Bonus가 될 수 없다.
+- `0.03s`가 남은 `0.1s` callback의 pre-deadline Lv3 Cashout은 `+1.0s`로 계속 PLAYING이 되고, local Lv4는 여전히 종료 원인이 아니며 시간이 남지 않았을 때만 Time Up으로 중재된다.
+- Godot 4.7.1 CLI headless S3-G2/G3/G4/G5와 S5-G3/G5/G6 회귀 exit 0, Primary `godot` validate 7/7 및 Main runtime error 0을 확인했다. MCP 종료 후 clean Web release export와 Browser gameplay/console warning·error 0도 확인했다.

@@ -777,3 +777,11 @@ Owner: Integration planning / Goal status `PENDING`
 - normal matching finish는 같은 `PLAYING`을 재개하고, 첫 Black Hole matching finish는 gameplay를 중간 재개하지 않은 채 기존 S8-G4 `begin_black_hole_phase → phase_id` downstream으로 넘긴다.
 - Retry/Main/fresh Run은 old epoch·queue·pause lock·Panel callback을 함께 무효화한다. wrong/stale/duplicate finish와 Result/Failure/Shift state는 수락하지 않는다.
 - 기존 S8-G4의 phase 이후/finale/Retry Evidence는 보존하지만 CUT-IN 이전 gate 증거로 소급하지 않는다. 이번 기록은 계약 준비이며 Integration lock, runtime 변경, 자동/수동 검증 Evidence가 없다.
+
+## 2026-08-21 — S3-G5 deadline-bounded StageManager integration
+
+Owner: Integration
+
+- StageManager가 full callback `delta`가 아니라 deadline 전 유효 구간만 Simulation에 step하고, 그 구간에서 발생한 Cashout만 StageRuntime으로 중재하도록 연결했다.
+- 통합 verification은 deadline 전 Lv3 Cashout이 시간을 연장하는 경우와, deadline 뒤 하단 crossing은 Time Bonus 없이 Final Settlement base score만 반영하고 Fail lock으로 가는 경우를 분리해 확인했다.
+- Godot 4.7.1 CLI headless S3-G2/G3/G4/G5와 S5-G3/G5/G6 회귀 exit 0, Primary validate 7/7, Main runtime error 0, clean Web Browser gameplay/console warning·error 0을 확인했다.

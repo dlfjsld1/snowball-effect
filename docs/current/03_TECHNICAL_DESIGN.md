@@ -931,21 +931,23 @@ local level별 Cashout 수를 측정하고 인플레가 확인될 때만 상한�
 
 ### Physics tick ordering
 
-Stage 종료 판정은 다음 순서를 따른다.
+Stage 종료 판정은 physics callback 전체를 제한시간 전으로 간주하지 않고, 정확한 deadline 전의 유효 gameplay 구간만 처리한다.
 
 ```text
-1. stage_time_left -= delta
-2. 이동 / 충돌 / Merge 처리
-3. Merge 확정 및 local Lv3/Lv4 최초 생성 여부 기록
-4. Active Cashout 점수와 Time Bonus 반영
-5. 종료 판정
+1. time_before = max(stage_time_left, 0)
+2. valid_play_delta = min(delta, time_before)
+3. valid_play_delta 안의 이동 / 충돌 / Merge / 하단 경계 통과 처리
+4. 유효 Merge/discovery와 Active Cashout commit
+5. stage_time_left = time_before - valid_play_delta + valid_cashout_time_bonus
+6. 종료 판정
    - non-final이고 stage_score >= clear_score → SCORE_CLEAR
-   - stage_time_left <= 0 → TIME_UP
+   - 유효 Cashout 반영 후 stage_time_left <= 0 → TIME_UP
    - 그 외 → PLAYING 유지
 ```
 
-같은 tick의 Cashout으로 시간이 다시 양수가 되면 Time Up을 취소한다. clear score를 채운 Cashout은 시간이 0 이하인 경우에도 SCORE_CLEAR를 먼저 요청한다.
-local Lv4 생성은 종료 사유가 아니다. 같은 tick에 local Lv4와 Time Up이 함께 발생하면 Merge/Cashout commit과 최초 발견 기록을 마친 뒤 Time Up 경로를 사용한다.
+`valid_play_delta` 밖의 이동을 먼저 계산한 뒤 결과만 deadline 전 이벤트로 간주하지 않는다. BallSimulation은 해당 구간까지만 step하거나 동등한 contact/crossing time 판정으로 deadline 이후 이벤트를 배제해야 한다. Cashout Time Bonus가 deadline 전에 commit되어 시간을 연장하면 남은 callback 구간을 이어서 처리하거나 다음 physics callback으로 넘길 수 있지만, 연장 확정 전에 기존 deadline 밖을 먼저 시뮬레이션하면 안 된다.
+
+제한시간 전 Active Cashout으로 시간이 다시 양수가 되면 `PLAYING`을 유지한다. clear score를 채운 유효 Cashout은 SCORE_CLEAR를 먼저 요청한다. local Lv4 생성은 종료 사유가 아니며, 유효 gameplay 구간의 Merge/discovery/Cashout commit 후에도 시간이 없을 때만 Time Up 경로를 사용한다.
 
 ### Local Lv3/Lv4 FIRST_CONTACT discovery
 
@@ -955,7 +957,7 @@ Integration은 같은 tick의 Active Cashout과 종료 판정이 끝난 뒤 curr
 
 ### Time Up
 
-non-final Stage는 tick의 Cashout 반영 뒤 `stage_score >= clear_score`이면:
+non-final Stage는 deadline 전 유효 Cashout 반영 뒤 `stage_score >= clear_score`이면:
 
 1. `CLEAR_LOCKED`
 2. Final Settlement
@@ -965,7 +967,7 @@ non-final Stage는 tick의 Cashout 반영 뒤 `stage_score >= clear_score`이면
 
 Clear 판정과 Final Settlement는 사용자 확인 UI를 기다리지 않는다. 확인 전까지 지연되는 것은 Scale Shift 시작뿐이다.
 
-clear score 미달이고 tick의 Cashout 반영 후에도 시간이 0 이하이면:
+clear score 미달이고 deadline 전 유효 Cashout 반영 후에도 시간이 0 이하이면:
 
 1. 새 공 Spawn 정지
 2. 플레이 입력/물리 진행 정지 또는 짧게 감속

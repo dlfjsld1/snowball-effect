@@ -154,8 +154,8 @@ Settlement score가 이미 run score에 반영되는 authoritative event를 표�
 | Time Up + score miss | non-final | `FAILED` | Failure → Run Result |
 | Time Up | final | final result snapshot | Final Result; no next Stage |
 
-- 같은 tick의 Active Cashout으로 시간이 다시 양수가 되면 Time Up UI를 띄우지 않는다.
-- 같은 tick에 local Lv4와 Time Up이 함께 생기면 최초 발견은 기록하되 종료 경로는 Time Up 결과를 사용한다.
+- deadline 전에 성공한 Active Cashout으로 시간이 양수가 되면 Time Up UI를 띄우지 않는다. deadline 이후 하단 통과는 Time Bonus를 주지 않는 Settlement 대상이다.
+- deadline 전 유효 gameplay 구간에 local Lv4와 Time Up이 함께 생기면 최초 발견은 기록하되, 유효 Cashout 반영 후에도 시간이 없을 때만 Time Up UI를 사용한다.
 - 결과가 잠기기 전에 failure overlay를 선행 표시하지 않는다.
 - 하나의 terminal correlation ID에는 presentation 한 종류만 시작한다.
 
