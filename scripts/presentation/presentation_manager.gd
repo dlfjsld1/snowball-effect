@@ -13,7 +13,7 @@ signal black_hole_finale_presentation_finished
 
 @onready var shift_flash: ColorRect = %ShiftFlash
 @onready var shift_label: Label = %ShiftLabel
-@onready var black_hole_overlay: BlackHolePresentationOverlay = %BlackHoleOverlay
+@onready var black_hole_overlay: BlackHolePhaseEffect = %BlackHoleOverlay
 
 var _frame: GameplayFrame
 var _background_manager: BackgroundManager
@@ -37,13 +37,14 @@ var _black_hole_finale_active := false
 var _black_hole_finale_generation := -1
 var _black_hole_finale_completed_generation := -1
 var _black_hole_finale_snapshot: Dictionary = {}
+var _black_hole_finale_tween: Tween
 var _black_hole_run_generation := 0
 
 
 func _ready() -> void:
 	_frame = get_parent() as GameplayFrame
-	black_hole_overlay.finale_visual_finished.connect(_on_black_hole_finale_visual_finished)
 	_reset_overlay()
+	call_deferred("_bind_main_black_hole_source")
 
 
 func configure(background_manager: BackgroundManager, hud: Hud, pause_menu: PauseMenu) -> void:
@@ -56,6 +57,15 @@ func configure_black_hole_sources(_event_source: Node, simulation_source: Node) 
 	# Compatibility-only read source for Presentation fixtures. Main uses the
 	# authoritative GameManager calls and does not route gameplay through here.
 	_black_hole_simulation_source = simulation_source
+	black_hole_overlay.set_simulation_source(simulation_source)
+
+
+func _bind_main_black_hole_source() -> void:
+	if is_instance_valid(_black_hole_simulation_source) or get_tree().current_scene == null:
+		return
+	var simulation_source := get_tree().current_scene.get_node_or_null("PlayField/SimulationMount/BallSimulationManager")
+	if simulation_source != null:
+		configure_black_hole_sources(null, simulation_source)
 
 
 func apply_stage(definition: StageDefinition) -> void:
@@ -122,7 +132,8 @@ func play_black_hole_phase(phase_id: int, from_rect: Rect2, to_rect: Rect2) -> b
 	_black_hole_to_profile = _find_profile_for_field_width(to_rect.size.x)
 	_black_hole_origin_visual_rect = _frame.get_field_visual_rect_for_profile(_black_hole_from_profile)
 	black_hole_overlay.modulate = Color(1.0, 1.0, 1.0, 0.78 if reduced_effects else 1.0)
-	black_hole_overlay.begin_phase()
+	black_hole_overlay.begin_phase(reduced_effects)
+	black_hole_overlay.set_phase_progress(0.0, _black_hole_origin_visual_rect)
 	shift_label.text = "GRAVITY ANOMALY // L3 FIELD"
 	shift_label.visible = true
 	shift_label.modulate.a = 1.0 if reduced_effects else 0.0
@@ -163,13 +174,23 @@ func play_black_hole_finale(result_snapshot: Dictionary, phase_id := -1) -> bool
 		_pause_menu.visible = false
 	black_hole_overlay.modulate = Color(1.0, 1.0, 1.0, 0.82 if reduced_effects else 1.0)
 	var duration := 0.34 if reduced_effects else black_hole_finale_duration
-	black_hole_overlay.begin_finale(_black_hole_finale_snapshot, duration)
+	black_hole_overlay.begin_finale(_black_hole_finale_snapshot, reduced_effects)
+	var generation := _black_hole_run_generation
+	_black_hole_finale_tween = create_tween()
+	_black_hole_finale_tween.tween_method(
+		_apply_black_hole_finale_progress.bind(generation),
+		0.0,
+		1.0,
+		duration
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_black_hole_finale_tween.tween_callback(_on_black_hole_finale_visual_finished.bind(generation))
 	return true
 
 
 func reset_black_hole_presentation() -> void:
 	_black_hole_run_generation += 1
 	_cancel_black_hole_phase()
+	_cancel_black_hole_finale()
 	_active_black_hole_phase_id = -1
 	_active_black_hole_phase_generation = -1
 	_last_completed_black_hole_phase_id = -1
@@ -180,7 +201,7 @@ func reset_black_hole_presentation() -> void:
 	_black_hole_finale_snapshot.clear()
 	_black_hole_origin_visual_rect = Rect2()
 	black_hole_overlay.modulate = Color.WHITE
-	black_hole_overlay.reset_overlay()
+	black_hole_overlay.reset_effect()
 	if _hud != null:
 		_hud.visible = true
 		_hud.modulate = Color.WHITE
@@ -198,36 +219,16 @@ func is_black_hole_finale_active() -> bool:
 
 
 func get_black_hole_presentation_metrics() -> Dictionary:
-	var black_hole_count := 0
-	if not _black_hole_finale_snapshot.is_empty():
-		var final_black_holes = _black_hole_finale_snapshot.get("black_holes", [])
-		if final_black_holes is Array:
-			black_hole_count = (final_black_holes as Array).size()
-	elif is_instance_valid(_black_hole_simulation_source) and _black_hole_simulation_source.has_method("get_black_hole_snapshot"):
-		var snapshot: Dictionary = _black_hole_simulation_source.get_black_hole_snapshot()
-		black_hole_count = int(snapshot.get("count", 0))
-	elif black_hole_overlay.visible:
-		black_hole_count = 1
-	var visual_rect := _frame.get_field_visual_rect() if _frame != null else Rect2()
-	return {
-		"visible": black_hole_overlay.visible,
-		"phase_active": black_hole_overlay.visible and not _black_hole_finale_active,
-		"finale_active": _black_hole_finale_active,
-		"black_hole_count": black_hole_count,
-		"core_count": black_hole_count,
-		"horizon_ring_count": black_hole_count,
-		"influence_ring_count": black_hole_count if black_hole_overlay.visible and not _black_hole_finale_active else 0,
-		"trail_marker_count": 0,
-		"reduced_effects": reduced_effects,
-		"field_rect": visual_rect,
-		"field_expansion_width": maxf(visual_rect.size.x - _black_hole_origin_visual_rect.size.x, 0.0),
+	var metrics := black_hole_overlay.get_visual_metrics()
+	metrics.merge({
 		"active_phase_id": _active_black_hole_phase_id,
 		"last_completed_phase_id": _last_completed_black_hole_phase_id,
 		"run_generation": _black_hole_run_generation,
 		"status_label_visible": shift_label.visible,
 		"status_label": shift_label.text,
 		"hud_visible": _hud.visible if _hud != null else false,
-	}
+	}, true)
+	return metrics
 
 
 func _apply_shift_progress(progress: float, from_profile: int, to_profile: int) -> void:
@@ -253,7 +254,9 @@ func _apply_black_hole_phase_progress(progress: float, generation: int, phase_id
 	if generation != _black_hole_run_generation or phase_id != _active_black_hole_phase_id:
 		return
 	_frame.apply_visual_profile_lerp(from_profile, to_profile, progress)
-	visual_field_rect_changed.emit(_frame.get_field_visual_rect_lerp(from_profile, to_profile, progress))
+	var visual_rect := _frame.get_field_visual_rect_lerp(from_profile, to_profile, progress)
+	black_hole_overlay.set_phase_progress(progress, visual_rect)
+	visual_field_rect_changed.emit(visual_rect)
 	_apply_dependent_layout()
 
 
@@ -263,7 +266,7 @@ func _finish_black_hole_phase(generation: int, phase_id: int) -> void:
 	_frame.set_profile(_black_hole_to_profile)
 	visual_field_rect_changed.emit(_frame.get_field_visual_rect())
 	_apply_dependent_layout()
-	black_hole_overlay.hold_phase()
+	black_hole_overlay.complete_phase()
 	_completed_black_hole_phase_ids[phase_id] = generation
 	_last_completed_black_hole_phase_id = phase_id
 	_active_black_hole_phase_id = -1
@@ -273,9 +276,17 @@ func _finish_black_hole_phase(generation: int, phase_id: int) -> void:
 	black_hole_phase_presentation_finished.emit(phase_id)
 
 
-func _on_black_hole_finale_visual_finished() -> void:
-	if not _black_hole_finale_active or _black_hole_finale_generation != _black_hole_run_generation:
+func _apply_black_hole_finale_progress(progress: float, generation: int) -> void:
+	if not _black_hole_finale_active or generation != _black_hole_run_generation or generation != _black_hole_finale_generation:
 		return
+	black_hole_overlay.set_finale_progress(progress)
+
+
+func _on_black_hole_finale_visual_finished(generation: int) -> void:
+	if not _black_hole_finale_active or generation != _black_hole_run_generation or generation != _black_hole_finale_generation:
+		return
+	_black_hole_finale_tween = null
+	black_hole_overlay.finish_finale()
 	_black_hole_finale_active = false
 	_black_hole_finale_completed_generation = _black_hole_run_generation
 	_black_hole_finale_generation = -1
@@ -307,7 +318,15 @@ func _cancel_black_hole_phase() -> void:
 	_black_hole_phase_tween = null
 	_active_black_hole_phase_id = -1
 	_active_black_hole_phase_generation = -1
+	black_hole_overlay.reset_effect()
 	_reset_overlay()
+
+
+func _cancel_black_hole_finale() -> void:
+	if _black_hole_finale_tween != null and _black_hole_finale_tween.is_valid():
+		_black_hole_finale_tween.kill()
+	_black_hole_finale_tween = null
+	black_hole_overlay.reset_effect()
 
 
 func _apply_dependent_layout() -> void:

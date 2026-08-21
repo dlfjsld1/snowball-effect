@@ -46,6 +46,8 @@ func _ready() -> void:
 	await get_tree().process_frame
 
 	var presenter: PresentationManager = frame.get_node("PresentationManager")
+	var black_hole_effect := presenter.get_node("BlackHoleOverlay")
+	assert(black_hole_effect is BlackHolePhaseEffect, "The active frame must mount the S8-G5 renderer.")
 	presenter.black_hole_phase_duration = 0.08
 	presenter.black_hole_finale_duration = 0.12
 	presenter.configure(background, hud, pause_menu)
@@ -75,6 +77,14 @@ func _ready() -> void:
 	assert(presenter.is_black_hole_phase_active())
 	assert(frame.profile_index == 2, "The logical frame profile must remain L2 until Presentation finishes.")
 	var phase_metrics := presenter.get_black_hole_presentation_metrics()
+	assert(phase_metrics == black_hole_effect.get_visual_metrics().merged({
+		"active_phase_id": 41,
+		"last_completed_phase_id": -1,
+		"run_generation": 0,
+		"status_label_visible": true,
+		"status_label": "GRAVITY ANOMALY // L3 FIELD",
+		"hud_visible": true,
+	}, true), "Presentation metrics must come from the mounted S8-G5 renderer.")
 	assert(phase_metrics["visible"])
 	assert(phase_metrics["black_hole_count"] == 1)
 	assert(phase_metrics["core_count"] == 1)

@@ -498,3 +498,11 @@ Owner: Presentation / design-only
 - cabinet frame, corner lamp, side rail을 전역 경보처럼 점멸하지 않으며 Settlement, Score Clear, 실패를 예고하거나 Core 판정을 대신하지 않는다.
 - 승인 기준 이미지는 `docs/design/mockups/approved-fx/time-crt-pulse-v1.png`, 사용 범위와 비계약 요소는 같은 폴더의 `README.md`, authoritative FX 규칙은 `docs/design/11_FX_CATALOG.md`에 기록했다.
 - 이번 기록은 문서와 디자인 에셋 승인만 다룬다. HUD/Time CRT runtime 구현, Core/Integration 시간 판정, Web/Native runtime evidence는 추가하거나 변경하지 않았으며 후속 구현 전까지 `PENDING`이다.
+
+## 2026-08-21 — S8-G5 active renderer 출고 리뷰 보정
+
+Owner: Presentation
+
+- 출고 전 리뷰에서 `BlackHolePhaseEffect`가 작성·검증됐지만 active `GameplayFrame`은 reconciliation 이전의 중앙 placeholder overlay를 계속 mount하고 있음을 확인했다.
+- active scene을 `BlackHolePhaseEffect`로 교체하고 PresentationManager가 read-only simulation snapshot, phase field progress, finale progress를 이 단일 draw node에 전달하도록 정렬했다. Main/Core/Integration 신호와 gameplay state는 변경하지 않았다.
+- S8-G5 verification은 active node type과 그 node의 실제 visual metrics를 직접 확인하도록 보강했다. no-argument finale 완료 handoff와 run-generation/stale callback 방어는 유지한다.
