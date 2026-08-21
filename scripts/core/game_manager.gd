@@ -33,6 +33,8 @@ signal first_contact_cutin_requested(payload: Dictionary)
 @export var audio_manager_path: NodePath
 @export var item_manager_path: NodePath
 @export var item_effect_gateway_path: NodePath
+@export var item_blizzard_path: NodePath
+@export var blizzard_definition: Resource
 @export var spawn_rate := 6.0
 @export var lv1_ball_radius := 4.0
 @export var lv1_spawn_speed_world_units_per_second := 160.0
@@ -55,7 +57,10 @@ var _presentation_manager: PresentationManager
 var _audio_manager: AudioManagerScript
 var _item_manager: Node
 var _item_effect_gateway: Node
+var _item_blizzard: Node
 var _spawn_accumulator := 0.0
+var _base_stage_spawn_rate := 6.0
+var _spawn_rate_multiplier := 1.0
 var _random := RandomNumberGenerator.new()
 var _initialized := false
 var _terminal_result_snapshot: Dictionary = {}
@@ -87,6 +92,8 @@ func _ready() -> void:
 	_audio_manager = get_node(audio_manager_path) as AudioManagerScript
 	_item_manager = get_node(item_manager_path)
 	_item_effect_gateway = get_node(item_effect_gateway_path)
+	_item_blizzard = get_node(item_blizzard_path)
+	_base_stage_spawn_rate = spawn_rate
 	call_deferred("_initialize_runtime")
 
 
@@ -113,6 +120,7 @@ func _initialize_runtime() -> void:
 	_item_manager.item_collected.connect(_on_item_collected)
 	_item_effect_gateway.item_cutin_requested.connect(_on_item_cutin_requested)
 	_item_effect_gateway.item_effect_activation_requested.connect(_on_item_effect_activation_requested)
+	_item_blizzard.spawn_multiplier_changed.connect(_on_blizzard_spawn_multiplier_changed)
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
 	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu, _title_screen)
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation, _stage_manager)
@@ -167,6 +175,9 @@ func get_runtime_snapshot() -> Dictionary:
 		"first_contact_queue_size": _first_contact_queue.size(),
 		"first_contact_active_event_id": int(_active_first_contact_payload.get("event_id", -1)),
 		"first_contact_pause_locked": _first_contact_pause_locked,
+		"base_stage_spawn_rate": _base_stage_spawn_rate,
+		"spawn_rate_multiplier": _spawn_rate_multiplier,
+		"effective_spawn_rate": spawn_rate,
 	}
 
 
@@ -246,6 +257,7 @@ func _start_run() -> void:
 	_next_first_contact_run_epoch += 1
 	_simulation.begin_first_contact_run(_first_contact_run_epoch)
 	_item_effect_gateway.reset_runtime()
+	_item_blizzard.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.start_run()
 	_paddle.reset_runtime()
@@ -267,6 +279,7 @@ func _enter_title_screen() -> void:
 	_reset_first_contact_runtime(true)
 	_item_manager.reset_runtime()
 	_item_effect_gateway.reset_runtime()
+	_item_blizzard.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.end_run_to_main_menu()
 	_paddle.set_physics_process(false)
@@ -280,7 +293,8 @@ func _enter_title_screen() -> void:
 
 
 func _on_stage_changed(definition: StageDefinition) -> void:
-	spawn_rate = definition.spawn_rate
+	_base_stage_spawn_rate = definition.spawn_rate
+	_apply_spawn_rate_multiplier(_spawn_rate_multiplier)
 	_apply_stage_frame(definition.stage_index)
 	_presentation_manager.apply_stage(definition)
 	_item_manager.enter_stage(
@@ -415,6 +429,7 @@ func _spawn_ball() -> void:
 
 func _process_item_runtime(delta: float) -> void:
 	_item_manager.advance(delta)
+	_item_blizzard.advance(delta)
 	if not _item_manager.get_item_ball_snapshot().is_empty():
 		_item_manager.process_ball_snapshots(_simulation.get_active_item_collision_snapshots())
 	_try_collect_item_orb()
@@ -444,7 +459,18 @@ func _on_item_cutin_requested(event_id: int, item_type: StringName, world_positi
 
 
 func _on_item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
+	if item_type == &"blizzard":
+		_item_blizzard.activate(blizzard_definition)
 	item_effect_activation_requested.emit(event_id, item_type, world_position)
+
+
+func _on_blizzard_spawn_multiplier_changed(multiplier: float) -> void:
+	_apply_spawn_rate_multiplier(multiplier)
+
+
+func _apply_spawn_rate_multiplier(multiplier: float) -> void:
+	_spawn_rate_multiplier = maxf(multiplier, 1.0)
+	spawn_rate = _base_stage_spawn_rate * _spawn_rate_multiplier
 
 
 func _on_pause_requested() -> void:

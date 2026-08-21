@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
@@ -15,6 +15,8 @@
 [ext_resource type="Script" path="res://scripts/presentation/audio_manager.gd" id="12_audio_manager"]
 [ext_resource type="Script" path="res://scripts/gameplay/item_manager.gd" id="13_item_manager"]
 [ext_resource type="Script" path="res://scripts/core/item_effect_gateway.gd" id="14_item_gateway"]
+[ext_resource type="Script" path="res://scripts/gameplay/item_blizzard.gd" id="16_item_blizzard"]
+[ext_resource type="Resource" path="res://resources/items/item_blizzard.tres" id="17_item_blizzard_definition"]
 
 [node name="Main" type="Node2D"]
 
@@ -36,6 +38,8 @@ presentation_manager_path = NodePath("../UI/GameplayFrame/PresentationManager")
 audio_manager_path = NodePath("../AudioManager")
 item_manager_path = NodePath("../ItemManager")
 item_effect_gateway_path = NodePath("../ItemEffectGateway")
+item_blizzard_path = NodePath("../ItemBlizzard")
+blizzard_definition = ExtResource("17_item_blizzard_definition")
 
 [node name="StageManager" type="Node" parent="."]
 script = ExtResource("2_stage_manager")
@@ -50,6 +54,9 @@ script = ExtResource("13_item_manager")
 
 [node name="ItemEffectGateway" type="Node" parent="."]
 script = ExtResource("14_item_gateway")
+
+[node name="ItemBlizzard" type="Node" parent="."]
+script = ExtResource("16_item_blizzard")
 
 [node name="StageWorld" type="Node2D" parent="."]
 
