@@ -8,12 +8,21 @@
 
 ## Goals
 
+### S7-G1C Item Ball·Orb producer contract
+
+- Owner: Content/Systems
+- Owned Files: `scripts/gameplay/item_manager.gd`, `scripts/gameplay/item_ball.gd`, `scripts/gameplay/item_orb.gd`, `resources/items/**`, `tests/content/**`
+- Integration Point: `item_planet_damaged`, `item_planet_broken`, `item_orb_spawned`, `item_collected`, `item_orb_missed`, `active_items_changed`를 read-only producer로 제공한다. Orb 획득 뒤 효과 자체는 시작하지 않는다.
+- Dependencies: S5 완료와 `docs/current/tasks/06_items.md`의 Item Ball/Orb 공통 규칙.
+- Verification: Stage마다 Item Ball은 최대 한 번만 생성; 현재 Stage `local_level >= 2` 공의 분리된 유효 충돌 5회에만 damage/파괴를 한 번 확정; 파괴 뒤 Item Orb 하나가 낙하; Paddle 획득과 하단 이탈 신호가 상호 배타적으로 한 번씩만 발생; Item Ball 파괴만으로 CUT-IN·효과·Core state 변경이 없음.
+- Do Not Modify: `GameManager`, `StageManager`, Simulation score/settlement 계산, 실제 Blizzard/Fire Core/Magnet 효과.
+
 ### S7-G1 Item gateway 통합
 
 - Owner: Integration
 - Owned Files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `scripts/core/item_effect_gateway.gd`
 - Integration Point: Content의 `item_collected(item_type, world_position)` 이후 CUT-IN activation cue를 Core의 제한된 cashout modifier/simulation command API에 연결. `item_planet_broken`은 effect activation을 요청하지 않는다.
-- Dependencies: S5 완료; Content가 Stage당 Item Ball 1회→Lv3+ 공 5-hit 파괴→Item Orb 낙하→Paddle 획득/하단 소멸 계약을 제공하고 Core가 modifier/effect contract를 제시.
+- Dependencies: S7-G1C producer contract와 Core modifier/effect contract.
 - Verification: Item Ball 파괴만으로 효과가 적용되지 않고 Paddle의 Item Orb 획득 뒤 CUT-IN을 거쳐 한 번 적용; Orb miss 시 미적용; item 전체 off에서 Core 회귀 결과 동일; Core 문서와 Settlement에 item 이름이 없음.
 - Do Not Modify: Core 계산 내부와 개별 item 구현.
 

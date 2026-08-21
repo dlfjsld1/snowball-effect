@@ -11,7 +11,7 @@ Stage를 Clear하면 프레임 폭이 한 단계 넓어진다. 프레임 장식�
 - 변화 축: 현재 계획은 **폭만 증가**한다. 높이 변화는 별도 결정 전까지 제외한다.
 - 기준점: 화면 중심을 기준으로 좌우 대칭.
 - 경계: 좌·우·상단 반사 경계, 하단 열린 Cashout 경계를 유지한다.
-- 전환 조건: Initial→L1과 L1→L2는 Top Ball/Clear Lock → Final Settlement 뒤에 시작한다. L2→L3는 Galactic 안에서 Black Hole 기믹이 발동할 때 시작한다.
+- 전환 조건: Initial→L1과 L1→L2는 Time Up → Final Settlement → Score Clear → `Next Stage` 확인 뒤에 시작한다. L2→L3는 Galactic 안에서 Black Hole 기믹이 발동할 때 시작한다.
 - gameplay: Shift 동안 simulation, spawn, timer, input effect를 정지한다.
 
 ## 2. Frame Level Naming
@@ -122,6 +122,8 @@ Stage World는 “밝은 풍경 네 장”의 교체가 아니라 동일한 arca
 - Event layer: Shift, Clear, failure 동안만 나타나는 transient lighting.
 
 v1의 Ground/Planetary/Galactic progression을 사용하되 meadow·우주사진·검은 소용돌이 같은 직설적 배경에 묶이지 않는다. 이동 Black Hole 맵 기믹은 별도 네 번째 Stage가 아니라 Galactic L3 gameplay phase의 dominant map motif로 사용한다. Lv14 Black Hole Ball은 별도 gameplay object로 존재한다.
+
+향후 S5-G7에서는 Galactic Stage World의 배경 판을 투명하게 만들어 프레임 바깥 우주와 합성한다. gameplay 공·Black Hole·HUD의 가독성을 지키기 위해 별·은하·성운 레이어는 투명 PNG 또는 동등한 alpha 지원 texture로 분리하고, 투명도 변경은 Ground/Planetary 배경에 적용하지 않는다.
 
 ## 8. Balance and Input Dependencies
 

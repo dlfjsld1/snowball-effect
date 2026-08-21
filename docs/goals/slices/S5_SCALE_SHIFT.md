@@ -32,7 +32,7 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 - Owned Files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`
 - Integration Point: Core `CLEARED`, `stage_shift_started(next_definition, shift_id)`, Presentation `stage_shift_presentation_finished(shift_id)`, Content StageCatalog를 연결. S5-G4 전에는 Main의 임시 adapter가 같은 완료 API를 deferred 한 번 호출한다.
 - Dependencies: S5-G1, S5-G2와 `INTEGRATION_CONTRACTS.md`의 Shift signal 계약.
-- Verification: `CLEARED` 뒤에만 `SHIFTING`; spawn/timer stop→Settlement→연출/임시 adapter→다음 Stage; 잘못되거나 중복된 `shift_id`에도 Shift 한 번.
+- Verification: non-final clear score 도달 뒤 `CLEARED→SHIFTING`; spawn/timer stop→Settlement→연출→다음 Stage; 잘못되거나 중복된 `shift_id`에도 Shift 한 번.
 - Do Not Modify: Core 계산, StageDefinition 값, Presentation animation.
 
 ### S5-G4 Stage World와 Shift presentation
@@ -56,7 +56,7 @@ Presentation은 `stage_shift_started(next_definition, shift_id)`를 받은 뒤�
 - Owned Files: `scenes/main/main.tscn`, `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `tests/integration/**`, `.gitignore`의 S5-G5 로컬 검증 도구 제외 항목
 - Integration Point: S5-G1~G4 결과를 playable Main에 조립.
 - Dependencies: S5-G1~G4 `VERIFIED`.
-- Verification: Top Ball/Score Clear 양쪽으로 세 Stage 연속 진행; stage reset/run preserve; 체류 시간과 Cashout 시간 기록. Debug build에서는 `F6` Top Ball Clear와 `F7` Time Up Score Clear로 같은 전환 계약을 강제 검증할 수 있다.
+- Historical Verification: Top Ball/Score Clear 양쪽으로 세 Stage 연속 진행; stage reset/run preserve; 체류 시간과 Cashout 시간 기록. 기존 `F6` Top Ball Clear 증거는 역사적 기록이며 최신 계약 회귀는 S3-G7과 S5-G6I 완료 뒤 Score Clear→확인→Shift로 다시 검증한다.
 - Do Not Modify: 각 Owner 내부 구현; 발견된 결함은 소유 lane으로 반환.
 
 ### S5-G4I Shift presentation handoff wiring
@@ -67,6 +67,33 @@ Presentation은 `stage_shift_started(next_definition, shift_id)`를 받은 뒤�
 - Dependencies: S5-G3의 matching `shift_id` 계약과 S5-G4 Presentation manager.
 - Verification: 임시 `auto_complete_shift_presentation`을 끈 상태에서 Shift 시작 직후 Stage가 바뀌지 않고, Presentation 완료 뒤 한 번만 다음 Stage에 진입하며 stale/duplicate 완료는 거부됨.
 - Do Not Modify: StageManager 상태 계산, StageDefinition 값, Presentation animation 내부.
+
+### S5-G6 Stage Clear 축하 UI (retired)
+
+- Owner: Presentation
+- Owned Files: `scripts/ui/**`, `scenes/ui/**`, `tests/presentation/**`
+- Integration Point: 2026-08-20 사용자 규칙 변경으로 자동 Scale Shift가 확정되어 런타임 경로에서 제거됐다.
+- Dependencies: S3-G7, S3-G8, S5-G3.
+- Verification: retired; Scale Shift 진행 여부는 S5-G3의 authoritative state와 presentation `shift_id` handoff로 검증한다.
+- Do Not Modify: StageManager/GameManager, score/settlement 계산, Stage resource.
+
+### S5-G6I Automatic Score Clear wiring
+
+- Owner: Integration
+- Owned Files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`
+- Integration Point: Core `SCORE_CLEAR`를 `CLEAR_LOCKED→SETTLING→CLEARED→SHIFTING`으로 연결하고 기존 `stage_shift_started(next_definition, shift_id)`를 즉시 발행한다.
+- Dependencies: S3-G3, 기존 S5-G3/G4I Shift handoff.
+- Verification: Score Clear는 시간·사용자 입력과 무관하게 한 번만 SHIFTING; stale/duplicate `shift_id` 완료 거부; Retry/Main Menu가 전환 lock을 초기화.
+- Do Not Modify: Core score/settlement 계산, Presentation 내부 animation, StageDefinition 값.
+
+### S5-G7 Galactic 투명 Stage World
+
+- Owner: Presentation
+- Owned Files: `assets/sprites/backgrounds/**`, `scenes/backgrounds/**`, `scripts/presentation/background_manager.gd`, `tests/presentation/**`
+- Integration Point: 기존 `background_key=galactic`와 L2/L3 read-only profile을 소비한다.
+- Dependencies: S5-G4, S8-G5의 Black Hole 가독성 요구.
+- Verification: Galactic 배경 판 alpha가 투명하고 별·은하·성운 레이어가 프레임 바깥 우주와 정상 합성; Ground/Planetary 불변; L2/L3에서 공·Black Hole·HUD 대비 유지; Native와 Web screenshot 확인.
+- Do Not Modify: StageManager/GameManager, gameplay bounds, StageDefinition mapping.
 
 ## Exit Gate
 

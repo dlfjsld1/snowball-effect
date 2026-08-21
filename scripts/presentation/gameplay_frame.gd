@@ -7,6 +7,7 @@ const FIELD_WIDTHS: Array[float] = [560.0, 720.0, 880.0, 1040.0]
 const VIEWPORT_SIZE := Vector2(1600.0, 900.0)
 const FRAME_INSET := 50.0
 const FIELD_HEIGHT := VIEWPORT_SIZE.y - FRAME_INSET * 2.0
+const LOGICAL_FIELD_BOTTOM_INSET := 32.0
 const WING_WIDTH := 200.0
 const FIELD_GAP := 12.0
 
@@ -41,14 +42,34 @@ func get_field_rect() -> Rect2:
 	return _get_field_rect(profile_index)
 
 
+func get_field_rect_for_profile(value: int) -> Rect2:
+	return _get_field_rect(value)
+
+
 func _get_field_rect(value: int) -> Rect2:
+	var field_width := FIELD_WIDTHS[clampi(value, 0, PROFILE_IDS.size() - 1)]
+	var field_x := (VIEWPORT_SIZE.x - field_width) * 0.5
+	return Rect2(field_x, FRAME_INSET, field_width, FIELD_HEIGHT - LOGICAL_FIELD_BOTTOM_INSET)
+
+
+func get_field_visual_rect() -> Rect2:
+	return get_field_visual_rect_for_profile(profile_index)
+
+
+func get_field_visual_rect_for_profile(value: int) -> Rect2:
 	var field_width := FIELD_WIDTHS[clampi(value, 0, PROFILE_IDS.size() - 1)]
 	var field_x := (VIEWPORT_SIZE.x - field_width) * 0.5
 	return Rect2(field_x, FRAME_INSET, field_width, FIELD_HEIGHT)
 
 
-func get_field_visual_rect() -> Rect2:
-	return get_field_rect()
+func get_field_visual_rect_lerp(from_profile: int, to_profile: int, weight: float) -> Rect2:
+	var clamped_weight := clampf(weight, 0.0, 1.0)
+	var from_rect := get_field_visual_rect_for_profile(from_profile)
+	var to_rect := get_field_visual_rect_for_profile(to_profile)
+	return Rect2(
+		from_rect.position.lerp(to_rect.position, clamped_weight),
+		from_rect.size.lerp(to_rect.size, clamped_weight)
+	)
 
 
 func get_field_bezel_rect() -> Rect2:

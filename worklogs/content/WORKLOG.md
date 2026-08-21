@@ -747,3 +747,313 @@ Owner: Content/Systems/Release 담당
 - 모달과 버튼 크기를 이전 `440×480`, 48px 버튼 높이로 복구했다.
 - 좌우 내부 여백은 이전 62px보다 넓은 72px으로 조정하고, 상하 여백은 64px로 유지했다.
 - Primary `godot` scene validate와 Main runtime Pause 화면에서 버튼과 황동 파이프 프레임 사이 간격을 확인했다.
+
+## 2026-08-18 — S6-G4 ui_start·ui_click 연결
+
+Owner: Content/Systems/Release 담당
+
+- 원격 Main에 mount된 `TitleScreen.start_requested`를 AudioManager의 `ui_start` catalog key에 직접 연결했다.
+- 전용 사운드가 없는 `PauseMenu.settings_requested`를 일반 확정 조작음 `ui_click`에 연결했다.
+- `AudioManager.configure_sources()`에 선택형 TitleScreen source를 추가하고, S8-G4 Integration의 GameManager가 해당 source를 전달하도록 연결했다. 기존 3-source 호출 호환성은 유지했다.
+- S6-G4 자동 검증에 start signal 매핑과 source 재설정 시 중복 구독 방지를 포함했다.
+- Primary `godot` validation 5/5, S6-G4 verification scene exit 0, 실제 Main runtime에서 `start_requested` 후 활성 key `ui_start` 1개와 runtime error 0을 확인했다.
+- 실제 Main Web에 임시 검증 probe를 사용해 simulation tick을 유지한 500공을 구성했다. spatial candidates `2291`, grid cells `432`, 5초 시점 `60 FPS`였고 Paddle·공·HUD 경계를 시각 확인했다.
+- 첫 Canvas 입력 뒤 6개 policy sound가 `dropped=0`으로 동시에 활성화됐으며, 이어진 `run_end`가 6개를 선점하고 terminal 단독 재생되는 것을 확인했다. Web console warning/error는 0건이었다.
+- 임시 probe와 로컬 서버 파일을 제거한 뒤 clean Web build를 다시 export하고 정상 Main smoke를 확인했다. S6-G4의 남은 보류 항목이 없어 `VERIFIED`로 갱신했다.
+- 최종 clean 저장소에서 Godot 4.7.1 CLI/headless S6-G4 verification scene과 Main 120-frame smoke가 모두 exit 0이었다.
+
+## 2026-08-18 — S8-G3 Title Pixel UI 완성
+
+Owner: Content/Systems/Release 담당
+Status: `IMPLEMENTED`
+
+- `docs/design/12_PIXEL_DESIGN_GUIDELINES.md`의 1600×900 authoring, 정수 좌표, 4px 간격 계열, 최소 2px 기능 경계, nearest filtering 원칙을 Title에 적용했다.
+- Ground runtime background와 실제 Paper-8 v2 L0 `left/right wing`, `field_bezel`을 그대로 재사용해 플레이 화면과 Title 사이의 픽셀 밀도·팔레트·프레임 실루엣 차이를 제거했다.
+- AI 생성 목업은 production asset으로 사용하지 않았다. 기능 텍스트는 Godot Label, `START RUN`과 `SETTINGS`는 실제 Button으로 유지했다.
+- Title에 `settings_requested` 요청-only signal을 추가했고 기존 `start_requested`와 함께 독립 검증에서 각각 한 번만 발행됨을 확인했다. Integration-owned Main/GameManager는 수정하지 않았다.
+- Primary `godot` validate에서 Title scene/script, S8-G3 test script/scene, Main scene 5/5 valid. S8-G3 verification scene은 bridge 초기화 전 exit 0으로 종료됐고, bridge shutdown warning은 짧은 test 종료에 따른 tooling 경고로 분류했다.
+- Main runtime에서 Main Menu를 통해 Title을 표시하고 Start 기본 focus, Settings 실제 Button, 1600×900 화면을 확인했다. Screenshot: `.mcp/screenshots/screenshot_1787047440_964.png`.
+- Start 버튼 입력 뒤 Title이 숨고 HUD가 표시되어 기존 Title→Ground Integration 흐름이 유지됨을 확인했다. 전체 finale와 Web 검증은 S8-G4/S8-G5 이후에 남는다.
+- `ppt-master`는 필수 `attribution_guard.py`를 실행할 Python runtime이 없어 무결성 Gate를 통과하지 못했으므로 실행 파이프라인 사용을 중단했다. 문서 12와 기존 runtime 자산을 source of truth로 사용했다.
+
+## 2026-08-19 — S8-G3 확정 Title UI 실제 버튼 전환
+
+Owner: Content/Systems/Release 담당
+Status: `IN PROGRESS`
+
+- 사용자가 최종 승인한 Ground 기계실 Title 시안을 `title_mechanical_ground.webp` 런타임 배경으로 채택했다. `1600×900` viewport에서 nearest filtering과 정수 hit rect를 사용한다.
+- 중앙 창의 눈, 좌우 독립 무작위 게이지, 각 게이지 값에 연동되는 전등을 `TitleMechanicalMotion` 장식 레이어로 분리했다. 눈은 중앙 창 Rect 안으로 제한하고 장식 레이어는 입력을 받지 않으며 Title이 숨으면 processing을 멈춘다.
+- 이미지에 보이는 `START RUN`과 `SETTINGS` 면 위에 실제 Godot `Button`을 배치했다. 마우스 hit area, 키보드 focus 이동, hover/pressed/focus outline을 제공하면서 기존 `start_requested`와 `settings_requested` 신호 계약을 그대로 사용한다.
+- `tests/content/s8_g3_terminal_ui_verification.gd`가 확정 아트·장식 레이어·실제 Button·pointer ownership을 확인하도록 갱신했다.
+- Integration-owned `GameManager`, `Main`, `StageManager`는 수정하지 않았다. 기존 `StartButton → start_requested → GameManager._on_start_requested()` 연결은 유지된다. Settings는 기존 `settings_requested` 요청까지만 제공되며 설정 화면 consumer는 아직 구현되지 않았다.
+- Godot 4.7.1 editor project load, 신규 WebP import, `TitleMechanicalMotion` GDScript class 등록이 성공했다. 샌드박스 내부 기존 Scene runner는 `user://logs` 접근 실패 뒤 signal 11로 종료되어 tooling 문제로 분류했다.
+- workspace 외부가 아닌 임시 log 경로를 지정한 전용 runtime verification은 exit 0과 `S8_G3_TITLE_BUTTONS_VERIFIED actual_buttons=true start_request=1 settings_request=1`을 기록했으며 runtime script error는 0건이었다.
+- 전체 S8-G3 UI verification도 exit 0과 `S8_G3_VERIFIED title=true pause_modal=true result_snapshot=read_only requests=once`를 기록했다. S8-G4 skeleton 회귀는 `phase_id=true terminal_once=true reset_safe=true`로 exit 0이었다.
+
+## 2026-08-19 — S8-G3 Result Merge·Run Time 표시
+
+Owner: Content/Systems/Release 담당
+
+- Result Panel에 `TOTAL MERGES`와 `RUN TIME` 통계 행을 추가했다.
+- `optional_stats.merge_count`는 음수 방어 뒤 정수로, `run_time_seconds`는 음수 방어와 내림 뒤 `MM:SS` 또는 1시간 이상 `H:MM:SS`로 표시한다.
+- Result UI는 snapshot을 deep copy해 읽기만 하며 통계 값이 하나도 없는 fixture에서는 통계 행을 숨긴다.
+- S8-G3 전체 UI 검증에서 `148`, `766.9s → 12:46`, 누락 통계 숨김, score·Pause·Title·Main Menu 요청 회귀를 확인했고 Godot 4.7.1 headless exit 0이었다.
+
+## 2026-08-19 — S8-G3 Galactic Terminal Result UI
+
+Owner: Content/Systems/Release 담당
+Status: `IN PROGRESS`
+
+- 사용자 승인 Result 시안을 동적 텍스트가 없는 `1600×900` pixel-art background plate로 정리해 프로젝트 자산으로 저장했다. 점수·통계·행동 텍스트는 이미지에 굽지 않고 Godot 노드가 표시한다.
+- Result 전체가 `0.82s` 동안 화면 아래에서 위로 올라오는 entrance Tween을 추가했다.
+- 좌우 실험관에 서로 다른 개수·속도·위상의 기포를 올리고, 양쪽 게이지 바늘은 최대치 부근에서 서로 다른 주기로 미세하게 떨리도록 별도 `ResultMechanicalMotion` 입력 무시 레이어를 구현했다. Result가 숨으면 processing을 중단한다.
+- `RETRY RUN`과 `MAIN`을 실제 Godot `Button`으로 만들고 focus/hover/pressed 상태를 제공했다. 기존 `MAIN SCREEN` 표기는 사용자 지시에 따라 `MAIN`으로 변경했다.
+- S8-G3 Content verification과 S8-G4 Integration verification이 Godot 4.7.1 headless에서 모두 exit 0이었다. Retry는 fresh Ground Run과 통계 reset, Main은 안전한 Run 종료와 Title 표시를 확인했다.
+- 전체 Black Hole finale의 실제 화면 전환과 Web browser 검증은 S8-G5 및 최종 통합 뒤 남는다.
+
+## 2026-08-19 — S8-G3 확정 Title·Result UI 자동 검증 갱신
+
+Owner: Content/Systems/Release 담당
+Status: `IN PROGRESS`
+
+- S8-G3 자동 검증의 Result 기대값을 최종 UI의 값 전용 출력(`1.23M`, `148`, `12:46`)에 맞춰 갱신해 배경에 포함된 고정 라벨과의 중복 표시를 회귀 방지한다.
+- Title의 `START RUN`/`SETTINGS`와 Result의 `RETRY RUN`/`MAIN`이 실제 Godot Button이고 빈 tooltip, 입력 소유 hit area, 투명한 normal/hover/pressed/focus StyleBox를 유지하는지 검증한다.
+- 장식 motion layer가 pointer 입력을 무시하며, 각 버튼의 커스텀 면 내부 hover·press 상태가 진입·해제되는지 검증한다. Result의 승인된 Retry/Main hit rect 위치와 크기도 고정했다.
+- Godot 4.7.1 CLI/headless에서 `tests/content/s8_g3_terminal_ui_verification.tscn`을 단독 실행해 exit 0과 `S8_G3_VERIFIED title=true pause_modal=true result_snapshot=read_only actual_buttons=true hover=face_only requests=once`를 확인했다.
+- Windows root certificate store 읽기 오류가 한 번 출력됐으나 테스트 script/runtime error 없이 종료됐으므로 프로젝트 실패가 아닌 환경 경고로 분류한다.
+- Integration-owned 파일은 변경하지 않았다. 전체 finale 관찰과 Web 검증은 후속 순차 단계로 남긴다.
+
+## 2026-08-19 — S8-G3 최종 통합 검증 시도
+
+Owner: Content/Systems/Release 담당
+Status: `IN PROGRESS — final verification dependency missing`
+
+- Godot 4.7.1 CLI/headless에서 S8-G2 Core, S8-G3 Content, S8-G4 Integration 검증 Scene을 순차 실행했다. 각각 exit 0과 `terminal=once`, `actual_buttons=true hover=face_only requests=once`, `S8_G4_SKELETON_VERIFIED phase_id=true terminal_once=true reset_safe=true`를 기록했다.
+- Main을 180 frame headless smoke로 실행해 프로젝트 load/runtime script error 없이 exit 0을 확인했다.
+- Web release export가 exit 0으로 완료됐고 로컬 HTTP에서 `index.html`, `index.js`, `index.wasm`, `index.pck`가 모두 200을 반환했다.
+- Main의 Black Hole Phase는 아직 실제 Presentation producer가 아니라 `_complete_temporary_black_hole_phase()` 임시 adapter로 완료된다. `docs/goals/STATUS.md`의 S8-G5도 `PENDING`이므로 L2→L3 frame 전환, finale 회전·폭발, HUD 제거 후 Result 등장까지 이어지는 실제 최종 흐름은 검증 대상 자체가 완성되지 않았다.
+- 브라우저 제어 초기화가 `Trusted RPC dependency must resolve within a configured trusted code path` tooling 오류로 실패해 Canvas와 console 검증을 수행하지 못했다. Export/HTTP 성공을 실제 Browser 검증으로 대체하지 않는다.
+- 따라서 S8-G3는 `IN PROGRESS`를 유지한다. S8-G5 구현과 S8-G4의 임시 adapter 제거·실제 producer 연결 뒤 Desktop/Web 전체 finale를 다시 검증해야 한다.
+
+## 2026-08-19 — S6-G5 BGM 상태 전환
+
+Owner: Content/Systems/Release 담당
+Status: `IMPLEMENTED` (Web QA 대기)
+
+### 변경
+
+- 사용자 제공 음악 6개를 `bgm_title`, `bgm_ground`, `bgm_planetary`, `bgm_galactic`, `bgm_pause`, `bgm_result` OGG 카탈로그 항목으로 등록했다.
+- `AudioManager`에 SFX pool과 독립된 music player를 추가했다. Title/Start/Stage 변경/Retry/Main Menu, Pause·Resume 위치 복원, Black Hole loop 전환, Final Result BGM을 기존 read-only Signal consumer 경로로 연결했다.
+- S6-G5 전용 자동 검증을 추가하고 기존 S6-G3 catalog 검증이 BGM 6개와 loop 정책을 함께 확인하도록 확장했다.
+
+### 확인
+
+- Godot 4.7.1 Primary validate: AudioManager, S6-G3/G4/G5 verification script와 S6-G5 scene 5/5 valid.
+- S6-G3/G4/G5 자동 검증 scene은 모두 exit 0. 짧은 scene이 MCP bridge 준비 전에 종료되어 stdout을 수집하지 못한 것은 tooling timing으로 분류했다.
+- 실제 Main runtime: first-input unlock 후 `bgm_planetary` 재생, Pause의 `bgm_pause` 전환·저장 위치 `19.97s`, Resume의 Planetary 재개, Black Hole Phase의 music stop+`black_hole_loop`, finale의 loop stop+`bgm_result` 재생을 관찰했다.
+- Runtime 종료 로그의 parse warning 1건은 첫 diagnostic `run_script`의 Variant type-warning이며, 이후 수정된 diagnostic과 게임 runtime에는 오류가 없었다.
+
+### 다음 작업 / 주의
+
+- 새 BGM을 포함한 Web export와 실제 Browser 첫 입력 AudioContext/전환 확인은 S9-G2 Release QA에서 수행한다. 이 확인 전 S6-G5를 `VERIFIED`로 올리지 않는다.
+
+### Web export 재확인
+
+- Godot 4.7.1 CLI `--headless --export-release Web build/web/index.html`이 새 BGM import 6개를 포함해 성공했다.
+- 로컬 HTTP에서 `index.html`(5,447 bytes), `index.js`(279,815), `index.wasm`(39,513,091), `index.pck`(31,128,012)가 모두 HTTP 200이었다.
+- Codex Browser 연결은 `Trusted RPC dependency must resolve within a configured trusted code path` 환경 오류로 초기화되지 않았다. 따라서 실제 Browser Canvas, 첫 입력 AudioContext unlock, console error 관찰은 수행하지 못했으며 export/HTTP 결과로 대체하지 않는다.
+
+## 2026-08-19 — S8-G3 Result 후속 조정·S6-G5 BGM 가독성
+
+Owner: Content/Systems/Release 담당
+
+### 변경
+
+- Result Clear Score 전용 전체 십진수·3자리 쉼표 포맷을 추가했다. 초대형 float는 기존 과학 표기의 유효 3자리를 십진 확장해 의미 없는 부동소수점 오차 자릿수를 노출하지 않는다.
+- 긴 Clear Score는 검은 패널 내부에서 3줄 균형 배치와 자동 글자 크기를 사용한다. Total Merges와 Run Time 값은 원본 픽셀 표시창의 광학 중심으로 재배치했다.
+- Result 우측 시험관·게이지 장식 좌표를 원본 `1672×941` 기준 좌우 대칭 위치로 수정했다.
+- BGM music channel 기본 음량을 `0 dB`에서 `-14 dB`로 낮추고 실제 player 적용값을 S6-G5 검증에 추가했다. SFX/UI 음량 정책은 유지했다.
+- Main 초기화가 gameplay를 즉시 시작하지 않고 Title `READY` 상태에서 대기하도록 승인된 Integration 변경을 반영했다. Web 첫 사용자 입력 전 BGM 금지 계약 때문에 초기 Title BGM은 입력 unlock 전 재생되지 않으며, Main Menu 복귀 시에는 이미 unlock 상태라 즉시 재생된다.
+
+### 확인
+
+- Godot 4.7.1 headless: S2-G4 ScoreFormatter, S6-G4 AudioManager, S6-G5 BGM, S8-G3 terminal UI, S8-G4 Integration 검증 exit 0.
+- Result 검증은 전체 점수 십진 확장, 3줄 배치, 글자 크기 축소, 값 표시창 좌표, 좌우 시험관·게이지 대칭을 고정한다.
+- 최신 Web release export exit 0. Godot editor settings 저장 오류와 Windows root certificate store 오류는 프로젝트 외 sandbox/환경 오류이며 export 및 검증 exit code에는 영향을 주지 않았다.
+
+## 2026-08-20 — S6-G4 Scale Shift 효과음 음량 조정
+
+Owner: Content/Systems/Release 담당
+
+### 변경
+
+- 사용자 청감 피드백에 따라 `scale_shift` 효과음의 정책 음량을 `-1 dB`에서 `-7 dB`로 낮췄다.
+- 전환 중요도 priority `85`, polyphony `1`, cooldown `0s`는 유지했다.
+- S6-G4 자동 검증에 `scale_shift` priority와 `-7 dB` 정책 assertion을 추가했다.
+
+### 확인
+
+- Godot 4.7.1 CLI/headless S6-G4 verification scene exit 0.
+- Primary `godot` validation: AudioManager, S6-G4 verification script/scene 3/3 valid.
+- 실제 청감의 최종 선호도는 다음 플레이에서 확인하며, 이번 변경은 다른 SFX/UI/BGM 음량을 수정하지 않았다.
+
+## 2026-08-20 — S6-G4 Scale Shift 음량 복원
+
+Owner: Content/Systems/Release 담당
+
+### 변경
+
+- 사용자 요청에 따라 `scale_shift` 효과음 정책을 다시 `-1 dB`에서 `-7 dB`로 낮췄다.
+- priority `85`, polyphony `1`, cooldown `0s`와 모든 다른 SFX/BGM 정책은 유지했다.
+
+### 확인
+
+- Godot 4.7.1 CLI/headless에서 `tests/content/s6_g4_audio_manager_verification.tscn` exit 0을 확인했다. sandbox 실행은 `user://logs` 쓰기 실패로 Godot 자체가 종료되어, 권한을 부여한 동일 CLI 실행에서 정상 통과 여부를 재확인했다.
+- Godot 4.7.1 Web release export가 exit 0으로 완료됐다. MIME 타입을 명시하는 로컬 서버(`http://127.0.0.1:8081`)는 갱신된 export를 즉시 제공한다.
+
+## 2026-08-20 — S6-G5 Pause BGM 신호 정정
+
+Owner: Content/Systems/Release 담당
+
+### 변경
+
+- Pause UI가 실제로 제공하는 `pause_requested`와 `resume_requested`를 AudioManager가 각각 구독하도록 수정했다.
+- 기존의 추정 토글 대신 Pause는 Stage BGM 저장 후 `bgm_pause` 전환, Resume는 저장 위치의 Stage BGM 재개를 명시적으로 수행한다.
+- 시작 직후 Ground BGM 상태에서 Pause/Resume을 누르는 회귀 검증을 S6-G5 자동 검증에 추가했다.
+
+### 확인
+
+- Godot 4.7.1 CLI/headless S6-G5 BGM 및 S6-G4 AudioManager verification scene이 모두 exit 0이었다.
+- Web release export가 exit 0으로 완료됐으며, MIME 타입을 명시하는 `http://127.0.0.1:8080` 로컬 서버가 최신 build를 제공한다.
+
+## 2026-08-20 — Pause modal 챔버 inset
+
+Owner: Content/Systems/Release 담당
+
+- Pause modal의 검은 CRT chamber를 외곽 파이프 frame 전체가 아닌 안쪽 개구부에서만 그리도록 사방 50px inset wrapper로 옮겼다.
+- 프레임의 파이프·곡선 모서리는 유지하고, 그 바깥으로 보이던 검은 사각형 테두리를 제거하는 범위의 UI 조정이다.
+- Godot 4.7.1 CLI/headless S8-G3 terminal UI verification과 Web release export는 모두 exit 0이었다.
+
+## 2026-08-20 — Pause modal chamfered corners
+
+Owner: Content/Systems/Release 담당
+
+- 사용자 피드백에 맞춰 Pause의 검은 CRT chamber를 직사각형 ColorRect에서 22px 대각 절삭 모서리를 가진 Polygon2D로 교체했다.
+- 외곽 pipe frame은 유지하며, 내용 패널만 안쪽 개구부에서 사각형이 아닌 chamfer 형태가 된다.
+- Godot 4.7.1 CLI/headless S8-G3 terminal UI verification과 Web release export는 모두 exit 0이었다.
+
+## 2026-08-20 — Pause modal chamfer 확대
+
+Owner: Content/Systems/Release 담당
+
+- 초기 22px 절삭이 dim 배경과 대비가 낮아 체감되지 않아, 검은 챔버 네 모서리의 대각 절삭을 48px로 확대했다.
+- Godot 4.7.1 CLI/headless S8-G3 terminal UI verification과 Web release export는 모두 exit 0이었다.
+
+## 2026-08-20 — Pause modal 사각 컨테이너 제거
+
+Owner: Content/Systems/Release 담당
+
+- frame PNG 중앙이 투명함을 확인했고, 남던 사각형은 Pause `PanelContainer`의 배경 레이아웃 구조에서 비롯된 것으로 분리했다.
+- `PanelContainer`를 배경을 생성하지 않는 `Control`로 교체하고, chamber/bezel/content에 명시적인 fill anchors를 부여했다. chamfered Polygon2D만이 내용 배경을 그린다.
+- Godot 4.7.1 CLI/headless S8-G3 terminal UI verification과 Web release export는 모두 exit 0이었다.
+
+## 2026-08-20 — S6-G5 Web Pause/Resume 청감 확인
+
+Owner: Content/Systems/Release 담당
+
+- Chrome Web에서 Pause가 Stage BGM을 `bgm_pause`로 교체하고 Resume가 이전 Stage BGM을 재개하는 것을 사용자가 실제 청감으로 확인했다.
+- S6-G5는 Black Hole Phase→Final Result의 실제 Web 완주가 S8-G4/S8-G5 통합에 의존하므로 `IMPLEMENTED`를 유지한다.
+## 2026-08-20 — S6-G5 BGM 상태 전환 Web 최종 검증
+
+- Owner lane: Content/Systems/Release
+- Goal: S6-G5
+- Evidence: 사용자 Chrome Web 청감으로 Pause BGM 전환 및 Resume의 Stage BGM 위치 재개에 이어, 실제 최종 경로의 `bgm_galactic` → `black_hole_loop` → `bgm_result` 전환을 확인했다.
+- Result: S6-G5를 `VERIFIED`로 갱신했다.
+## 2026-08-20 — S6-G5 Result→Main BGM 회귀 수정
+
+- Owner lane: Content/Systems/Release
+- 증상: Result 화면에서 Main으로 복귀해도 `bgm_result`가 계속 재생됐다.
+- 원인: ResultPanel의 Main 요청은 AudioManager의 직접 UI signal source가 아니었고, Main 복귀 후 StageManager가 발행하는 `READY` 상태에 음악 전환 정책이 없었다.
+- 수정: AudioManager가 authoritative `READY` state에서 Pause 저장 상태와 Black Hole loop를 정리하고 `bgm_title`을 요청하도록 했다.
+- Verification: Godot 4.7.1 CLI/headless `s6_g5_bgm_verification.tscn` exit 0. Result BGM→`READY`→Title BGM key 및 실제 music player 재생을 회귀 검증했다.
+
+## 2026-08-20 — Global SFX attenuation
+
+Owner: Content/Systems/Release
+Goal: S6-G4 maintenance
+Owned files: `scripts/presentation/audio_manager.gd`, `tests/content/s6_g4_audio_manager_verification.gd`
+
+- 사용자의 청감 피드백에 따라 `AudioManager.sfx_volume_offset_db` 기본값을 `-6 dB`로 추가했다. 모든 one-shot, UI, terminal, Black Hole loop는 policy의 상대 volume에 같은 offset을 적용한다.
+- BGM은 별도 `music_volume_db` channel을 유지하므로 기존 `-14 dB`와 Stage/Pause/Resume/Result 전환 정책은 변경하지 않았다.
+- Godot 4.7.1 CLI/headless S6-G4 verification exit 0: Merge T0 실제 재생값 `-18 dB`, Black Hole finale `-6 dB`; S6-G5 BGM regression exit 0 (`music_transitions=10`). Primary validate 3/3 및 clean Web release export `[ DONE ] savepack` 통과.
+
+## 2026-08-20 — S8-G3 Result 실험관 픽셀 물방울
+
+Owner: Content/Systems/Release
+
+- 사용자 선택 A안에 따라 Result 좌·우 실험관의 원형 윤곽 기포를 제거하고, 각 실험관에 독립적으로 상승하는 정사각 픽셀 물방울을 적용했다.
+- 각 물방울은 2~4px의 정수 크기, 어두운 1px 그림자, 좌상단 1px 광택으로 구성해 nearest-scaled pixel-art 화면에서도 원형 벡터 윤곽이 나타나지 않게 했다.
+- 기존 좌측 7개·우측 8개 독립 motion과 게이지 움직임, 입력 무시 레이어 계약은 유지했다.
+- `S8-G3` content verification에 좌·우 각각의 입자 배열과 `pixel_size` 기반 표현 계약을 추가했다.
+
+### 확인
+
+- Godot 4.7.1 CLI/headless `tests/content/s8_g3_terminal_ui_verification.tscn` exit 0.
+- Godot 4.7.1 Web release export `build/web/index.html` exit 0; `build/web/index.pck` 갱신을 확인했다.
+
+## 2026-08-20 — S8-G3 Result 실험관 하단 게이지 재설계
+
+Owner: Content/Systems/Release
+
+- 사용자 요청에 따라 Result 좌·우 실험관 하단의 기존 흰 원형 다이얼을 배경 픽셀 자산에서 제거했다.
+- Title UI의 압력계 문법을 축소 적용한 `녹색 → 황색 → 적색` 계단형 반원 눈금과 각진 허브·바늘을 새 Result plate에 그렸다.
+- 각 새 바늘 허브는 해당 실험관 하단 캡으로부터 정확히 70px 아래의 대칭 좌표 `(194, 517)` / `(1478, 517)`로 재배치했다. 이전 원형 바늘/허브 드로잉은 Title과 같은 사각 픽셀 표현으로 교체했다.
+- 기존 Result 점수·통계·Retry/Main hit area 및 장식 물방울 motion은 변경하지 않았다.
+
+### 확인
+
+- Godot 4.7.1 CLI/headless `tests/content/s8_g3_terminal_ui_verification.tscn` exit 0.
+- 갱신된 artwork resource와 실험관→게이지 70px 위치 계약을 verification에 추가했다.
+- Godot 4.7.1 Web release export `build/web/index.html` exit 0.
+
+## 2026-08-20 — Ground Clear Score 400M 확정 반영
+
+Owner: Content/Systems/Release
+Goal: S3-G1 Stage data maintenance
+Owned files: `resources/stages/stage_00_ground.tres`, `tests/content/s3_g1_stage_catalog_verification.gd`, Ground clear-score 문서
+
+- 사용자 확정값에 따라 Ground `clear_score`를 `4e6`에서 `4e8`(400,000,000)으로 변경했다. Planetary `2e18`과 마지막 Galactic `0`은 유지했다.
+- Stage HUD 게이지와 Score Clear는 모두 현재 StageDefinition의 같은 `clear_score`를 읽으므로 별도 점수 상수나 판정 코드를 추가하지 않았다.
+- Primary `godot` validation 3/3, S3-G1 catalog verification scene exit 0을 확인했다. Main runtime에서 Ground에 `400,000,000` 점수를 반영하자 settlement 뒤 `stage_score=400,000,001`, 상태 `SHIFTING`, pending shift id 생성까지 확인했다.
+- MCP runtime을 종료한 clean 상태에서 Godot 4.7.1 Web release export를 완료했다. 로컬 HTTP로 `index.html`, `index.pck`, `index.wasm`이 모두 HTTP 200을 반환했다.
+
+## 2026-08-21 — S8-G3 Desktop/Web 최종 수동 검증
+
+Owner: Content/Systems/Release
+Goal: S8-G3 Title·Main·Terminal UI
+
+- 사용자가 Godot Desktop과 Chrome Web 양쪽에서 실제 finale 이후 S8-G3 Result UI가 표시되는 것을 확인했다.
+- Result의 `RETRY RUN`을 누르면 fresh Ground Run으로 재시작되고, `MAIN`을 누르면 Title UI로 복귀하는 것을 두 환경에서 확인했다.
+- 기존 Godot 4.7.1 CLI/headless S8-G3 자동 검증의 `title=true`, `pause_modal=true`, `result_snapshot=read_only`, `actual_buttons=true`, `hover=face_only`, `requests=once` 증거와 합쳐 Desktop/Web 수동 검증 Gate를 충족했다.
+- S8-G3을 `VERIFIED`로 닫는다. S8-G4 Integration과 S8-G5 Presentation의 별도 Goal 상태는 수정하지 않았다.
+
+## 2026-08-21 — Planetary Clear Score 비율 조정
+
+Owner: Content/Systems/Release
+Goal: S3-G1 Stage data maintenance
+Owned files: `resources/stages/stage_01_planetary.tres`, Stage data content verification 및 관련 설계 문서
+
+- 사용자 승인에 따라 Planetary `clear_score`를 `2e18`에서 `4e25`로 조정했다. Ground의 `4e8 / Moon 1e8 = 4` 비율을 Planetary의 최고 기본 Run 공 Galaxy(`1e25`)에 동일 적용한 값이다.
+- Stage HUD와 Score Clear runtime은 `StageDefinition.clear_score`를 read-only로 소비하므로, 물리·점수 판정·Presentation 구현은 바꾸지 않았다. Galactic의 `0`도 유지했다.
+- Godot 4.7.1 CLI/headless `s3_g1_stage_catalog_verification.tscn`과 `s5_g5_three_stage_run_verification.tscn`이 통과했다. 후자는 Planetary의 현재 `clear_score`를 이용한 Score Clear→Shift 경로를 포함한다. Primary `godot` MCP의 두 scene validation도 통과했다.
+
+## 2026-08-21 — S7-G1C Item Ball·Orb producer contract
+
+Owner: Content/Systems/Release
+Goal: S7-G1C
+Owned files: `scripts/data/item_definition.gd`, `scripts/gameplay/item_*.gd`, `resources/items/**`, `tests/content/s7_g1c_*`, 관련 계약 문서
+
+- `ItemManager`와 별도 Item Ball/Orb runtime state를 추가했다. Stage마다 한 번만 Item Ball을 예약·생성하고, 현재 Stage의 `local_level >= 2` 공 snapshot이 분리된 상태로 닿을 때만 damage를 한 번 commit한다.
+- 5번째 유효 hit은 행성 파괴와 Orb 생성만 확정한다. Orb는 local Lv2 runtime radius와 수직 하강 velocity를 사용하며, Paddle pickup 또는 열린 하단 miss 중 하나만 signal한다. 효과 activation, CUT-IN, Core score/Settlement 변경은 의도적으로 구현하지 않았다.
+- Item producer signal의 `item_type`은 세 data key(`blizzard`, `fire_core`, `magnet`)를 보존하는 `StringName`으로 확정했고 기술/Integration 계약을 동기화했다. Q-S7의 stale `local Lv3+` 표기는 현재 게임 규칙의 `local Lv2+`로 정정했다.
+- Primary Godot validation 6/6 통과. Primary runtime에서 `S7_G1C_VERIFIED item_ball=once hits=5 orb=collect_or_miss`, exit 0을 확인했다. Godot CLI 실행 파일은 PATH와 표준 설치 경로에서 찾지 못해 CLI baseline은 tooling issue로 기록한다.

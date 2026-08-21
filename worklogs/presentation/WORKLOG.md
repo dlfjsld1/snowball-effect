@@ -226,3 +226,106 @@ Branch: `ui-design`
 - Runtime visual load: three static backgrounds total 4,320,000 pixels, approximately 16.48 MiB uncompressed RGBA; dynamic overlay peak 48 small draw-rect particles. FPS was not measured in this Goal and remains part of S5-G5 Web integration evidence.
 - Preview paths: `docs/design/mockups/drafts/frame-paper8-stage-world-preview.png` and `frame-paper8-scale-shift-preview.png`.
 - S5-G4 is `VERIFIED`; three-Stage Desktop/Web completion remains S5-G5.
+
+## 2026-08-18 — S2-G5 contract repair and S6-G2 design preparation
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- `ball_merged(result_level, world_position)` 2인자 계약에 없는 score amount 추측을 제거하고 catalog name만 표시하도록 정정했다.
+- D안 `FIRST CONTACT` CUT-IN을 공통 배경과 공별 문구·공 레이어로 분리하고, 대상 6종을 Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`로 확정했다.
+- 후속 Goal로 local Lv4 즉시 Clear 제거(S3-G7), Stage Score gauge(S3-G8), 축하 메시지·`Next Stage` 확인(S5-G6/G6I), Galactic 투명 배경(S5-G7)을 문서화했다.
+
+### 검증
+
+- Godot 4.7.1 CLI project load exit 0. S2-G5, S6-G1, S6-G3, S6-G4 foundation, S6-G4 wiring 검증이 모두 exit 0으로 통과했다. S6-G4 wiring 종료 시 기존 ObjectDB 12개/resource 6개 leak 진단이 남지만 test assertion과 exit code는 정상이다.
+- S2-G5 fixture는 현재 Stage-local Merge 계약에 맞게 Ground chain을 명시했다. Core runtime은 변경하지 않았다.
+- CUT-IN layer asset 12개는 투명 alpha와 1600×900 공통 배경 조립 규격을 사용한다.
+- `git diff --check` 통과. MCP/Web은 이번 문서·asset 준비 변경에 사용하지 않았다.
+- push 직전 `origin/main` `dbd62bb`를 pull해 S6-G4 VERIFIED 오디오 갱신을 병합했다. STATUS 단일 충돌은 원격 S6-G4 최신 증거와 신규 PENDING Goal을 모두 보존해 해결했으며, 병합 뒤 Godot 4.7.1 CLI project load, S2-G5, S6-G4 foundation/wiring, Main 120-frame smoke가 모두 exit 0이었다.
+
+### 제외
+
+- S6-G2 runtime controller, pause/handoff, Run-scoped 중복 억제는 구현하지 않았다.
+- S3-G7/S3-G8/S5-G6/S5-G6I/S5-G7은 PENDING 문서 계약이며 runtime 파일을 수정하지 않았다.
+- 사용자가 별도로 결정한 Stage Restart 계약은 변경하지 않았다.
+## 2026-08-20 — S8-G5 Black Hole Phase Presentation 구현
+
+- Owner lane: Presentation/UI
+- Goal: S8-G5
+- Owned files: `scripts/presentation/presentation_manager.gd`, `scripts/presentation/black_hole_presentation_overlay.gd`, `scenes/backgrounds/gameplay_frame.tscn`, `scenes/effects/black_hole_presentation_overlay.tscn`, `tests/presentation/s8_g5_black_hole_presentation_verification.*`.
+- 구현: Galactic L2→L3 Frame/HUD visual profile 보간, 중복·stale phase ID 방어, Black Hole field pulse/ring overlay, terminal two-Black-Hole orbit·burst overlay, gameplay HUD/Pause hide와 retry-reset API를 추가했다.
+- Integration contract: `black_hole_phase_presentation_finished(phase_id)` 및 `black_hole_finale_presentation_finished()`를 제공한다. S8-G4는 실제 Main에서 phase 요청/완료와 terminal Result 지연 표시를 연결해야 한다.
+- Verification: Godot 4.7.1 CLI/headless `s8_g5_black_hole_presentation_verification.tscn` exit 0 (`l2_to_l3=true`, phase ID single-flight, finale once); `s5_g4_stage_world_shift_verification.tscn` exit 0.
+- 상태: Presentation 산출물은 `IMPLEMENTED`; S8-G4 실제 wiring과 S8-G3 Result handoff 이후 Desktop/Web 최종 관찰이 남아 있다.
+
+## 2026-08-20 — Pause/Retry B-design control module
+
+- Owner lane: Presentation/UI
+- Scope: 기존 우측 하단 Pause/Retry CRT 모듈을 사용자가 선택한 B안(이중 원형 청록 CRT + 밝은 금속 베젤)으로 원본 `176×104` 스프라이트의 팔레트·도트 밀도·외곽 배치를 유지해 직접 편집한 런타임 스프라이트로 교체했다.
+- Owned files: `assets/sprites/ui/frame/paper8_lab_v2/**`, `scenes/backgrounds/gameplay_frame.tscn`, `scenes/ui/pause_menu.tscn`.
+- Compatibility: 기존 `pause_requested`/`retry_requested` 신호와 Button 라벨 렌더링은 유지한다. 새 원형 버튼의 중심·면적에 맞춰 투명 Button 입력 영역을 재정렬했다.
+- Verification: 새 PNG를 Godot import한 뒤 Web release export `savepack` exit 0을 확인했다. 이 환경의 standalone headless scene test는 `user://logs` open 실패 뒤 signal 11로 종료되어 UI action regression 증거로 사용하지 않았다.
+
+## 2026-08-20 — Empty current-item slot
+
+- Owner lane: Presentation/UI
+- Scope: 우측 `CURRENT ITEM` CRT의 중앙 녹색 필드를 빈 슬롯 유휴색 `#1F244B`로 교체했다. 프레임·파이프·indicator는 보존했다.
+- Intent: 아이템 미보유 상태가 활성 녹색 표시처럼 보이지 않도록 한다.
+- Verification: 런타임 `176×300` 텍스처에서 중앙 연결 필드 20,956px만 변경했으며 Web release export를 재생성한다.
+
+## 2026-08-20 — S3-G8 20-cell Stage Score gauge 및 Pause/Retry CRT 재구성
+
+- Owner lane: Presentation/UI. Goal S3-G8은 `IMPLEMENTED`로 전환했다.
+- 우측 빈 CRT에 `stage_score / clear_score`를 read-only로 표시하는 20칸 세로 게이지를 추가했다. 0점에는 셀을 보이지 않고, 점수에 따라 아래부터 채우며 70%는 14칸, overflow는 20칸으로 clamp한다. 다음 Scale Shift target이 없는 Galactic은 gauge를 숨긴다. HUD는 Clear 판정이나 점수 변경을 하지 않는다.
+- Pause/Retry는 별도 이미지를 덧붙이지 않고 원본 `crt_pause_v2_176x104`의 녹색 버튼 내부 픽셀을 직접 원형 청록 CRT/밝은 금속 베젤로 치환해 `crt_pause_b_v2_176x104`를 재생성했다. 원래 cabinet 외곽·상단 표시등·하단 패널은 그대로 보존했고, 실제 Button hit 영역과 글자를 두 원 중심에 맞췄다.
+- 변경: `scripts/ui/stage_score_gauge.gd`, HUD scene/script, pause layout, `build_pause_b_from_original.ps1`, runtime PNG와 manifest, S3-G8 verification scene.
+- Verification: Godot 4.7.1 Web release export가 `[ DONE ] savepack`으로 성공해 새 script/scene/texture가 Web PCK에 포함됨을 확인했다. 이 환경에서 headless scene test는 project assertion 전에 `user://logs`를 열지 못하고 Godot process가 signal 11로 종료되어, S3-G8의 실제 Web visual/hit-area 확인은 남겼다.
+
+## 2026-08-20 — Pause modal terminal overlay ordering
+
+- Black Hole overlay가 GameplayFrame 내부 `z_index=100`으로 Pause modal보다 앞에 그려지던 회귀를 수정했다.
+- PauseMenu root를 `z_index=200`으로 올려 Pause modal과 dim layer가 Black Hole Phase/Finale overlay를 포함한 gameplay presentation보다 항상 전면에 렌더링되게 했다.
+- Godot 4.7.1 Web release export `[ DONE ] savepack` 성공. 실제 Galactic Pause 화면은 Web 수동 확인이 남아 있다.
+
+## 2026-08-20 — Pause/Retry B안 기준 재적용
+
+- 직전 직접 픽셀 재구성이 사용자가 채택한 B안의 넓은 강철 원형 베젤·중앙 결합부·외곽 파이프 비율과 다르다는 피드백을 반영했다.
+- 사용자가 제공한 B안의 버튼 모듈을 기준 자산으로 보존하고, `176×104` runtime PNG를 nearest-neighbor로 rasterize했다. 두 버튼의 명칭은 자산 내부 도트 텍스트만 사용하며, 별도 Godot Button 텍스트를 제거해 중첩을 막았다.
+- 기존 hit 영역은 원형 버튼 중심 `(50, 54)`·`(126, 54)`과 일치한다. Runtime PNG는 `176×104`, binary alpha(부분 alpha 0px), 80개의 투명 모서리 픽셀을 확인했다.
+- Godot 4.7.1 Web release export `[ DONE ] savepack` 성공.
+
+## 2026-08-20 — Pause/Retry B안 외곽 판 제거
+
+- B안 전체의 검은 배경 판이 원래 오른쪽 하단 CRT 위에 덧씌워진 것처럼 보인다는 피드백을 반영했다.
+- `crt_pause_v2_176x104`를 최종 베이스로 유지하고, 내부 녹색 사각 버튼 픽셀만 빈 CRT색으로 치환한 뒤 B안의 두 원형 버튼과 중앙 결합 볼트 영역만 직접 복사했다. 따라서 외곽 투명 alpha·상단 표시등·원래 하우징의 도트 픽셀은 유지되고, 검은 바깥 여백은 존재하지 않는다.
+- Godot 4.7.1 Web release export `[ DONE ] savepack` 성공.
+
+## 2026-08-20 — Pause/Retry B안 수직 정렬
+
+- 원형 버튼과 중앙 결합부가 원래 하우징에 비해 낮아 보이는 피드백을 반영해 B안 삽입 픽셀만 4px 위로 이동했다.
+- 실제 Button hit 영역 중심(`y=52`)과 새 원형 버튼 중심(`y=51`)을 맞췄다. Web release export `[ DONE ] savepack` 성공.
+
+## 2026-08-20 — Pause/Retry B안 수직 정렬 재보정
+
+- 4px 보정이 실제 게임 크기에서 충분히 드러나지 않아, B안 삽입부를 원래 기준에서 총 8px 위로 옮겼다.
+- hit 영역도 `y=12` offset으로 함께 이동해 원형 버튼 중심(`y=47`)과 맞췄다. Web release export `[ DONE ] savepack` 성공.
+
+## 2026-08-20 — Pause/Retry 위치 이동 취소
+
+- 사용자 지시에 따라 4px 및 8px 수직 위치 이동을 모두 취소했다. 원형 버튼·중앙 결합부와 Button hit 영역은 원래 기준 좌표로 복귀했다.
+- 다음 보정은 node/asset translation이 아니라 원본 CRT 내부의 도트 픽셀 재작화로만 수행한다. Web release export `[ DONE ] savepack` 성공.
+
+## 2026-08-20 — S5-G6 Stage Clear 확인 UI
+
+- Final Settlement Score Clear 뒤 gameplay를 바꾸지 않는 `StageClearPanel`을 추가했다. panel은 authoritative snapshot의 Stage 이름/점수와 `NEXT STAGE` action만 표시하며 `clear_id` 요청을 한 번 발행한다.
+- 통합 검증에서 panel 표시, focus, matching request 이후 hide를 확인했다.
+
+## 2026-08-21 — S8-G5 final player-path verification
+
+Owner: Presentation
+
+- 사용자 실제 플레이로 첫 Black Hole Snowball 뒤 phase 진입·기믹 생성, L2→L3 Frame/HUD 확장 뒤 Galactic 재개, 두 번째 Black Hole 충돌 뒤 finale→Result 경로를 확인했다.
+- 기존 S8-G5 CLI phase/finale verification과 S5-G4 regression evidence를 합쳐 S8-G5를 `VERIFIED`로 갱신했다.

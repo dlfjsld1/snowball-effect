@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="AudioCatalog" load_steps=47 format=3]
+[gd_resource type="Resource" script_class="AudioCatalog" load_steps=59 format=3]
 
 [ext_resource type="Script" path="res://resources/audio/audio_catalog.gd" id="1_catalog"]
 [ext_resource type="Script" path="res://resources/audio/audio_event_definition.gd" id="2_definition"]
@@ -24,6 +24,12 @@
 [ext_resource type="AudioStream" path="res://assets/audio/black_hole_absorb.ogg" id="22_black_hole_absorb"]
 [ext_resource type="AudioStream" path="res://assets/audio/black_hole_finale.ogg" id="23_black_hole_finale"]
 [ext_resource type="AudioStream" path="res://assets/audio/run_end.ogg" id="24_run_end"]
+[ext_resource type="AudioStream" path="res://assets/audio/bgm_title.ogg" id="25_bgm_title"]
+[ext_resource type="AudioStream" path="res://assets/audio/bgm_ground.ogg" id="26_bgm_ground"]
+[ext_resource type="AudioStream" path="res://assets/audio/bgm_planetary.ogg" id="27_bgm_planetary"]
+[ext_resource type="AudioStream" path="res://assets/audio/bgm_galactic.ogg" id="28_bgm_galactic"]
+[ext_resource type="AudioStream" path="res://assets/audio/bgm_pause.ogg" id="29_bgm_pause"]
+[ext_resource type="AudioStream" path="res://assets/audio/bgm_result.ogg" id="30_bgm_result"]
 
 [sub_resource type="Resource" id="AudioEvent_merge_t0"]
 script = ExtResource("2_definition")
@@ -136,6 +142,42 @@ script = ExtResource("2_definition")
 event_key = &"run_end"
 stream = ExtResource("24_run_end")
 
+[sub_resource type="Resource" id="AudioEvent_bgm_title"]
+script = ExtResource("2_definition")
+event_key = &"bgm_title"
+stream = ExtResource("25_bgm_title")
+loop = true
+
+[sub_resource type="Resource" id="AudioEvent_bgm_ground"]
+script = ExtResource("2_definition")
+event_key = &"bgm_ground"
+stream = ExtResource("26_bgm_ground")
+loop = true
+
+[sub_resource type="Resource" id="AudioEvent_bgm_planetary"]
+script = ExtResource("2_definition")
+event_key = &"bgm_planetary"
+stream = ExtResource("27_bgm_planetary")
+loop = true
+
+[sub_resource type="Resource" id="AudioEvent_bgm_galactic"]
+script = ExtResource("2_definition")
+event_key = &"bgm_galactic"
+stream = ExtResource("28_bgm_galactic")
+loop = true
+
+[sub_resource type="Resource" id="AudioEvent_bgm_pause"]
+script = ExtResource("2_definition")
+event_key = &"bgm_pause"
+stream = ExtResource("29_bgm_pause")
+loop = true
+
+[sub_resource type="Resource" id="AudioEvent_bgm_result"]
+script = ExtResource("2_definition")
+event_key = &"bgm_result"
+stream = ExtResource("30_bgm_result")
+loop = true
+
 [resource]
 script = ExtResource("1_catalog")
-events = [SubResource("AudioEvent_merge_t0"), SubResource("AudioEvent_merge_t1"), SubResource("AudioEvent_merge_t2"), SubResource("AudioEvent_merge_t3"), SubResource("AudioEvent_cashout_t0"), SubResource("AudioEvent_cashout_high"), SubResource("AudioEvent_settlement_start"), SubResource("AudioEvent_settlement_finish"), SubResource("AudioEvent_stage_clear"), SubResource("AudioEvent_stage_fail"), SubResource("AudioEvent_scale_shift"), SubResource("AudioEvent_ui_click"), SubResource("AudioEvent_ui_pause"), SubResource("AudioEvent_ui_resume"), SubResource("AudioEvent_ui_retry"), SubResource("AudioEvent_ui_start"), SubResource("AudioEvent_ui_menu"), SubResource("AudioEvent_black_hole_phase"), SubResource("AudioEvent_black_hole_loop"), SubResource("AudioEvent_black_hole_absorb"), SubResource("AudioEvent_black_hole_finale"), SubResource("AudioEvent_run_end")]
+events = [SubResource("AudioEvent_merge_t0"), SubResource("AudioEvent_merge_t1"), SubResource("AudioEvent_merge_t2"), SubResource("AudioEvent_merge_t3"), SubResource("AudioEvent_cashout_t0"), SubResource("AudioEvent_cashout_high"), SubResource("AudioEvent_settlement_start"), SubResource("AudioEvent_settlement_finish"), SubResource("AudioEvent_stage_clear"), SubResource("AudioEvent_stage_fail"), SubResource("AudioEvent_scale_shift"), SubResource("AudioEvent_ui_click"), SubResource("AudioEvent_ui_pause"), SubResource("AudioEvent_ui_resume"), SubResource("AudioEvent_ui_retry"), SubResource("AudioEvent_ui_start"), SubResource("AudioEvent_ui_menu"), SubResource("AudioEvent_black_hole_phase"), SubResource("AudioEvent_black_hole_loop"), SubResource("AudioEvent_black_hole_absorb"), SubResource("AudioEvent_black_hole_finale"), SubResource("AudioEvent_run_end"), SubResource("AudioEvent_bgm_title"), SubResource("AudioEvent_bgm_ground"), SubResource("AudioEvent_bgm_planetary"), SubResource("AudioEvent_bgm_galactic"), SubResource("AudioEvent_bgm_pause"), SubResource("AudioEvent_bgm_result")]

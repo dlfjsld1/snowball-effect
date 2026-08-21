@@ -10,6 +10,7 @@ const ScoreFormatter = preload("res://scripts/utils/score_formatter.gd")
 @onready var run_score_label: Label = $Readout/RunScoreLabel
 @onready var clear_target_label: Label = $Readout/ClearTargetLabel
 @onready var ball_count_label: Label = $Readout/BallCountLabel
+@onready var stage_score_gauge: StageScoreGauge = $StageScoreGauge
 @onready var effect_manager: EffectManager = $EffectManager
 @onready var genealogy_slots: Array[Label] = [
 	$Genealogy/Content/Slots/Slot0,
@@ -25,6 +26,8 @@ var _stage_source: Node
 var _ball_catalog = BallCatalog.new()
 var _ordered_global_levels := PackedInt32Array()
 var _revealed_count := 0
+var _current_stage_score := 0.0
+var _current_clear_score := 0.0
 
 
 func bind_sources(score_source: Node, ball_source: Node, stage_source: Node = null) -> void:
@@ -59,6 +62,7 @@ func reset_view() -> void:
 	_on_score_changed(0.0, 0.0)
 	_on_ball_count_changed(0)
 	time_label.text = "TIME 0.0"
+	stage_score_gauge.reset_gauge()
 
 
 func apply_frame_layout(left_wing: Rect2, right_wing: Rect2) -> void:
@@ -66,6 +70,7 @@ func apply_frame_layout(left_wing: Rect2, right_wing: Rect2) -> void:
 	time_label.position = left_wing.position + Vector2(24.0, 154.0)
 	$Genealogy.position = left_wing.position + Vector2(44.0, 248.0)
 	stage_score_label.position = right_wing.position + Vector2(44.0, 48.0)
+	stage_score_gauge.position = right_wing.position + Vector2(48.0, 194.0)
 
 
 func _exit_tree() -> void:
@@ -73,8 +78,10 @@ func _exit_tree() -> void:
 
 
 func _on_score_changed(stage_score: float, run_score: float) -> void:
+	_current_stage_score = stage_score
 	stage_score_label.text = "STAGE SCORE %s" % ScoreFormatter.format_score(stage_score)
 	run_score_label.text = "RUN SCORE %s" % ScoreFormatter.format_score(run_score)
+	stage_score_gauge.set_score_progress(_current_stage_score, _current_clear_score)
 
 
 func _on_ball_count_changed(active_count: int) -> void:
@@ -85,7 +92,9 @@ func _on_stage_changed(definition: StageDefinition) -> void:
 	if definition == null:
 		return
 	stage_name_label.text = "STAGE %s" % definition.display_name.to_upper()
+	_current_clear_score = definition.clear_score
 	clear_target_label.text = "TARGET %s" % ScoreFormatter.format_score(definition.clear_score)
+	stage_score_gauge.set_score_progress(_current_stage_score, _current_clear_score)
 	_ordered_global_levels = definition.local_ball_levels.duplicate()
 	_revealed_count = 1
 	_update_genealogy()

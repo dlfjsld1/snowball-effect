@@ -14,7 +14,7 @@
 - Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `scripts/core/stage_runtime.gd`, `tests/simulation/**`
 - Integration Point: 첫 Lv14 생성에서 `black_hole_phase_started(phase_id, from_rect, to_rect)`와 Black Hole position snapshot을 Integration/Presentation에 read-only 제공.
 - Dependencies: S5 완료와 S4 performance baseline.
-- Verification: 첫 Lv14가 일반 Clear 없이 Black Hole runtime entity로 한 번 전환; `local_level <= 2` 흡수와 Cashout 상당 점수 차감, run score 0의 즉시 Game Over, 다중 source vector 합산·600 total cap, Black Hole 상호 450 pull, 하단 반사·Cashout 제외, 비성장·Merge 제외, NaN·폭주 없음, 1,000공 성능 회귀 기록; 별도 Stage나 새 BallDefinition을 생성하지 않음.
+- Verification: 첫 Lv14가 일반 Clear 없이 Black Hole runtime entity로 한 번 전환; `local_level <= 2` 흡수와 Cashout 가치 `12.5%`/phase-entry Run Score `25%` 상한 패널티, 단일 저등급 흡수 즉사 방지와 반복 손실의 run score 0 즉시 Game Over, 다중 source vector 합산·900 total cap, Black Hole 상호 450 pull, 하단 반사·Cashout 제외, 비성장·Merge 제외, NaN·폭주 없음, 1,000공 성능 회귀 기록; 별도 Stage나 새 BallDefinition을 생성하지 않음.
 - Do Not Modify: Black Hole visual과 Stage resource 값.
 
 ### S8-G2 두 Black Hole 최종 충돌 runtime
@@ -32,7 +32,7 @@
 - Owned Files: `scripts/ui/title_screen.gd`, `scripts/ui/pause_menu.gd`, `scripts/ui/result_panel.gd`, `scenes/ui/title_screen.tscn`, `scenes/ui/pause_menu.tscn`, `scenes/ui/result_panel.tscn`, `tests/content/**`
 - Integration Point: `start_requested`, `retry_requested`, `resume_requested`, `settings_requested`, `main_menu_requested`; read-only terminal/result snapshot 표시 API.
 - Dependencies: S8-G2 terminal snapshot schema와 S0-G2 UI mount 계약.
-- Verification: finale에서 gameplay HUD/UI가 사라지고 `SNOWBALL EFFECT` 타이틀, `CLEAR SCORE` 최종 run score, `MAIN MENU` 버튼 표시; Start/Retry/Pause modal 행동 요청 한 번; Pause modal에 재개·다시 시작·설정·메인 화면이 표시됨; UI가 runtime state를 직접 초기화하지 않음.
+- Verification: finale에서 gameplay HUD/UI가 사라지고 `SNOWBALL EFFECT` 타이틀, `CLEAR SCORE` 최종 run score, Run 누적 `TOTAL MERGES`, `RUN TIME`, 실제 `RETRY RUN`·`MAIN` 버튼 표시; Result 전체가 아래에서 위로 진입하고 좌우 실험관 기포와 독립 최대치 게이지 motion이 동작; 통계 값이 없는 fixture에서는 통계 영역을 숨김; Start/Retry/Pause modal 행동 요청 한 번; Pause modal에 재개·다시 시작·설정·메인 화면이 표시됨; UI가 runtime state를 직접 초기화하지 않음.
 - Do Not Modify: GameManager, StageManager, Core result 계산.
 
 ### S8-G4 Black Hole Finale와 Retry 통합
@@ -54,7 +54,7 @@
 - Owned Files: `scripts/presentation/background_manager.gd`, `scripts/presentation/presentation_manager.gd`, `scenes/backgrounds/**`, `scenes/effects/**`, `scripts/ui/hud.gd`, `tests/presentation/**`
 - Integration Point: `black_hole_phase_started(phase_id, from_rect, to_rect)`를 구독하고 `black_hole_phase_presentation_finished(phase_id)`를 정확히 한 번 반환.
 - Dependencies: S5-G4의 Frame/Field 이동 계약과 S8-G1의 phase/position snapshot.
-- Verification: L2 `880`에서 L3 `1040`으로 Frame·표시 Play Field·고정 폭 HUD housing이 함께 좌우 대칭 확장; `Galactic` Stage 표시는 유지; 전환 완료 뒤 gameplay Black Hole과 HUD가 활성 상태로 남음; 두 Black Hole 접촉 시 mutual orbit·폭발 뒤 HUD/UI 제거와 타이틀·Clear Score·Main Menu 표시; reduced-effects에서도 상태명·경계 이동·finale가 읽힘; duplicate/stale `phase_id`는 완료로 재사용되지 않음.
+- Verification: L2 `880`에서 L3 `1040`으로 Frame·표시 Play Field·고정 폭 HUD housing이 함께 좌우 대칭 확장; `Galactic` Stage 표시는 유지; 전환 완료 뒤 gameplay Black Hole과 HUD가 활성 상태로 남음; 두 Black Hole 접촉 시 mutual orbit·폭발 뒤 HUD/UI 제거와 타이틀·Clear Score·Retry Run·Main 표시; reduced-effects에서도 상태명·경계 이동·finale가 읽힘; duplicate/stale `phase_id`는 완료로 재사용되지 않음.
 - Do Not Modify: StageManager, logical bounds, force 계산, Stage/ball resource 값.
 
 ## Exit Gate

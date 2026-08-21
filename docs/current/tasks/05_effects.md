@@ -41,7 +41,7 @@
 - CUT-IN 후보
 - 특별 사운드
 
-Stage local 5종 중 4단계 공(`local_level = 3`)의 첫 생성은 일반 고등급 CUT-IN 대상이다. 최고 공(`local_level = 4`)은 실제 결과 공의 모습을 Stage Clear / Scale Shift 또는 Black Hole Phase 연출 안에서 강조하고 일반 CUT-IN을 중복 재생하지 않는다.
+Stage local 5종 중 마지막 두 단계(`local_level = 3`, `local_level = 4`)의 Run 내 첫 생성은 `FIRST CONTACT` 고등급 CUT-IN 대상이다. 대상은 Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`로 정확히 6종이다.
 
 ### Tier 4
 - SCALE SHIFT
@@ -58,6 +58,23 @@ Stage local 5종 중 4단계 공(`local_level = 3`)의 첫 생성은 일반 고�
 - 낮은 점수 팝업은 과밀 시 생략 가능
 - 사운드 동시 재생 제한
 - 실제 공의 외곽선/실루엣은 항상 읽힘
+
+---
+
+## BGM 상태 전환
+
+배경음은 효과음 pool과 분리된 music channel에서 한 번에 하나만 재생한다. 확정 key는 `bgm_title`, `bgm_ground`, `bgm_planetary`, `bgm_galactic`, `bgm_pause`, `bgm_result`다.
+
+| 상태 | 재생 | 전환 |
+|---|---|---|
+| Title | `bgm_title` | Main Title 표시 |
+| Ground / Planetary / Galactic | 각 Stage BGM | `stage_changed`에 맞춰 교체 |
+| Pause | `bgm_pause` | Stage BGM을 정지하고 track key·재생 위치 저장 |
+| Resume | 저장한 Stage BGM | 저장 위치에서 재개 |
+| Black Hole Phase | `black_hole_loop` | `bgm_galactic`을 정지하고 단독 재생 |
+| Final Result | `bgm_result` | `black_hole_loop`을 정지한 뒤 재생 |
+
+Retry, Main Menu, terminal lock은 남은 BGM/loop를 정리한다. Web 첫 사용자 입력 전에는 어떤 BGM도 자동 재생하지 않으며, unlock 뒤 현재 상태에 맞는 track만 시작한다.
 
 ---
 
@@ -145,4 +162,4 @@ Time Up 또는 Stage Clear Settlement:
 - Time Bonus popup 금지
 - 공 수가 많으면 개별 Tween 대신 배치/샘플링 연출
 
-Stage 최고 공은 일반 CUT-IN보다 Stage Clear / Scale Shift 연출을 우선한다.
+Moon과 Galaxy는 CUT-IN 뒤 gameplay를 재개한다. 첫 Black Hole은 CUT-IN을 마친 뒤 Black Hole Phase 전환을 이어간다.

@@ -38,8 +38,8 @@ PLAYING
     run_score += cashout_score
     stage_time += local_time_bonus
 
-  Top Ball
-    CLEAR_LOCKED → SETTLING → CLEARED → SHIFTING
+  Local Lv4 first creation
+    FIRST CONTACT CUT-IN → PLAYING
 
   Time Up
     TIME_UP_LOCKED → SETTLING
@@ -49,15 +49,15 @@ PLAYING
 
 마지막 Galactic은 예외다. 첫 Lv14 Black Hole은 `CLEARED`가 아니라 이동 Black Hole 최종 국면을 활성화하고, 두 번째 Black Hole과 충돌해야 타이틀 연출 뒤 Run이 끝난다. Time Up 종료는 기존 Final Settlement 경로를 유지한다.
 
-### 한 physics tick의 판정 순서
+### 한 physics tick의 시간 경계
 
-1. `stage_time -= delta`
-2. 이동 / 충돌 / Merge 처리
-3. Merge 확정 및 Top Ball 확인
-4. 같은 tick의 Active Cashout 점수와 Time Bonus 반영
-5. Top Ball 우선, 그다음 `stage_time <= 0` 순서로 종료 판정
+1. tick 시작 남은 시간으로 제한시간 전 유효 gameplay 구간을 구한다.
+2. 유효 구간 안의 이동 / 충돌 / Merge / 하단 통과만 commit한다.
+3. 제한시간 전 Active Cashout에 점수와 Time Bonus를 반영한다.
+4. 보너스 후 시간이 양수면 `PLAYING`을 유지한다.
+5. 유효 Cashout으로 시간이 연장되지 않으면 0초에 `TIME_UP_LOCKED`를 적용한다.
 
-시간이 0 이하가 된 tick에서도 Cashout 보너스로 시간이 양수가 되면 플레이를 계속한다. 같은 tick에 Top Ball이 생성되면 남은 시간과 관계없이 Stage 성공이다.
+제한시간 이후의 하단 통과는 Active Cashout이 아니다. 남은 공은 Final Settlement에서 base score만 주고 Time Bonus를 주지 않는다. Ground/Planetary의 local Lv4가 생성돼도 Stage를 즉시 끝내지 않는다.
 
 ### 점수와 Settlement
 
@@ -70,9 +70,9 @@ PLAYING
 ### 데이터와 레이어 경계
 
 - `base_time`, `clear_score`, `time_bonus_by_local_level`은 `StageDefinition` 데이터다.
-- Time Bonus 초기값은 Stage별 5종의 Local Lv0~4 순서로 `0s`, `0.25s`, `0.5s`, `1s`, `2s`다. 최고 local 공은 즉시 Clear되므로 일반 Active Cashout 보너스를 실제로 받지 않는다.
+- Time Bonus 초기값은 Stage별 5종의 Local Lv0~4 순서로 `0s`, `0.25s`, `0.5s`, `1s`, `2s`다. local Lv4도 일반 플레이와 Active Cashout 대상이 될 수 있다.
 - 기본 Stage chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7·Lv9는 catalog에는 있지만 기본 Run에서 비활성이고, Lv14 최종 공은 `Black Hole`이다. 첫 Lv14 Ball은 Galactic 내부의 이동 Black Hole runtime 기믹으로 전환된다.
-- `clear_score` 초기값은 Ground `4e6`, Planetary `2e18`이다. 각각 최고 공보다 한 단계 낮은 Cashout 가능 공인 Giant Snowball 및 Supernova 점수의 4배이며, 마지막 Galactic Stage는 이 판정을 사용하지 않는다. 이는 런타임 공식이 아닌 플레이테스트 기준값이다.
+- `clear_score` 초기값은 Ground `4e8`, Planetary `4e25`다. 두 값 모두 해당 Stage 최고 공 Active Cashout 점수의 4배(Moon `1e8`, Galaxy `1e25`)다. Cashout commit 뒤 목표에 도달하면 즉시 Clear와 Scale Shift를 확정하며, local Lv4 생성 자체는 이 판정을 대신하지 않는다. 마지막 Galactic Stage는 이 판정을 사용하지 않는다.
 - 초기 시간 cap은 두지 않고 실제 획득 시간과 Stage 체류 시간을 먼저 측정한다.
 - Core는 Merge, Cashout, Time Bonus, Stage Timer, Settlement, Scale Shift다.
 - Blizzard, Fire Core, Magnet은 Optional Item Layer다. Fire ×10은 Active Cashout 전용이며 Settlement에는 적용하지 않는다.

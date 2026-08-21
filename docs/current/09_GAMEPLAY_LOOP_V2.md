@@ -249,13 +249,13 @@ Score Only
 
 # 7. Stage Clear 조건
 
-Stage를 통과하는 방법은 두 가지다.
+Ground와 Planetary는 Time Up 뒤 Final Settlement 점수로 통과한다.
 
 ---
 
-## 7.1 최고 공 제작 — 즉시 Clear
+## 7.1 최고 공 제작 — FIRST CONTACT
 
-Ground와 Planetary는 현재 Stage의 최고 공을 만들면 즉시 Stage Clear한다. Galactic 첫 Lv14는 Black Hole 최종 국면으로 전환하는 예외다.
+Ground와 Planetary의 최고 공은 생성만으로 Stage Clear하지 않는다. Run 내 첫 생성이면 FIRST CONTACT CUT-IN 뒤 gameplay를 계속한다. Galactic 첫 Lv14는 CUT-IN 뒤 Black Hole 최종 국면으로 전환한다.
 
 예:
 
@@ -268,19 +268,18 @@ Snowflake
 → Giant Snowball
 → Moon
 
-Giant Snowball 생성
-→ STAGE CLEAR
+Moon 생성
+→ FIRST CONTACT
+→ PLAYING
 ```
 
-점수 조건은 보지 않는다.
-
-이것이 가장 좋은 클리어 방식이다.
+local Lv4 생성은 종료 조건이 아니며 Active Cashout 대상이다.
 
 ---
 
 ## 7.2 Time Up — Score Clear
 
-최고 공을 만들기 전에 시간이 0이 되면:
+시간이 0이 되면:
 
 ```text
 TIME UP
@@ -314,20 +313,14 @@ Final Stage Score >= Clear Target
 
 # 8. Stage 종료 흐름
 
-## 최고 공으로 Clear
+## Immediate Score Clear
 
 ```text
-Top Ball Created
-↓
-STAGE CLEAR
+clear_score 도달
 ↓
 남은 공 Final Settlement
 ↓
-Score 정산
-↓
-SCALE SHIFT
-↓
-Next Stage
+SCALE SHIFT → Next Stage
 ```
 
 ## 시간 종료로 Clear
@@ -490,7 +483,7 @@ Spawn:
 - 첫 Lv14 Black Hole Ball은 일반 Clear 대신 이동 Black Hole runtime entity로 전환된다.
 - Black Hole Phase에서 Play Field가 마지막으로 한 단계 확장되고 Galactic gameplay를 재개한다.
 - Black Hole은 주변 공의 궤도를 휘게 하며 사람 기준 3단계 이하 공을 흡수한다.
-- 흡수 공의 Cashout 상당 점수를 차감하며 run score가 0이면 즉시 Game Over한다.
+- 흡수 공 Cashout 가치의 `12.5%`와 첫 Black Hole 등장 시점 Run Score의 `25%` 중 작은 값을 차감하며, run score가 0이면 즉시 Game Over한다.
 - Black Hole 자체는 하단 Cashout되지 않고 하단에서 반사하며, 성장하거나 일반 Merge하지 않는다.
 
 ---
@@ -621,7 +614,7 @@ Vampire Survivors처럼 화면 곳곳에서 계속 보상이 터지는 느낌.
 # 16. 고등급 CUT-IN
 
 중요한 공 또는 특수 효과는 짧은 CUT-IN을 사용할 수 있다.
-각 Stage의 local 5종 중 4단계 공은 첫 생성 때 일반 고등급 CUT-IN을 사용한다. 5단계 최고 공은 별도 CUT-IN을 겹치지 않고 실제 결과 공을 사용하는 Stage Clear / Scale Shift 또는 Black Hole Phase 연출로 강조한다.
+각 Stage의 local Lv3·Lv4는 Run 내 첫 생성 때 `FIRST CONTACT` CUT-IN을 사용한다. 대상은 Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`의 6종이다.
 
 일반 동작:
 
@@ -653,8 +646,7 @@ Play Field + Stage World 전체 dim
 
 ## 16.1 CUT-IN과 Scale Shift
 
-최고 공은 곧 Stage Clear를 발생시키므로
-일반 CUT-IN과 Scale Shift를 연속해서 중복하지 않는다.
+local Lv3·Lv4의 Run 내 첫 생성은 일반 FIRST CONTACT CUT-IN 대상이다. Moon과 Galaxy는 CUT-IN 뒤 gameplay를 재개하고, Black Hole은 CUT-IN 뒤 Phase 전환을 이어간다.
 
 예:
 

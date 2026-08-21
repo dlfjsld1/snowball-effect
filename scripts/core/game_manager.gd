@@ -6,29 +6,34 @@ const PaddleScript = preload("res://scripts/gameplay/paddle.gd")
 const StageManagerScript = preload("res://scripts/core/stage_manager.gd")
 const HudScript = preload("res://scripts/ui/hud.gd")
 const PauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
+const TitleScreenScript = preload("res://scripts/ui/title_screen.gd")
+const ResultPanelScript = preload("res://scripts/ui/result_panel.gd")
 const GameplayFrameScript = preload("res://scripts/presentation/gameplay_frame.gd")
 const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd")
 
-const BLACK_HOLE_LOGICAL_FIELD_WIDTH := 1040.0
-
 signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
 signal terminal_result_available(result_snapshot: Dictionary)
+signal item_cutin_requested(event_id: int, item_type: StringName, world_position: Vector2)
+signal item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2)
 
 @export var simulation_path: NodePath
 @export var paddle_path: NodePath
 @export var stage_manager_path: NodePath
 @export var hud_path: NodePath
 @export var pause_menu_path: NodePath
+@export var title_screen_path: NodePath
+@export var result_panel_path: NodePath
 @export var gameplay_frame_path: NodePath
 @export var play_field_backdrop_path: NodePath
 @export var background_manager_path: NodePath
 @export var presentation_manager_path: NodePath
 @export var audio_manager_path: NodePath
+@export var item_manager_path: NodePath
+@export var item_effect_gateway_path: NodePath
 @export var spawn_rate := 6.0
 @export var lv1_ball_radius := 4.0
 @export var lv1_spawn_speed_world_units_per_second := 160.0
 @export_range(0.0, 89.0, 0.1) var lv1_spawn_angle_degrees := 20.0
-@export var auto_complete_black_hole_phase_presentation := true
 
 var retry_count := 0
 
@@ -37,15 +42,20 @@ var _paddle: PaddleScript
 var _stage_manager: StageManagerScript
 var _hud: HudScript
 var _pause_menu: PauseMenuScript
+var _title_screen: TitleScreenScript
+var _result_panel: ResultPanelScript
 var _gameplay_frame: GameplayFrameScript
 var _play_field_backdrop: Polygon2D
 var _background_manager: BackgroundManager
 var _presentation_manager: PresentationManager
 var _audio_manager: AudioManagerScript
+var _item_manager: Node
+var _item_effect_gateway: Node
 var _spawn_accumulator := 0.0
 var _random := RandomNumberGenerator.new()
 var _initialized := false
 var _terminal_result_snapshot: Dictionary = {}
+var _terminal_result_published := false
 
 
 func _ready() -> void:
@@ -55,11 +65,15 @@ func _ready() -> void:
 	_stage_manager = get_node(stage_manager_path) as StageManagerScript
 	_hud = get_node(hud_path) as HudScript
 	_pause_menu = get_node(pause_menu_path) as PauseMenuScript
+	_title_screen = get_node(title_screen_path) as TitleScreenScript
+	_result_panel = get_node(result_panel_path) as ResultPanelScript
 	_gameplay_frame = get_node(gameplay_frame_path) as GameplayFrameScript
 	_play_field_backdrop = get_node(play_field_backdrop_path) as Polygon2D
 	_background_manager = get_node(background_manager_path) as BackgroundManager
 	_presentation_manager = get_node(presentation_manager_path) as PresentationManager
 	_audio_manager = get_node(audio_manager_path) as AudioManagerScript
+	_item_manager = get_node(item_manager_path)
+	_item_effect_gateway = get_node(item_effect_gateway_path)
 	call_deferred("_initialize_runtime")
 
 
@@ -68,19 +82,31 @@ func _initialize_runtime() -> void:
 	_simulation.set_paddle_collision_provider(_paddle)
 	_stage_manager.stage_changed.connect(_on_stage_changed)
 	_stage_manager.stage_shift_started.connect(_presentation_manager.play_stage_shift)
+	_stage_manager.stage_run_ended.connect(_on_stage_run_ended)
 	_stage_manager.final_settlement_started.connect(_on_final_settlement_started)
 	_stage_manager.final_settlement_finished.connect(_on_final_settlement_finished)
 	_stage_manager.black_hole_phase_started.connect(_on_black_hole_phase_started)
 	_stage_manager.black_hole_phase_gameplay_resumed.connect(_on_black_hole_phase_gameplay_resumed)
 	_stage_manager.black_hole_finale_locked.connect(_on_black_hole_finale_locked)
 	_presentation_manager.stage_shift_presentation_finished.connect(_on_stage_shift_presentation_finished)
+	_presentation_manager.visual_field_rect_changed.connect(_on_visual_field_rect_changed)
+	_presentation_manager.black_hole_phase_presentation_finished.connect(_on_black_hole_phase_presentation_finished)
+	_presentation_manager.black_hole_finale_presentation_finished.connect(_on_black_hole_finale_presentation_finished)
 	_simulation.black_hole_phase_requested.connect(_on_black_hole_phase_requested)
+	_item_manager.item_collected.connect(_on_item_collected)
+	_item_effect_gateway.item_cutin_requested.connect(_on_item_cutin_requested)
+	_item_effect_gateway.item_effect_activation_requested.connect(_on_item_effect_activation_requested)
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
-	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu)
+	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu, _title_screen)
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation, _stage_manager)
 	_pause_menu.pause_requested.connect(_on_pause_requested)
 	_pause_menu.retry_requested.connect(_on_retry_requested)
-	_start_run()
+	_pause_menu.resume_requested.connect(_on_resume_requested)
+	_pause_menu.main_menu_requested.connect(_on_main_menu_requested)
+	_title_screen.start_requested.connect(_on_start_requested)
+	_result_panel.retry_requested.connect(_on_retry_requested)
+	_result_panel.main_menu_requested.connect(_on_main_menu_requested)
+	_enter_title_screen()
 	_initialized = true
 
 
@@ -92,6 +118,7 @@ func _physics_process(delta: float) -> void:
 	while _spawn_accumulator >= 1.0:
 		_spawn_accumulator -= 1.0
 		_spawn_ball()
+	_process_item_runtime(delta)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -101,8 +128,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not key_event.pressed or key_event.echo or get_tree().paused:
 		return
 	match key_event.physical_keycode:
-		KEY_F6:
-			_stage_manager.debug_force_top_ball_clear()
 		KEY_F7:
 			_stage_manager.debug_force_score_clear()
 
@@ -127,27 +152,76 @@ func get_terminal_result_snapshot() -> Dictionary:
 	return _terminal_result_snapshot.duplicate(true)
 
 
+func accept_item_cutin_activation_cue(event_id: int) -> bool:
+	return _item_effect_gateway.accept_cutin_activation_cue(event_id)
+
+
+func skip_item_cutin(event_id: int) -> bool:
+	return _item_effect_gateway.skip_cutin(event_id)
+
+
 func _start_run() -> void:
 	get_tree().paused = false
 	_random.seed = 1337
 	_spawn_accumulator = 0.0
 	_terminal_result_snapshot.clear()
+	_terminal_result_published = false
+	_item_effect_gateway.reset_runtime()
+	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.start_run()
 	_paddle.reset_runtime()
 	_paddle.set_physics_process(true)
+	_title_screen.hide_title()
+	_result_panel.hide_result()
+	_hud.visible = true
+	_pause_menu.visible = true
 	_hud.reset_view()
 	_pause_menu.set_paused(false)
 	_spawn_ball()
+
+
+func _enter_title_screen() -> void:
+	get_tree().paused = false
+	_terminal_result_snapshot.clear()
+	_terminal_result_published = false
+	_item_manager.reset_runtime()
+	_item_effect_gateway.reset_runtime()
+	_presentation_manager.reset_black_hole_presentation()
+	_stage_manager.end_run_to_main_menu()
+	_paddle.set_physics_process(false)
+	_hud.reset_view()
+	_hud.visible = false
+	_pause_menu.visible = false
+	_pause_menu.set_paused(false)
+	_result_panel.hide_result()
+	_title_screen.show_title()
 
 
 func _on_stage_changed(definition: StageDefinition) -> void:
 	spawn_rate = definition.spawn_rate
 	_apply_stage_frame(definition.stage_index)
 	_presentation_manager.apply_stage(definition)
+	_item_manager.enter_stage(
+		definition,
+		_simulation.play_field_rect,
+		_simulation.get_runtime_radius_for_level(definition.local_ball_levels[2])
+	)
+	_paddle.set_physics_process(true)
 
 
 func _on_stage_shift_presentation_finished(shift_id: int) -> void:
 	_stage_manager.accept_stage_shift_presentation_finished(shift_id)
+
+
+func _on_stage_run_ended(result_snapshot: Dictionary) -> void:
+	_paddle.set_physics_process(false)
+	_hud.visible = false
+	_pause_menu.visible = false
+	_result_panel.show_result(result_snapshot)
+
+
+func _on_visual_field_rect_changed(visual_field_rect: Rect2) -> void:
+	_apply_backdrop_visual_rect(visual_field_rect)
 
 
 func accept_black_hole_phase_presentation_finished(phase_id: int) -> bool:
@@ -166,53 +240,65 @@ func _on_black_hole_phase_requested() -> void:
 	if not _initialized or _stage_manager.current_state != StageManager.PLAYING:
 		return
 	var from_rect := _simulation.play_field_rect
-	var to_rect := Rect2(
-		Vector2(from_rect.get_center().x - BLACK_HOLE_LOGICAL_FIELD_WIDTH * 0.5, from_rect.position.y),
-		Vector2(BLACK_HOLE_LOGICAL_FIELD_WIDTH, from_rect.size.y)
-	)
+	var to_rect := _gameplay_frame.get_field_rect_for_profile(3)
 	_stage_manager.begin_black_hole_phase(from_rect, to_rect)
 
 
 func _on_black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2) -> void:
 	_paddle.set_physics_process(false)
 	black_hole_phase_started.emit(phase_id, from_rect, to_rect)
-	if auto_complete_black_hole_phase_presentation:
-		call_deferred("_complete_temporary_black_hole_phase", phase_id)
+	_presentation_manager.play_black_hole_phase(phase_id, from_rect, to_rect)
 
 
-func _complete_temporary_black_hole_phase(phase_id: int) -> void:
+func _on_black_hole_phase_presentation_finished(phase_id: int) -> void:
 	accept_black_hole_phase_presentation_finished(phase_id)
 
 
 func _on_black_hole_phase_gameplay_resumed(_phase_id: int, logical_rect: Rect2) -> void:
-	_simulation.play_field_rect = logical_rect
-	_paddle.play_field_rect = logical_rect
-	_paddle.position.x = clampf(_paddle.position.x, logical_rect.position.x, logical_rect.end.x)
+	_gameplay_frame.set_profile(3)
+	_apply_play_field_layout(logical_rect)
 	_paddle.set_physics_process(true)
 
 
 func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
+	if not _terminal_result_snapshot.is_empty():
+		return
 	_terminal_result_snapshot = result_snapshot.duplicate(true)
 	_paddle.set_physics_process(false)
+	_presentation_manager.play_black_hole_finale(get_terminal_result_snapshot())
+
+
+func _on_black_hole_finale_presentation_finished() -> void:
+	if _terminal_result_snapshot.is_empty() or _terminal_result_published:
+		return
+	_terminal_result_published = true
+	_result_panel.show_result(get_terminal_result_snapshot())
 	terminal_result_available.emit(get_terminal_result_snapshot())
 
 
 func _apply_stage_frame(stage_index: int) -> void:
 	var profile_index := clampi(stage_index, 0, 2)
 	_gameplay_frame.set_profile(profile_index)
-	var field_rect := _gameplay_frame.get_field_rect()
+	_apply_play_field_layout(_gameplay_frame.get_field_rect())
+
+
+func _apply_play_field_layout(field_rect: Rect2) -> void:
 	var visual_field_rect := _gameplay_frame.get_field_visual_rect()
 	_simulation.play_field_rect = field_rect
 	_paddle.play_field_rect = field_rect
-	_paddle.position.x = clampf(_paddle.position.x, field_rect.position.x, field_rect.end.x)
+	_paddle.clamp_to_play_field()
+	_apply_backdrop_visual_rect(visual_field_rect)
+	_hud.apply_frame_layout(_gameplay_frame.get_left_wing_rect(), _gameplay_frame.get_right_wing_rect())
+	_pause_menu.apply_frame_layout(_gameplay_frame.get_right_bottom_panel_rect())
+
+
+func _apply_backdrop_visual_rect(visual_field_rect: Rect2) -> void:
 	_play_field_backdrop.polygon = PackedVector2Array([
 		visual_field_rect.position,
 		Vector2(visual_field_rect.end.x, visual_field_rect.position.y),
 		visual_field_rect.end,
 		Vector2(visual_field_rect.position.x, visual_field_rect.end.y),
 	])
-	_hud.apply_frame_layout(_gameplay_frame.get_left_wing_rect(), _gameplay_frame.get_right_wing_rect())
-	_pause_menu.apply_frame_layout(_gameplay_frame.get_right_bottom_panel_rect())
 
 
 func _spawn_ball() -> void:
@@ -230,9 +316,49 @@ func _spawn_ball() -> void:
 	_simulation.spawn_ball(spawn_position, spawn_velocity, spawn_radius, spawn_global_level)
 
 
+func _process_item_runtime(delta: float) -> void:
+	_item_manager.advance(delta)
+	if not _item_manager.get_item_ball_snapshot().is_empty():
+		_item_manager.process_ball_snapshots(_simulation.get_active_item_collision_snapshots())
+	_try_collect_item_orb()
+
+
+func _try_collect_item_orb() -> void:
+	var orb: Dictionary = _item_manager.get_item_orb_snapshot()
+	if orb.is_empty():
+		return
+	var orb_position: Vector2 = orb["position"]
+	var orb_radius: float = orb["radius"]
+	var local_position := _paddle.to_local(orb_position)
+	var closest := Vector2(
+		clampf(local_position.x, -_paddle.paddle_width * 0.5, _paddle.paddle_width * 0.5),
+		clampf(local_position.y, -_paddle.paddle_thickness * 0.5, _paddle.paddle_thickness * 0.5)
+	)
+	if local_position.distance_squared_to(closest) <= orb_radius * orb_radius:
+		_item_manager.try_collect_orb(orb_position, 0.0)
+
+
+func _on_item_collected(item_type: StringName, world_position: Vector2) -> void:
+	_item_effect_gateway.queue_item_collected(item_type, world_position)
+
+
+func _on_item_cutin_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
+	item_cutin_requested.emit(event_id, item_type, world_position)
+
+
+func _on_item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
+	item_effect_activation_requested.emit(event_id, item_type, world_position)
+
+
 func _on_pause_requested() -> void:
 	get_tree().paused = not get_tree().paused
 	_pause_menu.set_paused(get_tree().paused)
+
+
+func _on_resume_requested() -> void:
+	if get_tree().paused:
+		get_tree().paused = false
+	_pause_menu.set_paused(false)
 
 
 func _on_retry_requested() -> void:
@@ -240,10 +366,9 @@ func _on_retry_requested() -> void:
 	_start_run()
 
 
+func _on_start_requested() -> void:
+	_start_run()
+
+
 func _on_main_menu_requested() -> void:
-	get_tree().paused = false
-	_terminal_result_snapshot.clear()
-	_stage_manager.end_run_to_main_menu()
-	_paddle.set_physics_process(false)
-	_hud.reset_view()
-	_pause_menu.set_paused(false)
+	_enter_title_screen()

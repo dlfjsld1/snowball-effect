@@ -1,9 +1,25 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/title_screen.gd" id="1_title"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/title/title_mechanical_ground.webp" id="2_title_art"]
+[ext_resource type="Script" path="res://scripts/ui/title_mechanical_motion.gd" id="3_motion"]
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+bg_color = Color(0, 0, 0, 0)
 
 [node name="TitleScreen" type="Control"]
 visible = false
+texture_filter = 1
+custom_minimum_size = Vector2(1600, 900)
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,7 +29,7 @@ grow_vertical = 2
 mouse_filter = 0
 script = ExtResource("1_title")
 
-[node name="Dim" type="ColorRect" parent="."]
+[node name="TitleArtwork" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,9 +37,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.02, 0.03, 0.06, 0.88)
+texture = ExtResource("2_title_art")
+expand_mode = 1
+stretch_mode = 0
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="MechanicalMotion" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,33 +49,46 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("3_motion")
 
-[node name="Panel" type="PanelContainer" parent="Center"]
-layout_mode = 2
-custom_minimum_size = Vector2(560, 360)
-
-[node name="Content" type="VBoxContainer" parent="Center/Panel"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 18
-
-[node name="Title" type="Label" parent="Center/Panel/Content"]
-layout_mode = 2
-text = "SNOWBALL EFFECT"
-horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
-theme_override_font_sizes/font_size = 34
-
-[node name="Guide" type="Label" parent="Center/Panel/Content"]
-layout_mode = 2
-text = "A / D  MOVE\nLEFT / RIGHT  TILT\nMERGE SAME-LEVEL BALLS\nDROPPED BALLS BECOME SCORE"
-horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
-theme_override_font_sizes/font_size = 14
-
-[node name="StartButton" type="Button" parent="Center/Panel/Content"]
+[node name="StartButton" type="Button" parent="."]
 unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(260, 54)
-text = "START"
-theme_override_font_sizes/font_size = 18
+layout_mode = 0
+offset_left = 449.0
+offset_top = 708.0
+offset_right = 821.0
+offset_bottom = 812.0
+focus_neighbor_bottom = NodePath("../SettingsButton")
+focus_neighbor_right = NodePath("../SettingsButton")
+mouse_default_cursor_shape = 2
+text = "START RUN"
+theme_override_colors/font_color = Color(1, 1, 1, 0)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 0)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 0)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 0)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+
+[node name="SettingsButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 954.0
+offset_top = 710.0
+offset_right = 1138.0
+offset_bottom = 812.0
+focus_neighbor_top = NodePath("../StartButton")
+focus_neighbor_left = NodePath("../StartButton")
+mouse_default_cursor_shape = 2
+text = "SETTINGS"
+theme_override_colors/font_color = Color(1, 1, 1, 0)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 0)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 0)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 0)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")

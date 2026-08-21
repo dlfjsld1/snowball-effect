@@ -35,13 +35,13 @@ Godot 4.x로 브라우저에서 실행 가능한 2D 액션 머지 게임 **Snowb
 23. SCALE SHIFT는 일반 CUT-IN과 별도이며 Stage 세계, 생성량, 기본 공, visual scale이 실제로 변경되는 더 높은 우선순위 이벤트다.
 24. 각 Stage는 독립적인 제한 시간 라운드다. 하나의 전역 180초 타이머로 구현하지 않는다.
 25. 일반 Cashout은 Score + 현재 Stage local level의 time_bonus다. Local Lv0는 0초에서 시작한다.
-26. Ground/Planetary 최고 공 생성은 즉시 Stage Clear다. Galactic 첫 Lv14는 이동 Black Hole 국면으로 전환한다.
+26. Ground/Planetary 최고 공 생성은 즉시 Stage Clear가 아니다. Galactic 첫 Lv14는 이동 Black Hole 국면으로 전환한다.
 27. Time Up 시 활성 공을 Final Settlement하며 Score만 더하고 Time Bonus는 주지 않는다.
-28. Time Up 후 final Stage score가 clear_score 이상이면 다음 Stage, 미달이면 Run End다.
-29. 성공한 Stage는 Settlement 이후 Scale Shift로 다음 Stage에 진입한다.
+28. non-final Stage는 final Stage score가 clear_score에 도달하는 즉시 다음 Stage로 Shift하며, clear score 미달 Time Up은 Run End다.
+29. 성공한 Stage는 Settlement 직후 자동 Scale Shift로 다음 Stage에 진입한다.
 30. 마지막 Galactic Stage는 Time Up 또는 두 Black Hole의 충돌로 종료한다. 첫 Lv14 Black Hole Ball은 이동 기믹으로 전환하며 같은 Galactic gameplay의 L3 국면을 활성화한다.
-31. Time Up은 같은 physics tick의 Merge와 Active Cashout을 먼저 반영한 뒤 판정한다. Cashout으로 시간이 양수가 되면 플레이를 계속한다.
-32. 같은 tick에서는 Top Ball Clear가 Time Up보다 우선한다.
+31. Time Up은 physics tick 전체가 아니라 정확한 deadline 전 유효 gameplay 구간의 Merge/discovery/Active Cashout을 반영한 뒤 판정한다. deadline 전 Cashout으로 시간이 양수가 되면 플레이를 계속한다.
+32. deadline 이후 하단 통과는 Active Cashout이 아니며 Time Bonus 없는 Settlement 대상이다. deadline 전 local Lv4 생성 자체는 종료 사유가 아니며 유효 Merge/discovery/Cashout commit 뒤 Time Up 경로를 사용한다.
 33. 모든 점수 이벤트는 `stage_score`와 `run_score`에 같은 amount를 한 번씩 더하며 Stage 종료 시 `run_score += stage_score`를 하지 않는다.
 34. Final Settlement는 active ball snapshot의 기본 score_value만 한 번 합산하며 Time Bonus, Active Cashout 전용 modifier, 추가 Merge를 적용하지 않는다.
 

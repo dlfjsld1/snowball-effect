@@ -2,6 +2,7 @@ extends Node
 
 const SimulationManager = preload("res://scripts/simulation/ball_simulation_manager.gd")
 const BallRendererScript = preload("res://scripts/simulation/ball_renderer.gd")
+const StageCatalog = preload("res://scripts/data/stage_catalog.gd")
 
 @onready var simulation: SimulationManager = $BallSimulationManager
 @onready var renderer: BallRenderer = $BallRenderer
@@ -55,8 +56,18 @@ func _run_verification():
 	_expect(metrics["standard_ball_count"] == 1 and visible_counts[10] == 1, "A later Stage level must reuse its matching batch after reset.")
 	_expect(_transform_matches(10, 0, Vector2(640.0, 120.0), 4.0), "Stage re-baselined radius must render from the current runtime value.")
 
+	simulation.apply_stage_definition(StageCatalog.new().get_stage(2))
+	simulation.spawn_ball(Vector2(640.0, 300.0), Vector2.ZERO, 32.0, 13)
+	simulation.spawn_ball(Vector2(640.0, 300.0), Vector2.ZERO, 32.0, 13)
+	simulation.commit_merge_candidates()
+	renderer.refresh_render_snapshot()
+	await get_tree().process_frame
+	metrics = renderer.get_render_metrics()
+	_expect(metrics["black_hole_count"] == 1, "A converted Black Hole runtime entity must remain visible after leaving normal ball slots.")
+	_expect(renderer.get_black_hole_render_position(0).is_equal_approx(Vector2(640.0, 300.0)), "Black Hole rendering must use the runtime entity position.")
+
 	if _failures == 0:
-		print("S4_G4_MULTIMESH_VERIFIED standard=%d fallback=%d" % [metrics["standard_ball_count"], metrics["special_fallback_count"]])
+		print("S4_G4_MULTIMESH_VERIFIED standard=%d fallback=%d black_holes=%d" % [metrics["standard_ball_count"], metrics["special_fallback_count"], metrics["black_hole_count"]])
 	get_tree().quit(_failures)
 
 

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/presentation/s3_g8_stage_score_gauge_verification.gd" id="1_runner"]
+
+[node name="S3G8StageScoreGaugeVerification" type="Node"]
+script = ExtResource("1_runner")

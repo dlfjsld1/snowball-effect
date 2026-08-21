@@ -21,6 +21,8 @@ func _ready() -> void:
 	_expect_format(NAN, "0")
 	_expect_format(INF, "∞")
 	_expect_format(-INF, "-∞")
+	_expect_full_format(1234567.0, "1,234,567")
+	_expect_full_format(4.13e36, "4,130,000,000,000,000,000,000,000,000,000,000,000")
 
 	if _failures == 0:
 		print("S2_G4_VERIFIED boundaries=15 suffixes=KMBT scientific=1e50")
@@ -29,6 +31,10 @@ func _ready() -> void:
 
 func _expect_format(value: float, expected: String) -> void:
 	_expect(ScoreFormatter.format_score(value) == expected, "Expected %s for %s, got %s." % [expected, value, ScoreFormatter.format_score(value)])
+
+
+func _expect_full_format(value: float, expected: String) -> void:
+	_expect(ScoreFormatter.format_score_full(value) == expected, "Expected full %s for %s, got %s." % [expected, value, ScoreFormatter.format_score_full(value)])
 
 
 func _expect(condition: bool, message: String) -> void:

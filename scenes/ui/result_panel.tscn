@@ -1,9 +1,29 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/result_panel.gd" id="1_result"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/result/result_galactic_terminal_plate_v3.png" id="2_plate"]
+[ext_resource type="Script" path="res://scripts/ui/result_mechanical_motion.gd" id="3_motion"]
+
+[sub_resource type="SystemFont" id="PixelValueFont"]
+font_names = PackedStringArray("Consolas", "Courier New", "monospace")
+font_weight = 700
+antialiasing = 0
+hinting = 0
+subpixel_positioning = 0
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonClear"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+bg_color = Color(0, 0, 0, 0)
 
 [node name="ResultPanel" type="Control"]
 visible = false
+texture_filter = 1
+custom_minimum_size = Vector2(1600, 900)
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,9 +41,19 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.02, 0.03, 0.06, 0.9)
+color = Color(0.004, 0.008, 0.02, 1)
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="SlidePanel" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Artwork" type="TextureRect" parent="SlidePanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,34 +61,134 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("2_plate")
+expand_mode = 1
+stretch_mode = 0
 
-[node name="Panel" type="PanelContainer" parent="Center"]
-layout_mode = 2
-custom_minimum_size = Vector2(540, 390)
-
-[node name="Content" type="VBoxContainer" parent="Center/Panel"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 20
-
-[node name="Title" type="Label" parent="Center/Panel/Content"]
-layout_mode = 2
-text = "SNOWBALL EFFECT"
-horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
-theme_override_font_sizes/font_size = 32
-
-[node name="ScoreLabel" type="Label" parent="Center/Panel/Content"]
+[node name="MechanicalMotion" type="Control" parent="SlidePanel"]
 unique_name_in_owner = true
-layout_mode = 2
-text = "CLEAR SCORE\n0"
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_motion")
+
+[node name="ScoreLabel" type="Label" parent="SlidePanel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 535.0
+offset_top = 330.0
+offset_right = 1080.0
+offset_bottom = 448.0
+text = "0"
+clip_text = true
 horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.72, 0.88, 0.54, 1)
+theme_override_colors/font_shadow_color = Color(0.03, 0.13, 0.1, 1)
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 4
+theme_override_fonts/font = SubResource("PixelValueFont")
+theme_override_font_sizes/font_size = 86
+
+[node name="HighestStageValue" type="Label" parent="SlidePanel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 435.0
+offset_top = 512.0
+offset_right = 770.0
+offset_bottom = 572.0
+text = "GALACTIC"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.68, 0.84, 0.45, 1)
+theme_override_fonts/font = SubResource("PixelValueFont")
+theme_override_font_sizes/font_size = 35
+
+[node name="HighestBallValue" type="Label" parent="SlidePanel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 823.0
+offset_top = 512.0
+offset_right = 1167.0
+offset_bottom = 572.0
+text = "BLACK HOLE"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.68, 0.84, 0.45, 1)
+theme_override_fonts/font = SubResource("PixelValueFont")
+theme_override_font_sizes/font_size = 35
+
+[node name="StatsRow" type="Control" parent="SlidePanel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 1600.0
+offset_bottom = 900.0
+mouse_filter = 2
+
+[node name="MergeCount" type="Label" parent="SlidePanel/StatsRow"]
+layout_mode = 0
+offset_left = 699.0
+offset_top = 649.0
+offset_right = 795.0
+offset_bottom = 687.0
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.68, 0.84, 0.45, 1)
+theme_override_fonts/font = SubResource("PixelValueFont")
 theme_override_font_sizes/font_size = 24
 
-[node name="MainMenuButton" type="Button" parent="Center/Panel/Content"]
+[node name="RunTime" type="Label" parent="SlidePanel/StatsRow"]
+layout_mode = 0
+offset_left = 1065.0
+offset_top = 649.0
+offset_right = 1180.0
+offset_bottom = 687.0
+text = "00:00"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.68, 0.84, 0.45, 1)
+theme_override_fonts/font = SubResource("PixelValueFont")
+theme_override_font_sizes/font_size = 24
+
+[node name="RetryButton" type="Button" parent="SlidePanel"]
 unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(280, 54)
-text = "MAIN MENU"
-theme_override_font_sizes/font_size = 18
+layout_mode = 0
+offset_left = 433.0
+offset_top = 740.0
+offset_right = 748.0
+offset_bottom = 821.0
+focus_neighbor_right = NodePath("../MainButton")
+mouse_default_cursor_shape = 2
+text = "RETRY RUN"
+theme_override_colors/font_color = Color(1, 1, 1, 0)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 0)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 0)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 0)
+theme_override_styles/normal = SubResource("StyleButtonClear")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonClear")
+
+[node name="MainButton" type="Button" parent="SlidePanel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 850.0
+offset_top = 740.0
+offset_right = 1166.0
+offset_bottom = 821.0
+focus_neighbor_left = NodePath("../RetryButton")
+mouse_default_cursor_shape = 2
+text = "MAIN"
+theme_override_colors/font_color = Color(1, 1, 1, 0)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 0)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 0)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 0)
+theme_override_styles/normal = SubResource("StyleButtonClear")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonClear")

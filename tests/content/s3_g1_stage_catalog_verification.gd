@@ -11,7 +11,7 @@ const EXPECTED_LOCAL_LEVELS := [
 	[10, 11, 12, 13, 14],
 ]
 const EXPECTED_TIMES := [45.0, 40.0, 35.0]
-const EXPECTED_CLEAR_SCORES := [4.0e6, 2.0e18, 0.0]
+const EXPECTED_CLEAR_SCORES := [4.0e8, 4.0e25, 0.0]
 const EXPECTED_SPAWN_RATES := [6.0, 15.0, 35.0]
 const EXPECTED_BACKGROUND_IDS := [&"ground", &"planetary", &"galactic"]
 const EXPECTED_TIME_BONUSES := [

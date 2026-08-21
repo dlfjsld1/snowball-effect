@@ -52,7 +52,7 @@ StageManager
  ├─ Stage score / clear_score
  ├─ 기본/최고 global_level
  ├─ 생성량
- ├─ Top Ball Clear
+ ├─ local Lv3/Lv4 first-discovery tracking
  ├─ Time Up / Final Settlement / Score Clear
  ├─ Scale Shift
  └─ 블랙홀 설정
@@ -96,8 +96,30 @@ AudioManager
  ├─ 합체음
  ├─ 회수음
  ├─ 아이템음
- └─ 스테이지 전환음
+ ├─ 스테이지 전환음
+ └─ BGM 상태 전환
 ```
+
+---
+
+## 3.0 BGM 상태 계약
+
+BGM은 Content/Systems-owned AudioManager의 별도 music channel에서 한 번에 하나만 재생한다. 효과음의 priority/polyphony pool과 BGM 재생 상태를 섞지 않으며, BGM은 gameplay score, timer, Stage state를 변경하지 않는다.
+
+| 상태 | BGM key | 전환 규칙 |
+|---|---|---|
+| Main Title | `bgm_title` | Title 표시 시 재생 |
+| Ground | `bgm_ground` | Ground Stage 진입 시 재생 |
+| Planetary | `bgm_planetary` | Planetary Stage 진입 시 재생 |
+| Galactic | `bgm_galactic` | Galactic Stage 진입 시 재생 |
+| Pause | `bgm_pause` | 현재 Stage BGM을 정지하고 track key와 재생 위치를 저장한 뒤 재생 |
+| Final Result | `bgm_result` | terminal Result 표시 시 재생 |
+
+- Resume는 `bgm_pause`를 정지하고, 저장한 Stage BGM을 저장한 재생 위치에서 재개한다.
+- Black Hole Phase는 `bgm_galactic`을 정지하고 기존 loop asset `black_hole_loop`만 재생한다. 두 소리는 겹치지 않는다.
+- Black Hole Final Result는 `black_hole_loop`을 정지한 뒤 `bgm_result`를 재생한다.
+- Retry, Main Menu, Stage 변경, terminal lock은 현재 BGM/loop를 정리한 뒤 현재 authoritative 상태의 track만 선택한다.
+- Web에서는 첫 사용자 입력 전 BGM을 자동 재생하지 않으며, unlock 뒤 현재 authoritative 상태의 track을 시작하거나 재개한다.
 
 ---
 
@@ -444,6 +466,8 @@ func format_score(value: float) -> String
 
 적용 대상은 Item Ball과 Lv14 Black Hole Ball/전환된 Black Hole runtime entity를 제외한 일반 Snowball이다. Item Ball은 균열·파괴 상태를, Black Hole은 고유 ring/왜곡/흡수 표현을 가지므로 전용 렌더러를 유지한다. Galactic에서는 일반 Lv10~13 batch와 Black Hole 전용 렌더러가 함께 존재한다.
 
+Black Hole runtime entity는 일반 Ball slot/render snapshot 밖에 있으므로, 전용 renderer는 `get_black_hole_snapshot()`의 read-only position/radius를 별도로 읽어 최소한 dark core와 ring을 항상 표시한다. 이는 gameplay state를 변경하지 않는 가시성 fallback이며, 향후 S8-G5의 ring·별 파티클·왜곡 표현이 이를 대체하거나 확장한다.
+
 Core는 render snapshot을 읽어 batch를 구성하고 gameplay state를 변경하지 않는다. Presentation은 level별 Texture2D와 머티리얼 표현을 제공할 수 있지만 simulation 내부 배열을 직접 읽거나 수정하지 않는다. 최종 asset atlas는 필수 선행 조건이 아니며 별도 텍스처 방식으로 먼저 연결할 수 있다.
 
 ### 10.3 구현·검증 경계
@@ -533,7 +557,7 @@ game event committed
 - 실제 게임 이벤트는 CUT-IN 시작 전에 이미 확정
 - CUT-IN 애니메이션 실패가 게임 상태를 되돌리지 않음
 - 연속 이벤트를 무한 큐잉하지 않음
-- Scale Shift가 일반 CUT-IN보다 높은 우선순위
+- local Lv4 CUT-IN과 Clear 확인 UI가 겹치지 않도록 상태별 순서를 보장
 - 입력 눌림 상태가 pause/resume 후 꼬이지 않는지 검증
 - Tween/AnimationPlayer는 Web Export에서 검증
 
@@ -583,9 +607,11 @@ scale shift: up to about 0.8~1.0s
 
 ## 13. 블랙홀 기술
 
-첫 Lv14 Black Hole Ball 생성은 일반 Top Ball Clear를 요청하지 않는다. Core simulation은 해당 Ball slot을 일반 Merge/Cashout 집합에서 제거하고, 그 위치와 운동 상태를 이어받는 Black Hole runtime entity로 전환한다. 두 번째 Lv14도 같은 방식으로 두 번째 Black Hole entity가 되며, 둘의 접촉은 일반 Merge보다 우선하는 terminal event다.
+첫 Lv14 Black Hole Ball 생성은 Stage Clear를 요청하지 않는다. Run 내 첫 생성이면 FIRST CONTACT CUT-IN을 완료한 뒤, Core simulation은 해당 Ball slot을 일반 Merge/Cashout 집합에서 제거하고 그 위치와 운동 상태를 이어받는 Black Hole runtime entity로 전환한다. 두 번째 Lv14도 같은 방식으로 두 번째 Black Hole entity가 되며, 둘의 접촉은 일반 Merge보다 우선하는 terminal event다.
 
 Black Hole gameplay state와 force/absorption 계산은 Core가 소유하고, BackgroundManager는 read-only 위치 snapshot을 받아 시각 중심을 맞춘다. 활성화는 Stage 변경이 아니라 같은 Galactic Stage 안의 `Black Hole Phase Transition`이다.
+
+Frame의 시각적 개구부와 simulation logical field는 같은 폭을 공유한다. 다만 하단에는 `32 logical units`의 safety/cashout strip을 남긴다. Simulation Cashout, Paddle clamp, Black Hole 하단 반사는 이 reduced logical rect를 사용하고, visual backdrop은 frame 개구부 전체를 유지한다.
 
 ```gdscript
 func get_black_hole_position() -> Vector2
@@ -598,17 +624,17 @@ func get_black_hole_pull(position: Vector2) -> Vector2
 성능상 공마다 `sqrt`를 줄이고 싶다면 거리 제곱 기반 완만한 함수 사용 가능하다.  
 다만 조작감이 우선이며 실제 측정 후 최적화한다.
 
-초기 force seed는 영향 반경 `240 world units`, 최대 가속도 `300 world units/s²`다. 반경 안의 normalized distance `t = clamp(distance / 240, 0, 1)`에 대해 `(1 - t)²` falloff를 사용하고 반경 밖은 0으로 둔다. delta를 곱해 velocity에 적용한 뒤 기존 final Ball speed cap을 유지한다. 중심 거리 `epsilon` 이하에서는 영벡터를 normalize하지 않아 NaN을 막는다. 수치는 Stage tuning data로 교체 가능해야 한다.
+초기 force seed는 영향 반경 `300 world units`, 최대 가속도 `450 world units/s²`다. 반경 안의 normalized distance `t = clamp(distance / 300, 0, 1)`에 대해 `(1 - t)²` falloff를 사용하고 반경 밖은 0으로 둔다. delta를 곱해 velocity에 적용한 뒤 기존 final Ball speed cap을 유지한다. 중심 거리 `epsilon` 이하에서는 영벡터를 normalize하지 않아 NaN을 막는다. 수치는 Stage tuning data로 교체 가능해야 한다.
 
-일반 공에 대한 다중 Black Hole force는 각 source의 vector를 먼저 합한 뒤 `600 world units/s²`로 한 번 제한한다. 같은 방향의 힘은 더해지고 반대 방향은 자연스럽게 상쇄되므로 Black Hole 수를 단순 scalar 배수로 적용하지 않는다. 그 뒤 delta를 곱하고 기존 Ball runtime speed cap을 적용한다.
+일반 공에 대한 다중 Black Hole force는 각 source의 vector를 먼저 합한 뒤 `900 world units/s²`로 한 번 제한한다. 같은 방향의 힘은 더해지고 반대 방향은 자연스럽게 상쇄되므로 Black Hole 수를 단순 scalar 배수로 적용하지 않는다. 그 뒤 delta를 곱하고 기존 Ball runtime speed cap을 적용한다.
 
 Black Hole entity끼리는 일반 공용 force/absorption loop와 분리해 상대 Black Hole 방향으로 최대 `450 world units/s²`의 mutual acceleration을 적용한다. 이 값은 접근을 유도하는 gameplay seed이며, 접촉 확정 이후에는 force 적분을 멈추고 terminal presentation이 회전·폭발 transform을 소유한다.
 
 향후 Presentation 후보인 Black Hole 주변 일반 공의 tidal deformation은 일반 Snowball MultiMesh와 양립한다. Core가 제공하는 read-only Black Hole 위치/영향 snapshot과 공의 nominal transform을 바탕으로 instance의 비균일 scale·회전 또는 shared shader custom data만 바꿀 수 있다. 이 시각 변형이 도입되더라도 Core의 공 중심, nominal radius, 원형 Merge/Paddle/벽 충돌은 그대로 유지하고 궤도 변화는 기존 force 계산만이 소유한다. 정확한 변형 강도·falloff·최대 비율은 아직 구현 계약이 아니다.
 
-흡수 contact가 확정되면 일반 Cashout commit 전에 해당 공을 한 번 소비한다. `calculate_cashout_score(ball)`을 read-only로 계산한 값을 stage/run score에서 각각 차감한다. `stage_score`는 0에서 clamp하고, 계산 결과 `run_score <= 0`이면 `run_score = 0`으로 고정한 뒤 즉시 failure lock과 Run End를 요청한다. Time Bonus, Cashout 전용 popup, Merge, Settlement 중복 반영은 없다.
+흡수 contact가 확정되면 일반 Cashout commit 전에 해당 공을 한 번 소비한다. StageRuntime은 첫 Black Hole phase 시작 시 Run Score baseline을 한 번 snapshot하고, `min(calculate_cashout_score(ball) × 0.125, phase_entry_run_score × 0.25)`를 stage/run score에서 각각 차감한다. baseline은 이후 Cashout이나 흡수로 갱신하지 않는다. `stage_score`는 0에서 clamp하고, 계산 결과 `run_score <= 0`이면 `run_score = 0`으로 고정한 뒤 즉시 failure lock과 Run End를 요청한다. Time Bonus, Cashout 전용 popup, Merge, Settlement 중복 반영은 없다.
 
-두 Black Hole의 earliest contact가 확정되면 terminal lock을 한 번만 세우고 이후 공 simulation 결과를 더 commit하지 않는다. Presentation은 두 중심의 상호 인력·회전·폭발을 재생하며 gameplay HUD를 숨기고 `SNOWBALL EFFECT` 타이틀, 그 아래 `CLEAR SCORE` 최종 run score와 `MAIN MENU` 버튼을 표시한다.
+두 Black Hole의 earliest contact가 확정되면 terminal lock을 한 번만 세우고 이후 공 simulation 결과를 더 commit하지 않는다. terminal snapshot은 최종 run score와 함께 현재 Run의 성공 Merge 누적 횟수 `merge_count`, `PLAYING` 상태에서만 누적한 `run_time_seconds`를 불변 복사로 제공한다. Stage Shift, Black Hole Phase 전환, Pause, Result 체류 시간은 Run Time에서 제외하고 Stage 사이에는 유지하며 Retry Run/Main Screen에서 초기화한다. Presentation은 두 중심의 상호 인력·회전·폭발을 재생하며 gameplay HUD를 숨기고 `SNOWBALL EFFECT` 타이틀, 그 아래 `CLEAR SCORE` 최종 run score, Merge 횟수, Run Time과 실제 `RETRY RUN`·`MAIN` 버튼을 표시한다. Result 장식 motion은 read-only UI이며 좌우 실험관 기포, 최대치 부근의 독립 게이지 떨림, 화면 아래에서 위로 올라오는 진입 Tween을 포함한다.
 
 ---
 
@@ -640,9 +666,9 @@ StageDefinition
 - background_id
 - global_force_scale (explicit Stage effect only; not default downward gravity)
 - black_hole_enabled
-- black_hole_influence_radius (initial seed: 240 world units)
-- black_hole_max_pull_acceleration (initial seed: 300 world units/s²)
-- black_hole_total_pull_cap (initial seed: 600 world units/s²)
+- black_hole_influence_radius (initial seed: 300 world units)
+- black_hole_max_pull_acceleration (initial seed: 450 world units/s²)
+- black_hole_total_pull_cap (initial seed: 900 world units/s²)
 - black_hole_mutual_pull_acceleration (initial seed: 450 world units/s²)
 
 ItemDefinition
@@ -685,11 +711,11 @@ signal stage_ball_progression_changed(stage_id: int, ordered_global_levels: Pack
 signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
 signal black_hole_phase_presentation_finished(phase_id: int)
 signal black_hole_finale_locked(result_snapshot: Dictionary)
-signal item_planet_damaged(item_type: int, current_hits: int, required_hits: int, world_position: Vector2)
-signal item_planet_broken(item_type: int, world_position: Vector2)
-signal item_orb_spawned(item_type: int, world_position: Vector2)
-signal item_collected(item_type: int, world_position: Vector2)
-signal item_orb_missed(item_type: int, world_position: Vector2)
+signal item_planet_damaged(item_type: StringName, current_hits: int, required_hits: int, world_position: Vector2)
+signal item_planet_broken(item_type: StringName, world_position: Vector2)
+signal item_orb_spawned(item_type: StringName, world_position: Vector2)
+signal item_collected(item_type: StringName, world_position: Vector2)
+signal item_orb_missed(item_type: StringName, world_position: Vector2)
 signal active_items_changed(items: Array)
 signal resume_requested()
 signal settings_requested()
@@ -815,43 +841,45 @@ local level별 Cashout 수를 측정하고 인플레가 확인될 때만 상한�
 
 ### Physics tick ordering
 
-Stage 종료 판정은 다음 순서를 따른다.
+Stage 종료 판정은 physics callback 전체를 제한시간 전으로 간주하지 않고, 정확한 deadline 전의 유효 gameplay 구간만 처리한다.
 
 ```text
-1. stage_time_left -= delta
-2. 이동 / 충돌 / Merge 처리
-3. Merge 확정 및 Top Ball 여부 기록
-4. Active Cashout 점수와 Time Bonus 반영
-5. 종료 판정
-   - Top Ball 생성 → TOP_BALL_CLEAR
-   - 아니고 stage_time_left <= 0 → TIME_UP
+1. time_before = max(stage_time_left, 0)
+2. valid_play_delta = min(delta, time_before)
+3. valid_play_delta 안의 이동 / 충돌 / Merge / 하단 경계 통과 처리
+4. 유효 Merge/discovery와 Active Cashout commit
+5. stage_time_left = time_before - valid_play_delta + valid_cashout_time_bonus
+6. 종료 판정
+   - non-final이고 stage_score >= clear_score → SCORE_CLEAR
+   - 유효 Cashout 반영 후 stage_time_left <= 0 → TIME_UP
    - 그 외 → PLAYING 유지
 ```
 
-같은 tick의 Cashout으로 시간이 다시 양수가 되면 Time Up을 취소한다.
-같은 tick에 Top Ball과 Time Up 조건이 모두 있으면 Top Ball Clear가 우선한다.
+`valid_play_delta` 밖의 이동을 먼저 계산한 뒤 결과만 deadline 전 이벤트로 간주하지 않는다. BallSimulation은 해당 구간까지만 step하거나 동등한 contact/crossing time 판정으로 deadline 이후 이벤트를 배제해야 한다. Cashout Time Bonus가 deadline 전에 commit되어 시간을 연장하면 남은 callback 구간을 이어서 처리하거나 다음 physics callback으로 넘길 수 있지만, 연장 확정 전에 기존 deadline 밖을 먼저 시뮬레이션하면 안 된다.
 
-### Top Ball Clear
+제한시간 전 Active Cashout으로 시간이 다시 양수가 되면 `PLAYING`을 유지한다. clear score를 채운 유효 Cashout은 SCORE_CLEAR를 먼저 요청한다. local Lv4 생성은 종료 사유가 아니며, 유효 gameplay 구간의 Merge/discovery/Cashout commit 후에도 시간이 없을 때만 Time Up 경로를 사용한다.
 
-현재 Stage `top_global_level` 공이 생성되면:
+### Local Lv4 first discovery
 
-1. Stage 성공 상태 잠금
-2. 추가 Stage 타이머 감소 정지
-3. 일반 CUT-IN보다 Stage Clear 우선
-4. `stage_clear_decided(reason = TOP_BALL)` 확정
-5. Final Settlement 실행
-6. `stage_clear_completed` 후 다음 Stage면 Scale Shift
+현재 Stage `top_global_level` 공이 처음 생성되면 Run-scoped discovery를 기록하고 FIRST CONTACT CUT-IN을 요청한다. Ground/Planetary에서는 CUT-IN 뒤 PLAYING으로 돌아가며, Galactic의 첫 Black Hole만 CUT-IN 뒤 Black Hole Phase 전환을 이어간다.
 
 ### Time Up
 
-tick의 Cashout 반영 후에도 시간이 0 이하이면:
+non-final Stage는 deadline 전 유효 Cashout 반영 뒤 `stage_score >= clear_score`이면:
+
+1. `CLEAR_LOCKED`
+2. Final Settlement
+3. `CLEARED → SHIFTING`
+
+Scale Shift는 사용자 확인 UI를 기다리지 않고 즉시 시작한다.
+
+clear score 미달이고 deadline 전 유효 Cashout 반영 후에도 시간이 0 이하이면:
 
 1. 새 공 Spawn 정지
 2. 플레이 입력/물리 진행 정지 또는 짧게 감속
 3. Final Settlement
-4. 마지막 Stage가 아니면 `final_stage_score >= clear_score` 판정
-5. 성공 → Scale Shift
-6. 실패 → Run End
+4. non-final → Run End
+5. 마지막 Stage → Run End
 
 ### Final Settlement
 

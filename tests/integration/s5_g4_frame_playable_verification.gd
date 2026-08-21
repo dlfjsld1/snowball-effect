@@ -20,9 +20,9 @@ func _ready() -> void:
 	var hud: Hud = main.get_node("UI/HUDMount/HUD")
 	var pause_menu: PauseMenu = main.get_node("UI/PauseMenu")
 
-	_verify_profile(0, Rect2(520.0, 50.0, 560.0, 800.0), game_manager, simulation, paddle, frame, backdrop, hud, pause_menu)
-	_verify_profile(1, Rect2(440.0, 50.0, 720.0, 800.0), game_manager, simulation, paddle, frame, backdrop, hud, pause_menu)
-	_verify_profile(2, Rect2(360.0, 50.0, 880.0, 800.0), game_manager, simulation, paddle, frame, backdrop, hud, pause_menu)
+	_verify_profile(0, Rect2(520.0, 50.0, 560.0, 768.0), game_manager, simulation, paddle, frame, backdrop, hud, pause_menu)
+	_verify_profile(1, Rect2(440.0, 50.0, 720.0, 768.0), game_manager, simulation, paddle, frame, backdrop, hud, pause_menu)
+	_verify_profile(2, Rect2(360.0, 50.0, 880.0, 768.0), game_manager, simulation, paddle, frame, backdrop, hud, pause_menu)
 
 	if _failures == 0:
 		print("S5_G4_FRAME_PLAYABLE_VERIFIED profiles=3 physics_bounds=true hud_crt=true")
@@ -41,11 +41,18 @@ func _verify_profile(
 	pause_menu: PauseMenu
 ) -> void:
 	var definition: StageDefinition = STAGE_CATALOG.new().get_stage(profile_index)
+	paddle.position.x = expected_field.end.x + paddle.paddle_width
 	game_manager._on_stage_changed(definition)
 	_expect(frame.profile_index == profile_index, "Frame profile must follow the Stage index.")
 	_expect(frame.get_field_rect() == expected_field, "Frame field rect must match the approved profile.")
 	_expect(simulation.play_field_rect == expected_field, "Simulation bounds must match the visible frame opening.")
 	_expect(paddle.play_field_rect == expected_field, "Paddle clamp must match the visible frame opening.")
+	_expect(frame.field_bezel.patch_margin_left == 90 and frame.field_bezel.patch_margin_top == 90, "Bezel nine-patch margins must include the full brass pipe edge.")
+	_expect(paddle.position.x <= expected_field.end.x - paddle.paddle_width * 0.5, "Paddle must remain fully inside the visible field after a Stage frame change.")
+	paddle.rotation = deg_to_rad(45.0)
+	paddle.clamp_to_play_field()
+	var vertical_extent := absf(sin(paddle.rotation)) * paddle.paddle_width * 0.5 + absf(cos(paddle.rotation)) * paddle.paddle_thickness * 0.5
+	_expect(paddle.position.y + vertical_extent <= expected_field.end.y + 0.01, "A rotated Paddle must remain above the reduced logical field bottom and its UI housing.")
 	_expect(backdrop.polygon[0] == expected_field.position and backdrop.polygon[2] == frame.get_field_visual_rect().end, "Backdrop must include the open-bottom Cashout corridor.")
 	_expect(hud.stage_name_label.position.x == frame.get_left_wing_rect().position.x + 44.0, "Stage HUD must stay inside the left CRT wing.")
 	_expect(hud.stage_score_label.position.x == frame.get_right_wing_rect().position.x + 44.0, "Score HUD must stay inside the right CRT wing.")

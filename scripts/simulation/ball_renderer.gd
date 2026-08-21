@@ -27,6 +27,8 @@ var _ordered_snapshot_indices := PackedInt32Array()
 var _special_positions := PackedVector2Array()
 var _special_radii := PackedFloat32Array()
 var _special_levels := PackedInt32Array()
+var _black_hole_positions := PackedVector2Array()
+var _black_hole_radii := PackedFloat32Array()
 
 
 func _ready() -> void:
@@ -44,6 +46,11 @@ func _draw() -> void:
 		var definition = _ball_catalog.get_definition(_special_levels[index])
 		var color: Color = definition.base_color if definition != null else ball_color
 		draw_circle(_special_positions[index], _special_radii[index], color)
+	for index in range(_black_hole_positions.size()):
+		var position := _black_hole_positions[index]
+		var radius := _black_hole_radii[index]
+		draw_circle(position, radius + 3.0, Color(0.35, 0.17, 0.62, 0.9), false, 3.0)
+		draw_circle(position, radius, Color(0.06, 0.03, 0.12, 1.0))
 
 
 func set_simulation_manager(simulation: SimulationManager) -> void:
@@ -63,6 +70,7 @@ func refresh_render_snapshot() -> void:
 	_prepare_level_buckets(snapshot_count, snapshot_global_levels)
 	_update_standard_batches(snapshot_positions, snapshot_radii)
 	_update_special_fallback(snapshot_positions, snapshot_radii, snapshot_global_levels)
+	_update_black_holes()
 	queue_redraw()
 
 
@@ -70,9 +78,14 @@ func get_render_metrics() -> Dictionary:
 	return {
 		"standard_ball_count": _ordered_snapshot_indices.size(),
 		"special_fallback_count": _special_positions.size(),
+		"black_hole_count": _black_hole_positions.size(),
 		"batch_visible_counts": _level_counts.duplicate(),
 		"batch_capacities": _batch_capacities.duplicate(),
 	}
+
+
+func get_black_hole_render_position(index: int) -> Vector2:
+	return _black_hole_positions[index] if index >= 0 and index < _black_hole_positions.size() else Vector2.ZERO
 
 
 func get_batch_instance_transform(global_level: int, instance_index: int) -> Transform2D:
@@ -164,6 +177,12 @@ func _update_special_fallback(snapshot_positions: PackedVector2Array, snapshot_r
 		_special_positions.append(snapshot_positions[snapshot_index])
 		_special_radii.append(snapshot_radii[snapshot_index])
 		_special_levels.append(global_level)
+
+
+func _update_black_holes() -> void:
+	var snapshot := _simulation.get_black_hole_snapshot()
+	_black_hole_positions = snapshot["positions"]
+	_black_hole_radii = snapshot["radii"]
 
 
 func _ensure_batch_capacity(global_level: int, required_count: int) -> void:

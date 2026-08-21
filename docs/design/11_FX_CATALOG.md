@@ -13,7 +13,7 @@ Purpose: 분산된 gameplay feedback 요구사항을 하나의 디자인·제작
 - `OPTIONAL`: 촉감과 장식 품질을 높이지만 없어도 v1 완료 조건을 충족할 수 있음.
 - `FUTURE`: 현재 구현 범위 밖의 후보.
 
-이 문서 작성은 runtime Scene·Script·Resource 제작이나 Goal 상태 변경을 승인하지 않는다. 정확한 particle 수, duration, pool cap, shader 사용 여부는 S6-G1에서 성능 측정과 함께 확정한다.
+이 문서 작성 자체는 runtime Scene·Script·Resource 제작이나 Goal 상태 변경을 승인하지 않는다. S6-G1 구현에서는 T0/T1을 렌더 프레임당 최대 4개, 활성 Merge FX를 최대 12개로 제한한다. T2 이상이 포화 상태에서 들어오면 더 낮은 등급 또는 같은 등급의 오래된 FX를 먼저 종료하며, 더 높은 등급의 FX는 밀어내지 않는다. Merge FX lifetime은 0.32초다. particle 수와 shader 사용 여부의 추가 확대는 후속 측정 대상이다.
 
 ## 2. 공통 시각·모션 계약
 
@@ -45,8 +45,21 @@ Purpose: 분산된 gameplay feedback 요구사항을 하나의 디자인·제작
 | MG-01 | 일반 Merge | T1 | REQUIRED | `ball_merged(result_level, world_position)` | 결과 위치의 pixel burst와 얇은 링 | event 1회당 effect 1회 |
 | MG-02 | 고등급 Merge | T2 | REQUIRED | 같은 event + result level | 더 큰 ring, 파편, 짧은 압력파 | Ball silhouette 보존 |
 | MG-03 | 중요 공 생성 | T3 | REQUIRED | high-tier result | 짧은 hit-stop 후보, Corona 강화 | cooldown/priority 적용 |
-| MG-04 | Stage 최고 공 Clear Lock | T3 | REQUIRED | authoritative clear/top-ball 상태 | 움직임을 잠그고 최고 공에 시선 집중 | 일반 CUT-IN보다 Clear/Shift 우선 |
-| MG-05 | 고등급 공 CUT-IN | T3 | CONDITIONAL | 승인된 high-tier event | 현재 16:9 화면 위 기계 패널, 공 이름·이미지 | 0.45~0.70초, 기본 1초 미만 |
+| MG-04 | local Lv4 최초 발견 | T3 | REQUIRED | authoritative Run-scoped discovery | FIRST CONTACT 뒤 공에 시선 집중 | 생성만으로 Clear/Shift를 요청하지 않음; Black Hole만 Phase로 handoff |
+| MG-05 | Stage 고등급 공 최초 생성 CUT-IN | T3 | CONDITIONAL | 현재 Run에서 지정 공 최초 생성 | 현재 16:9 화면 위 공통 배경, `FIRST CONTACT` 문구, 공 초상 | Stage별 local Lv3·Lv4만 1회, 0.45~0.70초, 기본 1초 미만 |
+
+MG-05 대상은 Stage마다 두 종으로 고정한다.
+
+| Stage | local Lv3 | local Lv4 |
+|---|---|---|
+| Ground | Giant Snowball | Moon |
+| Planetary | Supernova | Galaxy |
+| Galactic | Event Horizon | Black Hole |
+
+- 각 대상은 현재 Run에서 처음 생성됐을 때만 CUT-IN을 요청한다.
+- Moon은 Ground에서, Galaxy는 Planetary에서만 대상이므로 다음 Stage의 local Lv0 재등장으로 CUT-IN을 반복하지 않는다.
+- 여섯 CUT-IN은 공통 배경 하나와 공별 문구·공 초상 레이어를 조립한다.
+- 이전 후보였던 Galaxy Cluster와 Quasar는 현재 MG-05 대상이 아니다.
 
 현재 2인자 Merge 계약으로는 두 source Ball의 contraction, slot 기반 잔상, merge score 숫자를 만들지 않는다. 해당 표현이 필요하면 Core payload와 Goal 계약을 먼저 확장한다.
 

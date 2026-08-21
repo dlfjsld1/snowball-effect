@@ -16,7 +16,7 @@
 ## 필수 규칙
 
 - 스테이지마다 base_global_level과 top_global_level이 있음
-- 최고 공 최초 생성 시 Stage Clear; Settlement 완료 후 다음 스테이지
+- Ground/Planetary의 최고 공 최초 생성은 FIRST CONTACT discovery/CUT-IN만 요청하며 Stage Clear하지 않음
 - 이전 최고 공 = 다음 기본 공
 - 생성량 증가
 - gameplay 공 크기 재정규화: 새 Stage local Lv0의 visual/collision 반지름을 `4`로 초기화
@@ -27,7 +27,7 @@
 - Stage 이름(`Ground`/`Planetary`/`Galactic`)을 persistent HUD에 갱신
 - Retro Pixel Arcade Machine의 Stage 상태 변화
 - `SCALE SHIFT` 발표
-- Time Up Score Clear 후에도 동일한 Scale Shift 진입
+- non-final Stage의 clear score 도달 직후 동일한 Scale Shift 진입
 
 ---
 
@@ -48,12 +48,12 @@ levels [10, 11, 12, 13, 14], spawn 35/s
 
 ## 전환 순서
 
-1. Stage Clear 결정 (Top Ball 또는 Score Clear)
+1. non-final Stage의 clear score 도달 → Clear 잠금과 Final Settlement
 2. 중복 전환 잠금
 3. Final Settlement 완료 확인
 4. 시뮬레이션 짧게 감속
 5. `SCALE SHIFT`
-6. Stage 데이터 변경
+8. Stage 데이터 변경
 8. 렌더 크기 스케일 재설정
 9. 배경 전환
 10. 새 Stage 이름과 공 족보 갱신; 세로 5칸에서 첫 공만 공개
@@ -64,8 +64,7 @@ levels [10, 11, 12, 13, 14], spawn 35/s
 
 ## 주의
 
-- 최고 공이 생성되자마자 바닥으로 떨어져도 Stage는 전환됨
-- 같은 최고 공이 여러 개 생겨도 한 번만 전환
+- local Lv4 생성만으로 Stage를 전환하지 않음
 - 전환 중 새 전환 요청 무시
 - 전환 후 기존 고레벨 공 인덱스와 정의가 깨지지 않음
 - `run_score`, 통계, 최고 기록은 유지

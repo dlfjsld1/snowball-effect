@@ -135,12 +135,12 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 - StageDefinition `base_time`, `clear_score`, `time_bonus_by_local_level`
 - Stage별 타이머
 - 일반 Cashout = Score + Time Bonus
-- Ground/Planetary 최고 공 즉시 Stage Clear와 Galactic Black Hole 예외
+- Ground/Planetary local Lv4 비종료와 Galactic Black Hole Phase handoff
 - Time Up 처리
 - Final Settlement = Score Only
 - Settlement snapshot / 중복 잠금
 - `stage_score` / `run_score` 점수 source of truth
-- 동일 tick Cashout 회복과 Top Ball 우선순위
+- deadline 전 Cashout 연장과 local Lv4 비종료 중재
 - Score Clear / Fail
 - 마지막 Stage 예외 흐름
 
@@ -148,9 +148,10 @@ Godot 프로젝트가 열리고 빈 Main 씬이 실행된다.
 
 - 고등급 공을 Cashout하면 Score와 시간이 함께 증가
 - Final Settlement에서는 시간이 증가하지 않음
+- deadline 이후 하단 통과가 Active Cashout/Time Bonus로 처리되지 않음
 - Final Settlement에서는 Active Cashout 전용 modifier가 적용되지 않음
 - Settlement 재호출 시 점수가 중복되지 않음
-- Ground/Planetary 최고 공 제작 시 즉시 성공 상태
+- Ground/Planetary 최고 공 제작 뒤 PLAYING 유지와 FIRST CONTACT discovery
 - Time Up 후 점수컷 판정
 - 실패 시 Run End
 - 성공 시 다음 Stage 준비
@@ -203,8 +204,8 @@ MultiMesh follow-up은 simulation 구조를 바꾸지 않고 render snapshot con
 
 ## 완료 조건
 
-- Ground/Planetary 최고 공 생성 시 Stage Clear
-- Time Up Score Clear로도 다음 Stage 진입 가능
+- Ground/Planetary 최고 공 생성 뒤 gameplay 유지와 FIRST CONTACT 1회
+- clear score 도달 직후 자동 Scale Shift로 다음 Stage 진입
 - 점수컷 미달 시 Run End
 - 새 기본 공이 정상 생성
 - 이전 저레벨 공 정리
@@ -271,7 +272,7 @@ MultiMesh follow-up은 simulation 구조를 바꾸지 않고 render snapshot con
 - 첫 Lv14 Ball을 이동 Black Hole runtime entity로 전환하며 L2→L3 확장
 - Black Hole 이동, 저등급 공 흡수와 주변 궤도 인력
 - Black Hole 하단 반사, 비성장·일반 Merge 제외
-- 흡수 공 Cashout 상당 점수 차감과 run score 0 Game Over
+- 흡수 공 Cashout 가치 `12.5%`/phase-entry Run Score `25%` 상한 차감과 run score 0 Game Over
 - 궤도 잔상
 - 두 번째 Black Hole 생성 후 두 Black Hole 충돌로 최종 회전·폭발·타이틀 Run End 연결
 - 타이틀 아래 Clear Score와 Main Menu 표시
@@ -320,7 +321,7 @@ MultiMesh follow-up은 simulation 구조를 바꾸지 않고 render snapshot con
 - 점수 폭증
 - Stage local level별 Time Bonus
 - Stage별 제한 시간
-- Ground/Planetary 최고 공 즉시 Clear; Galactic은 Black Hole finale
+- Ground/Planetary Time Up Score Clear; Galactic은 Black Hole finale
 - Time Up Final Settlement
 - Score Clear / Run Fail
 - Ground → Planetary → Galactic

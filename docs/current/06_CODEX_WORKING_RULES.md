@@ -258,11 +258,12 @@ MVP에서 다음을 새로 도입하지 않는다.
 - Stage별 제한 시간
 - 일반 Cashout = Score + Time Bonus
 - Final Settlement = Score only
-- Ground/Planetary 최고 공 생성 = 즉시 Stage Clear. Galactic 첫 Lv14는 Black Hole 국면 전환 예외
-- Time Up 후 clear_score 판정
-- 성공한 Stage의 Settlement 후 Scale Shift
-- Time Up은 같은 physics tick의 Merge와 Active Cashout 반영 후 판정
-- 같은 tick에서는 Top Ball Clear가 Time Up보다 우선
+- Ground/Planetary 최고 공 생성은 즉시 Stage Clear가 아니며, Galactic 첫 Lv14는 Black Hole 국면 전환
+- non-final Stage는 clear_score 도달 즉시 판정
+- 성공한 Stage는 Settlement 직후 자동 Scale Shift
+- Time Up은 physics tick 전체가 아닌 정확한 deadline 전 유효 Merge/discovery/Active Cashout 반영 후 판정
+- deadline 전 Active Cashout은 Time Bonus를 주지만 deadline 이후 하단 통과는 Settlement 대상으로 처리
+- deadline 전 local Lv4 생성 자체는 Time Up을 취소하지 않음
 - Settlement는 base score만 한 번 반영하고 Active Cashout 전용 modifier를 적용하지 않음
 - 점수 이벤트마다 `stage_score`와 `run_score`를 함께 증가시키며 Stage 종료 시 재합산 금지
 

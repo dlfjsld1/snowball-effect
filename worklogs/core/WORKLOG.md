@@ -592,6 +592,37 @@ Owner: Core
 ### 확인
 
 - Native headless `S8-G1` exit 0: 첫 Lv14 전환/Top Clear 제외/phase signal, 저등급 흡수·점수 차감·run-end request, 600 cap, 450 mutual pull, 하단 반사, 1,000공 force scenario를 확인했다. 1,000 active ball + Black Hole force 평균은 `4.190ms/tick`이었다.
+
+## 2026-08-17 — Black Hole absorption penalty tuning correction
+
+Owner: Core follow-up for S8-G1
+Owned Files: `scripts/core/stage_runtime.gd`, `tests/simulation/s8_g1_black_hole_force_verification.gd`
+
+### 변경 배경
+
+- 기존 Cashout 가치 전액 차감은 Galactic 기본공 한 개만 흡수해도 직전 Stage에서 확보한 최소 Run Score를 소진할 수 있어, 첫 Black Hole 등장 직후 Game Over가 발생했다.
+- 첫 Black Hole 등장 시점의 Run Score를 고정 baseline으로 한 번 저장한다.
+- 흡수 패널티는 `min(absorbed_cashout_value × 0.125, phase_entry_run_score × 0.25)`로 계산한다. 두 비율은 최종 밸런스가 아닌 첫 플레이테스트 seed다.
+
+### 회귀 계약
+
+- 자금이 있는 Run에서 저등급 공 한 번 흡수는 즉시 Run End를 만들지 않는다.
+- 고가 공 한 번의 손실은 phase-entry baseline의 25%를 넘지 않지만, 반복 손실은 Run Score를 0까지 소진하고 Run End를 정확히 한 번 요청할 수 있다.
+- Stage Score와 Run Score는 같은 실제 penalty를 각각 차감하고 0에서 clamp한다. phase baseline은 이후 Cashout이나 흡수로 갱신하지 않는다.
+
+### 확인
+
+- Primary `godot` validate 7/7 통과.
+- Primary runtime `S8-G1` verification scene exit 0: 12.5% 저등급 차감, 25% baseline cap, 반복 차감 Run End 1회와 기존 Black Hole force/하단 반사 회귀를 통과했다.
+- 1,000 active ball + Black Hole force 평균은 `4.257ms/tick`이었다.
+
+## 2026-08-17 — Black Hole pull feel tuning
+
+Owner: Core follow-up for S8-G1
+
+- 플레이테스트에서 Black Hole이 작은 공을 더 명확히 휘게 하도록 influence radius를 `240 → 300`, source 최대 가속도를 `300 → 450`, 두 Black Hole vector 합산 cap을 `600 → 900 world units/s²`로 조정했다.
+- 기존 final Ball runtime speed cap과 Black Hole mutual pull `450`은 바꾸지 않았다.
+- Primary `godot` validate 2/2 및 S8-G1 runtime verification exit 0. 1,000 active ball + force 평균은 `4.571ms/tick`이었다.
 - Native headless S2-G3 Merge와 S3-G2 StageRuntime regression exit 0.
 - Primary `godot` validate가 simulation, StageRuntime, S8-G1 test script/scene 4/4를 통과했고 Main runtime은 Ground/PLAYING/32 active ball, runtime error 0으로 확인했다.
 
@@ -618,3 +649,32 @@ Owner: Core
 ### 제외 / 다음 작업
 
 - Result/Title/Main Menu UI는 S8-G3, Black Hole phase/finale visual은 S8-G5, Main signal wiring·logical L3 bounds·Retry reset은 S8-G4 Integration 범위다.
+
+## 2026-08-19 — S8-G2 Result Run 통계 snapshot 확장
+
+Owner: Core (교차 영역 변경 승인됨)
+
+- `StageRuntime`에 Run 단위 성공 Merge 누적값과 `PLAYING` 시간 누적값을 추가했다.
+- Stage 진입은 통계를 유지하고 Retry Run/Main Screen용 `reset_run_statistics()`만 초기화한다.
+- Black Hole terminal snapshot의 `optional_stats`에 `merge_count`와 `run_time_seconds`를 deep-copy 가능한 값으로 고정했다.
+- S8-G2 검증에서 Stage 재진입 보존, terminal snapshot 값, 기존 terminal-once/normal-commit 차단을 확인했고 Godot 4.7.1 headless exit 0이었다.
+
+## 2026-08-20 — S3-G7 local Lv4 비종료 계약 마이그레이션
+
+- `StageRuntime.process_tick()`에서 `TOP_BALL_CLEAR` 종료 분기를 제거했다. local Lv4와 Time Up이 같은 tick에 생성되면 Cashout 반영 뒤 `TIME_UP` 한 번으로 중재한다.
+- Core verification은 Cashout 시간 회복, top-ball 비종료, same-tick Time Up, 종료 lock을 검사한다.
+- Primary Godot validate와 headless verification exit 0을 확인했다.
+
+## 2026-08-20 — 즉시 Score Clear 규칙 변경
+
+- 사용자 최신 규칙에 따라 `StageRuntime.process_tick()`은 non-final `stage_score >= clear_score`를 Cashout 반영 뒤, Time Up보다 먼저 `SCORE_CLEAR`로 확정한다.
+- local Lv4 생성은 계속 종료 사유가 아니다. clear score 미달인 경우에만 Time Up 경로를 사용한다.
+- Primary validate와 S3-G3 verification scene exit 0을 확인했다. 이 환경의 직접 CLI/headless는 `user://logs` 접근 실패 뒤 Godot signal 11로 종료되어 도구 환경 문제로 분리했다.
+
+## 2026-08-21 — S3-G3/G7 deadline-bounded gameplay commit
+
+Owner: Core
+
+- `StageRuntime.get_valid_play_delta()`로 callback 안의 실제 gameplay 구간을 `min(delta, max(stage_time_left, 0))`로 한정했다. StageManager가 그 구간만 Simulation/StageRuntime에 전달하므로 deadline을 지난 이동이나 하단 crossing은 Active Cashout과 Time Bonus가 될 수 없다.
+- `0.03s`가 남은 `0.1s` callback의 pre-deadline Lv3 Cashout은 `+1.0s`로 계속 PLAYING이 되고, local Lv4는 여전히 종료 원인이 아니며 시간이 남지 않았을 때만 Time Up으로 중재된다.
+- Godot 4.7.1 CLI headless S3-G2/G3/G4/G5와 S5-G3/G5/G6 회귀 exit 0, Primary `godot` validate 7/7 및 Main runtime error 0을 확인했다. MCP 종료 후 clean Web release export와 Browser gameplay/console warning·error 0도 확인했다.

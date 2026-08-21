@@ -553,3 +553,216 @@ Locked files: `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `
 - S8-G3 Result/Title UI와 S8-G5 실제 phase/finale presentation은 각 Owner 범위다.
 - 임시 adapter를 포함한 이 골격은 최종 `IMPLEMENTED`/`VERIFIED` 증거가 아니다. 실제 producer 연결 및 전체 reset·Desktop/Web 완주가 남아 있다.
 - 사용자가 Presentation Frame 기준을 우선하도록 결정했다. 따라서 Core logical target도 현재 `GameplayFrame.FIELD_WIDTHS`의 L2/L3 `880/1040`과 일치시키고, 관련 current rules/S8 Goal 계약을 같은 값으로 정정했다.
+
+## 2026-08-17 — S8-G3 Terminal UI Main handoff
+
+Owner: Integration
+Locked files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s8_g4_*`
+
+### 구현
+
+- Main에 Content-owned `TitleScreen`과 `ResultPanel`을 mount했다.
+- Black Hole finale의 read-only result snapshot은 `ResultPanel.show_result()`로 전달하고, gameplay HUD/Pause control은 숨긴다.
+- Result/Pause의 `main_menu_requested`는 Core runtime을 `READY`로 정리한 뒤 Title을 표시한다. Title의 `start_requested`는 Ground fresh run으로 돌아간다. Pause `resume_requested`도 기존 pause toggle과 분리해 연결했다.
+
+### 검증
+
+- Primary validate에서 GameManager, Main, S8-G4 test, S8-G3 test가 모두 valid다.
+- Godot 4.7.1 headless S8-G4, S8-G3, S5-G5 verification scene이 exit 0으로 완료됐다.
+- Primary Main runtime에서 finale Result Panel의 `SNOWBALL EFFECT`/`CLEAR SCORE`/`MAIN MENU`, Main Menu→Title, Title Start→`PLAYING`을 확인했고 final runtime error는 0이다.
+
+### 제외
+
+- S8-G5의 실제 Black Hole Phase/Finale presentation producer는 아직 연결되지 않았다. 임시 phase adapter와 S8-G4 `IN PROGRESS` 상태를 유지한다.
+
+## 2026-08-17 — S8 UI handoff·Paddle field-boundary follow-up
+
+Owner: Integration
+Locked files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `scripts/gameplay/paddle.gd`, `tests/integration/s8_g4_*`, `tests/integration/s5_g4_*`
+
+### 변경
+
+- Main에 Title/Result UI를 연결하고 terminal result snapshot, Main Menu, Title Start 경로를 통합했다.
+- Stage frame 또는 Black Hole field 경계가 바뀔 때 Paddle 중심이 field 끝을 넘지 않도록, 회전한 Paddle의 실제 가로 점유 폭 기준 clamp와 motion-history reset을 적용했다.
+- 자동 Merge 뒤 갑작스러운 최고 공 Clear/Scale Shift는 현재 규칙을 유지한 채 향후 balancing observation으로 기록했다.
+
+### 검증
+
+- Primary runtime에서 Result→Title→fresh Ground run을 확인했다.
+- Galactic field 경계에서 회전 Paddle의 중심이 실제 right limit 안에 남고 linear velocity가 0으로 reset됨을 확인했다.
+
+## 2026-08-17 — Ground Moon Clear tick ownership regression
+
+Owner: Integration
+Locked files: `scripts/core/stage_manager.gd`, `tests/integration/s5_g5_*`
+
+### 수정
+
+- Main에서 BallSimulationManager의 자체 physics callback이 StageManager tick 뒤에도 실행되어, 두 번째 simulation step에서 발생한 Top Ball event가 다음 tick에 유실될 수 있음을 재현했다.
+- deferred lifecycle 시점에 callback을 다시 비활성화해 StageManager만 authoritative simulation tick을 실행하도록 고정했다.
+
+### 검증
+
+- Primary runtime에서 simulation 자체 physics는 `false`이며 Giant Snowball pair→Moon 뒤 `SHIFTING`, active ball `0`, 0.9초 shift 뒤 Planetary `PLAYING`을 확인했다.
+- S5-G5 integration verification에 single simulation tick owner assertion을 추가했다.
+
+## 2026-08-17 — Black Hole visibility and Frame-safe Paddle bounds
+
+Owner: Integration emergency follow-up
+Locked files: `scripts/simulation/ball_renderer.gd`, `scripts/gameplay/paddle.gd`, `scripts/presentation/gameplay_frame.gd`, corresponding S4/S5 verification scripts
+
+### 변경
+
+- 일반 ball slot 밖으로 전환된 Black Hole runtime entity의 read-only snapshot을 renderer가 별도로 읽어, 최소 dark core/ring fallback을 표시하도록 했다. S8-G5의 완성형 ring·particle·finale presentation은 여전히 Presentation 범위다.
+- visual frame 하단과 실제 logical play field 사이에 `32 logical units` safety/cashout strip을 두고, Paddle이 회전한 전체 X/Y 외곽을 logical field 안에 clamp하도록 했다.
+
+### 확인
+
+- Primary runtime에서 Galactic Black Hole entity 1개가 position `(800, 300)`, radius `16`으로 생성된 뒤 renderer metric `black_hole_count=1` 및 동일 render position을 확인했다.
+- L2 field는 `Rect2(360, 50, 880, 768)`로 적용됐고, 45도 Paddle은 y=`727.49`로 보정되어 하단 logical boundary 안에 남았다.
+- Primary validate 5/5 통과. Native CLI는 기존 `user://logs` 접근 오류 후 signal 11로 테스트 실행 전 종료되어 환경 문제로 분리했다.
+
+## 2026-08-17 — L3 Frame/UI synchronization correction
+
+Owner: Integration follow-up for S8-G4
+Locked files: `scripts/core/game_manager.gd`, `scripts/presentation/gameplay_frame.gd`, `tests/integration/s8_g4_black_hole_integration_verification.gd`
+
+### 원인과 수정
+
+- Black Hole Phase 재개 시 simulation과 Paddle만 L3 `1040` logical rect로 바꾸고 GameplayFrame은 L2 profile에 남아 있었다. 그래서 확장된 Paddle이 L2 우측 UI와 시각적으로 겹칠 수 있었다.
+- L3의 logical rect를 GameplayFrame profile data에서 직접 가져오고, Phase 재개 시 Frame profile·backdrop·HUD·Pause layout과 simulation/Paddle을 같은 L3 rect로 함께 갱신한다.
+
+### 확인
+
+- Primary validate 3/3 통과.
+- Primary Main runtime에서 L3 profile과 simulation/Paddle logical rect가 모두 `Rect2(280, 50, 1040, 768)`이고, 우측 하단 UI panel은 `Rect2(1406, 796, 152, 104)`로 field 바깥에 남는 것을 확인했다. runtime error 0.
+
+## 2026-08-19 — S8-G4 Result Run 통계 연결
+
+Owner: Integration (잠금 담당 승인됨)
+
+- `StageManager`가 기존 `ball_merged(result_level, world_position)`를 구독해 성공 Merge를 한 건씩 누적한다. tick용 `simulation_metrics.merges`는 총합으로 사용하지 않는다.
+- `StageManager._physics_process()`의 `PLAYING` tick에서만 Run Time을 누적한다. Black Hole Phase lock과 terminal 상태에서는 증가하지 않는다.
+- Start/Retry와 Main Screen 종료에서 통계를 초기화하고 Stage 진입에서는 유지한다.
+- S8-G4 검증에서 첫 Black Hole 생성 Merge 1회, `0.1s` PLAYING 시간, phase lock 중 `2.0s` 미증가, terminal snapshot 전달, Retry 0 초기화를 확인했고 Godot 4.7.1 headless exit 0이었다.
+
+## 2026-08-19 — S8-G4 Result Retry Button wiring
+
+Owner: Integration (잠금 담당 승인됨)
+
+- ResultPanel의 실제 `retry_requested` 신호를 기존 authoritative `_on_retry_requested()` handler에 연결했다.
+- Integration verification이 Result의 실제 Retry Button을 눌러 Ground `PLAYING`, stage index 0, terminal snapshot clear, Merge/Run Time 0 reset을 확인한다.
+- Result의 실제 Main Button도 active Run을 안전하게 종료하고 Title을 표시하는 기존 handler를 계속 사용한다.
+
+## 2026-08-20 — Play Field Backdrop chamfer
+
+Owner: Integration (사용자 명시 요청)
+Locked files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s5_g4_frame_playable_verification.gd`
+
+- Pause 중에도 보이던 검은 사각형의 실제 producer가 Pause UI가 아니라 GameManager가 생성하는 PlayField `Backdrop` 4점 Polygon임을 확인했다.
+- 충돌·Paddle·Cashout에 쓰는 logical field는 변경하지 않고, visual backdrop만 48px 모서리 절삭의 8점 Polygon으로 변경했다.
+- S5-G4 frame playable verification과 S8-G3 terminal UI verification, Godot 4.7.1 Web release export가 모두 exit 0이었다.
+## 2026-08-20 — S8-G4 Black Hole finale·Retry 실제 wiring
+
+- Owner lane: Integration
+- Goal: S8-G4
+- Locked files: `scripts/core/game_manager.gd`, `tests/integration/s8_g4_black_hole_integration_verification.gd`; lock released after implementation verification.
+- 구현: 임시 Black Hole phase auto-complete adapter를 제거했다. Stage phase 시작을 S8-G5 `play_black_hole_phase()`로 전달하고, matching Presentation 완료만 StageManager에 수락시켜 L3 logical field/gameplay를 재개한다. terminal snapshot은 S8-G5 finale overlay가 끝난 뒤에만 S8-G3 Result UI로 전달한다. Retry/Main은 terminal snapshot과 Presentation phase/finale lock을 함께 초기화한다.
+- Verification: Godot 4.7.1 CLI/headless S8-G4 integration verification exit 0 (`phase_presentation=true`, `finale_handoff=true`, `reset_safe=true`); S8-G2 Core regression exit 0; Web release export 성공.
+- 상태: `IMPLEMENTED`. 실제 Desktop/Web에서 Galactic 첫 Black Hole→L3 재개→두 번째 Black Hole finale→Result→Retry/Main 완주 관찰 전에는 `VERIFIED`가 아니다.
+## 2026-08-20 — Play Field Backdrop chamfer 되돌림
+
+- 사용자 확인 결과, 48px chamfer는 Pause modal이 아니라 Play Field `Backdrop`에 잘못 적용된 변경이었다.
+- `GameManager`의 chamfer polygon 생성과 `main.tscn`의 8점 Backdrop을 기존 사각형으로 복원하고, S5-G4 playable verification도 원래 Cashout corridor assertion으로 되돌렸다.
+- S8-G4 Black Hole phase/finale integration 변경은 이 되돌림 범위에 포함하지 않고 유지했다.
+
+## 2026-08-20 — Play Field Frame Aperture 정렬
+
+- 사용자 화면 검토에서 사각형 Backdrop이 프레임 PNG의 대각형 안쪽 개구부를 덮어 금속 모서리와 시각적으로 충돌함을 확인했다.
+- `GameManager`는 물리 `play_field_rect`·Paddle·Cashout 영역을 변경하지 않고, 장식용 Backdrop만 프레임과 같은 50px 8점 개구 윤곽으로 만든다.
+- Godot 4.7.1 headless S5-G4 검증은 새 스크립트를 정상 로드했으나 기존 Paddle 경계 assertion에서 배경 assertion 전에 실패했다. Web release export는 `[ DONE ] savepack`으로 완료했다.
+
+## 2026-08-20 — Frame Aperture 배경 절삭 철회
+
+- 사용자 화면 확인에서 절삭된 Backdrop 뒤로 Stage World가 대각형으로 드러나며 오히려 프레임 모서리를 훼손함을 확인했다.
+- 8점 시각 Backdrop 로직과 그 전용 assertion을 제거하고, Backdrop을 원래 4점 직사각형으로 복원했다. 물리 영역은 전후 모두 변경하지 않았다.
+- Godot 4.7.1 Web release export는 `[ DONE ] savepack`으로 완료했다.
+
+## 2026-08-20 — Play Field Backdrop frame clearance
+
+- 황동 파이프 PNG의 투명 픽셀 아래로 사각형 Backdrop이 비치던 화면 결함을 수정했다.
+- Backdrop은 사각형을 유지하되 `get_field_visual_rect()`보다 전 방향 8px 안쪽에서만 그린다. Simulation·Paddle·Cashout의 logical rect는 변경하지 않았다.
+- Godot 4.7.1 Web release export는 `[ DONE ] savepack`으로 완료했다.
+
+## 2026-08-20 — Play Field Backdrop bezel aperture tracing
+
+- 8px inset은 파이프 침범을 막았지만 원치 않는 여백을 만들었고, 단순 대각 절삭은 Stage World를 넓게 노출했다.
+- Backdrop은 이제 `field_bezel_v2_910x900`의 중앙 투명 개구부를 추출한 정적 pixel-art contour(128 points)를 NinePatch 좌표계로 변환해 그린다. 따라서 개구부에는 여백 없이 닿고, 황동 파이프 영역·외부 투명 canvas는 채우지 않는다.
+- 매 Stage마다 이미지 전체를 스캔하던 초기 구현은 제거하여 runtime 비용을 남기지 않았다. Godot 4.7.1 headless scene load에서 Backdrop contour assertion은 통과했으며, 기존 Paddle boundary assertion 두 건은 독립적으로 계속 실패한다. Web release export는 `[ DONE ] savepack`으로 완료했다.
+
+## 2026-08-20 — Backdrop/Frame layering correction
+
+- 사용자 피드백에 따라 Backdrop 윤곽을 프레임에 맞추려는 접근을 철회했다. Backdrop은 원래의 직사각형 gameplay backing으로 복원했다.
+- `GameplayFrame`에 같은 bezel texture를 사용하는 `FieldPipeMatte` NinePatch를 원본 `FieldBezel` 바로 아래에 추가했다. matte shader는 중앙 개구부에서 멀어지는 방향으로만 최대 8px의 불투명 pipe edge를 보강하므로, 검은 Backdrop은 파이프 투명 디테일 아래에 비치지 않고 중앙 Play Field에는 여백을 만들지 않는다.
+- Godot 4.7.1 headless에서 shader/scene load 및 matte-bezel 정렬 assertions는 통과했다. 기존 Paddle boundary assertion 두 건은 이 변경과 별개로 계속 실패한다. Web release export는 `[ DONE ] savepack`으로 완료했다.
+
+## 2026-08-20 — Field bezel 9-slice margin correction
+
+- 실제 runtime screenshot으로 원인을 확정했다. `FieldBezel.draw_center=false`인데 patch margin이 50px라서, source texture의 50~90px 구간에 남아 있던 황동 파이프/내부 림이 중앙 미그림 영역으로 빠지고 있었다.
+- Backdrop은 4점 직사각형으로 유지한다. 임시 aperture contour와 pipe-matte shader를 제거하고, `FieldBezel`의 네 patch margin을 90px로 넓혀 파이프 전체가 프레임 레이어에서 렌더되게 했다.
+- Primary Godot MCP 실제 runtime에서 Ground, Stage profile L2, Black Hole L3 profile을 캡처했다. L3에서도 황동/내부 림 다음 픽셀부터 Backdrop이 시작하고 Stage World 배경색 사이 여백은 없었다. CLI headless에서 new 9-slice margin assertion은 통과했으며 기존 Paddle boundary assertion 두 건만 독립적으로 실패했다. MCP bridge를 중지한 뒤 clean Web release export `[ DONE ] savepack`을 다시 생성했다.
+
+## 2026-08-20 — Scale Shift visual Backdrop sync
+
+Owner: Integration (사용자 명시 요청)
+Locked files: `scripts/core/game_manager.gd`, `scripts/presentation/gameplay_frame.gd`, `scripts/presentation/presentation_manager.gd`, `tests/integration/s5_g4_shift_presentation_wiring_verification.gd`, `docs/team/INTEGRATION_CONTRACTS.md`
+
+- `GameplayFrame`가 두 profile 사이의 visual field `Rect2`를 순수 계산하고, `PresentationManager`가 Frame 보간과 같은 tween progress마다 `visual_field_rect_changed(Rect2)`를 발행한다.
+- `GameManager`는 이 신호를 받아 장식용 PlayField `Backdrop` 사각형만 갱신한다. Simulation, Paddle, Cashout logical field는 기존처럼 Presentation 완료 뒤 StageManager의 stage change에서만 바뀐다.
+- 같은 signal을 Black Hole L2→L3 Frame 보간에도 사용해 중앙 화면이 frame보다 늦게 또는 먼저 움직이지 않게 했다.
+- Godot 4.7.1 CLI/headless `s5_g4_shift_presentation_wiring_verification.tscn` exit 0 (`backdrop_lerp=true`, `logical_bounds_deferred=true`), `s8_g5_black_hole_presentation_verification.tscn` exit 0. Primary Godot runtime에서 active tween의 Backdrop/Frame inner width가 각각 `719.776`으로 일치하고 logical width는 `560`으로 유지됨을 확인했다. Main/관련 script Primary validate 6/6 및 MCP bridge 종료 뒤 clean Web release export `[ DONE ] savepack` 통과.
+
+## 2026-08-20 — S5-G6I Score Clear 확인 뒤 Scale Shift
+
+- `StageManager`는 non-final Time Up Settlement가 score cut을 넘었을 때 `CLEARED`와 단일 `clear_id` snapshot을 공개하고, matching `request_next_stage(clear_id)` 전에는 Shift하지 않도록 변경했다.
+- Galactic Time Up은 `clear_score = 0`을 Clear로 해석하지 않고 `RUN_ENDED`로 종료한다. Retry/Main Menu는 pending clear lock을 초기화한다.
+- GameManager가 request-only `NEXT STAGE`를 중재해 matching request 뒤에만 기존 Shift presentation 계약으로 연결했다.
+- Primary Godot validate와 S3-G5/S5-G3/S5-G6I verification scenes가 exit 0이었다.
+
+## 2026-08-20 — 즉시 Score Clear → Scale Shift
+
+Owner: Integration (사용자 최신 규칙)
+
+- `StageManager`는 `SCORE_CLEAR`를 `CLEAR_LOCKED→SETTLING→CLEARED→SHIFTING`으로 한 번 연결하고, 사용자 `Next Stage` 확인 없이 기존 presentation `shift_id` handoff를 시작한다.
+- 제거된 확인 대기 API와 `StageClearPanel` mount를 Main/GameManager에서 함께 제거했다. Time Up 중 Settlement가 score cut을 넘는 경우도 같은 자동 Shift 경로를 사용한다.
+- Primary validate 9/9, S3-G5/S5-G3/S5-G5/S5-G6I verification scene exit 0을 확인했다. Main runtime에서 Ground clear score를 직접 반영한 직후 time `45`, state `SHIFTING`, shift id `1`, Clear panel 없음, runtime error 0이었다.
+
+## 2026-08-21 — S8-G4 final player-path verification
+
+Owner: Integration
+
+- 사용자 실제 플레이로 첫 Black Hole phase 진입·기믹 생성, 두 번째 Black Hole 충돌, finale 뒤 Result 표시를 확인했다.
+- L2→L3 뒤 Galactic 재개과 Result `RETRY RUN`의 fresh Ground reset, `MAIN`의 Title 복귀까지 확인해 terminal snapshot handoff와 reset mediation의 최종 경로를 닫았다.
+- 기존 S8-G4/S8-G2 CLI integration regressions 및 Web export evidence와 함께 S8-G4를 `VERIFIED`로 갱신했다.
+
+## 2026-08-21 — S7-G1 Item gateway integration
+
+Owner: Integration
+
+- `ItemManager`와 `ItemEffectGateway`를 Main에 mount했다. Stage 진입마다 ItemManager가 현재 logical Play Field와 local Lv2 runtime radius로 reset되고, 활성 Item Ball 동안 중앙 simulation의 read-only ball collision snapshot을 소비한다. Orb pickup은 회전된 Paddle OBB와 Orb 원의 현재 접촉으로만 producer에 전달한다.
+- Gateway는 `item_collected` 이후에만 monotonic `event_id` CUT-IN request를 발행한다. matching activation cue 또는 explicit skip이 도착할 때만 effect activation request를 한 번 emit하며, duplicate/stale cue 및 Retry/Main reset 뒤의 이전 event를 거부한다. Item Ball 파괴와 Orb miss는 activation 경로에 연결하지 않았다.
+- Verification: Godot 4.7.1 CLI Gateway scene exit 0 (`collection=cue_only`, `activation=once`, `skip_fallback=once`, `reset_stale_rejected=true`); S7-G1C producer regression exit 0; Primary `godot` validate에서 Gateway/GameManager/Simulation/Main/test 5/5 valid; Primary Main runtime에서 ItemManager/Gateway mount, Title start 뒤 `PLAYING`, runtime errors 0을 확인했다.
+- 상태: `IMPLEMENTED`. S6-G2 CUT-IN producer와 S7-G2~G4 effect consumer가 없어 실제 cue→effect 결과와 Web 관찰은 이후 Integration close에서 검증한다.
+
+## 2026-08-21 — S7-G1 clean class-load repair
+
+- `GameManager`가 ItemManager와 ItemEffectGateway를 global `class_name`으로 annotation/cast하던 의존을 제거하고 두 mounted node를 `Node`로 참조하게 했다.
+- 이는 다른 workspace/MCP가 새 global script class cache를 만들기 전에 `game_manager.gd`를 단독 파싱해 실패하던 load-order 결함을 막는다. Gateway/Manager의 class declaration, signal API, scene mount와 gameplay contract는 변경하지 않았다.
+
+## 2026-08-21 — S3-G5 deadline-bounded StageManager integration
+
+Owner: Integration
+
+- StageManager가 full callback `delta`가 아니라 deadline 전 유효 구간만 Simulation에 step하고, 그 구간에서 발생한 Cashout만 StageRuntime으로 중재하도록 연결했다.
+- 통합 verification은 deadline 전 Lv3 Cashout이 시간을 연장하는 경우와, deadline 뒤 하단 crossing은 Time Bonus 없이 Final Settlement base score만 반영하고 Fail lock으로 가는 경우를 분리해 확인했다.
+- Godot 4.7.1 CLI headless S3-G2/G3/G4/G5와 S5-G3/G5/G6 회귀 exit 0, Primary validate 7/7, Main runtime error 0, clean Web Browser gameplay/console warning·error 0을 확인했다.

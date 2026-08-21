@@ -36,16 +36,14 @@ Stage Start
    ├─ KEEP → 더 높은 머지 / 폭발적인 점수 가치
    └─ CASHOUT → Score + Time Bonus
 → Ground/Planetary 최고 공 제작?
-   ├─ YES → 즉시 Stage Clear
-   └─ NO → 시간 계속 진행
+   └─ YES → FIRST CONTACT CUT-IN → 시간 계속 진행
 → Galactic 첫 Black Hole 제작?
    ├─ YES → 이동 Black Hole 전환 + L3 확장 후 계속 플레이
    └─ 두 Black Hole 충돌 → 최종 폭발 + 타이틀 + Run End
-→ Time Up?
+→ clear_score 도달?
    ├─ 화면 공 Final Settlement (Score Only)
-   ├─ clear_score 이상 → Stage Clear
-   └─ 미달 → Run End
-→ Ground/Planetary 성공 시 SCALE SHIFT
+   └─ 즉시 SCALE SHIFT
+→ clear_score 미달 Time Up? → Run End
 → 이전 최고 공이 다음 Stage의 기본 공
 ```
 
@@ -86,11 +84,7 @@ Final Settlement = Score Only
 
 ## 5. Stage Clear
 
-한 Stage를 통과하는 방법은 두 가지다.
-
-### Top Ball Clear
-
-Ground와 Planetary는 현재 Stage 최고 공을 만들면 즉시 성공한다. 마지막 Galactic의 첫 Lv14는 Black Hole 최종 국면을 활성화하는 예외다.
+Ground와 Planetary는 Time Up 뒤 Final Settlement 점수로 통과한다. local Lv4 생성 자체는 Clear 조건이 아니며, 첫 생성 CUT-IN 뒤 gameplay를 계속한다.
 
 ### Score Clear
 
@@ -149,7 +143,7 @@ Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole
 
 전역 Ball catalog는 `global_level 0~14`의 15종을 유지한다. 기본 Run의 Stage별 ordered chain은 Ground `[0, 1, 2, 3, 4]`, Planetary `[4, 5, 6, 8, 10]`, Galactic `[10, 11, 12, 13, 14]`이며, Lv7 `Red Giant`와 Lv9 `Nebula`는 visual catalog에는 남지만 기본 Stage chain에서는 사용하지 않는다.
 
-Lv14 최종 공의 이름은 `Black Hole`이다. Galactic에서 첫 Lv14를 만들면 일반 Top Ball Clear로 종료하지 않고, 그 공을 이동 Black Hole 기믹으로 전환하면서 최종 국면을 시작한다. Black Hole은 하단에서 반사하고 성장·Merge하지 않으며, 3단계 이하 공을 흡수해 해당 Cashout 상당 점수를 차감한다. Run score가 0이 되면 즉시 Game Over다. 네 번째 Frame profile인 `Black Hole Phase`로 확장된 뒤 같은 Galactic gameplay가 계속되며, 두 번째 Lv14로 만든 Black Hole과 기존 Black Hole이 충돌하면 서로를 끌어당겨 회전·폭발한다. 이후 HUD/UI를 지우고 `SNOWBALL EFFECT`, `CLEAR SCORE`, `MAIN MENU`를 표시하며 Run을 끝낸다. Black Hole은 별도 Stage가 아니다.
+Lv14 최종 공의 이름은 `Black Hole`이다. Galactic에서 첫 Lv14를 만들면 일반 Top Ball Clear로 종료하지 않고, 그 공을 이동 Black Hole 기믹으로 전환하면서 최종 국면을 시작한다. Black Hole은 하단에서 반사하고 성장·Merge하지 않으며, 3단계 이하 공을 흡수할 때 해당 Cashout 가치의 `12.5%`와 첫 Black Hole 등장 시점 Run Score의 `25%` 중 작은 값을 차감한다. Run score가 0이 되면 즉시 Game Over다. 네 번째 Frame profile인 `Black Hole Phase`로 확장된 뒤 같은 Galactic gameplay가 계속되며, 두 번째 Lv14로 만든 Black Hole과 기존 Black Hole이 충돌하면 서로를 끌어당겨 회전·폭발한다. 이후 HUD/UI를 지우고 `SNOWBALL EFFECT`, `CLEAR SCORE`, `MAIN MENU`를 표시하며 Run을 끝낸다. Black Hole은 별도 Stage가 아니다.
 
 초기 Spawn 테스트 방향:
 
@@ -263,7 +257,7 @@ Final Settlement:
 - Cashout
 - 공별 Time Bonus
 - Stage별 타이머
-- Ground/Planetary 최고 공 즉시 Clear; Galactic은 두 Black Hole 충돌로 종료
+- Ground/Planetary Time Up Score Clear; Galactic은 두 Black Hole 충돌로 종료
 - Time Up Final Settlement
 - clear_score 기반 Score Clear
 - Scale Shift

@@ -143,7 +143,7 @@ BallSimulationManager가 플레이 필드 Rect를 받아 직접 처리해도 된
 - 기본/최고 global_level
 - 현재 생성량
 - Cashout Time Bonus 반영
-- Ground/Planetary 최고 공 즉시 Clear와 Galactic Black Hole 예외
+- Ground/Planetary local Lv4 비종료와 Galactic Black Hole Phase handoff
 - Time Up
 - Final Settlement
 - Score Clear / Fail 판정

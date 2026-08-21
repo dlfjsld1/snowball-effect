@@ -21,20 +21,20 @@ func _ready() -> void:
 	var frame: GameplayFrame = main.get_node("UI/GameplayFrame")
 	var hud: Hud = main.get_node("UI/HUDMount/HUD")
 
+	_expect(not simulation.is_physics_processing(), "StageManager must be the only Main physics driver for BallSimulationManager.")
 	game_manager.set_physics_process(false)
 	stage_manager.set_physics_process(false)
 	presenter.shift_duration = 0.05
+	game_manager._on_start_requested()
 	stage_manager.stage_changed.connect(_record_stage_entry)
 	presenter.stage_shift_presentation_finished.connect(_count_shift_completion)
 
 	_verify_stage_entry(stage_manager, simulation, background, frame, hud, 0, &"ground", "GROUND", 6.0)
 	var run_before_ground_clear := stage_manager.get_score_ledger().run_score
 	simulation.reset_runtime()
-	var ground_radius := simulation.get_runtime_radius_for_level(3)
-	simulation.spawn_ball(Vector2(700.0, 240.0), Vector2.ZERO, ground_radius, 3)
-	simulation.spawn_ball(Vector2(704.0, 240.0), Vector2.ZERO, ground_radius, 3)
+	stage_manager.get_score_ledger().apply_score_event(stage_manager.get_current_stage().clear_score)
 	stage_manager._physics_process(0.1)
-	_expect(stage_manager.current_state == StageManager.SHIFTING, "Ground Top Ball must enter SHIFTING.")
+	_expect(stage_manager.current_state == StageManager.SHIFTING, "Ground Score Clear must enter SHIFTING.")
 	var ground_stage_time: float = stage_manager.get_runtime_snapshot()["stage_time_left"]
 	await get_tree().create_timer(0.12).timeout
 
@@ -46,7 +46,7 @@ func _ready() -> void:
 	var planetary_time_before_cashout: float = stage_manager.get_runtime_snapshot()["stage_time_left"]
 	var planetary_field := simulation.play_field_rect
 	var supernova_radius := simulation.get_runtime_radius_for_level(8)
-	for offset in range(4):
+	for offset in range(3):
 		simulation.spawn_ball(
 			Vector2(planetary_field.position.x + 80.0 + offset * 80.0, planetary_field.end.y + supernova_radius + 1.0),
 			Vector2.ZERO,
@@ -56,11 +56,12 @@ func _ready() -> void:
 	stage_manager._physics_process(0.02)
 	var planetary_time_after_cashout: float = stage_manager.get_runtime_snapshot()["stage_time_left"]
 	var cashout_time_gain := planetary_time_after_cashout - (planetary_time_before_cashout - 0.02)
-	_expect(is_equal_approx(cashout_time_gain, 4.0), "Four local Lv3 Cashouts must grant 4.0 seconds total.")
+	_expect(is_equal_approx(cashout_time_gain, 3.0), "Three local Lv3 Cashouts must grant 3.0 seconds total.")
 	_expect(stage_manager.current_state == StageManager.PLAYING, "Cashout time recovery must keep Planetary PLAYING.")
-	_expect(stage_manager.get_score_ledger().stage_score >= stage_manager.get_current_stage().clear_score, "Planetary Cashouts must reach clear score.")
-	_expect(stage_manager.debug_force_score_clear(), "Debug Score Clear must finish Planetary through the Time Up route.")
-	_expect(stage_manager.current_state == StageManager.SHIFTING, "Planetary Time Up Score Clear must enter SHIFTING.")
+	_expect(stage_manager.get_score_ledger().stage_score < stage_manager.get_current_stage().clear_score, "Three Planetary Cashouts must remain below clear score.")
+	stage_manager.get_score_ledger().apply_score_event(stage_manager.get_current_stage().clear_score - stage_manager.get_score_ledger().stage_score)
+	stage_manager._physics_process(0.02)
+	_expect(stage_manager.current_state == StageManager.SHIFTING, "Planetary Score Clear must enter SHIFTING immediately.")
 	await get_tree().create_timer(0.12).timeout
 
 	_verify_stage_entry(stage_manager, simulation, background, frame, hud, 2, &"galactic", "GALACTIC", 35.0)
@@ -74,15 +75,12 @@ func _ready() -> void:
 	_expect(is_equal_approx(stage_manager.get_score_ledger().run_score, 0.0), "Retry must reset Run score.")
 	_expect(stage_manager.current_state == StageManager.PLAYING, "Retry must resume Ground gameplay.")
 	_expect(_stage_entries == ["Planetary", "Galactic", "Ground"], "Stage entry order must be Planetary, Galactic, then retry Ground.")
-	var debug_top_ball_event := InputEventKey.new()
-	debug_top_ball_event.physical_keycode = KEY_F6
-	debug_top_ball_event.pressed = true
-	game_manager._unhandled_key_input(debug_top_ball_event)
-	_expect(stage_manager.current_state == StageManager.SHIFTING, "F6 must invoke the Debug Top Ball Clear route.")
+	_expect(stage_manager.debug_force_score_clear(), "F7 must invoke the Debug Score Clear route.")
+	_expect(stage_manager.current_state == StageManager.SHIFTING, "F7 must invoke immediate Score Clear.")
 
 	if _failures == 0:
 		print(
-			"S5_G5_THREE_STAGE_VERIFIED route=top_ball+score_clear shifts=2 retry=ground "
+			"S5_G5_THREE_STAGE_VERIFIED route=score_clear shifts=2 retry=ground "
 			+ "ground_stage_time=%.2f planetary_cashout_time_gain=%.2f" % [ground_stage_time, cashout_time_gain]
 		)
 	get_tree().quit(_failures)

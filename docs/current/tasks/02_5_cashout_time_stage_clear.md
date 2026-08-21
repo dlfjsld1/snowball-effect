@@ -48,11 +48,11 @@ Local Lv3 = +1s
 Local Lv4 = +2s
 ```
 
-최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 세 Stage가 모두 5종이므로 실제 Cashout 보너스 최대치는 Local Lv3의 `+1s`다.
+Ground의 Moon과 Planetary의 Galaxy를 포함한 local Lv4는 생성 즉시 Stage Clear가 되지 않으며 일반 Active Cashout 대상이다. 따라서 일반 Cashout Time Bonus 최댓값은 Local Lv4의 `+2s`다. Galactic의 Black Hole은 별도 최종 국면 계약을 따른다.
 
 초기 `base_time` 테스트 seed는 Ground 45초, Planetary 40초, Galactic 35초다. Lv14 Black Hole은 Galactic top Ball이며, 첫 Lv14는 마지막 Galactic Stage 안의 이동 Black Hole runtime 기믹으로 전환된다.
 기본 Run의 ordered Stage chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7 `Red Giant`와 Lv9 `Nebula`는 15종 BallCatalog에 보존하지만, 최근 팀 합의에 따라 기본 Run에서는 의도적으로 제외한다. 이는 누락이나 Resource drift가 아니며 Stage별 정확히 5종의 족보를 유지하기 위한 콘텐츠 배치다.
-`clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. 최고 공은 생성 즉시 Clear되므로, 최고 공보다 한 단계 낮은 Cashout 가능 공 점수의 4배를 초기값으로 사용한다. Ground는 Giant Snowball(`1e6`) 기준 `4e6`, Planetary는 Supernova(`5e17`) 기준 `2e18`이다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
+`clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. Ground는 Moon(`1e8`) 기준 `4e8`, Planetary는 Galaxy(`1e25`) 기준 `4e25`를 초기값으로 사용한다. 두 Stage 모두 최고 공 Active Cashout 점수의 4배를 목표로 한다. local Lv4 생성 여부와 무관하게 tick의 Cashout까지 반영한 `stage_score`가 이 값에 도달하면 즉시 Clear를 확정한다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
 둘 다 플레이테스트 전 확정값이 아니다.
 
 초기 구현에는 Stage 시간 cap을 넣지 않는다.
@@ -105,51 +105,54 @@ TIME +1.0s
 
 ## 4. Physics Tick 순서와 종료 우선순위
 
-한 physics tick은 다음 순서로 처리한다.
+한 physics tick은 정확한 Stage deadline을 넘어서 gameplay를 먼저 시뮬레이션하지 않도록 다음 순서로 처리한다.
 
 ```text
-1. stage_time_left -= delta
-2. 이동 / 충돌 / Merge 처리
-3. 이번 tick의 Merge 확정 및 Top Ball 여부 기록
-4. 이번 tick의 Active Cashout Score / Time Bonus 반영
+1. tick 시작 남은 시간으로 deadline 전 `valid_play_delta`를 구함
+2. `valid_play_delta` 안의 이동 / 충돌 / Merge / 하단 통과 처리
+3. 유효 Merge 확정 및 local Lv3/Lv4 최초 생성 여부 기록
+4. deadline 전 Active Cashout Score / Time Bonus 반영
 5. 종료 판정
-   - Top Ball 생성 → TOP_BALL_CLEAR
-   - 아니고 stage_time_left <= 0 → TIME_UP
+   - non-final이고 stage_score >= clear_score → SCORE_CLEAR
+   - stage_time_left <= 0 → TIME_UP
    - 그 외 → PLAYING
 ```
 
-따라서 시간이 잠시 0 이하가 되어도 같은 tick의 Cashout으로 양수가 되면 Time Up을 취소하고 계속 플레이한다.
-같은 tick에 Top Ball 생성과 Time Up 조건이 모두 있으면 Top Ball Clear가 우선한다.
+deadline 전에 실제로 하단을 통과한 Cashout이 시간을 양수로 만들면 `PLAYING`을 계속한다. 같은 유효 Cashout으로 clear score를 채우면 Score Clear가 우선한다. deadline 이후 하단 통과는 Active Cashout으로 commit하지 않고 Settlement 대상으로 남긴다.
+유효 gameplay 구간에 local Lv4 생성과 Time Up 조건이 함께 있어도 Lv4 생성은 종료 사유가 아니다. deadline 전 Merge/discovery/Cashout commit 뒤 남은 시간이 없으면 Time Up 경로를 사용한다.
 
 ---
 
-## 5. Top Ball Clear
+## 5. Local Lv4 최초 발견
 
-현재 Stage 최고 `global_level` 공이 생성되면:
+현재 Stage 최고 `global_level` 공이 Run에서 처음 생성되면:
 
-1. `stage_clear_decided(reason = TOP_BALL)`
-2. `CLEAR_LOCKED`
-3. Spawn / Timer / gameplay 정지
-4. 일반 CUT-IN 중복 억제
-5. Final Settlement
-6. `stage_clear_completed`
-7. 다음 Stage면 Scale Shift, 마지막 Stage면 Result
+1. Merge 결과를 정상 commit한다.
+2. Run-scoped discovery를 한 번 기록한다.
+3. 해당 공의 `FIRST CONTACT` CUT-IN을 요청한다.
+4. Ground/Planetary는 CUT-IN 뒤 gameplay를 재개한다.
+5. Galactic의 첫 Black Hole만 CUT-IN 뒤 Black Hole Phase 전환을 이어간다.
 
-점수컷은 보지 않는다. 생성된 Top Ball도 Settlement snapshot과 점수에 포함한다.
+local Lv4 생성은 Stage Clear나 Final Settlement를 직접 요청하지 않는다.
 
 ---
 
 ## 6. Time Up
 
-tick의 Cashout까지 반영한 뒤 `stage_time_left <= 0`이고 Top Ball이 생성되지 않았다면:
+non-final Stage는 deadline 전 유효 Cashout까지 반영한 뒤 `stage_score >= clear_score`이면:
+
+1. `CLEAR_LOCKED`
+2. Spawn / Input / gameplay 정지
+3. Final Settlement
+4. `CLEARED` → 즉시 Scale Shift
+
+clear score 미달이고 deadline 전 유효 Cashout까지 반영한 뒤 `stage_time_left <= 0`이면:
 
 1. `TIME_UP_LOCKED`
 2. Spawn / Input / gameplay 정지
 3. Final Settlement
-4. 마지막 Stage가 아니면 `stage_score >= clear_score` 판정
-5. 성공 → `CLEARED` → Scale Shift
-6. 실패 → `FAILED` → Run End
-7. 마지막 Stage → Result
+4. non-final → `FAILED` → Run End
+5. 마지막 Stage → Result
 
 ---
 
@@ -230,16 +233,17 @@ settlement_applied = false
 
 ## 10. 검증
 
-### Cashout 회복
+### Cashout 막판 연장
 
-- tick 시작 시 시간이 0 이하가 되어도 같은 tick의 Cashout으로 양수가 되면 PLAYING 유지
+- deadline 전 유효 구간에서 하단을 통과한 Cashout으로 시간이 양수가 되면 PLAYING 유지
+- deadline 이후에만 하단을 통과할 공은 Active Cashout/Time Bonus 없이 Settlement 대상으로 유지
 - Local Lv0 Cashout은 시간을 늘리지 않음
 - Local Lv1/Lv2가 Stage 데이터의 시간만큼 증가
 
 ### 종료 우선순위
 
-- 같은 tick의 Top Ball + Time Up → Top Ball Clear
-- Top Ball 생성 후 추가 Cashout/Merge가 Stage 상태를 바꾸지 않음
+- deadline 전 local Lv4 + Time Up → 유효 Merge/discovery/Cashout commit 뒤 Time Up
+- local Lv4 생성 후 gameplay와 Active Cashout이 계속됨
 
 ### Settlement
 
@@ -269,7 +273,7 @@ settlement_applied = false
 ## 작업 보고
 
 - 사용한 초기 `base_time`, `clear_score`, `time_bonus_by_local_level`
-- 정상 Clear / Score Clear / Fail / Cashout 회복 테스트 결과
+- 정상 Clear / Score Clear / Fail / deadline 전 Cashout 연장 테스트 결과
 - 점수 중복과 Settlement 재호출 테스트 결과
 - Time Economy 측정값
 - 변경 파일

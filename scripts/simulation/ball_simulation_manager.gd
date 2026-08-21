@@ -22,9 +22,9 @@ signal simulation_metrics_updated(metrics: Dictionary)
 @export var stage_base_ball_radius := 4.0
 @export_range(1.0, 1024.0, 1.0, "or_greater") var spatial_grid_cell_size := 32.0
 
-const BLACK_HOLE_INFLUENCE_RADIUS := 240.0
-const BLACK_HOLE_MAX_PULL_ACCELERATION := 300.0
-const BLACK_HOLE_TOTAL_PULL_CAP := 600.0
+const BLACK_HOLE_INFLUENCE_RADIUS := 300.0
+const BLACK_HOLE_MAX_PULL_ACCELERATION := 450.0
+const BLACK_HOLE_TOTAL_PULL_CAP := 900.0
 const BLACK_HOLE_MUTUAL_PULL_ACCELERATION := 450.0
 const BLACK_HOLE_MAX_COUNT := 2
 const BLACK_HOLE_EPSILON_SQUARED := 0.0001
@@ -68,6 +68,7 @@ var _render_snapshot := {
 	"global_levels": _render_snapshot_global_levels,
 	"count": 0,
 }
+var _item_collision_snapshots: Array[Dictionary] = []
 var _simulation_metrics := {
 	"active_balls": 0,
 	"slot_capacity": 0,
@@ -423,6 +424,18 @@ func get_render_snapshot() -> Dictionary:
 	_render_snapshot["global_levels"] = _render_snapshot_global_levels
 	_render_snapshot["count"] = active_count
 	return _render_snapshot
+
+
+func get_active_item_collision_snapshots() -> Array[Dictionary]:
+	_item_collision_snapshots.clear()
+	for ball_index in active_indices:
+		_item_collision_snapshots.append({
+			"id": ball_index,
+			"global_level": global_levels[ball_index],
+			"position": positions[ball_index],
+			"radius": radii[ball_index],
+		})
+	return _item_collision_snapshots
 
 
 func _update_simulation_metrics() -> void:

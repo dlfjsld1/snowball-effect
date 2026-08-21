@@ -2,6 +2,8 @@ class_name StageRuntime
 extends Node
 
 const Ledger = preload("res://scripts/core/score_ledger.gd")
+const BLACK_HOLE_ABSORPTION_SCORE_RATIO := 0.125
+const BLACK_HOLE_ABSORPTION_BASELINE_CAP_RATIO := 0.25
 
 signal stage_time_changed(time_left: float)
 signal score_changed(stage_score: float, run_score: float)
@@ -19,6 +21,10 @@ var _next_black_hole_phase_id := 1
 var _black_hole_run_end_locked := false
 var _black_hole_finale_locked := false
 var _black_hole_finale_snapshot: Dictionary = {}
+var _black_hole_phase_run_score_baseline := 0.0
+var _black_hole_phase_baseline_captured := false
+var _run_merge_count := 0
+var _run_time_seconds := 0.0
 
 
 func enter_stage(definition: StageDefinition) -> void:
@@ -32,12 +38,35 @@ func enter_stage(definition: StageDefinition) -> void:
 	_black_hole_run_end_locked = false
 	_black_hole_finale_locked = false
 	_black_hole_finale_snapshot.clear()
+	_black_hole_phase_run_score_baseline = 0.0
+	_black_hole_phase_baseline_captured = false
 	stage_time_changed.emit(stage_time_left)
 	stage_entered.emit(definition)
 
 
 func apply_stage_definition(definition: StageDefinition) -> void:
 	enter_stage(definition)
+
+
+func reset_run_statistics() -> void:
+	_run_merge_count = 0
+	_run_time_seconds = 0.0
+
+
+func record_run_merge() -> void:
+	_run_merge_count += 1
+
+
+func advance_run_time(delta: float) -> void:
+	assert(delta >= 0.0, "Run Time delta must not be negative.")
+	_run_time_seconds += delta
+
+
+func get_run_statistics() -> Dictionary:
+	return {
+		"merge_count": _run_merge_count,
+		"run_time_seconds": _run_time_seconds,
+	}
 
 
 func get_stage_snapshot() -> Dictionary:
@@ -71,19 +100,28 @@ func apply_active_cashout(score_amount: float, global_level: int) -> float:
 	return time_bonus
 
 
-func process_tick(delta: float, top_ball_created: bool, cashouts: Array[Dictionary]) -> StringName:
+func get_valid_play_delta(delta: float) -> float:
+	assert(delta >= 0.0, "Physics delta must not be negative.")
+	return minf(delta, maxf(stage_time_left, 0.0))
+
+
+func process_tick(delta: float, _top_ball_created: bool, cashouts: Array[Dictionary]) -> StringName:
 	assert(current_stage != null, "Tick processing requires an entered Stage.")
+	assert(delta >= 0.0, "Tick delta must not be negative.")
 	if _end_decision_locked:
 		return &""
 
-	stage_time_left -= delta
+	stage_time_left = maxf(stage_time_left - delta, 0.0)
 	stage_time_changed.emit(stage_time_left)
 
 	for cashout in cashouts:
 		apply_active_cashout(cashout["score_amount"], cashout["global_level"])
 
-	if top_ball_created:
-		return _request_end_decision(&"TOP_BALL_CLEAR")
+	# StageManager only supplies cashouts committed inside the deadline-bounded
+	# simulation interval. A target-reaching valid Cashout therefore wins before
+	# Time Up without allowing post-deadline recovery.
+	if current_stage.clear_score > 0.0 and score_ledger.stage_score >= current_stage.clear_score:
+		return _request_end_decision(&"SCORE_CLEAR")
 	if stage_time_left <= 0.0:
 		return _request_end_decision(&"TIME_UP")
 	return &""
@@ -95,6 +133,9 @@ func is_current_stage_top_ball(global_level: int) -> bool:
 
 func begin_black_hole_phase(from_rect: Rect2, to_rect: Rect2) -> int:
 	assert(current_stage != null and current_stage.black_hole_enabled, "Black Hole Phase requires the Galactic Black Hole Stage.")
+	if not _black_hole_phase_baseline_captured:
+		_black_hole_phase_run_score_baseline = maxf(score_ledger.run_score, 0.0)
+		_black_hole_phase_baseline_captured = true
 	var phase_id := _next_black_hole_phase_id
 	_next_black_hole_phase_id += 1
 	black_hole_phase_started.emit(phase_id, from_rect, to_rect)
@@ -103,13 +144,25 @@ func begin_black_hole_phase(from_rect: Rect2, to_rect: Rect2) -> int:
 
 func apply_black_hole_absorption(score_amount: float) -> bool:
 	assert(score_amount >= 0.0, "Black Hole absorption penalty must not be negative.")
-	score_ledger.stage_score = maxf(score_ledger.stage_score - score_amount, 0.0)
-	score_ledger.run_score = maxf(score_ledger.run_score - score_amount, 0.0)
+	var penalty := calculate_black_hole_absorption_penalty(score_amount)
+	score_ledger.stage_score = maxf(score_ledger.stage_score - penalty, 0.0)
+	score_ledger.run_score = maxf(score_ledger.run_score - penalty, 0.0)
 	score_ledger.score_changed.emit(score_ledger.stage_score, score_ledger.run_score)
 	if score_ledger.run_score <= 0.0 and not _black_hole_run_end_locked:
 		_black_hole_run_end_locked = true
 		black_hole_run_end_requested.emit()
 	return _black_hole_run_end_locked
+
+
+func calculate_black_hole_absorption_penalty(cashout_score: float) -> float:
+	assert(cashout_score >= 0.0, "Black Hole absorption Cashout score must not be negative.")
+	var scaled_penalty := cashout_score * BLACK_HOLE_ABSORPTION_SCORE_RATIO
+	var phase_cap := _black_hole_phase_run_score_baseline * BLACK_HOLE_ABSORPTION_BASELINE_CAP_RATIO
+	return minf(scaled_penalty, phase_cap)
+
+
+func get_black_hole_phase_run_score_baseline() -> float:
+	return _black_hole_phase_run_score_baseline
 
 
 func lock_black_hole_finale(contact_snapshot: Dictionary) -> Dictionary:
@@ -121,6 +174,7 @@ func lock_black_hole_finale(contact_snapshot: Dictionary) -> Dictionary:
 	_black_hole_finale_snapshot["stage_index"] = current_stage.stage_index if current_stage != null else -1
 	_black_hole_finale_snapshot["stage_score"] = score_ledger.stage_score
 	_black_hole_finale_snapshot["run_score"] = score_ledger.run_score
+	_black_hole_finale_snapshot["optional_stats"] = get_run_statistics()
 	black_hole_finale_locked.emit(get_black_hole_finale_snapshot())
 	return get_black_hole_finale_snapshot()
 
