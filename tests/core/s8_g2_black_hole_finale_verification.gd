@@ -48,13 +48,13 @@ func _create_two_black_holes() -> void:
 
 func _verify_terminal_contact_lock() -> void:
 	simulation._black_hole_positions[0] = Vector2(700.0, 300.0)
-	simulation._black_hole_positions[1] = Vector2(730.0, 300.0)
-	simulation._black_hole_velocities[0] = Vector2.ZERO
-	simulation._black_hole_velocities[1] = Vector2.ZERO
+	simulation._black_hole_positions[1] = Vector2(760.0, 300.0)
+	simulation._black_hole_velocities[0] = Vector2(600.0, 0.0)
+	simulation._black_hole_velocities[1] = Vector2(-600.0, 0.0)
 	var normal_first := simulation.spawn_ball(Vector2(800.0, 400.0), Vector2.ZERO, 4.0, 10)
 	var normal_second := simulation.spawn_ball(Vector2(806.0, 400.0), Vector2.ZERO, 4.0, 10)
-	simulation.step_simulation(1.0 / 60.0)
-	_expect(simulation.is_black_hole_terminal_locked(), "Earliest Black Hole contact must lock terminal runtime.")
+	simulation.step_simulation(0.1)
+	_expect(simulation.is_black_hole_terminal_locked(), "A sufficiently strong Black Hole collision must lock terminal runtime.")
 	_expect(_finale_event_count == 1, "Terminal contact must publish exactly one finale event.")
 	_expect(stage_runtime.is_black_hole_finale_locked(), "StageRuntime must lock the supplied finale result once.")
 	var result_snapshot := stage_runtime.get_black_hole_finale_snapshot()

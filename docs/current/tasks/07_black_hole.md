@@ -69,11 +69,11 @@ Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성�
 influence_radius = 480 world units
 maximum_pull_acceleration = 1200 world units/s²
 total_pull_cap = 1500 world units/s²
-black_hole_mutual_pull_max = 450 world units/s²
+black_hole_mutual_repulsion_max = 450 world units/s²
 pull_falloff = (1 - distance / influence_radius)²
 ```
 
-반경 밖의 pull은 0이며 기존 Ball runtime speed cap을 유지한다. 두 Black Hole이 존재하면 일반 공은 두 pull vector의 합을 받되 합산 cap을 한 번 적용한다. 같은 방향에서는 강해지고 두 Black Hole 사이에서는 일부 상쇄될 수 있으므로 항상 정확히 2배가 되는 것은 아니다. Black Hole끼리는 전용 mutual pull로 서로를 끌어당기며 접촉 후 terminal 연출로 전환한다. 수치는 tuning data다.
+반경 밖의 pull은 0이며 기존 Ball runtime speed cap을 유지한다. 두 Black Hole이 존재하면 일반 공은 두 pull vector의 합을 받되 합산 cap을 한 번 적용한다. 같은 방향에서는 강해지고 두 Black Hole 사이에서는 일부 상쇄될 수 있으므로 항상 정확히 2배가 되는 것은 아니다. Black Hole끼리는 전용 척력으로 서로 멀어지며, 강한 상대속도로 실제 접촉했을 때만 terminal 연출로 전환한다. 수치는 tuning data다.
 
 흡수는 실제 contact에서만 발생한다. 첫 Black Hole 등장 시점 Run Score를 한 번 baseline으로 저장하고, 흡수된 공의 Active Cashout 가치 `12.5%`와 baseline `25%` 중 작은 값을 stage/run score에서 각각 차감한다. 전액 차감으로 첫 Galaxy 흡수 즉시 Run이 끝나던 문제를 피하면서, 고가 공 반복 손실은 여전히 치명적으로 유지하기 위한 첫 플레이테스트 seed다. Stage score는 0에서 clamp하고, Run score가 0 이하가 되면 0으로 고정한 뒤 즉시 Game Over/Run End한다. Time Bonus와 Cashout popup은 없다.
 
@@ -95,8 +95,8 @@ pull_falloff = (1 - distance / influence_radius)²
 Black Hole Phase 중 두 번째 Lv14를 만들면 두 번째 이동 Black Hole entity로 전환한다. 두 Black Hole이 접촉하면 일반 Merge 대신 terminal sequence를 한 번만 실행한다.
 
 ```text
-contact lock
-→ mutual pull / orbit
+strong contact lock
+→ presentation orbit
 → finale explosion
 → gameplay UI hide
 → SNOWBALL EFFECT title

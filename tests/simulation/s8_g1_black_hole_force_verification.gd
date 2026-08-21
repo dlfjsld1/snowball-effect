@@ -80,7 +80,7 @@ func _verify_pull_and_bottom_reflection() -> void:
 	var first_before := simulation.get_black_hole_position(0)
 	var second_before := simulation.get_black_hole_position(1)
 	simulation.step_simulation(0.25)
-	_expect(simulation.get_black_hole_position(0).distance_to(simulation.get_black_hole_position(1)) < first_before.distance_to(second_before), "Black Holes must receive mutual pull toward each other.")
+	_expect(simulation.get_black_hole_position(0).distance_to(simulation.get_black_hole_position(1)) > first_before.distance_to(second_before), "Black Holes must repel each other while not in a forced collision.")
 	simulation._black_hole_positions[0] = Vector2(700.0, simulation.play_field_rect.end.y - simulation._black_hole_radii[0] - 1.0)
 	simulation._black_hole_velocities[0] = Vector2(0.0, 300.0)
 	simulation.step_simulation(0.1)

@@ -805,3 +805,8 @@ Owner: Core
 - Removed the local-level filter: any active normal Ball that makes actual contact with a Black Hole is consumed. Converted Black Hole entities remain excluded.
 - This intentionally raises the risk of protecting Event Horizon pairs long enough to create the second Black Hole; no remote absorption radius was added.
 - Updated the S8 force fixture to cover a contacted high-level Ball. Revised runtime verification remains pending.
+## 2026-08-21 — Black Hole Mutual Repulsion
+
+- User requested that two Black Holes repel rather than automatically converge; finale must require a strong actual collision.
+- Replaced the `450 world units/s²` mutual attraction with equal-strength repulsion. Ordinary-Ball pull, all-level contact absorption, score penalties, and terminal contact sweep stay separate.
+- Updated S8 force coverage for increasing idle Black Hole separation, and finale coverage for a forced opposing-velocity collision.
