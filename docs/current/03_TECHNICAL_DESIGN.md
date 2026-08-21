@@ -730,9 +730,9 @@ func get_black_hole_pull(position: Vector2) -> Vector2
 
 초기 force seed는 영향 반경 `300 world units`, 최대 가속도 `450 world units/s²`다. 반경 안의 normalized distance `t = clamp(distance / 300, 0, 1)`에 대해 `(1 - t)²` falloff를 사용하고 반경 밖은 0으로 둔다. delta를 곱해 velocity에 적용한 뒤 기존 final Ball speed cap을 유지한다. 중심 거리 `epsilon` 이하에서는 영벡터를 normalize하지 않아 NaN을 막는다. 수치는 Stage tuning data로 교체 가능해야 한다.
 
-일반 공에 대한 다중 Black Hole force는 각 source의 vector를 먼저 합한 뒤 `900 world units/s²`로 한 번 제한한다. 같은 방향의 힘은 더해지고 반대 방향은 자연스럽게 상쇄되므로 Black Hole 수를 단순 scalar 배수로 적용하지 않는다. 그 뒤 delta를 곱하고 기존 Ball runtime speed cap을 적용한다.
+일반 공에 대한 다중 Black Hole force는 각 source의 vector를 먼저 합한 뒤 `1500 world units/s²`로 한 번 제한한다. 같은 방향의 힘은 더해지고 반대 방향은 자연스럽게 상쇄되므로 Black Hole 수를 단순 scalar 배수로 적용하지 않는다. 그 뒤 delta를 곱하고 기존 Ball runtime speed cap을 적용한다.
 
-Black Hole entity끼리는 일반 공용 force/absorption loop와 분리해 상대 Black Hole 방향으로 최대 `450 world units/s²`의 mutual acceleration을 적용한다. 이 값은 접근을 유도하는 gameplay seed이며, 접촉 확정 이후에는 force 적분을 멈추고 terminal presentation이 회전·폭발 transform을 소유한다.
+Black Hole entity끼리는 일반 공용 force/absorption loop와 분리해 상대 Black Hole의 반대 방향으로 최대 `450 world units/s²`의 mutual repulsion을 적용한다. 이 값은 자동 finale를 막는 gameplay seed이며, 충분한 상대속도로 실제 접촉이 확정된 경우에만 force 적분을 멈추고 terminal presentation이 회전·폭발 transform을 소유한다.
 
 향후 Presentation 후보인 Black Hole 주변 일반 공의 tidal deformation은 일반 Snowball MultiMesh와 양립한다. Core가 제공하는 read-only Black Hole 위치/영향 snapshot과 공의 nominal transform을 바탕으로 instance의 비균일 scale·회전 또는 shared shader custom data만 바꿀 수 있다. 이 시각 변형이 도입되더라도 Core의 공 중심, nominal radius, 원형 Merge/Paddle/벽 충돌은 그대로 유지하고 궤도 변화는 기존 force 계산만이 소유한다. 정확한 변형 강도·falloff·최대 비율은 아직 구현 계약이 아니다.
 
@@ -773,7 +773,7 @@ StageDefinition
 - black_hole_influence_radius (current playtest seed: 480 world units)
 - black_hole_max_pull_acceleration (current playtest seed: 1200 world units/s²)
 - black_hole_total_pull_cap (current playtest seed: 1500 world units/s²)
-- black_hole_mutual_pull_acceleration (initial seed: 450 world units/s²)
+- black_hole_mutual_repulsion_acceleration (initial seed: 450 world units/s²)
 
 ItemDefinition
 - item_type

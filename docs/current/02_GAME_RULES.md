@@ -508,10 +508,10 @@ pull_falloff = (1 - distance / influence_radius)²
 ```text
 ordinary_ball_pull_per_black_hole_max = 1200 world units/s²
 ordinary_ball_total_pull_cap = 1500 world units/s²
-black_hole_mutual_pull_max = 450 world units/s²
+black_hole_mutual_repulsion_max = 450 world units/s²
 ```
 
-Black Hole끼리는 일반 Snowball 흡수 규칙을 적용하지 않고 서로에게만 전용 mutual pull을 적용한다. 접촉이 확정되면 일반 force simulation을 중단하고 terminal lock 뒤 연출용 회전·폭발로 전환한다. 세 수치 모두 초기 플레이테스트 seed다.
+Black Hole끼리는 일반 Snowball 흡수 규칙을 적용하지 않고, 접촉 전에는 전용 척력으로 서로 멀어진다. 따라서 두 번째 Black Hole 생성만으로 자동 finale가 되지 않으며, 패들이 만든 충분한 상대속도로 실제 접촉해야 terminal이 시작된다. 접촉이 확정되면 일반 force simulation을 중단하고 terminal lock 뒤 연출용 회전·폭발로 전환한다. 세 수치 모두 초기 플레이테스트 seed다.
 
 첫 Black Hole이 등장하는 순간의 `run_score`를 `black_hole_phase_score_baseline`으로 한 번 저장한다. 공을 흡수할 때는 해당 공의 Active Cashout 가치 전액을 직접 빼지 않고 다음 값을 `absorption_penalty`로 사용한다.
 
