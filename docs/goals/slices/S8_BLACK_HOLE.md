@@ -12,7 +12,7 @@
 
 - Owner: Core
 - Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `scripts/core/stage_runtime.gd`, `tests/simulation/**`
-- Integration Point: 첫 Lv14 생성에서 `black_hole_phase_started(phase_id, from_rect, to_rect)`와 Black Hole position snapshot을 Integration/Presentation에 read-only 제공.
+- Integration Point: 첫 Lv14 생성에서 첫 Black Hole entity/readiness와 position snapshot을 read-only 제공한다. S6-G2I matching CUT-IN 완료 뒤 Integration이 기존 `begin_black_hole_phase(from_rect, to_rect)`를 호출할 때만 StageRuntime의 `black_hole_phase_started(phase_id, from_rect, to_rect)` downstream이 열린다.
 - Dependencies: S5 완료와 S4 performance baseline.
 - Verification: 첫 Lv14가 일반 Clear 없이 Black Hole runtime entity로 한 번 전환; `local_level <= 2` 흡수와 Cashout 가치 `12.5%`/phase-entry Run Score `25%` 상한 패널티, 단일 저등급 흡수 즉사 방지와 반복 손실의 run score 0 즉시 Game Over, 다중 source vector 합산·900 total cap, Black Hole 상호 450 pull, 하단 반사·Cashout 제외, 비성장·Merge 제외, NaN·폭주 없음, 1,000공 성능 회귀 기록; 별도 Stage나 새 BallDefinition을 생성하지 않음.
 - Do Not Modify: Black Hole visual과 Stage resource 값.
@@ -47,6 +47,10 @@
 - Skeleton Verification: matching/stale/duplicate `phase_id` 중재, terminal lock 뒤 gameplay commit·추가 Shift 차단, result snapshot 1회 전달, Core reset과 handler 중복 호출 방지를 Integration test로 확인한다. 이 증거만으로 S8-G4를 `IMPLEMENTED` 또는 `VERIFIED`로 닫지 않는다.
 - Final Verification: 실제 S8-G3/G5 산출물을 Main에 연결한 뒤 matching `phase_id`에서 Presentation Frame과 같은 L2 `880`→L3 `1040` logical Rect 활성화 후 같은 Galactic gameplay 재개; 두 Black Hole 접촉 뒤 finale→타이틀→Run End에서 추가 Shift 없음; Retry가 배열·점수·타이머·settlement/shift/phase/Black Hole/item/presentation lock 완전 초기화; Main 이동은 Run state를 안전하게 종료하고 Title/Main 화면으로 돌아감.
 - Do Not Modify: Result UI 내부와 각 Owner reset 내부.
+
+#### S6-G2I upstream gate와 기존 S8-G4 API
+
+S8-G4의 기존 `begin_black_hole_phase(from_rect, to_rect) → black_hole_phase_started(phase_id, from_rect, to_rect) → black_hole_phase_presentation_finished(phase_id)` 경로는 FIRST_CONTACT 이후의 authoritative downstream API로 유지한다. S6-G2I는 첫 Black Hole discovery와 이 API 사이에 pause/CUT-IN gate만 추가한다. 따라서 `phase_id`는 matching `(run_epoch, event_id)` CUT-IN 완료 전에는 발급하지 않으며, 완료 수락 뒤부터는 기존 S8-G4의 matching/stale/duplicate 방어와 reset 계약을 그대로 사용한다. 과거 S8-G4 검증은 이 downstream을 증명하지만 새 upstream gate의 구현 증거는 아니다.
 
 ### S8-G5 Black Hole Phase presentation
 

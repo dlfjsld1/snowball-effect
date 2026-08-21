@@ -33,12 +33,12 @@
 | Q-S0 | Godot 4에서 Main 씬이 1600×900 기준으로 열림; Web smoke |
 | Q-S1 | 100개 활성 공, gravity 0과 무상호작용 velocity 유지, 좌·우·상단 반사/열린 하단, Mouse logical-X 직접 반영 및 키보드 fallback, 이동+무제한 회전 동시 입력, previous/current transform 기반 continuous 양면 Paddle collision, center+angular contact velocity 후 impact cap, 중심/끝·회전 방향별 반사, penetration/contact lock, Cashout 1회 반영 |
 | Q-S2 | 동일 레벨만 Merge, 입력 둘 제거·출력 하나 생성, 한 쌍 한 번 처리 |
-| Q-S3 | Cashout 시간 구조, local Lv4 비종료, 중복 Settlement, score source-of-truth와 gauge 회귀 테스트 |
+| Q-S3 | Cashout 시간 구조, local Lv4 비종료, 중복 Settlement, score source-of-truth와 gauge 회귀; S3-G9 payload v1의 승인 6 identity Run당 exact-once·Stage preserve·Retry/new Run reset·monotonic event/order 테스트 |
 | Q-S4 | release path에 전수 O(N²) 없음, 실제 Web 동시 활성 500개에서 최저 30 FPS 이상, 1,000개 stretch FPS·allocation·병목 관찰 기록 |
-| Q-S5 | ordered Stage chain(`6→8→10`)과 5종 세로 progressive HUD, Stage별 reset/preserve, Score Clear 축하 확인 뒤 shift, Galactic alpha 배경, 세 Stage 연속 완주 |
-| Q-S6 | burst에서도 패들·공 가독성, FX budget 작동, 중요한 이벤트 우선 |
+| Q-S5 | ordered Stage chain(`6→8→10`)과 5종 세로 progressive HUD, Stage별 reset/preserve, read-only Clear snapshot의 Stage/Stage Score/Run Score 축하 UI와 실제 `NEXT STAGE` Button, matching `clear_id` 확인 뒤 별도 `shift_id` Shift, Galactic/failure/Result 제외, reduced-effects, Galactic alpha 배경, 세 Stage 연속 완주 |
+| Q-S6 | burst에서도 패들·공 가독성, FX budget 작동, 중요한 이벤트 우선; FIRST_CONTACT visible 전 pause 수락, 6종 layer 조립, `(run_epoch,event_id)` matching finish, duplicate/stale/reset, 일반 resume와 Black Hole S8 handoff 분리 |
 | Q-S7 | Stage당 Item Ball 1회, local Lv2+ 공의 유효 5-hit 파괴, 파괴 후 item별 Orb 생성, Paddle 획득 뒤 CUT-IN·1회 activation, 하단 miss 시 미적용·소멸, 아이템 비활성화 시 Core 결과 동일, Fire modifier가 Settlement에 침투하지 않음 |
-| Q-S8 | 첫 Lv14→이동 Black Hole 전환, L2→L3 Frame/Play Field 동기 확장 후 gameplay 재개, 저등급 흡수의 Cashout `12.5%`/phase-entry Run Score `25%` 상한 패널티·단일 저등급 흡수 즉사 방지·반복 손실의 run score 0 Game Over·다중 pull vector 합산/cap·Black Hole 상호 인력·하단 반사·비성장 안정성, 두 번째 Black Hole과 접촉 시 1회 finale→UI 제거→타이틀/Clear Score/Main Menu, Retry 완전 초기화 |
+| Q-S8 | 첫 Lv14→이동 Black Hole 전환, matching FIRST_CONTACT 완료 전 Phase/`phase_id` 0회·완료 뒤 기존 S8 Phase 1회, L2→L3 Frame/Play Field 동기 확장 후 gameplay 재개, 저등급 흡수의 Cashout `12.5%`/phase-entry Run Score `25%` 상한 패널티·단일 저등급 흡수 즉사 방지·반복 손실의 run score 0 Game Over·다중 pull vector 합산/cap·Black Hole 상호 인력·하단 반사·비성장 안정성, 두 번째 Black Hole과 접촉 시 1회 finale→UI 제거→타이틀/Clear Score/Main Menu, Retry 완전 초기화 |
 | Q-S9 | 공개 URL incognito 완주, Chrome/Edge, console, resize, 오디오 활성화 확인 |
 
 ## S3 필수 회귀 시나리오
@@ -48,4 +48,13 @@
 3. Settlement 완료 신호 두 번 → 점수 한 번만 증가.
 4. Cashout amount 10 → stage/run 각각 10 증가, Stage 종료 시 run 추가 증가 없음.
 5. Settlement 대상에 cashout-only modifier가 있어도 base `score_value`만 반영.
-6. non-final Score Clear 뒤 `Next Stage` 전에는 Shift 없음; matching 요청 뒤 한 번만 Shift.
+6. non-final `SCORE_CLEAR→CLEAR_LOCKED→SETTLING→CLEARED`는 즉시 완료되지만 `NEXT STAGE` 전에는 Shift 없음; matching `clear_id`의 첫 요청 뒤에만 별도 `shift_id`로 Shift하며 wrong/stale/duplicate 요청은 무시.
+
+## S6-G2 선행 Evidence Gate
+
+계약 문서와 fixture 계획만으로 다음 Goal을 완료 처리하지 않는다.
+
+1. **S3-G9 Core:** payload v1의 모든 필드/type, 정확한 6개 stage/global/local/identity mapping, 한 Run exact-once, Stage Shift preserve, Retry/fresh Run 재발견, Main invalidation, monotonic `event_id`, same-tick deterministic order, Moon/Galaxy local Lv0·roster 밖·duplicate 거부를 자동 검증한다.
+2. **S6-G2I Integration:** 같은 tick 중재 뒤 pause 수락이 visible 호출보다 먼저임, timer/spawn/simulation/Paddle lock, distinct FIFO/head-only finish, wrong/stale/duplicate 거부, Retry/Main/new Run reset을 fixture/stub로 자동 검증한다.
+3. **Black Hole handoff:** first entity commit 뒤 CUT-IN 완료 전 `begin_black_hole_phase`/`black_hole_phase_started`는 0회, matching 완료 뒤 기존 S8 phase가 1회이며 두 lock 사이 gameplay frame이 없음을 검증한다. 기존 S8-G4 downstream Evidence를 이 항목의 대체 증거로 사용하지 않는다.
+4. **S6-G2 entry:** 위 두 Goal이 `STATUS.md`에서 실제 Evidence와 함께 `VERIFIED`된 뒤에만 Presentation controller 구현을 시작한다. S6-G2 자체는 Native layer/타이밍/reset capture와 실제 Web Tween·input focus·console·resume/Black Hole handoff를 추가로 검증한다.

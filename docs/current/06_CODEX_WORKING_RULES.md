@@ -260,7 +260,7 @@ MVP에서 다음을 새로 도입하지 않는다.
 - Final Settlement = Score only
 - Ground/Planetary 최고 공 생성은 즉시 Stage Clear가 아니며, Galactic 첫 Lv14는 Black Hole 국면 전환
 - non-final Stage는 clear_score 도달 즉시 판정
-- 성공한 Stage는 Settlement 직후 자동 Scale Shift
+- 성공한 non-final Stage는 Settlement 직후 `CLEARED` 축하 UI를 열고 matching `NEXT STAGE(clear_id)` 뒤에만 Scale Shift
 - Time Up은 physics tick 전체가 아닌 정확한 deadline 전 유효 Merge/discovery/Active Cashout 반영 후 판정
 - deadline 전 Active Cashout은 Time Bonus를 주지만 deadline 이후 하단 통과는 Settlement 대상으로 처리
 - deadline 전 local Lv4 생성 자체는 Time Up을 취소하지 않음

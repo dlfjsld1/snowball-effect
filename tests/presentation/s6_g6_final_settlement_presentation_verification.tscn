@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/presentation/s6_g6_final_settlement_presentation_verification.gd" id="1_runner"]
+
+[node name="S6G6FinalSettlementPresentationVerification" type="Node"]
+script = ExtResource("1_runner")

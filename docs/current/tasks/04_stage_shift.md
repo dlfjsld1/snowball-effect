@@ -27,7 +27,7 @@
 - Stage 이름(`Ground`/`Planetary`/`Galactic`)을 persistent HUD에 갱신
 - Retro Pixel Arcade Machine의 Stage 상태 변화
 - `SCALE SHIFT` 발표
-- non-final Stage의 clear score 도달 직후 동일한 Scale Shift 진입
+- non-final Stage의 clear score 도달 직후 Clear 잠금과 Final Settlement를 완료하고, 축하 UI의 matching `NEXT STAGE(clear_id)` 요청 뒤 Scale Shift 진입
 
 ---
 
@@ -51,20 +51,23 @@ levels [10, 11, 12, 13, 14], spawn 35/s
 1. non-final Stage의 clear score 도달 → Clear 잠금과 Final Settlement
 2. 중복 전환 잠금
 3. Final Settlement 완료 확인
-4. 시뮬레이션 짧게 감속
-5. `SCALE SHIFT`
+4. `CLEARED` 축하 UI와 `NEXT STAGE` 표시; matching `clear_id` 요청까지 입력·timer·spawn 잠금 유지
+5. matching 요청을 한 번 수락하고 별도 `shift_id` 발급
+6. 시뮬레이션 짧게 감속
+7. `SCALE SHIFT`
 8. Stage 데이터 변경
-8. 렌더 크기 스케일 재설정
-9. 배경 전환
-10. 새 Stage 이름과 공 족보 갱신; 세로 5칸에서 첫 공만 공개
-11. 새 생성량 적용
-12. 시뮬레이션 정상화
+9. 렌더 크기 스케일 재설정
+10. 배경 전환
+11. 새 Stage 이름과 공 족보 갱신; 세로 5칸에서 첫 공만 공개
+12. 새 생성량 적용
+13. 시뮬레이션 정상화
 
 ---
 
 ## 주의
 
 - local Lv4 생성만으로 Stage를 전환하지 않음
+- `clear_id`와 Shift 연출 완료용 `shift_id`를 섞지 않음
 - 전환 중 새 전환 요청 무시
 - 전환 후 기존 고레벨 공 인덱스와 정의가 깨지지 않음
 - `run_score`, 통계, 최고 기록은 유지

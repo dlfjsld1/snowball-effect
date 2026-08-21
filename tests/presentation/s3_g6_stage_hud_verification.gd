@@ -4,6 +4,7 @@ const SimulationManager = preload("res://scripts/simulation/ball_simulation_mana
 const StageManager = preload("res://scripts/core/stage_manager.gd")
 const HudScript = preload("res://scripts/ui/hud.gd")
 const HudScene = preload("res://scenes/ui/hud.tscn")
+const ScoreFormatter = preload("res://scripts/utils/score_formatter.gd")
 
 var _failures := 0
 
@@ -22,7 +23,8 @@ func _ready() -> void:
 	hud.bind_sources(stage_manager.get_score_ledger(), simulation, stage_manager)
 
 	_expect(hud.stage_name_label.text == "STAGE GROUND", "HUD must display the entered Stage name.")
-	_expect(hud.clear_target_label.text == "TARGET 4M", "HUD must display the current Stage clear target.")
+	var expected_target := "TARGET %s" % ScoreFormatter.format_score(stage_manager.get_current_stage().clear_score)
+	_expect(hud.clear_target_label.text == expected_target, "HUD must display the authoritative current Stage clear target.")
 	_expect(hud.genealogy_slots[0].text == "Snowflake", "Stage entry must reveal only the local base ball.")
 	_expect(hud.genealogy_slots[1].text == "", "Undiscovered genealogy slots must hide their names.")
 

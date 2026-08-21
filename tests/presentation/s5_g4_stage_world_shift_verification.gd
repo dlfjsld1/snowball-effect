@@ -44,9 +44,11 @@ func _ready() -> void:
 func _assert_background_assets(background: BackgroundManager) -> void:
 	for background_id in [&"ground", &"planetary", &"galactic"]:
 		background.set_background(background_id)
-		var texture := background.layer_a.texture
-		assert(texture != null)
-		assert(texture.get_size() == Vector2(1600.0, 900.0))
+		var metrics := background.get_current_layer_metrics()
+		var plate_texture: Texture2D = metrics["plate_texture"]
+		assert(plate_texture != null)
+		assert(plate_texture.get_size() == Vector2(1600.0, 900.0))
+		assert(metrics["texture_count"] == (4 if background_id == &"galactic" else 1))
 		assert(background.current_background_id == background_id)
 	background.set_background(&"ground")
 

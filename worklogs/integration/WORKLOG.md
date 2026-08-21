@@ -754,10 +754,29 @@ Owner: Integration
 - Verification: Godot 4.7.1 CLI Gateway scene exit 0 (`collection=cue_only`, `activation=once`, `skip_fallback=once`, `reset_stale_rejected=true`); S7-G1C producer regression exit 0; Primary `godot` validate에서 Gateway/GameManager/Simulation/Main/test 5/5 valid; Primary Main runtime에서 ItemManager/Gateway mount, Title start 뒤 `PLAYING`, runtime errors 0을 확인했다.
 - 상태: `IMPLEMENTED`. S6-G2 CUT-IN producer와 S7-G2~G4 effect consumer가 없어 실제 cue→effect 결과와 Web 관찰은 이후 Integration close에서 검증한다.
 
+## 2026-08-21 — fx-design/latest Main Integration 계약 병합 해소
+
+Owner: Integration / senior integration
+
+- latest Main의 `visual_field_rect_changed(Rect2)` Backdrop 동기화, S3-G7 non-final local-Lv4/즉시 Score Clear, S5-G6I automatic `Clear→Settlement→Shift`, S8-G4 direct GameManager producer와 no-argument finale completion API를 authoritative contract로 유지했다. obsolete Next Stage 확인 계약과 released lock은 복원하지 않았다.
+- Presentation의 S6-G6 완료는 automatic Shift를 막지 않는 read-only visual completion으로 정리했고, S8-G5의 phase ID·run-generation·stale callback 방어는 latest Main public API 위에서 동작하도록 조정했다. Core/Integration 자동 병합 파일은 변경하지 않았다.
+- Godot 4.7.1 CLI/headless에서 S3-G7 Core/Integration, S5-G5 three-stage, S5-G6I automatic clear, S8-G4 Integration 및 S8-G5 두 Presentation 회귀가 모두 exit 0이었다. Main headless·Native smoke와 Web release export도 exit 0이었다.
+- 기존 latest Main fixture의 stale assertion 세 건과 shutdown-only leak warning은 merge-induced failure가 아니므로 수정하지 않았다. 브라우저 smoke는 `browse` Windows 서버 번들 부재로 미검증이며, Primary Godot MCP도 현재 세션에 제공되지 않았다.
+- Integration lock은 `released` 상태이며 새 lock을 잡지 않았다. Time CRT 디자인 파일은 편집·스테이징 대상에서 제외했다.
+
 ## 2026-08-21 — S7-G1 clean class-load repair
 
 - `GameManager`가 ItemManager와 ItemEffectGateway를 global `class_name`으로 annotation/cast하던 의존을 제거하고 두 mounted node를 `Node`로 참조하게 했다.
 - 이는 다른 workspace/MCP가 새 global script class cache를 만들기 전에 `game_manager.gd`를 단독 파싱해 실패하던 load-order 결함을 막는다. Gateway/Manager의 class declaration, signal API, scene mount와 gameplay contract는 변경하지 않았다.
+
+## 2026-08-21 — S6-G2I FIRST_CONTACT pause·S8 handoff 계약 준비
+
+Owner: Integration planning / Goal status `PENDING`
+
+- Integration이 current `run_epoch`, end-of-tick arbitration, visible CUT-IN 전 timer/spawn/simulation/Paddle lock과 event-id FIFO를 소유하도록 경계를 확정했다.
+- normal matching finish는 같은 `PLAYING`을 재개하고, 첫 Black Hole matching finish는 gameplay를 중간 재개하지 않은 채 기존 S8-G4 `begin_black_hole_phase → phase_id` downstream으로 넘긴다.
+- Retry/Main/fresh Run은 old epoch·queue·pause lock·Panel callback을 함께 무효화한다. wrong/stale/duplicate finish와 Result/Failure/Shift state는 수락하지 않는다.
+- 기존 S8-G4의 phase 이후/finale/Retry Evidence는 보존하지만 CUT-IN 이전 gate 증거로 소급하지 않는다. 이번 기록은 계약 준비이며 Integration lock, runtime 변경, 자동/수동 검증 Evidence가 없다.
 
 ## 2026-08-21 — S3-G5 deadline-bounded StageManager integration
 

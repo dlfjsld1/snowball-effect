@@ -143,7 +143,7 @@ Codex는 작업을 마치고 아래 형식으로 보고한다.
 - Final Settlement = `Score only`; Time Bonus 없음.
 - non-final Stage는 `stage_score >= clear_score` 순간 Stage Clear와 Final Settlement를 확정한다.
 - clear score 미달로 Time Up이면 Run End.
-- 성공한 Stage는 Settlement 직후 자동으로 `SCALE SHIFT`.
+- 성공한 non-final Stage는 Settlement 직후 `CLEARED` 축하 UI를 열고 matching `NEXT STAGE(clear_id)` 요청 뒤에만 `SCALE SHIFT`.
 - Time Up은 physics tick 전체가 아니라 정확한 deadline을 기준으로 판정하며, deadline 전 Merge/discovery/Active Cashout만 반영한다.
 - deadline 전 Active Cashout은 Time Bonus로 플레이를 연장할 수 있지만 deadline 이후 하단 통과는 Settlement 대상이며 Time Bonus를 주지 않는다.
 - deadline 전 local Lv4 생성 자체는 Time Up을 취소하지 않는다.

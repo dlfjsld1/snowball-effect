@@ -205,7 +205,7 @@ MultiMesh follow-up은 simulation 구조를 바꾸지 않고 render snapshot con
 ## 완료 조건
 
 - Ground/Planetary 최고 공 생성 뒤 gameplay 유지와 FIRST CONTACT 1회
-- clear score 도달 직후 자동 Scale Shift로 다음 Stage 진입
+- clear score 도달 직후 Clear/Settlement를 완료하고 matching `NEXT STAGE(clear_id)` 뒤 Scale Shift로 다음 Stage 진입
 - 점수컷 미달 시 Run End
 - 새 기본 공이 정상 생성
 - 이전 저레벨 공 정리

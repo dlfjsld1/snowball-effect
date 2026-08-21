@@ -144,7 +144,11 @@ non-final Stage는 deadline 전 유효 Cashout까지 반영한 뒤 `stage_score 
 1. `CLEAR_LOCKED`
 2. Spawn / Input / gameplay 정지
 3. Final Settlement
-4. `CLEARED` → 즉시 Scale Shift
+4. `CLEARED` → read-only Clear snapshot과 `clear_id` 공개
+5. 축하 UI에서 matching `NEXT STAGE(clear_id)` 요청 대기
+6. matching 요청을 한 번 수락한 뒤에만 Scale Shift
+
+Clear 판정과 Final Settlement는 입력을 기다리지 않고 즉시 끝낸다. `CLEARED` 대기 동안에도 timer, spawn, Paddle과 simulation input은 계속 잠겨 있으며, 사용자 확인으로 지연되는 것은 Scale Shift 시작뿐이다.
 
 clear score 미달이고 deadline 전 유효 Cashout까지 반영한 뒤 `stage_time_left <= 0`이면:
 
@@ -197,6 +201,15 @@ SHIFTING
 FAILED
 FINISHED
 ```
+
+성공한 non-final 흐름은 다음 순서를 사용한다.
+
+```text
+SCORE_CLEAR → CLEAR_LOCKED → SETTLING → CLEARED
+  → matching NEXT STAGE(clear_id) → SHIFTING
+```
+
+`clear_id`는 정산을 끝내고 확인을 기다리는 한 번의 Clear를 식별한다. Scale Shift 시작 뒤 Presentation 완료를 식별하는 `shift_id`와 별도 namespace이며 서로 비교하거나 재사용하지 않는다.
 
 Stage 진입 시:
 
@@ -259,6 +272,8 @@ settlement_applied = false
 - `stage_score >= clear_score` → 성공
 - 미달 → 실패
 - Stage 종료 시 Run Score에 Stage Score를 다시 더하지 않음
+- 성공 직후 Settlement는 즉시 완료하고 matching `NEXT STAGE(clear_id)` 전에는 Shift하지 않음
+- wrong/stale/duplicate `clear_id` 요청은 상태를 바꾸지 않음
 
 ### Time Economy 계측
 

@@ -251,6 +251,141 @@ Branch: `fx-design`
 - S6-G2 runtime controller, pause/handoff, Run-scoped 중복 억제는 구현하지 않았다.
 - S3-G7/S3-G8/S5-G6/S5-G6I/S5-G7은 PENDING 문서 계약이며 runtime 파일을 수정하지 않았다.
 - 사용자가 별도로 결정한 Stage Restart 계약은 변경하지 않았다.
+
+## 2026-08-19 — S6-G6 Minimal Final Settlement presentation
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- `TIME_UP_LOCKED` 뒤 simulation render snapshot을 read-only로 캡처해, 단일 `Node2D`가 최대 64개 표본만 그리는 0.5초 pixel dissolve·score stream을 구현했다.
+- HUD Stage Score는 authoritative score를 변경하지 않고 presentation 동안 표시값만 count-up한 뒤 최종값에 고정한다.
+- `final_settlement_presentation_finished()`를 exactly once 제공하며 Settlement 계산·공 제거·Clear/Failure 판정은 수정하지 않았다.
+- 실제 순서 대기는 `S6-G6I`로 분리했다. 활성 `S8-G4` Integration lock 때문에 `stage_manager.gd`와 Main scene은 변경하지 않았다.
+
+### 검증
+
+- Godot 4.7.1 CLI: `S6_G6_VERIFIED samples=64 duration=0.5 score_countup=true completion=1 core_readonly=true`.
+- S6-G1 FX budget, S3-G6 Stage HUD 회귀 통과.
+- Main 120-frame smoke는 runtime error 없이 종료했으며 기존 ObjectDB 3개/resource 1개 leak 경고가 남았다.
+- Native Main을 실행해 `F7` Time Up Score 경로로 확인할 수 있게 했다.
+
+### 제외
+
+- Presentation 완료 전 Core의 Clear/Failure/Shift 진행을 대기시키는 Integration wiring.
+- Web Browser 시각 검증과 최종 성능 Gate.
+
+## 2026-08-20 — S8-G5 Black Hole Phase presentation
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- `black_hole_phase_started(phase_id, from_rect, to_rect)`를 소비하는 `PresentationManager` producer를 구현했다. L2 `880`에서 L3 `1040`으로 Frame, 표시용 Play Field side fill, 고정 200px HUD housing을 중심 X `800` 기준 좌우 각 80씩 함께 확장하고 matching `phase_id` 완료를 정확히 한 번 발행한다.
+- BH-01·BH-03/04 draft를 runtime 방향으로 사용해 단일 draw node에 compact black core, 4px cyan/teal event horizon, 300-unit dashed influence ring, near-field arc, sparse orbit pixel과 최대 4개 motion marker를 조립했다. shader나 개별 particle Node는 사용하지 않는다.
+- phase 완료 뒤 `Galactic` Stage 이름, gameplay HUD, persistent Black Hole visual을 유지한다. terminal snapshot은 두 core mutual orbit·압축→pixel ring/explosion을 재생하고 gameplay HUD/Pause를 숨긴 뒤 `black_hole_finale_presentation_finished(phase_id)`를 한 번 발행한다. S8-G3 Result UI 자체는 수정하지 않았다.
+- Reduced Effects는 phase 0.18초/finale 0.34초로 단축하고 trail을 생략하지만 상태명, exact field edge, core/horizon, orbit/explosion을 보존한다.
+- `reset_black_hole_presentation()`이 active Tween을 kill하고 Run generation을 증가시켜, Retry 뒤 같은 숫자의 phase ID가 재사용돼도 이전 Run callback이 완료로 들어오지 않게 했다.
+
+### 검증
+
+- Godot 4.7.1 CLI project editor load/parse: exit 0.
+- 전용 scene: `S8_G5_VERIFIED phase_completions=3 finale_completions=2 field=880_to_1040 symmetric=80 core_ring=true influence=true reduced=true stale_safe=true core_readonly=true`.
+- 회귀: S5-G4 Stage World Shift, S3-G6 HUD, S6-G6 Final Settlement 모두 exit 0. Main 120-frame headless smoke도 runtime error 없이 exit 0이며 기존 ObjectDB 3개/resource 1개 leak warning은 유지된다.
+- 기존 `s5_g4_frame_kit_verification.gd`는 이번 변경 전부터 현재 `32 logical units` safety strip과 불일치하는 구 assertion(`field.size.y == 800`, visual/logical Rect 동일)을 사용해 line 25에서 실패한다. `gameplay_frame.gd`는 S8-G5에서 수정하지 않았고 전용 test는 현행 logical Rect를 사용한다.
+- Native OpenGL Compatibility, Intel Arc 130V에서 1600×900 phase/finale 캡처를 확인했다. persistent phase 60-frame 측정은 평균 `61.3 FPS`, 최저 `54.9 FPS`, 최대 frame `18.21ms`였다.
+- 현재 세션에는 Primary `godot` MCP 도구가 제공되지 않아 MCP runtime 검증은 수행하지 않았다. CLI/native 성공을 프로젝트 기준선으로 사용했다.
+
+### Integration handoff / 제외
+
+- S8-G4가 `configure_black_hole_sources(stage_manager, simulation)`과 phase/finale 완료를 Main에 연결하고 `auto_complete_black_hole_phase_presentation` 임시 adapter를 제거해야 한다.
+- Integration은 terminal snapshot을 보관한 뒤 matching finale 완료에서만 S8-G3 Result를 표시하고, Retry/Main에서 `reset_black_hole_presentation()`을 호출해야 한다.
+- `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`, S8-G3 Result UI, S8-G4-owned 파일은 수정하지 않았다.
+- CUT-IN, Galactic 투명 배경, Stage Score gauge, Clear 확인, legacy local Lv4 종료 계약, Web Browser 전체 Run은 의도적으로 제외했다.
+
+## 2026-08-20 — S5-G7 Galactic transparent Stage World
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- 기존 opaque Galactic 이미지를 runtime에서 제거하고 완전 투명 plate 위에 stars, galaxy, nebula를 각각 alpha-composite하는 네 Sprite layer 구조로 바꿨다. 생성 소스는 기존 승인 구도를 보존한 ImageGen background-extraction 결과이며, runtime asset은 1600×900, Paper-8 palette, nearest 2×2 grid로 정규화했다.
+- Ground/Planetary는 기존 단일 opaque texture 경로와 ambient behavior를 유지했다. Galactic의 중앙 gameplay negative space를 보존하고 galaxy/nebula alpha를 제한해 L2/L3 Balls, Paddle, moving Black Hole horizon, Frame, HUD 대비를 확보했다.
+- `BackgroundManager.set_reduced_effects(enabled)`는 Galactic composite alpha를 낮추고 ambient twinkle process를 중지한다. 상태·Frame·HUD·Black Hole horizon 같은 필수 cue는 제거하지 않는다.
+- `tests/presentation/s5_g7_galactic_stage_world_verification.*`와 runtime capture fixture를 추가하고 기존 S5-G4 test를 multi-layer manager 구조에 맞춰 갱신했다.
+- `project.godot`, Main Scene, Core, Integration tests, S8-G5 runtime 파일은 수정하지 않았다. 활성 S8-G4 Integration lock도 사용하지 않았다.
+
+### 검증
+
+- Godot 4.7.1 headless editor load/parse: exit 0. 기존 dirty S6 fixture의 누락 `.uid` cache 복구 warning 외 S5-G7 parse/runtime error는 없었다.
+- 전용 scene: `S5_G7_VERIFIED alpha_layers=4 plate_visible_blocks=0 stars=1493 galaxy=38941 nebula=63433 l2_avg_luma=0.0101 l2_bright_ratio=0.0033 l3_avg_luma=0.0127 l3_bright_ratio=0.0078 paddle_contrast_l3=15.21 horizon_contrast_l3=13.80 reduced=true ground_planetary_opaque=true`.
+- 회귀: `S5_G4_STAGE_WORLD_SHIFT_VERIFIED backgrounds=3 dynamic_ambient=true shift_once=true`, `S8_G5_VERIFIED phase_completions=3 finale_completions=2 field=880_to_1040 symmetric=80 core_ring=true influence=true reduced=true stale_safe=true core_readonly=true`, `S3_G6_VERIFIED stage_time=true score_readonly=true genealogy_reveal=true`, legacy `STAGE_WORLD_BACKGROUNDS_VERIFIED assets=3 canvas=1600x900 grid=2`.
+- Native OpenGL Compatibility, Intel Arc 130V에서 L2/L3/Reduced 1600×900 캡처를 확인했다. normal 120-frame 평균 `60.3 FPS`, 최저 `42.3 FPS`, 최대 frame `23.66ms`; reduced 120-frame 평균 `60.7 FPS`, 최저 `51.9 FPS`, 최대 frame `19.27ms`였다.
+- Primary `godot` MCP는 현재 세션에 제공되지 않아 별도 runtime MCP 검증은 수행하지 않았다.
+- Web debug export 명령 `Godot_v4.7.1-stable_win64_console.exe --headless --audio-driver Dummy --path . --export-debug Web build/s5-g7-web/index.html`은 Godot 4.7.1 export template `web_nothreads_debug.zip`과 `web_nothreads_release.zip`이 설치되지 않아 실패했다. 따라서 Browser screenshot/console Gate를 수행하지 못했고 Goal은 `IMPLEMENTED`로 유지한다.
+
+### Integration handoff / 제외
+
+- S8-G4가 향후 Reduced Effects 설정을 wiring할 때 기존 S8-G5 `PresentationManager.reduced_effects`와 함께 `BackgroundManager.set_reduced_effects(enabled)`를 동일 값으로 호출해야 한다. S8-G5-owned `presentation_manager.gd`를 이번 Goal에서 수정하지 않았다.
+- Galactic key, L2 `880`, L3 `1040`, frame/HUD source interface는 변경하지 않았으므로 S8-G4에 필요한 추가 display/source adjustment는 없다.
+- S6-G2, S3-G8, S5-G6, S6-G6I, legacy local Lv4 Stage-clear 계약은 구현하지 않았다.
+
+## 2026-08-20 — S5-G7 Web Browser Gate completion
+
+Owner: Presentation
+Branch: `fx-design`
+
+### Template setup
+
+- Godot executable은 `C:\Users\gktjd\AppData\Local\Programs\Godot\Godot_v4.7.1-stable_win64_console.exe`, runtime version은 `4.7.1.stable.official.a13da4feb`다.
+- 공식 `godotengine/godot-builds` 4.7.1-stable release의 `Godot_v4.7.1-stable_export_templates.tpz`를 사용했다. package SHA-256은 GitHub release digest와 일치한 `86409db6200b6f8fd3230989c2d2002851f3dd18acf11d7bdbafddf5a0dd0f72`다.
+- `%APPDATA%\Godot\export_templates\4.7.1.stable`에 official `version.txt`, `web_nothreads_debug.zip`, `web_nothreads_release.zip`만 설치했다. Web archive SHA-256은 각각 `eb6ca0ca168c405e73b20a4439d6dc048d74ae65eb31cc7675b6bc3cf7ad1815`, `b7b7d7da29fc6cc2f4934fdd26cc571a40e7af57f716ea3eb7e18da720dae28a`다.
+
+### Web export / Browser verification
+
+- dirty working tree를 보존한 채 `Godot_v4.7.1-stable_win64_console.exe --headless --audio-driver Dummy --path . --export-debug Web <scoped-temp>\index.html`을 실행해 exit 0을 확인했다. Main HTML/JS/WASM/PCK와 S5-G7 capture build의 같은 네 파일은 local HTTP에서 모두 200이었다.
+- actual browser는 Chrome `151.0.7922.138`, WebGL2 renderer는 Intel Arc 130V Direct3D11이었다. Main Canvas startup, focus, `A` 입력 전달 뒤 120 browser RAF는 평균 `60.47 FPS`, 최저 `59.17 FPS`, 최대 frame `16.90ms`; console warning/error, exception, network failure는 0이었다.
+- official Web binary는 command-line scene override를 막으므로 repository 밖 disposable project copy에서만 `run/main_scene`을 기존 `s5_g7_galactic_stage_world_runtime_capture.tscn`으로 바꿨다. Web debug의 `get_tree().quit()` keepalive assertion을 피하고 CDP가 pure L2를 캡처하도록 disposable copy의 fixture에만 Web hold/no-quit를 적용했다. 저장소의 `project.godot`, capture fixture, runtime implementation은 수정하지 않았다.
+- 1600×900 actual Web Canvas에서 L2 `880`, transition `880→1040`, L3 `1040`, Reduced screenshot을 확인했다. 투명 Galactic plate와 stars/galaxy/nebula가 바깥 void와 합성되고 Balls, Paddle, Black Hole horizon, Frame, HUD가 읽혔다.
+- fixture `S5_G7_CAPTURED`: normal 평균 `60.5 FPS`, 최저 `57.8 FPS`, 최대 frame `17.30ms`; reduced 평균 `60.4 FPS`, 최저 `57.5 FPS`, 최대 frame `17.40ms`. 최종 browser run의 console warning/error, exception, network failure는 모두 0이었다.
+- repository의 전용 CLI scene도 다시 실행해 `S5_G7_VERIFIED alpha_layers=4 plate_visible_blocks=0 stars=1493 galaxy=38941 nebula=63433 l2_avg_luma=0.0101 l3_avg_luma=0.0127 paddle_contrast_l3=15.21 horizon_contrast_l3=13.80 reduced=true ground_planetary_opaque=true`와 exit 0을 확인했다.
+- vendored gstack browse Windows bundle은 `server-node.mjs` 부재로 실행되지 않아 설치·수정하지 않았고, 이미 설치된 system Chrome을 CDP로 직접 제어했다. Primary `godot` MCP는 세션에 없었다.
+
+### 상태 / 제외
+
+- Native와 Web screenshot, Web export/startup/Canvas/console Gate가 모두 충족되어 S5-G7을 `VERIFIED`로 변경했다.
+- Core/Integration files, project configuration, export preset, runtime implementation은 변경하지 않았다. disposable validation output은 `%TEMP%\s5-g7-web-validation-20260820`에 남겼다.
+
+## 2026-08-20 — S3-G8 Stage Score gauge
+
+Owner: Presentation
+Branch: `fx-design`
+
+### 작업
+
+- 기존 HUD Score CRT 안에 `stage_score / clear_score`를 0~100%로 표시하는 112×18 pixel gauge를 추가했다. 25/50/75% tick, percent label, 목표 달성 시 beige/gold fill을 사용해 Paper-8/CRT 스타일을 유지했다.
+- 기존 `score_changed(stage_score, run_score)`와 `StageDefinition.clear_score`만 read-only로 소비한다. 감소한 점수는 fill을 줄이고, 초과 점수는 100%로 clamp하며, Stage score reset은 0%로 되돌린다.
+- `clear_score <= 0`인 Galactic에서는 gauge 전체를 숨긴다. Presentation은 Clear/Failure/Shift를 판정하거나 Core state를 변경하지 않는다.
+- S6-G6 Final Settlement 중에는 authoritative 최종값으로 먼저 뛰지 않고 기존 Stage Score count-up의 presentation 값과 gauge를 함께 보간한 뒤 최종 authoritative 값에 고정한다.
+
+### 검증
+
+- Godot 4.7.1 editor load/parse: exit 0.
+- 전용 headless scene: `S3_G8_VERIFIED zero=true partial=true complete=true overflow_clamped=true decrease=true reset=true galactic_hidden=true core_readonly=true`.
+- 회귀: S1-G4 HUD, S3-G6 Stage HUD, S6-G6 Final Settlement, S8-G5 Black Hole Phase, S5-G4 Stage World Shift가 모두 exit 0.
+- Main 120-frame headless smoke는 exit 0이며 기존 shutdown-only ObjectDB 3개/resource 1개 leak warning은 유지된다.
+- Native OpenGL Compatibility, Intel Arc 130V에서 1600×900의 0%, 63%, 100%, Galactic hidden 캡처를 직접 확인했다. partial gauge 120-frame 측정은 평균 `60.8 FPS`, 최저 `51.6 FPS`, 최대 frame `19.40ms`였다.
+- 현재 세션에는 Primary `godot` MCP가 제공되지 않아 MCP 검증은 수행하지 않았다. CLI/headless와 실제 Native renderer를 기준선으로 사용했다.
+
+### 상태 / Integration handoff / 제외
+
+- S3-G8의 Goal-specific Verification과 Native 시각 확인을 충족해 `VERIFIED`로 변경했다.
+- 활성 S8-G4 Integration lock과 잠긴 파일은 사용하지 않았다. `project.godot`, Main scene, StageManager, GameManager, StageRuntime, StageDefinition, Integration test는 변경하지 않았다.
+- S3-G7 local Lv4 비종료 migration, S5-G6 Clear 확인 UI, S6-G6I Settlement wiring은 구현하지 않았다.
+- S3-G8 자체의 Goal Verification에는 Web Browser가 요구되지 않고 S3 Slice는 S3-G7 미완료로 종료할 수 없어 Web export/browser를 실행하지 않았다. S3 Slice Exit Web smoke는 후속 통합 Gate에 남는다.
 ## 2026-08-20 — S8-G5 Black Hole Phase Presentation 구현
 
 - Owner lane: Presentation/UI
@@ -329,3 +464,61 @@ Owner: Presentation
 
 - 사용자 실제 플레이로 첫 Black Hole Snowball 뒤 phase 진입·기믹 생성, L2→L3 Frame/HUD 확장 뒤 Galactic 재개, 두 번째 Black Hole 충돌 뒤 finale→Result 경로를 확인했다.
 - 기존 S8-G5 CLI phase/finale verification과 S5-G4 regression evidence를 합쳐 S8-G5를 `VERIFIED`로 갱신했다.
+
+## 2026-08-21 — fx-design/latest Main Presentation 병합 해소
+
+Owner: Presentation / senior integration
+
+- latest Main의 Pause/Retry B, 90px frame margin, 단일 `BlackHolePresentationOverlay`, canonical 20-cell Stage Score gauge를 active scene wiring으로 유지했다. 로컬의 중복 horizontal gauge와 중복 Black Hole effect mount는 제거했다.
+- S6-G6 Final Settlement의 read-only Stage Score count-up를 canonical gauge에 연결하고, S5-G7 Galactic alpha world와 S8-G5 reduced-effects·run-generation·duplicate/stale callback 방어를 보존했다. 외부 finale 완료 계약은 latest Main caller와 맞는 no-argument `black_hole_finale_presentation_finished()`로 정렬했다.
+- Godot 4.7.1 CLI/headless에서 S3-G8 `cells=20 progress=70pct_14cells`, S5-G4 Stage World, S5-G7, S6-G6, latest S8-G5와 enhanced S8-G5 검증이 모두 exit 0이었다. Main headless와 Native OpenGL Compatibility smoke도 exit 0이며 Native renderer는 Intel Arc 130V/OpenGL 3.3을 사용했다.
+- Web release export는 임시 디렉터리로 exit 0이었다. 브라우저 smoke는 `browse`의 Windows `server-node.mjs` 번들이 없어 실행하지 못했고 프로젝트 파일을 바꾸는 일회성 빌드는 수행하지 않았다. Primary Godot MCP는 현재 세션에 제공되지 않아 CLI/Native를 baseline으로 사용했다.
+- 기존 latest Main에서도 재현되는 stale fixture 세 건은 범위 밖으로 남겼다: Pause B 이전 위치/Paddle 경계를 기대하는 S5-G4 playable, obsolete `TOP_BALL_CLEAR`를 호출하는 shift wiring, Pause B 추가 전 9개 asset count를 기대하는 frame-v2 asset 검증. Main smoke의 shutdown-only ObjectDB 3개/resource 1개 warning도 유지된다.
+- Integration lock은 없으며 released 상태를 유지한다. 보호된 Time CRT 디자인 파일 세 개는 이 병합에서 편집·스테이징하지 않았다.
+
+## 2026-08-21 — S5-G6 Stage Clear 확인 UI 재활성화
+
+Owner: Presentation/UI
+
+- 최신 사용자 지시에 따라 2026-08-20 automatic Shift 방향을 supersede하고 `SCORE_CLEAR → CLEAR_LOCKED → SETTLING → CLEARED (matching Next Stage 대기) → SHIFTING` 계약을 권위 문서에 복원했다. Clear 판정과 Settlement는 즉시 유지하고 Shift 시작만 `clear_id` 확인 뒤로 미룬다. automatic 구현/검증 기록은 삭제하지 않고 당시 역사적 evidence로 표시했다.
+- self-contained `StageClearPanel`과 mock verification/capture scene을 추가했다. Panel은 deep-copied `outcome=CLEARED` snapshot과 별도 `clear_id`만 소비해 완료 Stage, Stage Score, Run Score, `NEXT STAGE`를 표시하고 Core/StageManager/GameManager/score/timer/spawn/Paddle/Shift에 접근하지 않는다.
+- 실제 Godot Button focus와 Enter 입력, first press 1회, duplicate/hidden/stale callback 억제, matching hide, Retry/Main/new Run reset, process-lifetime stale-ID high-water, Galactic/failure/Result 제외, reduced-effects를 검증했다.
+- Paper8 v2 central bezel, 청록 CRT glass/scanline, 황동 bezel/bolt, 승인 팔레트와 nearest filtering을 재사용했다. Time Bonus와 Result/failure 문구는 표시하지 않는다.
+- Godot 4.7.1 CLI/headless: S5-G6 marker와 S1-G4, S3-G6, S3-G8, S5-G4 Stage World/Shift, S5-G7, S6-G6 회귀가 모두 exit 0. S3-G6 fixture의 기존 hard-coded `TARGET 4M`만 현재 StageDefinition `4e8` source-of-truth formatter assertion으로 교정했다.
+- Main 120-frame headless smoke는 exit 0. 기존 shutdown-only ObjectDB 3개/resource 1개 warning은 그대로다.
+- Native OpenGL Compatibility / Intel Arc 130V capture: PNG error 0, 120 frames 평균 `60.1 FPS`, 최대 frame `19.56ms`. Capture: `C:/Users/gktjd/AppData/Roaming/Godot/app_userdata/Snowball Effect/s5_g6_stage_clear_panel_capture.png`.
+- 상태는 `IMPLEMENTED`다. Main mount, `stage_clear_ready`, matching request consumer, 별도 `shift_id` 발급, reset wiring과 Desktop/Web 3-Stage 확인은 Integration-owned S5-G6I `PENDING`으로 남겼다. 개별 producer 계약은 Native layout capture까지이며 Main이 mount하지 않아 Browser에서 도달할 수 없으므로 이번 Goal에서 Web export/browser 검증을 요구하거나 주장하지 않는다.
+- Integration-owned 파일과 Integration tests는 변경하지 않았다. Integration lock은 없으며 `project.godot`, Main, StageManager, GameManager는 untouched다. 기존 dirty Time CRT `docs/design/11_FX_CATALOG.md`와 `docs/design/mockups/approved-fx/`도 보존했다.
+
+## 2026-08-21 — Time CRT Pulse 승인 디자인
+
+Owner: Presentation / design-only
+
+- ST-02 시간 부족 경고와 ST-03 Time Up Lock의 승인 방향을 `A · CRT PULSE`로 확정했다. normal → low-time → time-up 상태 변화는 Time CRT 숫자, 제한된 phosphor halo, 짧은 scanline jitter 안에서만 표현한다.
+- cabinet frame, corner lamp, side rail을 전역 경보처럼 점멸하지 않으며 Settlement, Score Clear, 실패를 예고하거나 Core 판정을 대신하지 않는다.
+- 승인 기준 이미지는 `docs/design/mockups/approved-fx/time-crt-pulse-v1.png`, 사용 범위와 비계약 요소는 같은 폴더의 `README.md`, authoritative FX 규칙은 `docs/design/11_FX_CATALOG.md`에 기록했다.
+- 이번 기록은 문서와 디자인 에셋 승인만 다룬다. HUD/Time CRT runtime 구현, Core/Integration 시간 판정, Web/Native runtime evidence는 추가하거나 변경하지 않았으며 후속 구현 전까지 `PENDING`이다.
+
+## 2026-08-21 — S8-G5 active renderer 출고 리뷰 보정
+
+Owner: Presentation
+
+- 출고 전 리뷰에서 `BlackHolePhaseEffect`가 작성·검증됐지만 active `GameplayFrame`은 reconciliation 이전의 중앙 placeholder overlay를 계속 mount하고 있음을 확인했다.
+- active scene을 `BlackHolePhaseEffect`로 교체하고 PresentationManager가 read-only simulation snapshot, phase field progress, finale progress를 이 단일 draw node에 전달하도록 정렬했다. Main/Core/Integration 신호와 gameplay state는 변경하지 않았다.
+- S8-G5 verification은 active node type과 그 node의 실제 visual metrics를 직접 확인하도록 보강했다. no-argument finale 완료 handoff와 run-generation/stale callback 방어는 유지한다.
+
+## 2026-08-21 — S6-G6 Settlement reset 출고 리뷰 보정
+
+Owner: Presentation
+
+- Final Settlement draw node가 metadata 기반 gameplay FX registry 밖에서 관리되어 Retry/Main reset 중 남을 수 있던 lifecycle 누락을 수정했다.
+- `reset_runtime_fx()`와 반복 Settlement 시작이 active draw node의 processing을 중지하고 retire하며, 완료 callback은 현재 active instance와 일치할 때만 한 번 수락한다.
+- S6-G6 verification에 effect 진행 중 reset 뒤 stale draw node 제거와 다음 Run으로 completion이 유출되지 않는 회귀를 추가했다. Settlement 계산·점수·Stage state는 변경하지 않았다.
+
+## 2026-08-21 — Design mockup export·Time CRT handoff 보정
+
+Owner: Presentation / design-only
+
+- `export_filter="all_resources"`에서 문서용 mockup PNG가 Web payload로 import될 수 있어 `docs/design/mockups/.gdignore`로 전체 mockup tree를 runtime import/export 대상에서 제외했다. repository 문서와 Markdown 링크는 유지한다.
+- Time CRT 승인 계약에 Reduced Effects의 정적 황색 outline·상태 문구 fallback과 Time Up 감광 cleanup 경계를 추가했다.
+- 런타임 HUD/Time 구현이나 Core/Integration 판정은 변경하지 않았으며 후속 구현 상태는 계속 `PENDING`이다.

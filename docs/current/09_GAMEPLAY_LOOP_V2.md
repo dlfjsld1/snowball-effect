@@ -320,6 +320,8 @@ clear_score 도달
 ↓
 남은 공 Final Settlement
 ↓
+CLEARED 축하 UI
+↓ matching NEXT STAGE(clear_id)
 SCALE SHIFT → Next Stage
 ```
 
@@ -333,7 +335,7 @@ TIME UP
 Final Stage Score 계산
 ↓
 Clear Target 판정
-├─ PASS → SCALE SHIFT
+├─ PASS → CLEARED 축하 UI → matching NEXT STAGE(clear_id) → SCALE SHIFT
 └─ FAIL → RUN END
 ```
 
@@ -370,10 +372,10 @@ Stage 종료 시 화면에 남은 모든 공을 한 번에 정산한다.
 
 ```text
 Ground의 최고
-Giant Snowball
+Moon
 ↓
 Planetary의 기본 공
-Giant Snowball
+Moon
 ```
 
 따라서:
@@ -655,7 +657,7 @@ Giant Snowball
 → CUT-IN 가능
 
 Moon
-→ SCALE SHIFT
+→ FIRST CONTACT 뒤 PLAYING 유지
 ```
 
 Planetary:
@@ -665,7 +667,7 @@ Supernova
 → CUT-IN 가능
 
 Galaxy
-→ SCALE SHIFT
+→ FIRST CONTACT 뒤 PLAYING 유지
 ```
 
 Galactic:
