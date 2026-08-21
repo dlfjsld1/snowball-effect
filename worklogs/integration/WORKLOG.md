@@ -753,3 +753,8 @@ Owner: Integration
 - Gateway는 `item_collected` 이후에만 monotonic `event_id` CUT-IN request를 발행한다. matching activation cue 또는 explicit skip이 도착할 때만 effect activation request를 한 번 emit하며, duplicate/stale cue 및 Retry/Main reset 뒤의 이전 event를 거부한다. Item Ball 파괴와 Orb miss는 activation 경로에 연결하지 않았다.
 - Verification: Godot 4.7.1 CLI Gateway scene exit 0 (`collection=cue_only`, `activation=once`, `skip_fallback=once`, `reset_stale_rejected=true`); S7-G1C producer regression exit 0; Primary `godot` validate에서 Gateway/GameManager/Simulation/Main/test 5/5 valid; Primary Main runtime에서 ItemManager/Gateway mount, Title start 뒤 `PLAYING`, runtime errors 0을 확인했다.
 - 상태: `IMPLEMENTED`. S6-G2 CUT-IN producer와 S7-G2~G4 effect consumer가 없어 실제 cue→effect 결과와 Web 관찰은 이후 Integration close에서 검증한다.
+
+## 2026-08-21 — S7-G1 clean class-load repair
+
+- `GameManager`가 ItemManager와 ItemEffectGateway를 global `class_name`으로 annotation/cast하던 의존을 제거하고 두 mounted node를 `Node`로 참조하게 했다.
+- 이는 다른 workspace/MCP가 새 global script class cache를 만들기 전에 `game_manager.gd`를 단독 파싱해 실패하던 load-order 결함을 막는다. Gateway/Manager의 class declaration, signal API, scene mount와 gameplay contract는 변경하지 않았다.

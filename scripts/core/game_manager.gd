@@ -10,8 +10,6 @@ const TitleScreenScript = preload("res://scripts/ui/title_screen.gd")
 const ResultPanelScript = preload("res://scripts/ui/result_panel.gd")
 const GameplayFrameScript = preload("res://scripts/presentation/gameplay_frame.gd")
 const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd")
-const ItemManagerScript = preload("res://scripts/gameplay/item_manager.gd")
-const ItemEffectGatewayScript = preload("res://scripts/core/item_effect_gateway.gd")
 
 signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
 signal terminal_result_available(result_snapshot: Dictionary)
@@ -51,8 +49,8 @@ var _play_field_backdrop: Polygon2D
 var _background_manager: BackgroundManager
 var _presentation_manager: PresentationManager
 var _audio_manager: AudioManagerScript
-var _item_manager: ItemManager
-var _item_effect_gateway: ItemEffectGateway
+var _item_manager: Node
+var _item_effect_gateway: Node
 var _spawn_accumulator := 0.0
 var _random := RandomNumberGenerator.new()
 var _initialized := false
@@ -74,8 +72,8 @@ func _ready() -> void:
 	_background_manager = get_node(background_manager_path) as BackgroundManager
 	_presentation_manager = get_node(presentation_manager_path) as PresentationManager
 	_audio_manager = get_node(audio_manager_path) as AudioManagerScript
-	_item_manager = get_node(item_manager_path) as ItemManager
-	_item_effect_gateway = get_node(item_effect_gateway_path) as ItemEffectGateway
+	_item_manager = get_node(item_manager_path)
+	_item_effect_gateway = get_node(item_effect_gateway_path)
 	call_deferred("_initialize_runtime")
 
 
@@ -326,7 +324,7 @@ func _process_item_runtime(delta: float) -> void:
 
 
 func _try_collect_item_orb() -> void:
-	var orb := _item_manager.get_item_orb_snapshot()
+	var orb: Dictionary = _item_manager.get_item_orb_snapshot()
 	if orb.is_empty():
 		return
 	var orb_position: Vector2 = orb["position"]
