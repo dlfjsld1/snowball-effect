@@ -1,0 +1,361 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/stage_clear_panel.gd" id="1_panel"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/field_bezel_v2_910x900.png" id="2_modal_bezel"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/c4/field_bezel_96.png" id="3_button_bezel"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v1/tiles/bolt_8.png" id="4_bolt"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v1/tiles/crt_scanline_tile_8x4.png" id="5_scanline"]
+
+[sub_resource type="SystemFont" id="PixelFont"]
+font_names = PackedStringArray("Consolas", "Courier New", "monospace")
+font_weight = 700
+antialiasing = 0
+hinting = 0
+subpixel_positioning = 0
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+bg_color = Color(0.376, 0.682, 0.482, 0.18)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.714, 0.812, 0.557, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+bg_color = Color(0.965, 0.906, 0.612, 0.22)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.965, 0.906, 0.612, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.714, 0.812, 0.557, 0.9)
+
+[node name="StageClearPanel" type="Control"]
+visible = false
+z_index = 220
+process_mode = 3
+texture_filter = 1
+custom_minimum_size = Vector2(1600, 900)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_panel")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.025, 0.08, 0.78)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="Control" parent="Center"]
+layout_mode = 2
+custom_minimum_size = Vector2(660, 520)
+mouse_filter = 2
+
+[node name="PanelSurface" type="Control" parent="Center/Panel"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CRTChamber" type="Polygon2D" parent="Center/Panel/PanelSurface"]
+show_behind_parent = true
+color = Color(0.012, 0.055, 0.06, 0.99)
+polygon = PackedVector2Array(112, 52, 548, 52, 608, 112, 608, 408, 548, 468, 112, 468, 52, 408, 52, 112)
+
+[node name="ModalFieldBezel" type="TextureRect" parent="Center/Panel/PanelSurface"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_modal_bezel")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="CRTGlass" type="ColorRect" parent="Center/Panel/PanelSurface"]
+layout_mode = 0
+offset_left = 98.0
+offset_top = 72.0
+offset_right = 562.0
+offset_bottom = 450.0
+mouse_filter = 2
+color = Color(0.02, 0.105, 0.105, 0.96)
+
+[node name="Scanlines" type="TextureRect" parent="Center/Panel/PanelSurface"]
+layout_mode = 0
+offset_left = 98.0
+offset_top = 72.0
+offset_right = 562.0
+offset_bottom = 450.0
+mouse_filter = 2
+modulate = Color(0.714, 0.812, 0.557, 0.12)
+texture_repeat = 2
+texture = ExtResource("5_scanline")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Kicker" type="Label" parent="Center/Panel/PanelSurface"]
+layout_mode = 0
+offset_left = 126.0
+offset_top = 96.0
+offset_right = 534.0
+offset_bottom = 122.0
+text = "SNOWBALL EFFECT // SCALE READY"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
+theme_override_fonts/font = SubResource("PixelFont")
+theme_override_font_sizes/font_size = 14
+
+[node name="CelebrationLights" type="Control" parent="Center/Panel/PanelSurface"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 178.0
+offset_top = 128.0
+offset_right = 482.0
+offset_bottom = 136.0
+mouse_filter = 2
+
+[node name="Light0" type="ColorRect" parent="Center/Panel/PanelSurface/CelebrationLights"]
+layout_mode = 0
+offset_right = 48.0
+offset_bottom = 8.0
+color = Color(0.965, 0.906, 0.612, 1)
+
+[node name="Light1" type="ColorRect" parent="Center/Panel/PanelSurface/CelebrationLights"]
+layout_mode = 0
+offset_left = 64.0
+offset_right = 112.0
+offset_bottom = 8.0
+color = Color(0.376, 0.682, 0.482, 1)
+
+[node name="Light2" type="ColorRect" parent="Center/Panel/PanelSurface/CelebrationLights"]
+layout_mode = 0
+offset_left = 128.0
+offset_right = 176.0
+offset_bottom = 8.0
+color = Color(0.965, 0.906, 0.612, 1)
+
+[node name="Light3" type="ColorRect" parent="Center/Panel/PanelSurface/CelebrationLights"]
+layout_mode = 0
+offset_left = 192.0
+offset_right = 240.0
+offset_bottom = 8.0
+color = Color(0.376, 0.682, 0.482, 1)
+
+[node name="Light4" type="ColorRect" parent="Center/Panel/PanelSurface/CelebrationLights"]
+layout_mode = 0
+offset_left = 256.0
+offset_right = 304.0
+offset_bottom = 8.0
+color = Color(0.965, 0.906, 0.612, 1)
+
+[node name="Heading" type="Label" parent="Center/Panel/PanelSurface"]
+layout_mode = 0
+offset_left = 112.0
+offset_top = 148.0
+offset_right = 548.0
+offset_bottom = 198.0
+text = "STAGE CLEAR!"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.965, 0.906, 0.612, 1)
+theme_override_colors/font_shadow_color = Color(0.122, 0.141, 0.294, 1)
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 4
+theme_override_fonts/font = SubResource("PixelFont")
+theme_override_font_sizes/font_size = 38
+
+[node name="StageIdentityLabel" type="Label" parent="Center/Panel/PanelSurface"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 126.0
+offset_top = 202.0
+offset_right = 534.0
+offset_bottom = 238.0
+text = "GROUND COMPLETE"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
+theme_override_fonts/font = SubResource("PixelFont")
+theme_override_font_sizes/font_size = 22
+
+[node name="ScoreDivider" type="ColorRect" parent="Center/Panel/PanelSurface"]
+layout_mode = 0
+offset_left = 140.0
+offset_top = 250.0
+offset_right = 520.0
+offset_bottom = 254.0
+mouse_filter = 2
+color = Color(0.416, 0.259, 0.325, 0.9)
+
+[node name="StageScoreTitle" type="Label" parent="Center/Panel/PanelSurface"]
+layout_mode = 0
+offset_left = 144.0
+offset_top = 270.0
+offset_right = 310.0
+offset_bottom = 296.0
+text = "STAGE SCORE"
+theme_override_colors/font_color = Color(0.376, 0.682, 0.482, 1)
+theme_override_fonts/font = SubResource("PixelFont")
+theme_override_font_sizes/font_size = 16
+
+[node name="StageScoreValue" type="Label" parent="Center/Panel/PanelSurface"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 310.0
+offset_top = 266.0
+offset_right = 516.0
+offset_bottom = 300.0
+text = "400M"
+horizontal_alignment = 2
+theme_override_colors/font_color = Color(0.965, 0.906, 0.612, 1)
+theme_override_fonts/font = SubResource("PixelFont")
+theme_override_font_sizes/font_size = 22
+
+[node name="RunScoreTitle" type="Label" parent="Center/Panel/PanelSurface"]
+layout_mode = 0
+offset_left = 144.0
+offset_top = 310.0
+offset_right = 310.0
+offset_bottom = 336.0
+text = "RUN SCORE"
+theme_override_colors/font_color = Color(0.376, 0.682, 0.482, 1)
+theme_override_fonts/font = SubResource("PixelFont")
+theme_override_font_sizes/font_size = 16
+
+[node name="RunScoreValue" type="Label" parent="Center/Panel/PanelSurface"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 310.0
+offset_top = 306.0
+offset_right = 516.0
+offset_bottom = 340.0
+text = "500M"
+horizontal_alignment = 2
+theme_override_colors/font_color = Color(0.965, 0.906, 0.612, 1)
+theme_override_fonts/font = SubResource("PixelFont")
+theme_override_font_sizes/font_size = 22
+
+[node name="NextStageButton" type="Button" parent="Center/Panel/PanelSurface"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 150.0
+offset_top = 362.0
+offset_right = 510.0
+offset_bottom = 426.0
+focus_mode = 2
+mouse_default_cursor_shape = 2
+text = "NEXT STAGE"
+theme_override_colors/font_color = Color(0.965, 0.906, 0.612, 1)
+theme_override_colors/font_hover_color = Color(0.965, 0.906, 0.612, 1)
+theme_override_colors/font_pressed_color = Color(0.714, 0.812, 0.557, 1)
+theme_override_colors/font_focus_color = Color(0.965, 0.906, 0.612, 1)
+theme_override_colors/font_disabled_color = Color(0.376, 0.682, 0.482, 0.62)
+theme_override_fonts/font = SubResource("PixelFont")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+
+[node name="CRTGlass" type="ColorRect" parent="Center/Panel/PanelSurface/NextStageButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.025, 0.12, 0.12, 1)
+
+[node name="Bezel" type="NinePatchRect" parent="Center/Panel/PanelSurface/NextStageButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_button_bezel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+draw_center = false
+modulate = Color(0.82, 0.65, 0.37, 1)
+
+[node name="BoltTopLeft" type="TextureRect" parent="Center/Panel/PanelSurface/NextStageButton"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 14.0
+offset_bottom = 14.0
+mouse_filter = 2
+texture = ExtResource("4_bolt")
+
+[node name="BoltBottomRight" type="TextureRect" parent="Center/Panel/PanelSurface/NextStageButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -14.0
+offset_top = -14.0
+offset_right = -6.0
+offset_bottom = -6.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("4_bolt")
+
+[node name="InputHint" type="Label" parent="Center/Panel/PanelSurface"]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 434.0
+offset_right = 532.0
+offset_bottom = 454.0
+text = "ENTER / SPACE / CLICK"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.376, 0.682, 0.482, 0.9)
+theme_override_fonts/font = SubResource("PixelFont")
+theme_override_font_sizes/font_size = 12

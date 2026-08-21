@@ -10,6 +10,7 @@ const Ledger = preload("res://scripts/core/score_ledger.gd")
 signal stage_changed(definition: StageDefinition)
 signal stage_state_changed(state: StringName)
 signal stage_shift_started(next_definition: StageDefinition, shift_id: int)
+signal stage_clear_ready(clear_snapshot: Dictionary, clear_id: int)
 signal stage_run_ended(result_snapshot: Dictionary)
 signal final_settlement_started(amount: float)
 signal final_settlement_finished(amount: float)
@@ -42,8 +43,12 @@ var _pending_cashouts: Array[Dictionary] = []
 var _pending_shift_id := -1
 var _pending_shift_definition: StageDefinition
 var _next_shift_id := 1
+var _pending_clear_id := -1
+var _pending_clear_snapshot: Dictionary = {}
+var _next_clear_id := 1
 var _pending_black_hole_phase_id := -1
 var _pending_black_hole_logical_rect := Rect2()
+var _first_contact_pause_locked := false
 
 
 func _ready() -> void:
@@ -74,7 +79,7 @@ func _disable_simulation_physics_process() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if current_state != PLAYING:
+	if current_state != PLAYING or _first_contact_pause_locked:
 		return
 
 	_pending_cashouts.clear()
@@ -92,6 +97,7 @@ func start_run() -> void:
 	_pending_shift_definition = null
 	_pending_black_hole_phase_id = -1
 	_pending_black_hole_logical_rect = Rect2()
+	_first_contact_pause_locked = false
 	_stage_runtime.score_ledger.reset_runtime()
 	_stage_runtime.reset_run_statistics()
 	_enter_stage(_stage_catalog.get_stage(current_stage_index))
@@ -109,6 +115,22 @@ func is_playing() -> bool:
 	return current_state == PLAYING
 
 
+func set_first_contact_pause_locked(locked: bool) -> bool:
+	if locked:
+		if current_state != PLAYING or _first_contact_pause_locked:
+			return false
+		_first_contact_pause_locked = true
+		return true
+	if not _first_contact_pause_locked:
+		return false
+	_first_contact_pause_locked = false
+	return true
+
+
+func is_first_contact_pause_locked() -> bool:
+	return _first_contact_pause_locked
+
+
 func get_runtime_snapshot() -> Dictionary:
 	return {
 		"state": current_state,
@@ -118,8 +140,10 @@ func get_runtime_snapshot() -> Dictionary:
 		"run_score": _stage_runtime.score_ledger.run_score,
 		"run_merge_count": _stage_runtime.get_run_statistics()["merge_count"],
 		"run_time_seconds": _stage_runtime.get_run_statistics()["run_time_seconds"],
+		"pending_clear_id": _pending_clear_id,
 		"pending_shift_id": _pending_shift_id,
 		"pending_black_hole_phase_id": _pending_black_hole_phase_id,
+		"first_contact_pause_locked": _first_contact_pause_locked,
 		"black_hole_finale_locked": _stage_runtime.is_black_hole_finale_locked(),
 	}
 
@@ -134,6 +158,17 @@ func debug_force_score_clear() -> bool:
 	if missing_score > 0.0:
 		_stage_runtime.score_ledger.apply_score_event(missing_score)
 	_stage_runtime.process_tick(0.0, false, [])
+	return current_state == CLEARED
+
+
+func request_next_stage(clear_id: int) -> bool:
+	if current_state != CLEARED or clear_id != _pending_clear_id:
+		return false
+	if _stage_catalog.get_stage(current_stage_index + 1) == null:
+		return false
+	_pending_clear_id = -1
+	_pending_clear_snapshot.clear()
+	_begin_scale_shift_if_available()
 	return current_state == SHIFTING
 
 
@@ -144,6 +179,8 @@ func accept_stage_shift_presentation_finished(shift_id: int) -> bool:
 	var next_definition := _pending_shift_definition
 	_pending_shift_id = -1
 	_pending_shift_definition = null
+	_pending_clear_id = -1
+	_pending_clear_snapshot.clear()
 	current_stage_index += 1
 	_enter_stage(next_definition)
 	return true
@@ -176,8 +213,11 @@ func accept_black_hole_phase_presentation_finished(phase_id: int) -> bool:
 func end_run_to_main_menu() -> void:
 	_pending_shift_id = -1
 	_pending_shift_definition = null
+	_pending_clear_id = -1
+	_pending_clear_snapshot.clear()
 	_pending_black_hole_phase_id = -1
 	_pending_black_hole_logical_rect = Rect2()
+	_first_contact_pause_locked = false
 	_simulation.reset_runtime()
 	_settlement_service.reset_for_stage()
 	_stage_runtime.score_ledger.reset_runtime()
@@ -223,7 +263,7 @@ func _on_black_hole_run_end_requested() -> void:
 	if current_state == PLAYING or current_state == BLACK_HOLE_PHASE_LOCKED:
 		_pending_black_hole_phase_id = -1
 		_pending_black_hole_logical_rect = Rect2()
-		_set_state(FAILED)
+		_finish_failed_run()
 
 
 func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
@@ -262,17 +302,46 @@ func _settle_and_resolve(reason: StringName) -> void:
 	var is_non_final_stage := _stage_catalog.get_stage(current_stage_index + 1) != null
 	if is_non_final_stage and _stage_runtime.score_ledger.stage_score >= _stage_runtime.current_stage.clear_score:
 		_set_state(CLEARED)
-		_begin_scale_shift_if_available()
+		_publish_stage_clear_ready()
 	else:
 		if is_non_final_stage:
-			_set_state(FAILED)
+			_finish_failed_run()
 		else:
 			_set_state(RUN_ENDED)
-			stage_run_ended.emit({
-				"stage_index": current_stage_index,
-				"stage_score": _stage_runtime.score_ledger.stage_score,
-				"run_score": _stage_runtime.score_ledger.run_score,
-			})
+			stage_run_ended.emit(_build_terminal_result_snapshot(&"FAILED"))
+
+
+func _publish_stage_clear_ready() -> void:
+	if current_state != CLEARED or _pending_clear_id != -1 or _stage_runtime.current_stage == null:
+		return
+	_pending_clear_id = _next_clear_id
+	_next_clear_id += 1
+	_pending_clear_snapshot = {
+		"stage_index": current_stage_index,
+		"stage_display_name": _stage_runtime.current_stage.display_name,
+		"stage_score": _stage_runtime.score_ledger.stage_score,
+		"run_score": _stage_runtime.score_ledger.run_score,
+		"outcome": &"CLEARED",
+		"is_final_stage": false,
+	}
+	stage_clear_ready.emit(_pending_clear_snapshot.duplicate(true), _pending_clear_id)
+
+
+func _finish_failed_run() -> void:
+	_pending_clear_id = -1
+	_pending_clear_snapshot.clear()
+	_set_state(FAILED)
+	stage_run_ended.emit(_build_terminal_result_snapshot(&"FAILED"))
+
+
+func _build_terminal_result_snapshot(outcome: StringName) -> Dictionary:
+	return {
+		"stage_index": current_stage_index,
+		"stage_score": _stage_runtime.score_ledger.stage_score,
+		"run_score": _stage_runtime.score_ledger.run_score,
+		"outcome": outcome,
+		"optional_stats": _stage_runtime.get_run_statistics(),
+	}
 
 func _begin_scale_shift_if_available() -> void:
 	var next_definition := _stage_catalog.get_stage(current_stage_index + 1) as StageDefinition

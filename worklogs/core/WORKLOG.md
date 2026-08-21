@@ -671,6 +671,15 @@ Owner: Core (교차 영역 변경 승인됨)
 - local Lv4 생성은 계속 종료 사유가 아니다. clear score 미달인 경우에만 Time Up 경로를 사용한다.
 - Primary validate와 S3-G3 verification scene exit 0을 확인했다. 이 환경의 직접 CLI/headless는 `user://logs` 접근 실패 뒤 Godot signal 11로 종료되어 도구 환경 문제로 분리했다.
 
+## 2026-08-21 — S3-G9 FIRST_CONTACT producer 계약 준비
+
+Owner: Core planning / Goal status `PENDING`
+
+- S3-G7의 기존 증거를 local Lv4 비종료와 Score Clear 중재로 한정했다. 전용 discovery producer가 있었다고 소급하지 않는다.
+- S3-G9는 승인된 여섯 `first_contact_id`, payload schema v1, process-lifetime monotonic `event_id`, Integration-issued `run_epoch`, Run seen set과 deterministic order만 소유한다.
+- 기존 `ball_merged`/`top_ball_created`는 FIRST_CONTACT source가 아니며, 첫 Black Hole payload는 entity ordinal과 S8 handoff 의도만 전달한다.
+- 이번 기록은 계약/Goal 준비이며 runtime 구현·테스트·Godot 검증 Evidence가 없다. 상태를 `PENDING`으로 유지한다.
+
 ## 2026-08-21 — S3-G3/G7 deadline-bounded gameplay commit
 
 Owner: Core
@@ -678,3 +687,23 @@ Owner: Core
 - `StageRuntime.get_valid_play_delta()`로 callback 안의 실제 gameplay 구간을 `min(delta, max(stage_time_left, 0))`로 한정했다. StageManager가 그 구간만 Simulation/StageRuntime에 전달하므로 deadline을 지난 이동이나 하단 crossing은 Active Cashout과 Time Bonus가 될 수 없다.
 - `0.03s`가 남은 `0.1s` callback의 pre-deadline Lv3 Cashout은 `+1.0s`로 계속 PLAYING이 되고, local Lv4는 여전히 종료 원인이 아니며 시간이 남지 않았을 때만 Time Up으로 중재된다.
 - Godot 4.7.1 CLI headless S3-G2/G3/G4/G5와 S5-G3/G5/G6 회귀 exit 0, Primary `godot` validate 7/7 및 Main runtime error 0을 확인했다. MCP 종료 후 clean Web release export와 Browser gameplay/console warning·error 0도 확인했다.
+
+## 2026-08-21 — S3-G9 Run-scoped FIRST_CONTACT discovery producer
+
+Owner: Core
+Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `tests/simulation/s3_g9_first_contact_discovery_verification.*`
+
+### 변경
+
+- 실제 deterministic Merge commit 직후 `ball_merged`를 먼저 유지하고, 승인 roster의 local Lv3/Lv4 결과만 `first_contact_discovered(payload v1)`로 발행했다.
+- producer lifecycle API `begin_first_contact_run(run_epoch)`/`invalidate_first_contact_run(run_epoch)`와 Run seen set을 simulation에 두었다. Stage apply/reset은 seen set과 FIRST_CONTACT event ID를 초기화하지 않으며, 새로 열린 더 큰 epoch만 다시 발견을 허용한다.
+- payload schema/type/roster 검증을 producer에 추가했다. Galactic 첫 Black Hole은 committed entity ordinal `1`과 `BLACK_HOLE_PHASE` handoff만 전달하며, Phase 시작이나 GameManager/Main wiring은 수행하지 않는다.
+
+### 확인
+
+- Godot 4.7.1 headless `S3_G9_VERIFIED identities=6 exact_once=true stage_preserve=true run_reset=true deterministic_order=true`, exit 0.
+- 기존 S2-G3 Merge commit과 S3-G2 StageRuntime/S3-G3 deadline tick/S3-G4 Settlement headless regressions도 모두 exit 0.
+
+### 제외 / 다음 작업
+
+- `GameManager`의 epoch 발급, lifecycle 호출, FIFO CUT-IN pause/finish, 첫 Black Hole CUT-IN 완료 전 Phase 억제는 Integration `S6-G2I`가 소유한다.

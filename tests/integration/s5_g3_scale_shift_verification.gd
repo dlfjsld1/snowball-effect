@@ -10,25 +10,32 @@ var _failures := 0
 var _states: Array[StringName] = []
 var _stage_changed_count := 0
 var _shift_id := -1
+var _clear_id := -1
 
 
 func _ready() -> void:
 	stage_manager.stage_state_changed.connect(_on_stage_state_changed)
 	stage_manager.stage_changed.connect(_on_stage_changed)
 	stage_manager.stage_shift_started.connect(_on_stage_shift_started)
+	stage_manager.stage_clear_ready.connect(_on_stage_clear_ready)
 	stage_manager.start_run()
-	_verify_score_clear_enters_shift_once()
+	_verify_score_clear_waits_for_confirmation_then_shifts_once()
 	if _failures == 0:
-		print("S5_G3_VERIFIED clear_to_shifting=true duplicate_safe=true planetary_entered=true")
+		print("S5_G3_VERIFIED clear_waits_for_confirmation=true duplicate_safe=true planetary_entered=true")
 	get_tree().quit(_failures)
 
 
-func _verify_score_clear_enters_shift_once() -> void:
+func _verify_score_clear_waits_for_confirmation_then_shifts_once() -> void:
 	stage_manager.get_score_ledger().apply_score_event(stage_manager.get_current_stage().clear_score)
 	stage_manager._physics_process(0.1)
 
 	_expect(_states.has(StageManager.CLEARED), "Score Clear must enter CLEARED before presentation handoff.")
-	_expect(stage_manager.current_state == StageManager.SHIFTING, "Ground clear must start Scale Shift immediately.")
+	_expect(stage_manager.current_state == StageManager.CLEARED, "Ground clear must wait for the matching Next Stage confirmation.")
+	_expect(_clear_id > 0, "CLEARED must publish a positive clear id.")
+	_expect(not stage_manager.request_next_stage(_clear_id + 1), "Wrong clear id must keep CLEARED locked.")
+	_expect(stage_manager.current_state == StageManager.CLEARED, "Wrong clear id must not start Scale Shift.")
+	_expect(stage_manager.request_next_stage(_clear_id), "Matching clear id must start Scale Shift once.")
+	_expect(stage_manager.current_state == StageManager.SHIFTING, "Matching confirmation must enter SHIFTING.")
 	_expect(_shift_id > 0, "SHIFTING must issue a positive shift id.")
 	_expect(simulation.get_active_count() == 0, "Settlement must remove active balls before the presentation wait.")
 	var frozen_time: float = stage_manager.get_runtime_snapshot()["stage_time_left"]
@@ -56,6 +63,10 @@ func _on_stage_changed(_definition: StageDefinition) -> void:
 
 func _on_stage_shift_started(_definition: StageDefinition, shift_id: int) -> void:
 	_shift_id = shift_id
+
+
+func _on_stage_clear_ready(_snapshot: Dictionary, clear_id: int) -> void:
+	_clear_id = clear_id
 
 
 func _expect(condition: bool, message: String) -> void:

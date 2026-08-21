@@ -8,6 +8,7 @@ const HudScript = preload("res://scripts/ui/hud.gd")
 const PauseMenuScript = preload("res://scripts/ui/pause_menu.gd")
 const TitleScreenScript = preload("res://scripts/ui/title_screen.gd")
 const ResultPanelScript = preload("res://scripts/ui/result_panel.gd")
+const StageClearPanelScript = preload("res://scripts/ui/stage_clear_panel.gd")
 const GameplayFrameScript = preload("res://scripts/presentation/gameplay_frame.gd")
 const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd")
 
@@ -15,6 +16,7 @@ signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
 signal terminal_result_available(result_snapshot: Dictionary)
 signal item_cutin_requested(event_id: int, item_type: StringName, world_position: Vector2)
 signal item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2)
+signal first_contact_cutin_requested(payload: Dictionary)
 
 @export var simulation_path: NodePath
 @export var paddle_path: NodePath
@@ -23,6 +25,7 @@ signal item_effect_activation_requested(event_id: int, item_type: StringName, wo
 @export var pause_menu_path: NodePath
 @export var title_screen_path: NodePath
 @export var result_panel_path: NodePath
+@export var stage_clear_panel_path: NodePath
 @export var gameplay_frame_path: NodePath
 @export var play_field_backdrop_path: NodePath
 @export var background_manager_path: NodePath
@@ -44,6 +47,7 @@ var _hud: HudScript
 var _pause_menu: PauseMenuScript
 var _title_screen: TitleScreenScript
 var _result_panel: ResultPanelScript
+var _stage_clear_panel: StageClearPanelScript
 var _gameplay_frame: GameplayFrameScript
 var _play_field_backdrop: Polygon2D
 var _background_manager: BackgroundManager
@@ -56,6 +60,14 @@ var _random := RandomNumberGenerator.new()
 var _initialized := false
 var _terminal_result_snapshot: Dictionary = {}
 var _terminal_result_published := false
+var _next_first_contact_run_epoch := 1
+var _first_contact_run_epoch := -1
+var _first_contact_queue: Array[Dictionary] = []
+var _active_first_contact_payload: Dictionary = {}
+var _first_contact_pause_locked := false
+var _first_contact_arbitration_queued := false
+var _black_hole_phase_ready := false
+var _first_contact_cutin_consumer: Node
 
 
 func _ready() -> void:
@@ -67,6 +79,7 @@ func _ready() -> void:
 	_pause_menu = get_node(pause_menu_path) as PauseMenuScript
 	_title_screen = get_node(title_screen_path) as TitleScreenScript
 	_result_panel = get_node(result_panel_path) as ResultPanelScript
+	_stage_clear_panel = get_node(stage_clear_panel_path) as StageClearPanelScript
 	_gameplay_frame = get_node(gameplay_frame_path) as GameplayFrameScript
 	_play_field_backdrop = get_node(play_field_backdrop_path) as Polygon2D
 	_background_manager = get_node(background_manager_path) as BackgroundManager
@@ -82,6 +95,7 @@ func _initialize_runtime() -> void:
 	_simulation.set_paddle_collision_provider(_paddle)
 	_stage_manager.stage_changed.connect(_on_stage_changed)
 	_stage_manager.stage_shift_started.connect(_presentation_manager.play_stage_shift)
+	_stage_manager.stage_clear_ready.connect(_on_stage_clear_ready)
 	_stage_manager.stage_run_ended.connect(_on_stage_run_ended)
 	_stage_manager.final_settlement_started.connect(_on_final_settlement_started)
 	_stage_manager.final_settlement_finished.connect(_on_final_settlement_finished)
@@ -92,6 +106,9 @@ func _initialize_runtime() -> void:
 	_presentation_manager.visual_field_rect_changed.connect(_on_visual_field_rect_changed)
 	_presentation_manager.black_hole_phase_presentation_finished.connect(_on_black_hole_phase_presentation_finished)
 	_presentation_manager.black_hole_finale_presentation_finished.connect(_on_black_hole_finale_presentation_finished)
+	if _presentation_manager.has_signal(&"first_contact_cutin_finished"):
+		_presentation_manager.connect(&"first_contact_cutin_finished", _on_first_contact_cutin_finished)
+	_simulation.first_contact_discovered.connect(_on_first_contact_discovered)
 	_simulation.black_hole_phase_requested.connect(_on_black_hole_phase_requested)
 	_item_manager.item_collected.connect(_on_item_collected)
 	_item_effect_gateway.item_cutin_requested.connect(_on_item_cutin_requested)
@@ -106,12 +123,13 @@ func _initialize_runtime() -> void:
 	_title_screen.start_requested.connect(_on_start_requested)
 	_result_panel.retry_requested.connect(_on_retry_requested)
 	_result_panel.main_menu_requested.connect(_on_main_menu_requested)
+	_stage_clear_panel.next_stage_requested.connect(_on_next_stage_requested)
 	_enter_title_screen()
 	_initialized = true
 
 
 func _physics_process(delta: float) -> void:
-	if not _initialized or get_tree().paused or not _stage_manager.is_playing() or spawn_rate <= 0.0:
+	if not _initialized or get_tree().paused or _first_contact_pause_locked or not _stage_manager.is_playing() or spawn_rate <= 0.0:
 		return
 
 	_spawn_accumulator += delta * spawn_rate
@@ -125,7 +143,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not OS.is_debug_build() or not event is InputEventKey:
 		return
 	var key_event := event as InputEventKey
-	if not key_event.pressed or key_event.echo or get_tree().paused:
+	if not key_event.pressed or key_event.echo or get_tree().paused or _first_contact_pause_locked:
 		return
 	match key_event.physical_keycode:
 		KEY_F7:
@@ -145,6 +163,10 @@ func get_runtime_snapshot() -> Dictionary:
 		"paddle_position": _paddle.position,
 		"paddle_rotation": _paddle.rotation,
 		"terminal_result": get_terminal_result_snapshot(),
+		"first_contact_run_epoch": _first_contact_run_epoch,
+		"first_contact_queue_size": _first_contact_queue.size(),
+		"first_contact_active_event_id": int(_active_first_contact_payload.get("event_id", -1)),
+		"first_contact_pause_locked": _first_contact_pause_locked,
 	}
 
 
@@ -160,12 +182,69 @@ func skip_item_cutin(event_id: int) -> bool:
 	return _item_effect_gateway.skip_cutin(event_id)
 
 
+func set_first_contact_cutin_consumer_for_verification(consumer: Node) -> void:
+	_first_contact_cutin_consumer = consumer
+	_schedule_first_contact_arbitration()
+
+
+func accept_first_contact_discovery(payload: Dictionary) -> bool:
+	if not _is_current_first_contact_payload(payload):
+		return false
+	var event_id := int(payload["event_id"])
+	if not _active_first_contact_payload.is_empty() and int(_active_first_contact_payload["event_id"]) == event_id:
+		return false
+	for queued_payload in _first_contact_queue:
+		if int(queued_payload["event_id"]) == event_id:
+			return false
+	if _first_contact_queue.size() >= 6:
+		return false
+	_first_contact_queue.append(payload.duplicate(true))
+	_schedule_first_contact_arbitration()
+	return true
+
+
+func accept_first_contact_cutin_finished(event_id: int, run_epoch: int) -> bool:
+	if not _first_contact_pause_locked or _active_first_contact_payload.is_empty():
+		return false
+	if run_epoch != _first_contact_run_epoch or event_id != int(_active_first_contact_payload["event_id"]):
+		return false
+	var completed_payload := _active_first_contact_payload
+	_active_first_contact_payload = {}
+	if not _first_contact_queue.is_empty() and int(_first_contact_queue[0]["event_id"]) == event_id:
+		_first_contact_queue.pop_front()
+	if completed_payload["handoff_kind"] == &"BLACK_HOLE_PHASE":
+		if not _black_hole_phase_ready or _stage_manager.current_state != StageManager.PLAYING:
+			_active_first_contact_payload = completed_payload
+			_first_contact_queue.push_front(completed_payload)
+			return false
+		var from_rect := _simulation.play_field_rect
+		var to_rect := _gameplay_frame.get_field_rect_for_profile(3)
+		_stage_manager.set_first_contact_pause_locked(false)
+		if not _stage_manager.begin_black_hole_phase(from_rect, to_rect):
+			_stage_manager.set_first_contact_pause_locked(true)
+			_active_first_contact_payload = completed_payload
+			_first_contact_queue.push_front(completed_payload)
+			return false
+		_first_contact_pause_locked = false
+		_black_hole_phase_ready = false
+		return true
+	if _first_contact_queue.is_empty():
+		_release_first_contact_pause()
+	else:
+		_schedule_first_contact_arbitration()
+	return true
+
+
 func _start_run() -> void:
 	get_tree().paused = false
 	_random.seed = 1337
 	_spawn_accumulator = 0.0
 	_terminal_result_snapshot.clear()
 	_terminal_result_published = false
+	_reset_first_contact_runtime(true)
+	_first_contact_run_epoch = _next_first_contact_run_epoch
+	_next_first_contact_run_epoch += 1
+	_simulation.begin_first_contact_run(_first_contact_run_epoch)
 	_item_effect_gateway.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.start_run()
@@ -173,6 +252,7 @@ func _start_run() -> void:
 	_paddle.set_physics_process(true)
 	_title_screen.hide_title()
 	_result_panel.hide_result()
+	_stage_clear_panel.reset_for_new_run()
 	_hud.visible = true
 	_pause_menu.visible = true
 	_hud.reset_view()
@@ -184,6 +264,7 @@ func _enter_title_screen() -> void:
 	get_tree().paused = false
 	_terminal_result_snapshot.clear()
 	_terminal_result_published = false
+	_reset_first_contact_runtime(true)
 	_item_manager.reset_runtime()
 	_item_effect_gateway.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
@@ -194,6 +275,7 @@ func _enter_title_screen() -> void:
 	_pause_menu.visible = false
 	_pause_menu.set_paused(false)
 	_result_panel.hide_result()
+	_stage_clear_panel.reset_for_new_run()
 	_title_screen.show_title()
 
 
@@ -207,16 +289,31 @@ func _on_stage_changed(definition: StageDefinition) -> void:
 		_simulation.get_runtime_radius_for_level(definition.local_ball_levels[2])
 	)
 	_paddle.set_physics_process(true)
+	_pause_menu.visible = true
 
 
 func _on_stage_shift_presentation_finished(shift_id: int) -> void:
 	_stage_manager.accept_stage_shift_presentation_finished(shift_id)
 
 
+func _on_stage_clear_ready(clear_snapshot: Dictionary, clear_id: int) -> void:
+	_reset_first_contact_runtime(false)
+	_paddle.set_physics_process(false)
+	_pause_menu.visible = false
+	_stage_clear_panel.show_stage_clear(clear_snapshot, clear_id)
+
+
+func _on_next_stage_requested(clear_id: int) -> void:
+	if _stage_manager.request_next_stage(clear_id):
+		_stage_clear_panel.hide_stage_clear(clear_id)
+
+
 func _on_stage_run_ended(result_snapshot: Dictionary) -> void:
+	_reset_first_contact_runtime(true)
 	_paddle.set_physics_process(false)
 	_hud.visible = false
 	_pause_menu.visible = false
+	_stage_clear_panel.reset_for_new_run()
 	_result_panel.show_result(result_snapshot)
 
 
@@ -237,11 +334,10 @@ func _on_final_settlement_finished(_amount: float) -> void:
 
 
 func _on_black_hole_phase_requested() -> void:
-	if not _initialized or _stage_manager.current_state != StageManager.PLAYING:
+	if not _initialized or _first_contact_run_epoch < 0 or _stage_manager.current_state != StageManager.PLAYING:
 		return
-	var from_rect := _simulation.play_field_rect
-	var to_rect := _gameplay_frame.get_field_rect_for_profile(3)
-	_stage_manager.begin_black_hole_phase(from_rect, to_rect)
+	_black_hole_phase_ready = true
+	_schedule_first_contact_arbitration()
 
 
 func _on_black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2) -> void:
@@ -258,6 +354,7 @@ func _on_black_hole_phase_gameplay_resumed(_phase_id: int, logical_rect: Rect2) 
 	_gameplay_frame.set_profile(3)
 	_apply_play_field_layout(logical_rect)
 	_paddle.set_physics_process(true)
+	_paddle.set_process_unhandled_input(true)
 
 
 func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
@@ -372,3 +469,75 @@ func _on_start_requested() -> void:
 
 func _on_main_menu_requested() -> void:
 	_enter_title_screen()
+
+
+func _on_first_contact_discovered(payload: Dictionary) -> void:
+	accept_first_contact_discovery(payload)
+
+
+func _on_first_contact_cutin_finished(event_id: int, run_epoch: int) -> void:
+	accept_first_contact_cutin_finished(event_id, run_epoch)
+
+
+func _schedule_first_contact_arbitration() -> void:
+	if _first_contact_arbitration_queued:
+		return
+	_first_contact_arbitration_queued = true
+	call_deferred("_process_first_contact_arbitration")
+
+
+func _process_first_contact_arbitration() -> void:
+	_first_contact_arbitration_queued = false
+	if not _active_first_contact_payload.is_empty() or _first_contact_queue.is_empty():
+		return
+	if _stage_manager.current_state != StageManager.PLAYING:
+		_first_contact_queue.clear()
+		return
+	var consumer := _first_contact_cutin_consumer if _first_contact_cutin_consumer != null else _presentation_manager
+	if consumer == null or not consumer.has_method(&"play_first_contact_cutin"):
+		return
+	if not _first_contact_pause_locked:
+		if not _stage_manager.set_first_contact_pause_locked(true):
+			return
+		_first_contact_pause_locked = true
+		_paddle.set_physics_process(false)
+		_paddle.set_process_unhandled_input(false)
+	_active_first_contact_payload = _first_contact_queue[0].duplicate(true)
+	first_contact_cutin_requested.emit(_active_first_contact_payload.duplicate(true))
+	if not bool(consumer.call(&"play_first_contact_cutin", _active_first_contact_payload.duplicate(true))):
+		_active_first_contact_payload = {}
+		_release_first_contact_pause()
+
+
+func _release_first_contact_pause() -> void:
+	_stage_manager.set_first_contact_pause_locked(false)
+	_first_contact_pause_locked = false
+	if _stage_manager.current_state == StageManager.PLAYING:
+		_paddle.set_physics_process(true)
+		_paddle.set_process_unhandled_input(true)
+
+
+func _reset_first_contact_runtime(invalidate_core: bool) -> void:
+	if invalidate_core and _first_contact_run_epoch >= 0:
+		_simulation.invalidate_first_contact_run(_first_contact_run_epoch)
+	_first_contact_queue.clear()
+	_active_first_contact_payload.clear()
+	_black_hole_phase_ready = false
+	_first_contact_arbitration_queued = false
+	_release_first_contact_pause()
+	if _presentation_manager != null and _presentation_manager.has_method(&"reset_first_contact_cutin"):
+		_presentation_manager.call(&"reset_first_contact_cutin", _first_contact_run_epoch)
+	if _first_contact_cutin_consumer != null and _first_contact_cutin_consumer != _presentation_manager and _first_contact_cutin_consumer.has_method(&"reset_first_contact_cutin"):
+		_first_contact_cutin_consumer.call(&"reset_first_contact_cutin", _first_contact_run_epoch)
+	if invalidate_core:
+		_first_contact_run_epoch = -1
+
+
+func _is_current_first_contact_payload(payload: Dictionary) -> bool:
+	if _first_contact_run_epoch < 0 or _stage_manager.current_state != StageManager.PLAYING:
+		return false
+	if not _simulation.is_valid_first_contact_payload(payload):
+		return false
+	if int(payload["run_epoch"]) != _first_contact_run_epoch or int(payload["stage_index"]) != _stage_manager.current_stage_index:
+		return false
+	return _stage_manager.get_current_stage() != null

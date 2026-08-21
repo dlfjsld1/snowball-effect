@@ -45,8 +45,8 @@ Purpose: 분산된 gameplay feedback 요구사항을 하나의 디자인·제작
 | MG-01 | 일반 Merge | T1 | REQUIRED | `ball_merged(result_level, world_position)` | 결과 위치의 pixel burst와 얇은 링 | event 1회당 effect 1회 |
 | MG-02 | 고등급 Merge | T2 | REQUIRED | 같은 event + result level | 더 큰 ring, 파편, 짧은 압력파 | Ball silhouette 보존 |
 | MG-03 | 중요 공 생성 | T3 | REQUIRED | high-tier result | 짧은 hit-stop 후보, Corona 강화 | cooldown/priority 적용 |
-| MG-04 | local Lv4 최초 발견 | T3 | REQUIRED | authoritative Run-scoped discovery | FIRST CONTACT 뒤 공에 시선 집중 | 생성만으로 Clear/Shift를 요청하지 않음; Black Hole만 Phase로 handoff |
-| MG-05 | Stage 고등급 공 최초 생성 CUT-IN | T3 | CONDITIONAL | 현재 Run에서 지정 공 최초 생성 | 현재 16:9 화면 위 공통 배경, `FIRST CONTACT` 문구, 공 초상 | Stage별 local Lv3·Lv4만 1회, 0.45~0.70초, 기본 1초 미만 |
+| MG-04 | local Lv3/Lv4 최초 발견 | T3 | REQUIRED | S3-G9 `first_contact_discovered(payload v1)` | FIRST CONTACT 뒤 공에 시선 집중 | 승인 6 identity만 Run당 1회; 생성만으로 Clear/Shift를 요청하지 않음 |
+| MG-05 | Stage 고등급 공 최초 생성 CUT-IN | T3 | CONDITIONAL | S6-G2I가 pause 수락 뒤 전달한 payload v1 | 현재 16:9 화면 위 공통 배경, `FIRST CONTACT` 문구, 공 초상 | Stage별 local Lv3·Lv4만 1회, 0.45~0.70초, Black Hole은 matching 완료 뒤 S8 Phase |
 
 MG-05 대상은 Stage마다 두 종으로 고정한다.
 
@@ -60,6 +60,7 @@ MG-05 대상은 Stage마다 두 종으로 고정한다.
 - Moon은 Ground에서, Galaxy는 Planetary에서만 대상이므로 다음 Stage의 local Lv0 재등장으로 CUT-IN을 반복하지 않는다.
 - 여섯 CUT-IN은 공통 배경 하나와 공별 문구·공 초상 레이어를 조립한다.
 - 이전 후보였던 Galaxy Cluster와 Quasar는 현재 MG-05 대상이 아니다.
+- Presentation은 `ball_merged`/`top_ball_created`를 직접 해석하지 않고 `first_contact_id`를 layer key로만 사용한다. S3-G9와 S6-G2I가 실제 Evidence를 얻기 전에는 S6-G2 runtime controller를 구현하지 않는다.
 
 현재 2인자 Merge 계약으로는 두 source Ball의 contraction, slot 기반 잔상, merge score 숫자를 만들지 않는다. 해당 표현이 필요하면 Core payload와 Goal 계약을 먼저 확장한다.
 
@@ -90,6 +91,19 @@ S7 Optional Item Layer가 release 범위에 포함될 때만 이 묶음 전체�
 | ST-03 | Time Up Lock | T3 | REQUIRED | `TIME_UP_LOCKED` | 입력·상태 고정이 읽히는 frame cue | Settlement보다 앞서되 결과를 예단하지 않음 |
 | ST-04 | Stage Failure | T3 | REQUIRED | authoritative failed state | control loss와 failure label | Clear/Shift motion과 구분 |
 
+### 승인 방향 — CRT Pulse
+
+ST-02와 ST-03은 `CRT Pulse` 단독 방향을 사용한다.
+
+- 정상 상태에서는 Time CRT의 숫자와 scanline을 안정적으로 유지한다.
+- 시간 부족 상태에서는 Time CRT 내부의 숫자 점멸, 제한된 phosphor halo, 짧은 scanline jitter만 사용한다.
+- Time Up 확정 시 Time CRT 문구를 `TIME UP`으로 고정하고 화면의 나머지 요소를 약하게 감광해 입력과 simulation이 잠겼음을 표현한다.
+- Reduced Effects에서는 숫자 점멸과 jitter를 끄고 정적인 황색 CRT outline과 `LOW TIME`/`TIME UP` 문구로 같은 상태를 구분한다.
+- Time Up 전역 감광은 terminal lock 동안만 유지하며 Settlement·Clear·Failure handoff, Retry, Main, 새 Run 시작 전에 반드시 해제한다.
+- frame 경고등, 모서리 잠금, rail 전체 발광은 이 방향에 포함하지 않는다.
+- Settlement, Clear, Failure 결과를 예고하거나 함께 표현하지 않는다.
+- 승인 목업은 [`mockups/approved-fx/time-crt-pulse-v1.png`](mockups/approved-fx/time-crt-pulse-v1.png)이며, 실제 HUD 구조가 아닌 Time CRT 상태 변화의 시각 기준으로 사용한다.
+
 Score Milestone의 정확한 threshold와 event signature는 아직 미확정이다. 계약이 생기지 않으면 ST-01은 구현하지 않는다.
 
 ## 7. Stage 진행 FX
@@ -97,10 +111,23 @@ Score Milestone의 정확한 threshold와 event signature는 아직 미확정이
 | ID | FX | Tier | 상태 | 이벤트/입력 | 모션·역할 | 핵심 제약 |
 |---|---|---:|---|---|---|---|
 | SG-01 | Stage Clear Lock | T3 | REQUIRED | `stage_clear_decided` | simulation 정지와 최고 공 강조 | gameplay 결과를 Presentation이 계산하지 않음 |
-| SG-02 | Final Settlement | T3 | REQUIRED | settlement start/finish | active snapshot의 집계 수렴과 Stage Score count-up | Time Bonus·추가 Merge처럼 보이지 않음 |
+| SG-02 | Final Settlement | T2 | REQUIRED | settlement start/finish | 기존 Cashout 소멸을 재사용한 active snapshot 일괄 제거와 Stage Score count-up | 독립 대형 FX를 만들지 않으며 Clear·Failure 결과를 표현하지 않음 |
 | SG-03 | Scale Shift 충전 | T4 | REQUIRED | `stage_shift_started` | 중앙에서 좌우 rail로 energy 전달 | 일반 CUT-IN보다 우선 |
 | SG-04 | Frame·Play Field 확장 | T4 | REQUIRED | shift presentation | frame과 실제 field edge가 좌우로 이동 | camera zoom으로 대체 금지 |
 | SG-05 | 다음 Stage World 공개 | T4 | REQUIRED | matching shift id | 새 배경 layer reveal과 HUD Stage 갱신 | 완료 signal exactly once |
+
+### 승인 방향 — Minimal Settlement Feedback
+
+SG-02는 새로운 전용 일러스트나 복잡한 particle family를 만들지 않는다. 상태 변화가 누락이나 버그처럼 보이지 않게 하는 최소 피드백만 사용한다.
+
+1. `TIME_UP_LOCKED` 뒤 활성 공의 움직임을 정지한다.
+2. snapshot 공을 기존 Cashout 계열의 작은 pixel dissolve로 일괄 정리한다.
+3. dissolve와 함께 Stage Score를 짧게 count-up한다.
+4. 전체 presentation은 약 `0.5s` 안에 끝내고 settlement 완료 상태로 전환한다.
+
+이 시퀀스는 추가 Merge, Time Bonus, Clear, Failure, 축하 메시지, `Next Stage`를 표현하지 않는다. 수천 개 공에도 개별 고비용 Tween/Node를 생성하지 않고 batch 표현을 우선한다.
+
+검토 목업: [`mockups/drafts/final-settlement-minimal-v1.png`](mockups/drafts/final-settlement-minimal-v1.png)
 
 ## 8. Galactic Black Hole FX
 
@@ -119,6 +146,30 @@ Score Milestone의 정확한 threshold와 event signature는 아직 미확정이
 
 화면 왜곡 shader는 품질 후보이며 필수 구현이 아니다. 회전 링, 별·먼지 왜곡, 곡선 잔상만으로 상태가 읽히면 생략할 수 있다.
 
+### 검토 초안 — BH-01 Horizon Collapse
+
+- 상태: `REVIEW DRAFT ASSET / S8-G5 RUNTIME REFERENCE` — 원본 이미지는 최종 art 승인이 아니지만, 2026-08-20 S8-G5 구현 지시가 core·cyan/teal horizon 방향의 runtime 사용을 승인했다.
+- 목업: [`mockups/drafts/bh-01-horizon-collapse-storyboard-v1.png`](mockups/drafts/bh-01-horizon-collapse-storyboard-v1.png)
+- 3-frame 흐름: `BLACK HOLE BALL → HORIZON COLLAPSE → MOVING BLACK HOLE`.
+- 첫 Black Hole의 Run 최초 `FIRST CONTACT` CUT-IN 직후, 정지한 Lv14 Ball의 표면광이 중심으로 압축되고 black core와 cyan/teal Event Horizon ring만 남아 이동 기믹으로 읽힌다.
+- 같은 Galactic 카메라와 고정 Play Field를 유지하며 BH-02 Frame 확장, 흡수, 두 번째 Black Hole, finale·Result는 포함하지 않는다.
+
+### 검토 초안 — BH-03/BH-04 Gravitational-Field Readability
+
+- 상태: `REVIEW DRAFT ASSET / S8-G5 RUNTIME REFERENCE` — 원본 이미지는 최종 art 승인이 아니지만, 2026-08-20 S8-G5 구현 지시가 compact core·influence·near-field 계층의 runtime 사용을 승인했다.
+- 목업: [`mockups/drafts/bh-03-04-gravitational-field-readability-storyboard-v1.png`](mockups/drafts/bh-03-04-gravitational-field-readability-storyboard-v1.png)
+- 3-frame 흐름: `FIELD IDLE → INFLUENCE → NEAR FIELD`; black core와 cyan/teal ring을 고정하고 짧은 곡선 trail, 제한된 tidal stretch, sparse orbit pixel만 단계적으로 더한다.
+- 일반 공의 nominal 원형 판독과 중심·경로를 유지하며 전체 화면 왜곡, 흡수, 두 번째 Black Hole, Frame 확장, CUT-IN, finale·Result는 포함하지 않는다.
+
+### S8-G5 runtime recipe
+
+- `BlackHolePhaseEffect` 단일 draw node가 read-only `get_black_hole_snapshot()`의 최대 2개 entity를 그린다. gameplay radius를 변경하지 않고 black core, 4px cyan/teal event horizon, 300-unit dashed influence ring, near-field arc, 최대 4개 motion marker를 조립한다.
+- phase transition은 기본 `0.8s` 동안 L2 `880`→L3 `1040`을 중심 X `800` 기준 좌우 각 `80`씩 확장한다. Frame, 표시용 side fill, 고정 `200px` HUD housing이 같은 progress를 사용한다. 완료 뒤 `Galactic` HUD와 persistent Black Hole visual은 유지한다.
+- finale는 기본 `1.15s` 동안 두 core의 mutual orbit·압축 뒤 pixel ring/explosion을 재생하고 gameplay HUD/Pause를 숨긴다. S8-G3 Result 자체는 만들지 않으며 no-argument `black_hole_finale_presentation_finished()` 뒤 Integration이 보관한 terminal snapshot을 S8-G3에 전달한다.
+- Reduced Effects는 phase `0.18s`, finale `0.34s`로 줄이고 motion trail을 생략하되 `BLACK HOLE PHASE`, `FINAL CONTACT`, exact field edge, core/horizon, orbit/explosion은 유지한다.
+- shader가 없는 procedural fallback이 정식 경로다. draw node, 상태 Label, Tween 각 1개를 재사용하며 개별 공/별 Node를 생성하지 않는다.
+- `reset_black_hole_presentation()`은 Tween을 kill하고 Run generation을 증가시켜 Retry 전 callback을 무효화한다. 같은 Run의 duplicate/stale phase/finale ID는 완료 신호로 재사용하지 않는다.
+
 ## 9. 제작 묶음과 권장 순서
 
 | 순서 | Design family | 포함 ID | 산출물 |
@@ -126,7 +177,7 @@ Score Milestone의 정확한 threshold와 event signature는 아직 미확정이
 | 1 | Merge hierarchy | MG-01~05 | T1/T2/T3 비교 state sheet, CUT-IN storyboard |
 | 2 | Item feedback | IT-01~11 | rarity/crack/break sheet, active field sheet |
 | 3 | Score·Time·Failure | ST-01~04 | HUD/cabinet reaction storyboard |
-| 4 | Clear·Settlement·Shift | SG-01~05 | 연결된 7-beat storyboard/animatic |
+| 4 | Stage 진행 | SG-01~05 | Settlement 최소 시퀀스와 Shift 독립 storyboard |
 | 5 | Black Hole finale | BH-01~10 | L2→L3와 terminal sequence storyboard |
 | 6 | Basic polish | BP-01~06 | 필요할 때만 저비용 sprite/particle sheet |
 

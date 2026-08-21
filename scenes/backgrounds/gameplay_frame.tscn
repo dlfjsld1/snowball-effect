@@ -11,7 +11,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_item_v2_176x300.png" id="9_item"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_pause_b_v2_176x104.png" id="10_pause"]
 [ext_resource type="Script" path="res://scripts/presentation/presentation_manager.gd" id="11_presentation"]
-[ext_resource type="PackedScene" path="res://scenes/effects/black_hole_presentation_overlay.tscn" id="12_black_hole_overlay"]
+[ext_resource type="PackedScene" path="res://scenes/effects/black_hole_phase_effect.tscn" id="12_black_hole_overlay"]
 
 [node name="GameplayFrame" type="Control" unique_id=1995335417]
 texture_filter = 1

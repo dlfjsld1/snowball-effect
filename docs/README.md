@@ -43,9 +43,12 @@ PLAYING
 
   Time Up
     TIME_UP_LOCKED → SETTLING
-      stage_score >= clear_score → CLEARED → SHIFTING
+      stage_score >= clear_score → CLEARED
+        matching NEXT STAGE(clear_id) → SHIFTING
       otherwise                  → FAILED → RUN END
 ```
+
+non-final `SCORE_CLEAR`의 잠금과 Final Settlement는 즉시 처리한다. `CLEARED`에서만 축하 UI와 matching `clear_id`의 `NEXT STAGE` 요청을 기다리며, 이 확인 전에는 Scale Shift를 시작하지 않는다.
 
 마지막 Galactic은 예외다. 첫 Lv14 Black Hole은 `CLEARED`가 아니라 이동 Black Hole 최종 국면을 활성화하고, 두 번째 Black Hole과 충돌해야 타이틀 연출 뒤 Run이 끝난다. Time Up 종료는 기존 Final Settlement 경로를 유지한다.
 
@@ -72,7 +75,7 @@ PLAYING
 - `base_time`, `clear_score`, `time_bonus_by_local_level`은 `StageDefinition` 데이터다.
 - Time Bonus 초기값은 Stage별 5종의 Local Lv0~4 순서로 `0s`, `0.25s`, `0.5s`, `1s`, `2s`다. local Lv4도 일반 플레이와 Active Cashout 대상이 될 수 있다.
 - 기본 Stage chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7·Lv9는 catalog에는 있지만 기본 Run에서 비활성이고, Lv14 최종 공은 `Black Hole`이다. 첫 Lv14 Ball은 Galactic 내부의 이동 Black Hole runtime 기믹으로 전환된다.
-- `clear_score` 초기값은 Ground `4e8`, Planetary `4e25`다. 두 값 모두 해당 Stage 최고 공 Active Cashout 점수의 4배(Moon `1e8`, Galaxy `1e25`)다. Cashout commit 뒤 목표에 도달하면 즉시 Clear와 Scale Shift를 확정하며, local Lv4 생성 자체는 이 판정을 대신하지 않는다. 마지막 Galactic Stage는 이 판정을 사용하지 않는다.
+- `clear_score` 초기값은 Ground `4e8`, Planetary `4e25`다. 두 값 모두 해당 Stage 최고 공 Active Cashout 점수의 4배(Moon `1e8`, Galaxy `1e25`)다. Cashout commit 뒤 목표에 도달하면 즉시 Clear와 Final Settlement를 확정하되, Scale Shift는 축하 UI의 matching `NEXT STAGE(clear_id)` 요청 뒤에만 시작한다. local Lv4 생성 자체는 이 판정을 대신하지 않으며 마지막 Galactic Stage는 이 판정을 사용하지 않는다.
 - 초기 시간 cap은 두지 않고 실제 획득 시간과 Stage 체류 시간을 먼저 측정한다.
 - Core는 Merge, Cashout, Time Bonus, Stage Timer, Settlement, Scale Shift다.
 - Blizzard, Fire Core, Magnet은 Optional Item Layer다. Fire ×10은 Active Cashout 전용이며 Settlement에는 적용하지 않는다.

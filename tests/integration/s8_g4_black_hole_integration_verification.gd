@@ -5,6 +5,15 @@ const StageCatalogScript = preload("res://scripts/data/stage_catalog.gd")
 const TitleScreenScript = preload("res://scripts/ui/title_screen.gd")
 const ResultPanelScript = preload("res://scripts/ui/result_panel.gd")
 
+
+class CutInStub extends Node:
+	var requests: Array[Dictionary] = []
+
+	func play_first_contact_cutin(payload: Dictionary) -> bool:
+		requests.append(payload.duplicate(true))
+		return true
+
+
 var _failures := 0
 var _phase_ids: Array[int] = []
 var _terminal_snapshots: Array[Dictionary] = []
@@ -24,6 +33,9 @@ func _ready() -> void:
 	var presenter: PresentationManager = main.get_node("UI/GameplayFrame/PresentationManager")
 	var title_screen: TitleScreenScript = main.get_node("UI/TitleScreen")
 	var result_panel: ResultPanelScript = main.get_node("UI/ResultPanel")
+	var cutin_stub := CutInStub.new()
+	add_child(cutin_stub)
+	game_manager.set_first_contact_cutin_consumer_for_verification(cutin_stub)
 	game_manager.set_physics_process(false)
 	stage_manager.set_physics_process(false)
 	presenter.black_hole_phase_duration = 0.05
@@ -33,6 +45,7 @@ func _ready() -> void:
 	_verify_initial_title_flow(game_manager, stage_manager, simulation, title_screen)
 
 	var galactic := StageCatalogScript.new().get_stage(2) as StageDefinition
+	stage_manager.current_stage_index = 2
 	stage_manager._enter_stage(galactic)
 	await _verify_phase_mediation(game_manager, stage_manager, simulation, paddle, gameplay_frame, presenter)
 	await _verify_finale_lock_and_resets(game_manager, stage_manager, simulation, title_screen, result_panel, presenter)
@@ -56,10 +69,16 @@ func _verify_phase_mediation(game_manager: GameManager, stage_manager: StageMana
 	var radius := simulation.get_runtime_radius_for_level(13)
 	simulation.spawn_ball(Vector2(760.0, 320.0), Vector2.ZERO, radius, 13)
 	simulation.spawn_ball(Vector2(764.0, 320.0), Vector2.ZERO, radius, 13)
-	stage_manager._stage_runtime.stage_time_left = 0.01
+	stage_manager._stage_runtime.stage_time_left = 5.0
 	stage_manager._physics_process(0.1)
+	await get_tree().process_frame
+	var cutin_snapshot := game_manager.get_runtime_snapshot()
+	var event_id := int(cutin_snapshot["first_contact_active_event_id"])
+	var run_epoch := int(cutin_snapshot["first_contact_run_epoch"])
+	_expect(event_id > 0 and bool(cutin_snapshot["first_contact_pause_locked"]), "First Black Hole CUT-IN must lock gameplay before Phase issuance.")
+	_expect(_phase_ids.is_empty(), "Black Hole Phase must wait for matching CUT-IN completion.")
+	_expect(game_manager.accept_first_contact_cutin_finished(event_id, run_epoch), "Matching Black Hole CUT-IN completion must be accepted.")
 	_expect(stage_manager.current_state == StageManager.BLACK_HOLE_PHASE_LOCKED, "Phase start must lock gameplay.")
-	_expect(stage_manager.current_state != StageManager.FAILED, "Black Hole phase must preempt same-tick Time Up.")
 	var locked_run_time: float = stage_manager.get_runtime_snapshot()["run_time_seconds"]
 	stage_manager._physics_process(2.0)
 	_expect(is_equal_approx(stage_manager.get_runtime_snapshot()["run_time_seconds"], locked_run_time), "Black Hole Phase lock must not add Run Time.")

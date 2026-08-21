@@ -10,10 +10,14 @@
 | Core score ledger | `score_changed(stage_score, run_score)` | Presentation HUD | 점수 표시 |
 | Core simulation | `cashout_completed(score_amount, global_level, world_position)` | Presentation, Integration, Content AudioManager | popup·StageRuntime local Time Bonus·audio event 선택 |
 | Core simulation | `ball_merged(result_level, world_position)` — 2 arguments only | Presentation, Content AudioManager | Merge FX와 audio event 선택; score amount와 special type은 포함하지 않음 |
+| Core Stage runtime / simulation | `first_contact_discovered(payload: Dictionary)` v1 | Integration S6-G2I | committed Merge 결과 중 승인된 local Lv3/Lv4 identity의 Run-scoped discovery. Presentation은 이 신호를 직접 구독하지 않는다. |
+| Integration S6-G2I | `play_first_contact_cutin(payload: Dictionary) -> bool` | Presentation S6-G2 | current Run과 payload를 검증하고 gameplay pause lock을 먼저 획득한 뒤에만 visible CUT-IN을 요청한다. |
+| Presentation S6-G2 | `first_contact_cutin_finished(event_id: int, run_epoch: int)` | Integration S6-G2I | exit/dim restore가 끝난 matching visible CUT-IN 완료. gameplay resume나 Black Hole Phase를 직접 실행하지 않는다. |
 | Core simulation | `simulation_metrics_updated(metrics)` — read-only `active_balls/slot_capacity/free_slots/candidate_count/grid_cell_count/grid_bucket_capacity/grid_new_buckets/merges` | Presentation, Content/Systems | 성능 HUD와 release stress 측정; simulation state 수정 금지 |
 | Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration, Content AudioManager | Clear 표시·상태 잠금·audio event 선택 |
 | Core Settlement → Integration StageManager | `final_settlement_started(amount: float)`, `final_settlement_finished(amount: float)` | Integration GameManager, Content AudioManager | SettlementService의 내부 신호를 StageManager가 한 번 전달한다. GameManager는 각각 `settlement_start`/`settlement_finish` audio event로만 매핑하며 점수·상태는 변경하지 않는다. |
+| Presentation EffectManager | `final_settlement_presentation_finished()` | Presentation HUD·verification | 최대 0.5초의 batch dissolve·Stage Score count-up 완료 알림. Core `Final Settlement → CLEARED`를 지연시키거나 gameplay state를 변경하지 않는 read-only presentation completion이다. S5-G6의 확인 대기는 Settlement logic이 아니라 `CLEARED→SHIFTING` 경계에만 적용한다. |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation, Content Music | data 적용, Stage World와 BGM 변경 |
 | Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager, Content Music | 시작, Pause modal 행동·화면 전환 요청과 BGM 상태 전환 |
 | Content ItemManager | `item_planet_damaged(item_type: StringName, current_hits, required_hits, world_position)` | Presentation | hit별 균열·픽셀 파편 단계 표현 |
@@ -25,20 +29,115 @@
 | Integration ItemEffectGateway | `item_cutin_requested(event_id: int, item_type: StringName, world_position)` | Presentation S6-G2 | Orb 획득 뒤에만 CUT-IN을 요청한다. Item Ball 파괴는 이 요청을 만들지 않는다. |
 | Presentation S6-G2 | `GameManager.accept_item_cutin_activation_cue(event_id)` 또는 `skip_item_cutin(event_id)` | Integration ItemEffectGateway | matching event만 1회 activation request로 commit한다. cue/skip 중복과 Retry 이전 stale event는 거부한다. |
 | Integration ItemEffectGateway | `item_effect_activation_requested(event_id: int, item_type: StringName, world_position)` | Content S7-G2~G4 | 실제 Blizzard/Fire Core/Magnet 효과의 유일한 activation request다. Gateway는 점수·Settlement·simulation을 직접 변경하지 않는다. |
-| Integration StageManager | `stage_shift_started(next_definition, shift_id)` | Presentation | non-final Stage가 `clear_score`에 도달해 Final Settlement를 마친 직후 `SHIFTING` 진입과 함께 Stage World/HUD 연출을 시작한다. Presentation은 gameplay state를 직접 변경하지 않는다. |
-| Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시한다. S5-G3는 이 Presentation 완료 계약을 전제로 먼저 구현됐다. S5-G4 전 Main의 임시 adapter가 같은 API를 deferred 한 번 호출하며, Presentation 연결 시 Integration이 adapter를 제거한다. |
+| Integration StageManager | `stage_clear_ready(clear_snapshot: Dictionary, clear_id: int)` | Presentation S5-G6 | non-final `SCORE_CLEAR`의 Final Settlement 완료 뒤 `CLEARED`에서 read-only snapshot과 process-lifetime monotonic ID를 한 번 공개한다. Galactic/failure/Result에는 발행하지 않는다. |
+| Presentation S5-G6 | `next_stage_requested(clear_id: int)` | Integration S5-G6I | 현재 열린 Clear의 실제 `NEXT STAGE` Button 첫 press만 request한다. Presentation은 Shift, Stage, score, timer, spawn, Paddle 또는 simulation을 변경하지 않는다. |
+| Integration StageManager | `stage_shift_started(next_definition, shift_id)` | Presentation | matching `next_stage_requested(clear_id)`가 수락된 뒤 새 `shift_id`로 `SHIFTING`에 진입하고 Stage World/HUD 연출을 시작한다. Presentation은 gameplay state를 직접 변경하지 않는다. |
+| Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시하며 실제 Presentation producer가 연결된 현재 Main에는 임시 adapter가 없다. |
 | Presentation | `visual_field_rect_changed(visual_rect: Rect2)` | Integration GameManager | Scale Shift와 Black Hole L2→L3 보간 중 프레임 내부의 장식용 Backdrop만 같은 visual rect로 갱신한다. Simulation·Paddle·Cashout logical rect와 Stage state는 이 신호로 변경하지 않는다. |
 | Core Stage runtime | `black_hole_phase_started(phase_id, from_rect, to_rect)` | Integration, Presentation | 첫 Lv14→Black Hole 전환과 Galactic 내부 L2→L3 국면 시작; 새 Stage가 아님 |
-| Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용. S8-G5 연결 전에는 Integration-owned 임시 adapter가 동일한 완료 API를 deferred 한 번 호출할 수 있으며 실제 producer 연결 시 제거한다. |
+| Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용. 현재 Main은 실제 S8-G5 producer를 사용하며 임시 adapter가 없다. |
 | Presentation | `black_hole_finale_presentation_finished()` | Integration GameManager | S8-G5의 Black Hole 공전·폭발 overlay가 끝난 뒤 Result UI를 한 번만 표시할 수 있게 한다. Integration은 terminal snapshot을 보존하고 이 완료 전에는 Result 표시·Retry/Main 입력을 열지 않는다. |
 | Core simulation / Stage runtime | `black_hole_finale_started(contact_snapshot)` → `black_hole_finale_locked(result_snapshot)` | Integration, Presentation, Content/Systems | 두 Black Hole의 earliest contact를 simulation이 한 번 잠그고, Stage runtime이 `contact_position`, 두 Black Hole의 position/velocity/radius, `stage_index`, `stage_score`, `run_score`, `optional_stats.merge_count`, `optional_stats.run_time_seconds`를 읽기 전용 final result snapshot으로 확정한다. Integration은 이 신호 뒤 gameplay commit을 재개하지 않는다. |
 
-### S8-G4 선행 Integration 골격
+### FIRST_CONTACT discovery·CUT-IN 계약
 
-- S8-G2가 제공한 phase/finale/result schema가 확정되면 S8-G3/G5 완료 전에도 Integration-owned 파일의 signal routing과 state mediation을 구현할 수 있다.
-- 임시 adapter는 실제 계약과 같은 `phase_id` 완료 API만 사용한다. Presentation 완료를 임의의 다른 상태 변경으로 우회하거나 Result UI가 표시된 것처럼 완료 증거를 만들지 않는다.
-- Presentation과 Content/Systems는 각자의 Owned Files와 독립 test에서 실제 producer/consumer를 구현한다. Integration 골격 때문에 `scripts/presentation/**`, `scripts/ui/**`, `scenes/backgrounds/**`, `scenes/effects/**`를 잠그지 않는다.
-- S8-G4의 최종 `IMPLEMENTED`/`VERIFIED` 판정은 임시 adapter를 제거하고 실제 S8-G3/G5 및 모든 reset API를 Main에 연결한 뒤에만 가능하다.
+#### 권위와 API
+
+- Integration `GameManager`가 process lifetime에서 단조 증가하는 `run_epoch`를 발급한다. Initial Start, Retry Run, Main에서 새 Start는 각각 새 epoch를 사용한다. Main 이동은 현재 epoch를 즉시 무효화하며 다음 Start 전에는 active Run이 없다.
+- Core는 `begin_first_contact_run(run_epoch: int) -> bool`로 새 Run을 열고 `invalidate_first_contact_run(run_epoch: int) -> bool`로 matching Run만 닫는다. Stage 변경은 Run을 닫거나 seen set을 초기화하지 않는다. 같은 값·더 작은 값의 begin, wrong/stale invalidate는 `false`이며 현재 state를 바꾸지 않는다.
+- Core의 `event_id`는 FIRST_CONTACT namespace 안에서 process lifetime monotonic이며 Retry/Main에서 되감지 않는다. Item CUT-IN `event_id`, `clear_id`, `shift_id`, S8 `phase_id`와 별도 namespace다.
+- Integration public acceptance는 `accept_first_contact_discovery(payload: Dictionary) -> bool`와 `accept_first_contact_cutin_finished(event_id: int, run_epoch: int) -> bool`다. 둘 다 current epoch와 active/head event exact match에서만 state를 바꾼다.
+
+#### payload v1
+
+`first_contact_discovered(payload)`는 새 Dictionary/value copy로 전달하며 다음 필드를 모두 가진다. 필드 누락, type 불일치, 알려지지 않은 `schema_version`, roster/level 불일치는 거부한다.
+
+| 필드 | Godot type | v1 의미 |
+|---|---|---|
+| `schema_version` | `int` | 항상 `1` |
+| `event_id` | `int` | FIRST_CONTACT process-lifetime monotonic ID |
+| `run_epoch` | `int` | 현재 authoritative Run generation |
+| `stage_index` | `int` | Ground `0`, Planetary `1`, Galactic `2` |
+| `stage_id` | `StringName` | `ground`, `planetary`, `galactic` |
+| `global_level` | `int` | 실제 committed Merge 결과의 global level |
+| `local_level` | `int` | 승인 대상인 `3` 또는 `4` |
+| `world_position` | `Vector2` | Merge 결과가 commit된 world 위치 |
+| `first_contact_id` | `StringName` | 아래 roster의 안정된 Presentation/중복 억제 identity |
+| `handoff_kind` | `StringName` | `RESUME_PLAYING` 또는 `BLACK_HOLE_PHASE` |
+| `black_hole_entity_ordinal` | `int` | 일반 identity는 `0`, 첫 Black Hole만 `1` |
+
+| `first_contact_id` | Stage/global/local | `handoff_kind` |
+|---|---|---|
+| `ground_giant_snowball` | Ground / `3` / `3` | `RESUME_PLAYING` |
+| `ground_moon` | Ground / `4` / `4` | `RESUME_PLAYING` |
+| `planetary_supernova` | Planetary / `8` / `3` | `RESUME_PLAYING` |
+| `planetary_galaxy` | Planetary / `10` / `4` | `RESUME_PLAYING` |
+| `galactic_event_horizon` | Galactic / `13` / `3` | `RESUME_PLAYING` |
+| `galactic_black_hole` | Galactic / `14` / `4` | `BLACK_HOLE_PHASE` |
+
+Black Hole payload에는 mutable entity position/velocity, `phase_id`, `from_rect`, `to_rect`를 복사하지 않는다. 첫 entity가 이미 commit됐다는 `black_hole_entity_ordinal=1`과 handoff 의도만 전달한다. 실제 entity state와 field rect는 기존 S8 source가 소유하고, `phase_id`와 rect handoff는 matching CUT-IN 완료 뒤 기존 `begin_black_hole_phase(from_rect, to_rect)`가 생성한다.
+
+#### producer 순서와 중복 보장
+
+```text
+Merge result/entity commit
+→ ball_merged(result_level, world_position)
+→ eligible + unseen이면 event_id 할당과 first_contact_discovered(payload)
+→ tick의 나머지 Cashout/종료 중재 완료
+→ Integration arbitration
+→ pause lock accepted
+→ play_first_contact_cutin(payload)
+```
+
+- Core는 current Run의 `first_contact_id` seen set을 source of truth로 사용한다. 한 Run에서 같은 identity는 Merge 수와 무관하게 한 번만 emit하고, 새 epoch에서만 다시 eligible하다.
+- Moon과 Galaxy가 다음 Stage local Lv0로 재등장해도 emit하지 않는다. roster 밖 global/local 조합과 direct spawn/debug injection은 해당 Goal verification에서 명시적으로 허용한 committed discovery 경로가 아니면 emit하지 않는다.
+- 같은 tick에 서로 다른 identity가 생기면 deterministic Merge commit 순서로 `event_id`를 할당한다. Integration은 distinct current-run event를 event-id FIFO로 보관하고 head event 완료만 수락한다. queue는 승인 roster 여섯 identity보다 커질 수 없다.
+- 기존 `ball_merged`는 stage/local/run/id가 없는 FX/audio 신호라 FIRST_CONTACT source로 추론하지 않는다. `top_ball_created`는 local Lv3를 표현하지 못하고 Black Hole 경로에서 생략될 수 있으므로 역시 source가 아니다.
+- 첫 entity의 기존 `black_hole_phase_requested`는 S8 readiness로 남길 수 있지만 GameManager가 이를 직접 Phase 시작으로 소비하던 경로는 S6-G2I에서 supersede한다. readiness가 먼저 와도 matching CUT-IN finish 전에는 `begin_black_hole_phase`와 `black_hole_phase_started`가 0회여야 한다.
+
+#### pause·resume·무효화 lifecycle
+
+Integration은 discovery signal callback 안에서 즉시 Panel을 보이지 않는다. 같은 physics tick의 Merge/Cashout/`SCORE_CLEAR`/`TIME_UP` 중재를 끝낸 뒤 다음 visible frame 전에 current state를 다시 확인한다.
+
+| 상황 | Integration 동작 | Presentation / 다음 상태 |
+|---|---|---|
+| current epoch + `PLAYING` + valid head | timer, spawn, simulation commit, Paddle physics/gameplay input을 잠근 뒤 호출 | 그 뒤에만 visible CUT-IN 시작 |
+| 일반 5종 matching finish | queue 다음 event가 있으면 lock 유지, 없으면 lock 해제 | 같은 Stage `PLAYING` 재개 |
+| 첫 Black Hole matching finish | CUT-IN lock을 풀어 gameplay를 한 frame 재개하지 않고 S8 Phase lock으로 이전 | 기존 `begin_black_hole_phase` 1회, 이후 S8-G4 `phase_id` 흐름 |
+| wrong/stale/duplicate finish | `false`, queue/lock/state 불변 | resume·Phase·signal 재발행 없음 |
+| 같은 tick 뒤 `CLEAR_LOCKED`, `TIME_UP_LOCKED`, `FAILED`, `RUN_ENDED`, Result/Shift | discovery를 visible queue에 수락하지 않음 | CUT-IN/Panel 없음; authoritative outcome 우선 |
+| Retry / Main / fresh Run | old epoch와 queue/active lock 무효화, gameplay freeze 해제, `reset_first_contact_cutin(old_epoch)` | Tween/Panel hide, stale completion 없음; fresh Run은 새 epoch |
+
+pause lock은 SceneTree 전체 pause가 아니다. CUT-IN Tween/CanvasLayer와 Retry/Main cleanup handler는 계속 동작하고, timer·spawn·simulation commit·Paddle physics/gameplay input을 막는다. 중첩 Pause/Resume, Result/Failure UI, Stage Clear Panel, Scale Shift는 이 lock에서 시작하지 않는다. Galactic에서는 Event Horizon과 첫 Black Hole identity만 유효하다.
+
+#### Presentation 경계
+
+- Presentation은 Integration이 전달한 payload의 `first_contact_id`로 공통 background 하나와 공별 title/portrait layer만 조립한다. Core/Stage/Simulation 노드를 조회하거나 seen set·phase state를 계산하지 않는다.
+- `play_first_contact_cutin(payload) -> bool`는 이미 active/completed인 `(run_epoch, event_id)`, wrong schema/identity, reset된 epoch를 거부한다. `first_contact_cutin_finished(event_id, run_epoch)`는 정상 exit/dim restore 뒤 한 번만 emit한다.
+- `reset_first_contact_cutin(run_epoch)`은 matching 또는 이전 visual을 즉시 숨기고 Tween/callback을 취소하지만 completion을 만들지 않는다. reduced-effects는 모션만 줄이고 identity와 completion semantics를 유지한다.
+- 이 FIRST_CONTACT 계약은 S7 Item Orb CUT-IN의 activation cue/skip namespace를 변경하지 않는다. 공 discovery 완료 signal을 item activation으로 전달하지 않는다.
+
+### S5-G6 / S5-G6I Clear 확인 계약
+
+- 성공 순서는 `SCORE_CLEAR → CLEAR_LOCKED → SETTLING → CLEARED (awaiting matching Next Stage) → SHIFTING`이다. Clear 판정과 Settlement는 즉시 처리하고 Scale Shift 시작만 확인 뒤로 미룬다.
+- `clear_snapshot` 필드는 `stage_index`, `stage_display_name`, `stage_score`, `run_score`, `outcome=&"CLEARED"`, `is_final_stage=false`다. Integration이 Settlement 뒤 authoritative outcome을 새 Dictionary/deep-copy value로 제공하며 Presentation은 다시 deep copy한다.
+- `clear_id`는 정산 완료 Clear request/acceptance용이다. `shift_id`는 그 요청이 수락된 뒤 Scale Shift presentation completion용으로 발급한다. 별도 namespace이므로 같은 값이어도 의미상 일치로 취급하지 않는다.
+- future Integration consumer의 `request_next_stage(clear_id) -> bool`는 current state가 `CLEARED`, pending ID가 exact match, 아직 미소비, next Stage가 존재할 때만 `true`다. wrong/stale/duplicate request는 state, pending snapshot과 두 ID sequence를 바꾸지 않는다.
+- `CLEAR_LOCKED`부터 다음 Stage 진입까지 timer, spawn, Paddle, simulation과 gameplay input은 잠긴다. UI는 SceneTree pause와 분리해 실제 Button focus와 keyboard/mouse/Web input을 계속 받는다.
+- Panel public API는 `show_stage_clear(snapshot, clear_id)`, `hide_stage_clear(clear_id)`, `reset_for_new_run()`, `set_reduced_effects(enabled)`다. hidden input, stale callback과 이미 발행한 active ID는 signal을 다시 내지 않는다.
+- Scale Shift 시작 시 matching `hide_stage_clear(clear_id)`를 호출한다. Retry/Main Screen/fresh Run은 pending Clear를 무효화하고 `reset_for_new_run()`을 호출한다. numeric clear ID sequence는 process lifetime에서 재사용하지 않는다.
+- Galactic, `FAILED`, Time Up Result, Black Hole finale와 Result UI에는 Panel을 열지 않는다. reduced-effects는 motion/pulse만 제거하고 snapshot 내용, focus와 1회 request를 유지한다.
+- 2026-08-20 automatic `Final Settlement → CLEARED → SHIFTING` wiring evidence는 당시 계약의 역사로 남지만 최신 완료 근거가 아니다. S5-G6I는 이 계약에 맞는 Integration 구현과 회귀가 끝날 때까지 `PENDING`이다.
+
+### S8-G4 Integration 연결 계약
+
+- S6-G2I 연결 뒤 `GameManager`는 첫 Black Hole의 matching `first_contact_cutin_finished(event_id, run_epoch)` 전에는 `begin_black_hole_phase`를 호출하지 않는다. 완료 수락 시 CUT-IN lock을 S8 Phase lock으로 직접 이전하고 그때 발급된 `phase_id`부터 아래 기존 S8-G4 계약을 사용한다.
+- `GameManager`는 `black_hole_phase_started(phase_id, from_rect, to_rect)`를 실제 `PresentationManager.play_black_hole_phase(...)`에 전달하고, matching `black_hole_phase_presentation_finished(phase_id)`만 `StageManager`에 수락시킨다.
+- Presentation의 `visual_field_rect_changed(Rect2)`는 전환 중 장식 Backdrop만 동기화한다. logical L3 Rect는 matching phase 완료 뒤 Core/Integration 경로에서 한 번 활성화한다.
+- `black_hole_finale_locked(result_snapshot)`은 Integration이 terminal snapshot을 보관하고 S8-G5 finale를 시작하는 입력이다. no-argument `black_hole_finale_presentation_finished()` 뒤에만 같은 snapshot을 S8-G3 Result에 한 번 전달한다.
+- Presentation은 run generation과 active/completed 상태로 canceled Tween, duplicate phase ID, duplicate terminal snapshot을 차단한다. Integration은 별도로 terminal snapshot publish-once 잠금을 유지한다.
+- Retry와 Main Screen handler는 `PresentationManager.reset_black_hole_presentation()`을 호출한다. 이 API는 Presentation Tween/visual/generation만 초기화하며 Core·Stage·Result state를 변경하지 않는다.
+- 기존 S8-G4 `VERIFIED` evidence는 `black_hole_phase_started` 이후의 downstream과 finale/Retry를 계속 증명한다. FIRST_CONTACT 이전 Phase 금지는 S6-G2I가 별도 검증하며 과거 evidence에 소급하지 않는다.
 
 ## S6 FX·audio ownership
 

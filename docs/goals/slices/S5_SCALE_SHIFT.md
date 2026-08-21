@@ -30,9 +30,9 @@ Ground, Planetary, Galactic을 연속 플레이하며 이전 최고 공이 다�
 
 - Owner: Integration
 - Owned Files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`
-- Integration Point: Core `CLEARED`, `stage_shift_started(next_definition, shift_id)`, Presentation `stage_shift_presentation_finished(shift_id)`, Content StageCatalog를 연결. S5-G4 전에는 Main의 임시 adapter가 같은 완료 API를 deferred 한 번 호출한다.
+- Integration Point: S5-G6I가 matching `clear_id`를 수락한 뒤의 Core `CLEARED→SHIFTING`, `stage_shift_started(next_definition, shift_id)`, Presentation `stage_shift_presentation_finished(shift_id)`, Content StageCatalog를 연결. S5-G4 전에는 Main의 임시 adapter가 같은 완료 API를 deferred 한 번 호출한다.
 - Dependencies: S5-G1, S5-G2와 `INTEGRATION_CONTRACTS.md`의 Shift signal 계약.
-- Verification: non-final clear score 도달 뒤 `CLEARED→SHIFTING`; spawn/timer stop→Settlement→연출→다음 Stage; 잘못되거나 중복된 `shift_id`에도 Shift 한 번.
+- Verification: matching Next Stage 확인이 수락된 non-final Clear만 `CLEARED→SHIFTING`; spawn/timer stop→Settlement→확인→연출→다음 Stage; 잘못되거나 중복된 `shift_id`에도 Shift 한 번.
 - Do Not Modify: Core 계산, StageDefinition 값, Presentation animation.
 
 ### S5-G4 Stage World와 Shift presentation
@@ -68,28 +68,45 @@ Presentation은 `stage_shift_started(next_definition, shift_id)`를 받은 뒤�
 - Verification: 임시 `auto_complete_shift_presentation`을 끈 상태에서 Shift 시작 직후 Stage가 바뀌지 않고, Presentation 완료 뒤 한 번만 다음 Stage에 진입하며 stale/duplicate 완료는 거부됨.
 - Do Not Modify: StageManager 상태 계산, StageDefinition 값, Presentation animation 내부.
 
-### S5-G6 Stage Clear 축하 UI (retired)
+### S5-G6 Stage Clear 축하 확인 UI
 
 - Owner: Presentation
-- Owned Files: `scripts/ui/**`, `scenes/ui/**`, `tests/presentation/**`
-- Integration Point: 2026-08-20 사용자 규칙 변경으로 자동 Scale Shift가 확정되어 런타임 경로에서 제거됐다.
+- Owned Files: `scripts/ui/stage_clear_panel.gd`, `scenes/ui/stage_clear_panel.tscn`, `tests/presentation/s5_g6_stage_clear_panel_**`
+- Integration Point: `show_stage_clear(clear_snapshot: Dictionary, clear_id: int)`, `hide_stage_clear(clear_id: int)`, `reset_for_new_run()`, `set_reduced_effects(enabled: bool)`를 제공하고 `next_stage_requested(clear_id: int)`를 정확히 한 번 발행한다. S5-G6I가 future consumer다.
 - Dependencies: S3-G7, S3-G8, S5-G3.
-- Verification: retired; Scale Shift 진행 여부는 S5-G3의 authoritative state와 presentation `shift_id` handoff로 검증한다.
+- Verification: copied read-only snapshot의 completed Stage identity, Stage Score, Run Score와 `NEXT STAGE`를 표시; 실제 Button focus와 mouse/keyboard/Web-compatible press; 현재 열린 `clear_id`의 첫 요청만 발행하고 hidden/wrong/stale/duplicate callback은 무시; Galactic/failure/Result snapshot 거부; hide/Retry/Main/new Run reset; reduced-effects; Core/Stage/score/timer/spawn/Paddle/Shift 비접근·불변. Native layout capture를 포함한다.
 - Do Not Modify: StageManager/GameManager, score/settlement 계산, Stage resource.
 
-### S5-G6I Automatic Score Clear wiring
+#### S5-G6 producer snapshot
+
+Presentation은 다음 필드의 deep copy만 보관한다.
+
+```text
+stage_index, stage_display_name, stage_score, run_score,
+outcome=CLEARED, is_final_stage=false
+```
+
+`clear_id`는 snapshot과 별도 argument다. `shift_id`는 matching 요청이 Integration에서 수락된 뒤에만 만들어지므로 Panel API와 signal에 포함하지 않는다.
+
+### S5-G6I Next Stage 확인 wiring
 
 - Owner: Integration
 - Owned Files: `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`
-- Integration Point: Core `SCORE_CLEAR`를 `CLEAR_LOCKED→SETTLING→CLEARED→SHIFTING`으로 연결하고 기존 `stage_shift_started(next_definition, shift_id)`를 즉시 발행한다.
-- Dependencies: S3-G3, 기존 S5-G3/G4I Shift handoff.
-- Verification: Score Clear는 시간·사용자 입력과 무관하게 한 번만 SHIFTING; stale/duplicate `shift_id` 완료 거부; Retry/Main Menu가 전환 lock을 초기화.
+- Integration Point: Core `SCORE_CLEAR`를 `CLEAR_LOCKED→SETTLING→CLEARED`로 즉시 연결해 immutable-style snapshot과 process-lifetime monotonic `clear_id`를 공개한다. S5-G6 `next_stage_requested(clear_id)`의 matching 첫 요청만 수락한 뒤 `SHIFTING`과 별도 `shift_id` handoff를 시작한다.
+- Dependencies: S3-G3, S5-G6 producer, 기존 S5-G3/G4I Shift handoff.
+- Verification: Clear detection/Settlement는 즉시 한 번, matching 요청 전 state는 `CLEARED`이고 gameplay input/timer/spawn/Paddle/simulation 잠금; matching 요청 뒤 Shift 한 번; wrong/stale/duplicate `clear_id`와 `shift_id` 완료 거부; Galactic/failure/Result panel 미표시; Retry/Main/new Run이 pending Clear와 Panel을 초기화하되 ID sequence는 재사용하지 않음.
 - Do Not Modify: Core score/settlement 계산, Presentation 내부 animation, StageDefinition 값.
+
+#### 계약 이력 — 삭제하지 않음
+
+- 2026-08-20 첫 S5-G6/G6I는 Clear 확인 대기와 `clear_id`를 구현·검증했다.
+- 같은 날 후속 사용자 지시로 Panel과 확인 API가 제거되고 automatic `CLEARED→SHIFTING` evidence가 기록됐다.
+- 최신 사용자 지시는 automatic 방향을 supersede하고 확인 대기를 재활성화한다. 이전 automatic evidence는 당시 구현의 역사적 증거로 보존하지만 현재 S5-G6I 완료 증거로 사용하지 않는다.
 
 ### S5-G7 Galactic 투명 Stage World
 
 - Owner: Presentation
-- Owned Files: `assets/sprites/backgrounds/**`, `scenes/backgrounds/**`, `scripts/presentation/background_manager.gd`, `tests/presentation/**`
+- Owned Files: `assets/backgrounds/stage_world/**`, `assets/sprites/backgrounds/**`, `scenes/backgrounds/**`, `scripts/presentation/background_manager.gd`, `tests/presentation/**`
 - Integration Point: 기존 `background_key=galactic`와 L2/L3 read-only profile을 소비한다.
 - Dependencies: S5-G4, S8-G5의 Black Hole 가독성 요구.
 - Verification: Galactic 배경 판 alpha가 투명하고 별·은하·성운 레이어가 프레임 바깥 우주와 정상 합성; Ground/Planetary 불변; L2/L3에서 공·Black Hole·HUD 대비 유지; Native와 Web screenshot 확인.

@@ -107,4 +107,3 @@ func _draw_finale_overlay() -> void:
 	if burst > 0.0:
 		draw_circle(center, 30.0 + burst * 190.0, Color(0.55, 0.94, 1.0, burst * 0.18))
 		draw_arc(center, 56.0 + burst * 230.0, 0.0, TAU, 64, Color(1.0, 0.82, 0.38, burst), 5.0)
-
