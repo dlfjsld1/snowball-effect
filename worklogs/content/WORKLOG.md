@@ -1046,3 +1046,14 @@ Owned files: `resources/stages/stage_01_planetary.tres`, Stage data content veri
 - 사용자 승인에 따라 Planetary `clear_score`를 `2e18`에서 `4e25`로 조정했다. Ground의 `4e8 / Moon 1e8 = 4` 비율을 Planetary의 최고 기본 Run 공 Galaxy(`1e25`)에 동일 적용한 값이다.
 - Stage HUD와 Score Clear runtime은 `StageDefinition.clear_score`를 read-only로 소비하므로, 물리·점수 판정·Presentation 구현은 바꾸지 않았다. Galactic의 `0`도 유지했다.
 - Godot 4.7.1 CLI/headless `s3_g1_stage_catalog_verification.tscn`과 `s5_g5_three_stage_run_verification.tscn`이 통과했다. 후자는 Planetary의 현재 `clear_score`를 이용한 Score Clear→Shift 경로를 포함한다. Primary `godot` MCP의 두 scene validation도 통과했다.
+
+## 2026-08-21 — S7-G1C Item Ball·Orb producer contract
+
+Owner: Content/Systems/Release
+Goal: S7-G1C
+Owned files: `scripts/data/item_definition.gd`, `scripts/gameplay/item_*.gd`, `resources/items/**`, `tests/content/s7_g1c_*`, 관련 계약 문서
+
+- `ItemManager`와 별도 Item Ball/Orb runtime state를 추가했다. Stage마다 한 번만 Item Ball을 예약·생성하고, 현재 Stage의 `local_level >= 2` 공 snapshot이 분리된 상태로 닿을 때만 damage를 한 번 commit한다.
+- 5번째 유효 hit은 행성 파괴와 Orb 생성만 확정한다. Orb는 local Lv2 runtime radius와 수직 하강 velocity를 사용하며, Paddle pickup 또는 열린 하단 miss 중 하나만 signal한다. 효과 activation, CUT-IN, Core score/Settlement 변경은 의도적으로 구현하지 않았다.
+- Item producer signal의 `item_type`은 세 data key(`blizzard`, `fire_core`, `magnet`)를 보존하는 `StringName`으로 확정했고 기술/Integration 계약을 동기화했다. Q-S7의 stale `local Lv3+` 표기는 현재 게임 규칙의 `local Lv2+`로 정정했다.
+- Primary Godot validation 6/6 통과. Primary runtime에서 `S7_G1C_VERIFIED item_ball=once hits=5 orb=collect_or_miss`, exit 0을 확인했다. Godot CLI 실행 파일은 PATH와 표준 설치 경로에서 찾지 못해 CLI baseline은 tooling issue로 기록한다.
