@@ -53,7 +53,7 @@ Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성�
 
 ## 인력
 
-주변 활성 공에 제한된 가속도를 적용하고, 사람 기준 Galactic 3단계 이하(`local_level <= 2`) 공은 접촉 시 흡수한다.
+주변 활성 공에 제한된 가속도를 적용하고, 모든 일반 Snowball은 접촉 시 흡수한다.
 
 요구:
 
@@ -83,9 +83,9 @@ pull_falloff = (1 - distance / influence_radius)²
 
 - 블랙홀이 왼쪽이면 궤도가 왼쪽으로 휨
 - 이동하면서 공 무리가 따라 움직임
-- 낮은 단계 공은 가까워지면 흡수됨
-- 높은 단계 공은 휘어진 궤도 속에서 Merge를 계속 노릴 수 있음
-- 높은 공을 의도한 곳에 보내기 어려워짐
+- 모든 일반 공은 가까워지면 흡수됨
+- 높은 단계 공도 궤도를 잃거나 흡수될 위험 속에서 Merge를 계속 노릴 수 있음
+- 두 번째 Black Hole 재료를 의도한 곳에 보내기 어려워짐
 - 혼돈이지만 패들 조작은 여전히 의미 있음
 
 ---
@@ -125,7 +125,7 @@ contact lock
 ## 완료 조건
 
 - 블랙홀 위치에 따라 공 궤도가 명확히 변함
-- `local_level <= 2` 공 흡수와 그 외 공의 궤도 변화가 구분됨
+- 모든 일반 공이 실제 Black Hole contact에서 흡수됨
 - Black Hole이 하단 Cashout되지 않음
 - Black Hole 하단 반사, 비성장, 일반 Merge 제외
 - 인력이 강해도 두 번째 Black Hole 제작 gameplay가 계속 가능
