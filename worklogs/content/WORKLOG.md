@@ -1026,3 +1026,13 @@ Owned files: `resources/stages/stage_00_ground.tres`, `tests/content/s3_g1_stage
 - Stage HUD 게이지와 Score Clear는 모두 현재 StageDefinition의 같은 `clear_score`를 읽으므로 별도 점수 상수나 판정 코드를 추가하지 않았다.
 - Primary `godot` validation 3/3, S3-G1 catalog verification scene exit 0을 확인했다. Main runtime에서 Ground에 `400,000,000` 점수를 반영하자 settlement 뒤 `stage_score=400,000,001`, 상태 `SHIFTING`, pending shift id 생성까지 확인했다.
 - MCP runtime을 종료한 clean 상태에서 Godot 4.7.1 Web release export를 완료했다. 로컬 HTTP로 `index.html`, `index.pck`, `index.wasm`이 모두 HTTP 200을 반환했다.
+
+## 2026-08-21 — S8-G3 Desktop/Web 최종 수동 검증
+
+Owner: Content/Systems/Release
+Goal: S8-G3 Title·Main·Terminal UI
+
+- 사용자가 Godot Desktop과 Chrome Web 양쪽에서 실제 finale 이후 S8-G3 Result UI가 표시되는 것을 확인했다.
+- Result의 `RETRY RUN`을 누르면 fresh Ground Run으로 재시작되고, `MAIN`을 누르면 Title UI로 복귀하는 것을 두 환경에서 확인했다.
+- 기존 Godot 4.7.1 CLI/headless S8-G3 자동 검증의 `title=true`, `pause_modal=true`, `result_snapshot=read_only`, `actual_buttons=true`, `hover=face_only`, `requests=once` 증거와 합쳐 Desktop/Web 수동 검증 Gate를 충족했다.
+- S8-G3을 `VERIFIED`로 닫는다. S8-G4 Integration과 S8-G5 Presentation의 별도 Goal 상태는 수정하지 않았다.
