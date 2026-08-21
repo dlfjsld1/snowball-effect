@@ -19,6 +19,7 @@ func _ready() -> void:
 	var frame: GameplayFrame = main.get_node("UI/GameplayFrame")
 	var simulation: BallSimulationManager = main.get_node("PlayField/SimulationMount/BallSimulationManager")
 	var backdrop: Polygon2D = main.get_node("PlayField/Backdrop")
+	var clear_panel: StageClearPanel = main.get_node("UI/StageClearPanel")
 	game_manager._apply_stage_frame(0)
 	var initial_logical_field := simulation.play_field_rect
 	var initial_visual_field := frame.get_field_visual_rect_for_profile(0)
@@ -29,7 +30,10 @@ func _ready() -> void:
 
 	assert(not stage_manager.auto_complete_shift_presentation)
 	assert(stage_manager.current_stage_index == 0)
-	stage_manager._on_end_decision_requested(&"TOP_BALL_CLEAR")
+	stage_manager.get_score_ledger().apply_score_event(stage_manager.get_current_stage().clear_score)
+	stage_manager._physics_process(0.1)
+	assert(stage_manager.current_state == StageManager.CLEARED)
+	assert(clear_panel.request_next_stage(clear_panel.get_active_clear_id()))
 	assert(stage_manager.current_state == StageManager.SHIFTING)
 	assert(stage_manager.current_stage_index == 0, "Stage must not advance before Presentation completion.")
 	assert(presenter.is_shift_active())

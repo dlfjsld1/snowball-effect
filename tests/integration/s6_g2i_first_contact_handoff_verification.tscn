@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/integration/s6_g2i_first_contact_handoff_verification.gd" id="1_runner"]
+
+[node name="S6G2IFirstContactHandoffVerification" type="Node"]
+script = ExtResource("1_runner")

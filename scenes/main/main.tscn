@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/title_screen.tscn" id="8_title"]
 [ext_resource type="PackedScene" path="res://scenes/ui/result_panel.tscn" id="9_result"]
+[ext_resource type="PackedScene" path="res://scenes/ui/stage_clear_panel.tscn" id="15_stage_clear"]
 [ext_resource type="PackedScene" path="res://scenes/backgrounds/gameplay_frame.tscn" id="10_frame"]
 [ext_resource type="PackedScene" path="res://scenes/backgrounds/stage_world.tscn" id="11_stage_world"]
 [ext_resource type="Script" path="res://scripts/presentation/audio_manager.gd" id="12_audio_manager"]
@@ -27,6 +28,7 @@ hud_path = NodePath("../UI/HUDMount/HUD")
 pause_menu_path = NodePath("../UI/PauseMenu")
 title_screen_path = NodePath("../UI/TitleScreen")
 result_panel_path = NodePath("../UI/ResultPanel")
+stage_clear_panel_path = NodePath("../UI/StageClearPanel")
 gameplay_frame_path = NodePath("../UI/GameplayFrame")
 play_field_backdrop_path = NodePath("../PlayField/Backdrop")
 background_manager_path = NodePath("../StageWorld/BackgroundManager")
@@ -94,3 +96,5 @@ layout_mode = 1
 [node name="TitleScreen" parent="UI" instance=ExtResource("8_title")]
 
 [node name="ResultPanel" parent="UI" instance=ExtResource("9_result")]
+
+[node name="StageClearPanel" parent="UI" instance=ExtResource("15_stage_clear")]

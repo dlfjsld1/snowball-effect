@@ -7,6 +7,7 @@ const SpatialGridScript = preload("res://scripts/simulation/spatial_grid.gd")
 signal ball_count_changed(active_count: int)
 signal cashout_completed(score_amount: float, global_level: int, world_position: Vector2)
 signal ball_merged(result_level: int, world_position: Vector2)
+signal first_contact_discovered(payload: Dictionary)
 signal top_ball_created(global_level: int)
 signal black_hole_phase_requested()
 signal black_hole_absorbed(score_amount: float, global_level: int, world_position: Vector2)
@@ -28,6 +29,72 @@ const BLACK_HOLE_TOTAL_PULL_CAP := 900.0
 const BLACK_HOLE_MUTUAL_PULL_ACCELERATION := 450.0
 const BLACK_HOLE_MAX_COUNT := 2
 const BLACK_HOLE_EPSILON_SQUARED := 0.0001
+const FIRST_CONTACT_SCHEMA_VERSION := 1
+const FIRST_CONTACT_RESUME_PLAYING := &"RESUME_PLAYING"
+const FIRST_CONTACT_BLACK_HOLE_PHASE := &"BLACK_HOLE_PHASE"
+const FIRST_CONTACT_ROSTER := [
+	{
+		"stage_index": 0,
+		"stage_id": &"ground",
+		"global_level": 3,
+		"local_level": 3,
+		"first_contact_id": &"ground_giant_snowball",
+		"handoff_kind": FIRST_CONTACT_RESUME_PLAYING,
+	},
+	{
+		"stage_index": 0,
+		"stage_id": &"ground",
+		"global_level": 4,
+		"local_level": 4,
+		"first_contact_id": &"ground_moon",
+		"handoff_kind": FIRST_CONTACT_RESUME_PLAYING,
+	},
+	{
+		"stage_index": 1,
+		"stage_id": &"planetary",
+		"global_level": 8,
+		"local_level": 3,
+		"first_contact_id": &"planetary_supernova",
+		"handoff_kind": FIRST_CONTACT_RESUME_PLAYING,
+	},
+	{
+		"stage_index": 1,
+		"stage_id": &"planetary",
+		"global_level": 10,
+		"local_level": 4,
+		"first_contact_id": &"planetary_galaxy",
+		"handoff_kind": FIRST_CONTACT_RESUME_PLAYING,
+	},
+	{
+		"stage_index": 2,
+		"stage_id": &"galactic",
+		"global_level": 13,
+		"local_level": 3,
+		"first_contact_id": &"galactic_event_horizon",
+		"handoff_kind": FIRST_CONTACT_RESUME_PLAYING,
+	},
+	{
+		"stage_index": 2,
+		"stage_id": &"galactic",
+		"global_level": 14,
+		"local_level": 4,
+		"first_contact_id": &"galactic_black_hole",
+		"handoff_kind": FIRST_CONTACT_BLACK_HOLE_PHASE,
+	},
+]
+const FIRST_CONTACT_PAYLOAD_KEYS := [
+	"schema_version",
+	"event_id",
+	"run_epoch",
+	"stage_index",
+	"stage_id",
+	"global_level",
+	"local_level",
+	"world_position",
+	"first_contact_id",
+	"handoff_kind",
+	"black_hole_entity_ordinal",
+]
 
 var positions := PackedVector2Array()
 var velocities := PackedVector2Array()
@@ -42,6 +109,7 @@ var _ball_catalog = BallCatalogScript.new()
 var _spatial_grid = SpatialGridScript.new()
 var _stage_ball_levels := PackedInt32Array()
 var _stage_index := -1
+var _stage_id: StringName = &""
 var _stage_base_global_level := 0
 var _stage_top_global_level := -1
 var _stage_spawn_rate := 0.0
@@ -59,6 +127,10 @@ var _black_hole_velocities := PackedVector2Array()
 var _black_hole_radii := PackedFloat32Array()
 var _black_hole_terminal_locked := false
 var _black_hole_terminal_snapshot: Dictionary = {}
+var _first_contact_active_run_epoch := -1
+var _last_first_contact_run_epoch := -1
+var _next_first_contact_event_id := 1
+var _first_contact_seen_ids: Dictionary = {}
 var _render_snapshot_positions := PackedVector2Array()
 var _render_snapshot_radii := PackedFloat32Array()
 var _render_snapshot_global_levels := PackedInt32Array()
@@ -151,6 +223,7 @@ func apply_stage_definition(definition: StageDefinition) -> void:
 	assert(definition != null, "Simulation Stage apply requires a StageDefinition.")
 	reset_runtime()
 	_stage_index = definition.stage_index
+	_stage_id = definition.background_id
 	_stage_base_global_level = definition.base_global_level
 	_stage_top_global_level = definition.top_global_level
 	_stage_spawn_rate = definition.spawn_rate
@@ -161,12 +234,64 @@ func apply_stage_definition(definition: StageDefinition) -> void:
 func get_stage_snapshot() -> Dictionary:
 	return {
 		"stage_index": _stage_index,
+		"stage_id": _stage_id,
 		"base_global_level": _stage_base_global_level,
 		"top_global_level": _stage_top_global_level,
 		"local_ball_levels": _stage_ball_levels.duplicate(),
 		"spawn_rate": _stage_spawn_rate,
 		"black_hole_enabled": _stage_black_hole_enabled,
 	}
+
+
+func begin_first_contact_run(run_epoch: int) -> bool:
+	if run_epoch <= _last_first_contact_run_epoch:
+		return false
+	_last_first_contact_run_epoch = run_epoch
+	_first_contact_active_run_epoch = run_epoch
+	_first_contact_seen_ids.clear()
+	return true
+
+
+func invalidate_first_contact_run(run_epoch: int) -> bool:
+	if run_epoch != _first_contact_active_run_epoch:
+		return false
+	_first_contact_active_run_epoch = -1
+	_first_contact_seen_ids.clear()
+	return true
+
+
+func is_valid_first_contact_payload(payload: Dictionary) -> bool:
+	if payload.size() != FIRST_CONTACT_PAYLOAD_KEYS.size():
+		return false
+	for key in FIRST_CONTACT_PAYLOAD_KEYS:
+		if not payload.has(key):
+			return false
+	if typeof(payload["schema_version"]) != TYPE_INT or payload["schema_version"] != FIRST_CONTACT_SCHEMA_VERSION:
+		return false
+	if typeof(payload["event_id"]) != TYPE_INT or payload["event_id"] <= 0:
+		return false
+	if typeof(payload["run_epoch"]) != TYPE_INT or payload["run_epoch"] < 0:
+		return false
+	if typeof(payload["stage_index"]) != TYPE_INT:
+		return false
+	if not payload["stage_id"] is StringName or typeof(payload["global_level"]) != TYPE_INT or typeof(payload["local_level"]) != TYPE_INT:
+		return false
+	if not payload["world_position"] is Vector2 or not payload["first_contact_id"] is StringName or not payload["handoff_kind"] is StringName:
+		return false
+	if typeof(payload["black_hole_entity_ordinal"]) != TYPE_INT:
+		return false
+	var roster_entry := _find_first_contact_roster_entry(
+		payload["stage_index"],
+		payload["stage_id"],
+		payload["global_level"],
+		payload["local_level"]
+	)
+	if roster_entry.is_empty():
+		return false
+	if payload["first_contact_id"] != roster_entry["first_contact_id"] or payload["handoff_kind"] != roster_entry["handoff_kind"]:
+		return false
+	var expected_black_hole_ordinal := 1 if payload["handoff_kind"] == FIRST_CONTACT_BLACK_HOLE_PHASE else 0
+	return payload["black_hole_entity_ordinal"] == expected_black_hole_ordinal
 
 
 func get_runtime_radius_for_level(global_level: int) -> float:
@@ -278,11 +403,14 @@ func commit_merge_candidates() -> int:
 	for plan in _merge_plans:
 		var result_level: int = plan["result_level"]
 		var result_position: Vector2 = plan["position"]
+		var black_hole_entity_ordinal := 0
 		if _should_convert_merge_result_to_black_hole(result_level):
+			black_hole_entity_ordinal = _black_hole_positions.size() + 1
 			_create_black_hole(result_position, plan["velocity"])
 		else:
 			spawn_ball(result_position, plan["velocity"], get_runtime_radius_for_level(result_level), result_level)
 		ball_merged.emit(result_level, result_position)
+		_commit_first_contact_discovery(result_level, result_position, black_hole_entity_ordinal)
 		if result_level != _stage_top_global_level or not _stage_black_hole_enabled:
 			top_ball_created.emit(result_level)
 
@@ -296,6 +424,46 @@ func _get_next_stage_global_level(global_level: int) -> int:
 		return -1
 	var result_level := _stage_ball_levels[local_level + 1]
 	return result_level if _ball_catalog.has_definition(result_level) else -1
+
+
+func _commit_first_contact_discovery(result_level: int, world_position: Vector2, black_hole_entity_ordinal: int) -> void:
+	if _first_contact_active_run_epoch < 0:
+		return
+	var local_level := _stage_ball_levels.find(result_level)
+	var roster_entry := _find_first_contact_roster_entry(_stage_index, _stage_id, result_level, local_level)
+	if roster_entry.is_empty():
+		return
+	var first_contact_id: StringName = roster_entry["first_contact_id"]
+	if _first_contact_seen_ids.has(first_contact_id):
+		return
+	if roster_entry["handoff_kind"] == FIRST_CONTACT_BLACK_HOLE_PHASE and black_hole_entity_ordinal != 1:
+		return
+	var payload := {
+		"schema_version": FIRST_CONTACT_SCHEMA_VERSION,
+		"event_id": _next_first_contact_event_id,
+		"run_epoch": _first_contact_active_run_epoch,
+		"stage_index": _stage_index,
+		"stage_id": _stage_id,
+		"global_level": result_level,
+		"local_level": local_level,
+		"world_position": world_position,
+		"first_contact_id": first_contact_id,
+		"handoff_kind": roster_entry["handoff_kind"],
+		"black_hole_entity_ordinal": black_hole_entity_ordinal,
+	}
+	if not is_valid_first_contact_payload(payload):
+		push_error("FIRST_CONTACT producer rejected an invalid internal payload.")
+		return
+	_first_contact_seen_ids[first_contact_id] = true
+	_next_first_contact_event_id += 1
+	first_contact_discovered.emit(payload.duplicate(true))
+
+
+func _find_first_contact_roster_entry(stage_index: int, stage_id: StringName, global_level: int, local_level: int) -> Dictionary:
+	for entry in FIRST_CONTACT_ROSTER:
+		if entry["stage_index"] == stage_index and entry["stage_id"] == stage_id and entry["global_level"] == global_level and entry["local_level"] == local_level:
+			return entry
+	return {}
 
 
 func set_paddle_collision_provider(provider: Node) -> void:
