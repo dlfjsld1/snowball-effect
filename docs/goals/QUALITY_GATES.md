@@ -35,8 +35,8 @@
 | Q-S2 | 동일 레벨만 Merge, 입력 둘 제거·출력 하나 생성, 한 쌍 한 번 처리 |
 | Q-S3 | Cashout 시간 구조, local Lv4 비종료, 중복 Settlement, score source-of-truth와 gauge 회귀 테스트 |
 | Q-S4 | release path에 전수 O(N²) 없음, 실제 Web 동시 활성 500개에서 최저 30 FPS 이상, 1,000개 stretch FPS·allocation·병목 관찰 기록 |
-| Q-S5 | ordered Stage chain(`6→8→10`)과 5종 세로 progressive HUD, Stage별 reset/preserve, Score Clear 축하 확인 뒤 shift, Galactic alpha 배경, 세 Stage 연속 완주 |
-| Q-S6 | burst에서도 패들·공 가독성, FX budget 작동, 중요한 이벤트 우선 |
+| Q-S5 | ordered Stage chain(`6→8→10`)과 5종 세로 progressive HUD, Stage별 reset/preserve, read-only Clear snapshot의 Stage/Stage Score/Run Score 축하 UI와 실제 `NEXT STAGE` Button, matching `clear_id` 확인 뒤 별도 `shift_id` Shift, Galactic/failure/Result 제외, reduced-effects, Galactic alpha 배경, 세 Stage 연속 완주 |
+| Q-S6 | burst에서도 패들·공 가독성, FX budget 작동, 중요한 이벤트 우선; FIRST_CONTACT visible 전 pause 수락, 6종 layer 조립, `(run_epoch,event_id)` matching finish, duplicate/stale/reset, 일반 resume와 Black Hole S8 handoff 분리 |
 | Q-S7 | Stage당 Item Ball 1회, local Lv2+ 공의 유효 5-hit 파괴, 파괴 후 item별 Orb 생성, Paddle 획득 뒤 CUT-IN·1회 activation, 하단 miss 시 미적용·소멸, 아이템 비활성화 시 Core 결과 동일, Fire modifier가 Settlement에 침투하지 않음 |
 | Q-S8 | 첫 Lv14→이동 Black Hole 전환, L2→L3 Frame/Play Field 동기 확장 후 gameplay 재개, 저등급 흡수의 Cashout `12.5%`/phase-entry Run Score `25%` 상한 패널티·단일 저등급 흡수 즉사 방지·반복 손실의 run score 0 Game Over·다중 pull vector 합산/cap·Black Hole 상호 인력·하단 반사·비성장 안정성, 두 번째 Black Hole과 접촉 시 1회 finale→UI 제거→타이틀/Clear Score/Main Menu, Retry 완전 초기화 |
 | Q-S9 | 공개 URL incognito 완주, Chrome/Edge, console, resize, 오디오 활성화 확인 |

@@ -288,13 +288,44 @@ spawn_rate
 
 현재 Stage의 local Lv4를 만들면 해당 공의 Run 내 최초 생성 여부를 기록하고 `FIRST CONTACT` CUT-IN을 요청한다. Ground의 Moon과 Planetary의 Galaxy는 생성만으로 Stage Clear를 잠그지 않으며 일반 gameplay와 Active Cashout 대상에 남는다.
 
-non-final Stage의 Clear는 tick의 Merge와 Active Cashout을 반영한 `stage_score >= clear_score` 순간 확정한다. 남은 시간과 local Lv4 생성 여부는 이 판정을 막지 않는다. 확정 뒤 Final Settlement를 한 번 처리하고 자동으로 Scale Shift를 시작한다. Galactic의 첫 Black Hole은 FIRST CONTACT 연출 뒤 별도 Black Hole 최종 국면 계약으로 전환한다.
+non-final Stage의 Clear는 tick의 Merge와 Active Cashout을 반영한 `stage_score >= clear_score` 순간 확정한다. 남은 시간과 local Lv4 생성 여부는 이 판정을 막지 않는다. 확정 뒤 `CLEAR_LOCKED → SETTLING`과 Final Settlement를 즉시 한 번 처리하고 `CLEARED`에 머문다. 축하 UI의 matching `NEXT STAGE(clear_id)` 요청이 도착한 뒤에만 Scale Shift를 시작한다. Galactic의 첫 Black Hole은 FIRST CONTACT 연출 뒤 별도 Black Hole 최종 국면 계약으로 전환한다.
 
 ---
 
 ## 11. Stage Clear — Score Clear
 
-최고 공 생성은 Clear 조건이 아니다. non-final Stage는 `stage_score >= clear_score`가 되면 시간과 무관하게 `CLEAR_LOCKED` 후 `FINAL SETTLEMENT`로 이동하고, 정산 직후 자동으로 `SCALE SHIFT`를 시작한다.
+최고 공 생성은 Clear 조건이 아니다. non-final Stage는 `stage_score >= clear_score`가 되면 시간과 무관하게 `CLEAR_LOCKED` 후 `FINAL SETTLEMENT`로 이동한다. 정산을 기다리는 사용자 입력은 없으며, 정산 완료 뒤 `CLEARED` 축하 UI에서 matching `NEXT STAGE(clear_id)`를 받을 때까지 `SCALE SHIFT`만 보류한다.
+
+```text
+SCORE_CLEAR
+→ CLEAR_LOCKED
+→ SETTLING
+→ CLEARED (matching NEXT STAGE 대기)
+→ SHIFTING
+```
+
+`CLEAR_LOCKED`부터 `SHIFTING`이 끝날 때까지 timer, spawn, Paddle과 gameplay input은 잠긴다. `CLEARED` 대기는 플레이 시간을 소비하거나 Settlement를 늦추지 않는다.
+
+### Clear 확인 snapshot과 ID
+
+축하 UI는 Core나 `StageDefinition`을 직접 읽지 않고 Integration이 복사해 준 read-only Clear snapshot만 표시한다.
+
+```text
+stage_index
+stage_display_name
+stage_score
+run_score
+outcome = CLEARED
+is_final_stage = false
+```
+
+- `clear_id`는 Final Settlement를 끝내고 `CLEARED`에서 확인을 기다리는 한 번의 성공을 식별한다.
+- `shift_id`는 matching `NEXT STAGE(clear_id)`가 수락되어 `SHIFTING`에 들어간 뒤 Scale Shift 연출 완료를 식별한다.
+- 두 ID는 별도 namespace다. 값을 비교하거나 한 ID를 다른 완료 callback에 사용하지 않는다.
+- wrong/stale/duplicate `NEXT STAGE(clear_id)`는 아무 상태도 바꾸지 않는다.
+- Retry, Main Screen, fresh Run은 열린 축하 UI와 pending Clear를 즉시 무효화한다. ID sequence는 같은 process lifetime에서 재사용하지 않아 이전 Run callback이 새 Run과 일치하지 않게 한다.
+- Galactic, 실패, Time Up Result, Black Hole finale/Result에는 이 축하 UI를 열지 않는다.
+- reduced-effects에서는 위치 이동·점멸을 생략하되 같은 정보와 실제 `NEXT STAGE` Button, focus, 1회 request 계약을 유지한다.
 
 Time Up은 physics tick 시작 시각만으로 판정하지 않는다.
 해당 tick의 Merge와 Active Cashout을 먼저 확정해 Time Bonus까지 반영한 뒤 종료 여부를 판단한다.
@@ -351,7 +382,7 @@ Settlement는 활성 공 snapshot을 한 번 만들고 점수를 일괄 계산�
 
 ## 13. SCALE SHIFT
 
-non-final Stage가 clear score에 도달하면 Settlement를 한 번 처리한 직후 자동으로 Scale Shift를 시작한다. 사용자 확인 UI는 gameplay state를 지연시키지 않는다.
+non-final Stage가 clear score에 도달하면 Settlement를 한 번 처리하고 `CLEARED` 축하 UI를 연다. matching `NEXT STAGE(clear_id)` 요청을 한 번 수락한 뒤에만 별도 `shift_id`를 발급하고 Scale Shift를 시작한다. 확인 UI는 Clear 판정과 Settlement를 지연시키지 않으며 `CLEARED → SHIFTING` 경계만 연다.
 
 다음 Stage 진입 시:
 
@@ -619,11 +650,11 @@ Cashout으로 얻는 평균 추가 시간이 소비 시간보다 너무 커서 �
 
 ### Known balancing observation — Controllable Merge and Stage Shift pacing
 
-> **이 관찰에서 local Lv4 즉시 Clear 제거는 유지한다. 이후 사용자 규칙 변경으로 non-final clear score 도달 시 자동 Scale Shift가 확정됐다.**
+> **이 관찰에서 local Lv4 즉시 Clear 제거는 유지한다. 2026-08-20의 자동 Scale Shift 방향은 이후 최신 사용자 지시로 대체됐다. 현재는 non-final clear score 도달 시 Clear와 Settlement를 즉시 확정하고 `NEXT STAGE` 확인 뒤 Shift한다.**
 
 현재 플레이에서 같은 등급 공의 자동 Merge가 연쇄적으로 일어나고 최고공 또는 clear score에 너무 빨리 도달하면, 플레이어는 패들로 합체를 만들었다기보다 게임이 스스로 Phase Shift했다고 느낄 수 있다. 이는 Snowball Effect가 지향하는 `통제 가능한 폭주`와 어긋날 위험이 있다.
 
-`최고 공 생성 → Clear Lock → Settlement → Scale Shift`는 최고 공 생성 자체에는 적용하지 않는다. Ground/Planetary의 local Lv4는 FIRST CONTACT 뒤 gameplay를 계속하며, clear score가 도달했을 때만 자동 Scale Shift를 시작한다.
+`최고 공 생성 → Clear Lock → Settlement → Clear 확인 → Scale Shift`는 최고 공 생성 자체에는 적용하지 않는다. Ground/Planetary의 local Lv4는 FIRST CONTACT 뒤 gameplay를 계속하며, clear score가 도달했을 때만 Clear를 잠그고 Settlement 뒤 확인 UI를 연다.
 
 향후 검토의 기준 루프는 다음과 같다.
 

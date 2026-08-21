@@ -475,3 +475,17 @@ Owner: Presentation / senior integration
 - Web release export는 임시 디렉터리로 exit 0이었다. 브라우저 smoke는 `browse`의 Windows `server-node.mjs` 번들이 없어 실행하지 못했고 프로젝트 파일을 바꾸는 일회성 빌드는 수행하지 않았다. Primary Godot MCP는 현재 세션에 제공되지 않아 CLI/Native를 baseline으로 사용했다.
 - 기존 latest Main에서도 재현되는 stale fixture 세 건은 범위 밖으로 남겼다: Pause B 이전 위치/Paddle 경계를 기대하는 S5-G4 playable, obsolete `TOP_BALL_CLEAR`를 호출하는 shift wiring, Pause B 추가 전 9개 asset count를 기대하는 frame-v2 asset 검증. Main smoke의 shutdown-only ObjectDB 3개/resource 1개 warning도 유지된다.
 - Integration lock은 없으며 released 상태를 유지한다. 보호된 Time CRT 디자인 파일 세 개는 이 병합에서 편집·스테이징하지 않았다.
+
+## 2026-08-21 — S5-G6 Stage Clear 확인 UI 재활성화
+
+Owner: Presentation/UI
+
+- 최신 사용자 지시에 따라 2026-08-20 automatic Shift 방향을 supersede하고 `SCORE_CLEAR → CLEAR_LOCKED → SETTLING → CLEARED (matching Next Stage 대기) → SHIFTING` 계약을 권위 문서에 복원했다. Clear 판정과 Settlement는 즉시 유지하고 Shift 시작만 `clear_id` 확인 뒤로 미룬다. automatic 구현/검증 기록은 삭제하지 않고 당시 역사적 evidence로 표시했다.
+- self-contained `StageClearPanel`과 mock verification/capture scene을 추가했다. Panel은 deep-copied `outcome=CLEARED` snapshot과 별도 `clear_id`만 소비해 완료 Stage, Stage Score, Run Score, `NEXT STAGE`를 표시하고 Core/StageManager/GameManager/score/timer/spawn/Paddle/Shift에 접근하지 않는다.
+- 실제 Godot Button focus와 Enter 입력, first press 1회, duplicate/hidden/stale callback 억제, matching hide, Retry/Main/new Run reset, process-lifetime stale-ID high-water, Galactic/failure/Result 제외, reduced-effects를 검증했다.
+- Paper8 v2 central bezel, 청록 CRT glass/scanline, 황동 bezel/bolt, 승인 팔레트와 nearest filtering을 재사용했다. Time Bonus와 Result/failure 문구는 표시하지 않는다.
+- Godot 4.7.1 CLI/headless: S5-G6 marker와 S1-G4, S3-G6, S3-G8, S5-G4 Stage World/Shift, S5-G7, S6-G6 회귀가 모두 exit 0. S3-G6 fixture의 기존 hard-coded `TARGET 4M`만 현재 StageDefinition `4e8` source-of-truth formatter assertion으로 교정했다.
+- Main 120-frame headless smoke는 exit 0. 기존 shutdown-only ObjectDB 3개/resource 1개 warning은 그대로다.
+- Native OpenGL Compatibility / Intel Arc 130V capture: PNG error 0, 120 frames 평균 `60.1 FPS`, 최대 frame `19.56ms`. Capture: `C:/Users/gktjd/AppData/Roaming/Godot/app_userdata/Snowball Effect/s5_g6_stage_clear_panel_capture.png`.
+- 상태는 `IMPLEMENTED`다. Main mount, `stage_clear_ready`, matching request consumer, 별도 `shift_id` 발급, reset wiring과 Desktop/Web 3-Stage 확인은 Integration-owned S5-G6I `PENDING`으로 남겼다. 개별 producer 계약은 Native layout capture까지이며 Main이 mount하지 않아 Browser에서 도달할 수 없으므로 이번 Goal에서 Web export/browser 검증을 요구하거나 주장하지 않는다.
+- Integration-owned 파일과 Integration tests는 변경하지 않았다. Integration lock은 없으며 `project.godot`, Main, StageManager, GameManager는 untouched다. 기존 dirty Time CRT `docs/design/11_FX_CATALOG.md`와 `docs/design/mockups/approved-fx/`도 보존했다.

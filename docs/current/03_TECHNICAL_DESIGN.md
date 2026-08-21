@@ -160,8 +160,15 @@ PresentationManager
 
 CutInController
  ├─ enter / hold / exit animation
- ├─ title / sprite / value binding
- └─ completion signal
+ ├─ `first_contact_id` title / portrait layer binding
+ ├─ `(run_epoch, event_id)` visual duplicate 방어
+ └─ matching completion / reset signal
+
+StageClearPanel
+ ├─ copied clear snapshot display
+ ├─ keyboard/mouse/Web focusable NEXT STAGE action
+ ├─ per-clear duplicate/stale request suppression
+ └─ reduced-effects presentation
 ```
 
 일반 파티클은 `EffectManager`가 담당한다.
@@ -170,6 +177,40 @@ CutInController
 
 `StageManager`는 Scale Shift의 게임 상태 변경을 결정하고,
 Presentation 계층은 이를 화면에 표현한다.
+
+### 3.2.1 Stage Clear 확인 handoff
+
+non-final `SCORE_CLEAR`는 입력을 기다리지 않고 `CLEAR_LOCKED → SETTLING → CLEARED`까지 진행한다. `CLEARED` 진입 때 Integration은 다음 값만 새 `Dictionary`로 복사해 Presentation에 전달한다.
+
+```text
+clear_snapshot = {
+  stage_index: int,
+  stage_display_name: String,
+  stage_score: float,
+  run_score: float,
+  outcome: StringName = CLEARED,
+  is_final_stage: bool = false,
+}
+```
+
+snapshot은 read-only presentation value다. `StageClearPanel`은 deep copy를 보관하고 StageManager, score ledger, timer, simulation, Paddle, spawn 또는 Shift API를 찾거나 호출하지 않는다.
+
+```text
+StageManager/Integration: stage_clear_ready(clear_snapshot, clear_id)
+→ StageClearPanel.show_stage_clear(clear_snapshot, clear_id)
+→ Presentation: next_stage_requested(clear_id)
+→ Integration: request_next_stage(clear_id)
+→ matching request accepted
+→ StageManager: SHIFTING + stage_shift_started(next_definition, shift_id)
+```
+
+- `clear_id`는 `CLEARED`에서 대기 중인 정산 완료 Clear의 process-lifetime monotonic ID다. Retry/Main/new Run은 pending ID를 무효화하지만 sequence를 되돌리지 않는다.
+- `shift_id`는 matching Clear 요청을 수락한 뒤 새로 발급하는 Scale Shift presentation ID다. 두 namespace는 독립적이며 서로 대체하지 않는다.
+- Integration consumer는 state가 `CLEARED`이고 pending Clear와 정확히 일치하는 첫 `clear_id`만 수락한다. wrong/stale/duplicate 요청은 `false`로 끝내고 state/snapshot/ID를 변경하지 않는다.
+- `CLEAR_LOCKED`부터 다음 Stage 진입까지 authoritative gameplay input, timer, spawn, Paddle와 simulation은 잠긴다. SceneTree 전체 pause에 의존하지 않아 Button focus/input은 계속 처리한다.
+- Galactic, `FAILED`, Time Up Result, Black Hole finale/Result에는 `stage_clear_ready`를 발행하지 않는다.
+- Retry, Main Screen과 fresh Run은 Panel의 `reset_for_new_run()`과 pending Clear를 함께 정리한다. Scale Shift가 시작될 때 matching ID로 `hide_stage_clear(clear_id)`를 호출한다.
+- reduced-effects는 Panel 이동/pulse만 제거하며 표시 정보, focus와 1회 request semantics는 유지한다.
 
 
 ## 4. 공 데이터
@@ -704,6 +745,8 @@ signal final_settlement_started(amount: float)
 signal final_settlement_finished(amount: float)
 signal stage_clear_decided(stage: int, reason: StringName)
 signal stage_clear_completed(stage: int, reason: StringName)
+signal stage_clear_ready(clear_snapshot: Dictionary, clear_id: int)
+signal next_stage_requested(clear_id: int)
 signal stage_failed(stage: int)
 signal stage_shift_started(from_stage: int, to_stage: int)
 signal stage_shift_completed(stage: int)
@@ -867,9 +910,11 @@ non-final Stage는 tick의 Cashout 반영 뒤 `stage_score >= clear_score`이면
 
 1. `CLEAR_LOCKED`
 2. Final Settlement
-3. `CLEARED → SHIFTING`
+3. read-only snapshot과 `clear_id`를 고정하고 `CLEARED`
+4. matching `NEXT STAGE(clear_id)` 요청 대기
+5. 요청 수락 뒤 별도 `shift_id`를 발급하고 `SHIFTING`
 
-Scale Shift는 사용자 확인 UI를 기다리지 않고 즉시 시작한다.
+Clear 판정과 Final Settlement는 사용자 확인 UI를 기다리지 않는다. 확인 전까지 지연되는 것은 Scale Shift 시작뿐이다.
 
 clear score 미달이고 tick의 Cashout 반영 후에도 시간이 0 이하이면:
 
@@ -918,4 +963,4 @@ FAILED
 FINISHED
 ```
 
-Stage 전환과 Settlement는 중복 실행되지 않도록 상태로 보호한다.
+Stage 전환과 Settlement는 중복 실행되지 않도록 상태로 보호한다. `CLEARED`는 matching `clear_id`의 `NEXT STAGE` 요청을 기다리는 입력 잠금 상태이며, 수락 전에는 `stage_shift_started`를 발행하지 않는다.

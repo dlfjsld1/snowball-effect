@@ -1,5 +1,7 @@
 # Codex 최초 실행 프롬프트
 
+> **역사적 bootstrap prompt:** 아래 자동 Scale Shift 문구는 최초 지시 이력으로 보존한다. 현행 계약은 `02_GAME_RULES.md`의 `CLEARED → matching NEXT STAGE(clear_id) → SHIFTING`을 따른다.
+
 아래 내용을 새 Codex 세션의 첫 지시로 사용한다.
 
 ---
