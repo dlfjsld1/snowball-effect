@@ -6,8 +6,11 @@ extends Control
 const DESIGN_SIZE := Vector2(1672.0, 941.0)
 const LEFT_TUBE := Rect2(173.0, 302.0, 43.0, 145.0)
 const RIGHT_TUBE := Rect2(1456.0, 302.0, 43.0, 145.0)
-const LEFT_GAUGE_CENTER := Vector2(194.0, 493.0)
-const RIGHT_GAUGE_CENTER := Vector2(1478.0, 493.0)
+# The revised Title-style meter sits beneath each tube's lower cap, not on it.
+# Both values are mirrored around the 1672px artwork center and leave a 70px
+# vertical run from the tube end to the needle hub.
+const LEFT_GAUGE_CENTER := Vector2(194.0, 517.0)
+const RIGHT_GAUGE_CENTER := Vector2(1478.0, 517.0)
 
 var _left_bubbles: Array[Dictionary] = []
 var _right_bubbles: Array[Dictionary] = []
@@ -113,7 +116,9 @@ func _make_bubbles(count: int, tube: Rect2, phase_offset: float) -> Array[Dictio
 				tube.end.y - fmod(float(index) * 29.0 + phase_offset * tube.size.y, tube.size.y)
 			),
 			"speed": 24.0 + float((index * 11) % 25),
-			"radius": 2.0 + float(index % 3),
+			# These are deliberately square pixel droplets, not vector circles.
+			# Integer sizes remain readable after the Result panel is nearest-scaled.
+			"pixel_size": 2 + (index % 3),
 			"phase": phase_offset + float(index) * 0.83,
 		})
 	return bubbles
@@ -132,22 +137,28 @@ func _advance_bubbles(bubbles: Array[Dictionary], tube: Rect2, delta: float) -> 
 
 func _draw_bubbles(bubbles: Array[Dictionary]) -> void:
 	for bubble in bubbles:
-		var position: Vector2 = bubble["position"]
-		var radius: float = bubble["radius"]
-		draw_circle(position.floor(), radius + 1.0, Color(0.17, 0.38, 0.16, 0.8), false, 1.0, false)
-		draw_circle(position.floor(), radius, Color(0.72, 0.95, 0.42, 0.75), false, 1.0, false)
+		var position: Vector2 = (bubble["position"] as Vector2).floor()
+		var pixel_size: int = int(bubble["pixel_size"])
+		# A tiny, solid, square droplet reads as authored pixel art at every
+		# display scale. The upper-left highlight replaces the old smooth ring.
+		var shadow_rect := Rect2(position + Vector2(1.0, 1.0), Vector2(pixel_size, pixel_size))
+		var fill_rect := Rect2(position, Vector2(pixel_size, pixel_size))
+		draw_rect(shadow_rect, Color(0.13, 0.33, 0.14, 0.82), true)
+		draw_rect(fill_rect, Color(0.61, 0.83, 0.39, 0.82), true)
+		draw_rect(Rect2(position, Vector2.ONE), Color(0.9, 1.0, 0.62, 0.92), true)
 
 
 func _left_gauge_angle() -> float:
-	return -14.0 + sin(_elapsed * 7.1 + _left_phase) * 3.5 + sin(_elapsed * 2.3) * 1.7
+	return -116.0 + sin(_elapsed * 4.8 + _left_phase) * 4.0 + sin(_elapsed * 1.8) * 1.5
 
 
 func _right_gauge_angle() -> float:
-	return -13.0 + sin(_elapsed * 6.4 + _right_phase) * 4.2 + sin(_elapsed * 1.9 + 0.7) * 1.4
+	return -64.0 + sin(_elapsed * 4.2 + _right_phase) * 4.0 + sin(_elapsed * 1.7 + 0.7) * 1.5
 
 
 func _draw_full_gauge_needle(center: Vector2, angle_degrees: float) -> void:
-	var endpoint := center + Vector2.RIGHT.rotated(deg_to_rad(angle_degrees)) * 27.0
-	draw_line(center, endpoint, Color("f6d27a"), 4.0, false)
-	draw_circle(center, 4.0, Color("8e4d3c"), true, -1.0, false)
-	draw_circle(center, 2.0, Color("f2c66e"), true, -1.0, false)
+	# Match TitleMechanicalMotion: a crisp long needle and square pixel hub.
+	var endpoint := center + Vector2.RIGHT.rotated(deg_to_rad(angle_degrees)) * 28.0
+	draw_line(center, endpoint, Color("f6e79c"), 4.0, false)
+	draw_rect(Rect2(center - Vector2(5.0, 5.0), Vector2(10.0, 10.0)), Color("d1a67e"))
+	draw_rect(Rect2(center - Vector2(2.0, 2.0), Vector2(4.0, 4.0)), Color("654053"))

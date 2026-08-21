@@ -29,7 +29,7 @@ class FakeBlackHoleSource:
 
 
 var _phase_completions: Array[int] = []
-var _finale_completions: Array[int] = []
+var _finale_completion_count := 0
 
 
 func _ready() -> void:
@@ -71,7 +71,7 @@ func _ready() -> void:
 	var l2_stage_label_x := hud.stage_name_label.position.x
 	var source_positions_before := source.positions.duplicate()
 
-	source.start_phase(41, l2_rect, l3_rect)
+	assert(presenter.play_black_hole_phase(41, l2_rect, l3_rect))
 	assert(presenter.is_black_hole_phase_active())
 	assert(frame.profile_index == 2, "The logical frame profile must remain L2 until Presentation finishes.")
 	var phase_metrics := presenter.get_black_hole_presentation_metrics()
@@ -81,7 +81,7 @@ func _ready() -> void:
 	assert(phase_metrics["horizon_ring_count"] == 1)
 	assert(phase_metrics["influence_ring_count"] == 1)
 	assert(phase_metrics["status_label_visible"])
-	assert(String(phase_metrics["status_label"]).contains("880 > 1040"))
+	assert(String(phase_metrics["status_label"]).contains("GRAVITY ANOMALY"))
 	await _wait_for_phase(presenter)
 
 	assert(frame.profile_index == 3)
@@ -97,35 +97,34 @@ func _ready() -> void:
 	assert(is_equal_approx(frame.get_visual_right_wing_rect().size.x, 200.0))
 	assert(source.positions == source_positions_before, "Presentation must not mutate the Core Black Hole snapshot.")
 
-	source.start_phase(41, l2_rect, l3_rect)
-	source.start_phase(40, l2_rect, l3_rect)
+	assert(not presenter.play_black_hole_phase(41, l2_rect, l3_rect))
+	assert(not presenter.play_black_hole_phase(40, l2_rect, l3_rect))
 	await get_tree().process_frame
 	assert(_phase_completions == [41], "Duplicate/stale phase IDs must not be reused as completion.")
 
 	var finale_snapshot := _make_finale_snapshot()
-	source.lock_finale(finale_snapshot)
+	assert(presenter.play_black_hole_finale(finale_snapshot))
 	assert(presenter.is_black_hole_finale_active())
 	var finale_metrics := presenter.get_black_hole_presentation_metrics()
 	assert(finale_metrics["finale_active"])
 	assert(finale_metrics["black_hole_count"] == 2)
-	assert(String(finale_metrics["status_label"]).contains("FINAL CONTACT"))
 	await _wait_for_finale(presenter)
-	assert(_finale_completions == [41])
+	assert(_finale_completion_count == 1)
 	assert(not hud.visible and not pause_menu.visible, "Finale must remove gameplay HUD/UI before the Result handoff.")
-	source.lock_finale(finale_snapshot)
+	assert(not presenter.play_black_hole_finale(finale_snapshot))
 	await get_tree().process_frame
-	assert(_finale_completions == [41], "Duplicate terminal snapshots must not replay the finale.")
+	assert(_finale_completion_count == 1, "Duplicate terminal snapshots must not replay the finale.")
 
 	# A reset increments the internal run generation. An old callback with the same
 	# phase ID cannot complete a new Run's pending phase.
 	presenter.reset_black_hole_presentation()
 	presenter.reduced_effects = false
 	presenter.black_hole_phase_duration = 0.24
-	source.start_phase(41, l2_rect, l3_rect)
+	assert(presenter.play_black_hole_phase(41, l2_rect, l3_rect))
 	assert(presenter.is_black_hole_phase_active())
 	presenter.reset_black_hole_presentation()
 	presenter.black_hole_phase_duration = 0.05
-	source.start_phase(41, l2_rect, l3_rect)
+	assert(presenter.play_black_hole_phase(41, l2_rect, l3_rect))
 	await _wait_for_phase(presenter)
 	var stale_timeout := Time.get_ticks_msec() + 320
 	while Time.get_ticks_msec() < stale_timeout:
@@ -136,7 +135,7 @@ func _ready() -> void:
 	# and finale beats while omitting non-essential trail markers.
 	presenter.reset_black_hole_presentation()
 	presenter.reduced_effects = true
-	source.start_phase(73, l2_rect, l3_rect)
+	assert(presenter.play_black_hole_phase(73, l2_rect, l3_rect))
 	assert(presenter.is_black_hole_phase_active())
 	var reduced_metrics := presenter.get_black_hole_presentation_metrics()
 	assert(reduced_metrics["reduced_effects"])
@@ -144,11 +143,11 @@ func _ready() -> void:
 	assert(reduced_metrics["trail_marker_count"] == 0)
 	assert(reduced_metrics["core_count"] == 1 and reduced_metrics["horizon_ring_count"] == 1)
 	await _wait_for_phase(presenter)
-	source.lock_finale(finale_snapshot)
+	assert(presenter.play_black_hole_finale(finale_snapshot))
 	assert(presenter.is_black_hole_finale_active())
 	await _wait_for_finale(presenter)
 	assert(_phase_completions == [41, 41, 73])
-	assert(_finale_completions == [41, 73])
+	assert(_finale_completion_count == 2)
 
 	print("S8_G5_VERIFIED phase_completions=3 finale_completions=2 field=880_to_1040 symmetric=80 core_ring=true influence=true reduced=true stale_safe=true core_readonly=true")
 	get_tree().quit()
@@ -185,5 +184,5 @@ func _on_phase_finished(phase_id: int) -> void:
 	_phase_completions.append(phase_id)
 
 
-func _on_finale_finished(phase_id: int) -> void:
-	_finale_completions.append(phase_id)
+func _on_finale_finished() -> void:
+	_finale_completion_count += 1

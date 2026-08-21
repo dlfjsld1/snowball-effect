@@ -2,18 +2,18 @@ class_name PresentationManager
 extends Control
 
 signal stage_shift_presentation_finished(shift_id: int)
+signal visual_field_rect_changed(visual_rect: Rect2)
 signal black_hole_phase_presentation_finished(phase_id: int)
-signal black_hole_finale_presentation_finished(phase_id: int)
+signal black_hole_finale_presentation_finished
 
 @export_range(0.05, 3.0, 0.05) var shift_duration := 0.9
-@export_range(0.05, 3.0, 0.05) var black_hole_phase_duration := 0.8
-@export_range(0.05, 3.0, 0.05) var black_hole_finale_duration := 1.15
+@export_range(0.05, 3.0, 0.05) var black_hole_phase_duration := 0.9
+@export_range(0.05, 5.0, 0.05) var black_hole_finale_duration := 1.35
 @export var reduced_effects := false
 
 @onready var shift_flash: ColorRect = %ShiftFlash
 @onready var shift_label: Label = %ShiftLabel
-@onready var black_hole_effect: BlackHolePhaseEffect = %BlackHolePhaseEffect
-@onready var black_hole_phase_label: Label = %BlackHolePhaseLabel
+@onready var black_hole_overlay: BlackHolePresentationOverlay = %BlackHoleOverlay
 
 var _frame: GameplayFrame
 var _background_manager: BackgroundManager
@@ -24,23 +24,25 @@ var _active_shift_id := -1
 var _target_profile := 0
 var _target_background_id: StringName = &"ground"
 var _completed_shift_ids: Dictionary = {}
-var _black_hole_event_source: Node
-var _black_hole_tween: Tween
+var _black_hole_simulation_source: Node
 var _active_black_hole_phase_id := -1
-var _completed_black_hole_phase_ids: Dictionary = {}
-var _completed_black_hole_finale_ids: Dictionary = {}
+var _active_black_hole_phase_generation := -1
 var _last_completed_black_hole_phase_id := -1
-var _black_hole_run_generation := 0
-var _black_hole_finale_active := false
-var _black_hole_finale_ui_hidden := false
+var _completed_black_hole_phase_ids: Dictionary = {}
+var _black_hole_phase_tween: Tween
 var _black_hole_from_profile := 2
 var _black_hole_to_profile := 3
-var _black_hole_from_rect := Rect2()
-var _black_hole_to_rect := Rect2()
+var _black_hole_origin_visual_rect := Rect2()
+var _black_hole_finale_active := false
+var _black_hole_finale_generation := -1
+var _black_hole_finale_completed_generation := -1
+var _black_hole_finale_snapshot: Dictionary = {}
+var _black_hole_run_generation := 0
 
 
 func _ready() -> void:
 	_frame = get_parent() as GameplayFrame
+	black_hole_overlay.finale_visual_finished.connect(_on_black_hole_finale_visual_finished)
 	_reset_overlay()
 
 
@@ -50,16 +52,10 @@ func configure(background_manager: BackgroundManager, hud: Hud, pause_menu: Paus
 	_pause_menu = pause_menu
 
 
-func configure_black_hole_sources(event_source: Node, simulation_source: Node) -> void:
-	_disconnect_black_hole_event_source()
-	_black_hole_event_source = event_source
-	black_hole_effect.set_simulation_source(simulation_source)
-	if not is_instance_valid(_black_hole_event_source):
-		return
-	if _black_hole_event_source.has_signal("black_hole_phase_started"):
-		_black_hole_event_source.black_hole_phase_started.connect(_on_black_hole_phase_started)
-	if _black_hole_event_source.has_signal("black_hole_finale_locked"):
-		_black_hole_event_source.black_hole_finale_locked.connect(_on_black_hole_finale_locked)
+func configure_black_hole_sources(_event_source: Node, simulation_source: Node) -> void:
+	# Compatibility-only read source for Presentation fixtures. Main uses the
+	# authoritative GameManager calls and does not route gameplay through here.
+	_black_hole_simulation_source = simulation_source
 
 
 func apply_stage(definition: StageDefinition) -> void:
@@ -68,9 +64,10 @@ func apply_stage(definition: StageDefinition) -> void:
 	if _active_shift_id != -1:
 		_cancel_active_shift()
 	var profile := clampi(definition.stage_index, 0, 2)
-	if profile < 2 and (_last_completed_black_hole_phase_id != -1 or _active_black_hole_phase_id != -1 or _black_hole_finale_active):
+	if profile < 2 and (_active_black_hole_phase_id != -1 or _last_completed_black_hole_phase_id != -1 or _black_hole_finale_active):
 		reset_black_hole_presentation()
 	_frame.set_profile(profile)
+	visual_field_rect_changed.emit(_frame.get_field_visual_rect())
 	_apply_dependent_layout()
 	if _background_manager != null:
 		_background_manager.set_background(definition.background_id)
@@ -83,6 +80,7 @@ func play_stage_shift(next_definition: StageDefinition, shift_id: int) -> void:
 	_active_shift_id = shift_id
 	_target_profile = clampi(next_definition.stage_index, 0, 2)
 	_target_background_id = next_definition.background_id
+	shift_label.text = "SCALE SHIFT"
 	shift_label.visible = true
 	shift_label.modulate.a = 0.0
 	shift_flash.color.a = 0.0
@@ -110,37 +108,41 @@ func is_shift_active() -> bool:
 
 
 func play_black_hole_phase(phase_id: int, from_rect: Rect2, to_rect: Rect2) -> bool:
-	if phase_id < 0 or _active_black_hole_phase_id != -1 or _black_hole_finale_active:
+	if phase_id < 0 or from_rect.size.x <= 0.0 or to_rect.size.x <= 0.0:
+		return false
+	if _active_black_hole_phase_id != -1 or _black_hole_finale_active:
 		return false
 	if _last_completed_black_hole_phase_id != -1 or _completed_black_hole_phase_ids.has(phase_id):
 		return false
-	if from_rect.size.x <= 0.0 or from_rect.size.y <= 0.0 or to_rect.size.x <= from_rect.size.x or to_rect.size.y <= 0.0:
-		return false
 
-	_cancel_black_hole_tween()
+	_cancel_black_hole_phase()
 	_active_black_hole_phase_id = phase_id
-	_black_hole_from_rect = from_rect
-	_black_hole_to_rect = to_rect
+	_active_black_hole_phase_generation = _black_hole_run_generation
 	_black_hole_from_profile = _find_profile_for_field_width(from_rect.size.x)
 	_black_hole_to_profile = _find_profile_for_field_width(to_rect.size.x)
-	black_hole_effect.begin_phase(reduced_effects)
-	black_hole_effect.set_phase_progress(0.0, from_rect)
-	black_hole_phase_label.text = "BLACK HOLE PHASE  //  FIELD %d > %d" % [roundi(from_rect.size.x), roundi(to_rect.size.x)]
-	black_hole_phase_label.visible = true
-	black_hole_phase_label.modulate.a = 1.0 if reduced_effects else 0.0
+	_black_hole_origin_visual_rect = _frame.get_field_visual_rect_for_profile(_black_hole_from_profile)
+	black_hole_overlay.modulate = Color(1.0, 1.0, 1.0, 0.78 if reduced_effects else 1.0)
+	black_hole_overlay.begin_phase()
+	shift_label.text = "GRAVITY ANOMALY // L3 FIELD"
+	shift_label.visible = true
+	shift_label.modulate.a = 1.0 if reduced_effects else 0.0
+	shift_flash.color = Color(0.18, 0.04, 0.38, 0.0)
 	var generation := _black_hole_run_generation
 	var duration := 0.18 if reduced_effects else black_hole_phase_duration
-	_black_hole_tween = create_tween()
-	_black_hole_tween.set_parallel(true)
-	_black_hole_tween.tween_method(
-		_apply_black_hole_phase_progress.bind(generation, phase_id),
+	_black_hole_phase_tween = create_tween()
+	_black_hole_phase_tween.tween_property(shift_flash, "color:a", 0.32, duration * 0.18)
+	if not reduced_effects:
+		_black_hole_phase_tween.parallel().tween_property(shift_label, "modulate:a", 1.0, duration * 0.18)
+	_black_hole_phase_tween.tween_method(
+		_apply_black_hole_phase_progress.bind(generation, phase_id, _black_hole_from_profile, _black_hole_to_profile),
 		0.0,
 		1.0,
-		duration
-	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-	if not reduced_effects:
-		_black_hole_tween.tween_property(black_hole_phase_label, "modulate:a", 1.0, minf(duration * 0.3, 0.24))
-	_black_hole_tween.chain().tween_callback(_finish_black_hole_phase.bind(generation, phase_id))
+		duration * 0.64
+	).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	_black_hole_phase_tween.parallel().tween_property(shift_flash, "color:a", 0.12, duration * 0.64)
+	_black_hole_phase_tween.tween_property(shift_label, "modulate:a", 0.0, duration * 0.18)
+	_black_hole_phase_tween.parallel().tween_property(shift_flash, "color:a", 0.0, duration * 0.18)
+	_black_hole_phase_tween.tween_callback(_finish_black_hole_phase.bind(generation, phase_id))
 	return true
 
 
@@ -148,46 +150,37 @@ func play_black_hole_finale(result_snapshot: Dictionary, phase_id := -1) -> bool
 	var resolved_phase_id := _last_completed_black_hole_phase_id if phase_id < 0 else phase_id
 	if result_snapshot.is_empty() or resolved_phase_id < 0 or resolved_phase_id != _last_completed_black_hole_phase_id:
 		return false
-	if _black_hole_finale_active or _completed_black_hole_finale_ids.has(resolved_phase_id):
-		return false
-	var black_holes_value = result_snapshot.get("black_holes", [])
-	if black_holes_value is not Array or (black_holes_value as Array).size() < 2:
+	if _black_hole_finale_active or _black_hole_finale_completed_generation == _black_hole_run_generation:
 		return false
 
-	_cancel_black_hole_tween()
+	_cancel_black_hole_phase()
 	_black_hole_finale_active = true
-	_black_hole_finale_ui_hidden = false
-	black_hole_effect.begin_finale(result_snapshot, reduced_effects)
-	black_hole_phase_label.text = "FINAL CONTACT  //  ORBIT LOCK"
-	black_hole_phase_label.visible = true
-	black_hole_phase_label.modulate.a = 1.0
-	var generation := _black_hole_run_generation
+	_black_hole_finale_generation = _black_hole_run_generation
+	_black_hole_finale_snapshot = result_snapshot.duplicate(true)
+	if _hud != null:
+		_hud.visible = false
+	if _pause_menu != null:
+		_pause_menu.visible = false
+	black_hole_overlay.modulate = Color(1.0, 1.0, 1.0, 0.82 if reduced_effects else 1.0)
 	var duration := 0.34 if reduced_effects else black_hole_finale_duration
-	_black_hole_tween = create_tween()
-	_black_hole_tween.tween_method(
-		_apply_black_hole_finale_progress.bind(generation, resolved_phase_id),
-		0.0,
-		1.0,
-		duration
-	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_black_hole_tween.tween_callback(_finish_black_hole_finale.bind(generation, resolved_phase_id))
+	black_hole_overlay.begin_finale(_black_hole_finale_snapshot, duration)
 	return true
 
 
 func reset_black_hole_presentation() -> void:
 	_black_hole_run_generation += 1
-	_cancel_black_hole_tween()
+	_cancel_black_hole_phase()
 	_active_black_hole_phase_id = -1
+	_active_black_hole_phase_generation = -1
 	_last_completed_black_hole_phase_id = -1
-	_black_hole_finale_active = false
-	_black_hole_finale_ui_hidden = false
 	_completed_black_hole_phase_ids.clear()
-	_completed_black_hole_finale_ids.clear()
-	_black_hole_from_rect = Rect2()
-	_black_hole_to_rect = Rect2()
-	black_hole_effect.reset_effect()
-	black_hole_phase_label.visible = false
-	black_hole_phase_label.modulate.a = 0.0
+	_black_hole_finale_active = false
+	_black_hole_finale_generation = -1
+	_black_hole_finale_completed_generation = -1
+	_black_hole_finale_snapshot.clear()
+	_black_hole_origin_visual_rect = Rect2()
+	black_hole_overlay.modulate = Color.WHITE
+	black_hole_overlay.reset_overlay()
 	if _hud != null:
 		_hud.visible = true
 		_hud.modulate = Color.WHITE
@@ -205,18 +198,41 @@ func is_black_hole_finale_active() -> bool:
 
 
 func get_black_hole_presentation_metrics() -> Dictionary:
-	var metrics := black_hole_effect.get_visual_metrics()
-	metrics["active_phase_id"] = _active_black_hole_phase_id
-	metrics["last_completed_phase_id"] = _last_completed_black_hole_phase_id
-	metrics["run_generation"] = _black_hole_run_generation
-	metrics["status_label_visible"] = black_hole_phase_label.visible
-	metrics["status_label"] = black_hole_phase_label.text
-	metrics["hud_visible"] = _hud.visible if _hud != null else false
-	return metrics
+	var black_hole_count := 0
+	if not _black_hole_finale_snapshot.is_empty():
+		var final_black_holes = _black_hole_finale_snapshot.get("black_holes", [])
+		if final_black_holes is Array:
+			black_hole_count = (final_black_holes as Array).size()
+	elif is_instance_valid(_black_hole_simulation_source) and _black_hole_simulation_source.has_method("get_black_hole_snapshot"):
+		var snapshot: Dictionary = _black_hole_simulation_source.get_black_hole_snapshot()
+		black_hole_count = int(snapshot.get("count", 0))
+	elif black_hole_overlay.visible:
+		black_hole_count = 1
+	var visual_rect := _frame.get_field_visual_rect() if _frame != null else Rect2()
+	return {
+		"visible": black_hole_overlay.visible,
+		"phase_active": black_hole_overlay.visible and not _black_hole_finale_active,
+		"finale_active": _black_hole_finale_active,
+		"black_hole_count": black_hole_count,
+		"core_count": black_hole_count,
+		"horizon_ring_count": black_hole_count,
+		"influence_ring_count": black_hole_count if black_hole_overlay.visible and not _black_hole_finale_active else 0,
+		"trail_marker_count": 0,
+		"reduced_effects": reduced_effects,
+		"field_rect": visual_rect,
+		"field_expansion_width": maxf(visual_rect.size.x - _black_hole_origin_visual_rect.size.x, 0.0),
+		"active_phase_id": _active_black_hole_phase_id,
+		"last_completed_phase_id": _last_completed_black_hole_phase_id,
+		"run_generation": _black_hole_run_generation,
+		"status_label_visible": shift_label.visible,
+		"status_label": shift_label.text,
+		"hud_visible": _hud.visible if _hud != null else false,
+	}
 
 
 func _apply_shift_progress(progress: float, from_profile: int, to_profile: int) -> void:
 	_frame.apply_visual_profile_lerp(from_profile, to_profile, progress)
+	visual_field_rect_changed.emit(_frame.get_field_visual_rect_lerp(from_profile, to_profile, progress))
 	_apply_dependent_layout()
 
 
@@ -224,6 +240,7 @@ func _finish_shift(shift_id: int) -> void:
 	if shift_id != _active_shift_id:
 		return
 	_frame.set_profile(_target_profile)
+	visual_field_rect_changed.emit(_frame.get_field_visual_rect())
 	_apply_dependent_layout()
 	_completed_shift_ids[shift_id] = true
 	_active_shift_id = -1
@@ -232,59 +249,37 @@ func _finish_shift(shift_id: int) -> void:
 	stage_shift_presentation_finished.emit(shift_id)
 
 
-func _apply_black_hole_phase_progress(progress: float, generation: int, phase_id: int) -> void:
+func _apply_black_hole_phase_progress(progress: float, generation: int, phase_id: int, from_profile: int, to_profile: int) -> void:
 	if generation != _black_hole_run_generation or phase_id != _active_black_hole_phase_id:
 		return
-	_frame.apply_visual_profile_lerp(_black_hole_from_profile, _black_hole_to_profile, progress)
+	_frame.apply_visual_profile_lerp(from_profile, to_profile, progress)
+	visual_field_rect_changed.emit(_frame.get_field_visual_rect_lerp(from_profile, to_profile, progress))
 	_apply_dependent_layout()
-	var visual_rect := Rect2(
-		_black_hole_from_rect.position.lerp(_black_hole_to_rect.position, progress),
-		_black_hole_from_rect.size.lerp(_black_hole_to_rect.size, progress)
-	)
-	black_hole_effect.set_phase_progress(progress, visual_rect)
 
 
 func _finish_black_hole_phase(generation: int, phase_id: int) -> void:
-	if generation != _black_hole_run_generation or phase_id != _active_black_hole_phase_id:
+	if generation != _black_hole_run_generation or generation != _active_black_hole_phase_generation or phase_id != _active_black_hole_phase_id:
 		return
 	_frame.set_profile(_black_hole_to_profile)
+	visual_field_rect_changed.emit(_frame.get_field_visual_rect())
 	_apply_dependent_layout()
-	black_hole_effect.set_phase_progress(1.0, _black_hole_to_rect)
-	black_hole_effect.complete_phase()
+	black_hole_overlay.hold_phase()
 	_completed_black_hole_phase_ids[phase_id] = generation
 	_last_completed_black_hole_phase_id = phase_id
 	_active_black_hole_phase_id = -1
-	_black_hole_tween = null
-	black_hole_phase_label.text = "BLACK HOLE PHASE  //  FIELD %d" % roundi(_black_hole_to_rect.size.x)
-	black_hole_phase_label.modulate.a = 0.82
+	_active_black_hole_phase_generation = -1
+	_black_hole_phase_tween = null
+	_reset_overlay()
 	black_hole_phase_presentation_finished.emit(phase_id)
 
 
-func _apply_black_hole_finale_progress(progress: float, generation: int, phase_id: int) -> void:
-	if generation != _black_hole_run_generation or phase_id != _last_completed_black_hole_phase_id or not _black_hole_finale_active:
+func _on_black_hole_finale_visual_finished() -> void:
+	if not _black_hole_finale_active or _black_hole_finale_generation != _black_hole_run_generation:
 		return
-	black_hole_effect.set_finale_progress(progress)
-	if progress >= 0.58 and not _black_hole_finale_ui_hidden:
-		_black_hole_finale_ui_hidden = true
-		black_hole_phase_label.text = "EVENT HORIZON COLLAPSE"
-		if _hud != null:
-			_hud.visible = false
-		if _pause_menu != null:
-			_pause_menu.visible = false
-
-
-func _finish_black_hole_finale(generation: int, phase_id: int) -> void:
-	if generation != _black_hole_run_generation or phase_id != _last_completed_black_hole_phase_id or not _black_hole_finale_active:
-		return
-	if not _black_hole_finale_ui_hidden:
-		_apply_black_hole_finale_progress(1.0, generation, phase_id)
-	_completed_black_hole_finale_ids[phase_id] = generation
 	_black_hole_finale_active = false
-	_black_hole_tween = null
-	black_hole_effect.finish_finale()
-	black_hole_phase_label.visible = false
-	black_hole_phase_label.modulate.a = 0.0
-	black_hole_finale_presentation_finished.emit(phase_id)
+	_black_hole_finale_completed_generation = _black_hole_run_generation
+	_black_hole_finale_generation = -1
+	black_hole_finale_presentation_finished.emit()
 
 
 func _find_profile_for_field_width(width: float) -> int:
@@ -298,14 +293,6 @@ func _find_profile_for_field_width(width: float) -> int:
 	return closest_profile
 
 
-func _on_black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2) -> void:
-	play_black_hole_phase(phase_id, from_rect, to_rect)
-
-
-func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
-	play_black_hole_finale(result_snapshot)
-
-
 func _cancel_active_shift() -> void:
 	if _shift_tween != null and _shift_tween.is_valid():
 		_shift_tween.kill()
@@ -314,21 +301,13 @@ func _cancel_active_shift() -> void:
 	_reset_overlay()
 
 
-func _cancel_black_hole_tween() -> void:
-	if _black_hole_tween != null and _black_hole_tween.is_valid():
-		_black_hole_tween.kill()
-	_black_hole_tween = null
-
-
-func _disconnect_black_hole_event_source() -> void:
-	if not is_instance_valid(_black_hole_event_source):
-		_black_hole_event_source = null
-		return
-	if _black_hole_event_source.has_signal("black_hole_phase_started") and _black_hole_event_source.black_hole_phase_started.is_connected(_on_black_hole_phase_started):
-		_black_hole_event_source.black_hole_phase_started.disconnect(_on_black_hole_phase_started)
-	if _black_hole_event_source.has_signal("black_hole_finale_locked") and _black_hole_event_source.black_hole_finale_locked.is_connected(_on_black_hole_finale_locked):
-		_black_hole_event_source.black_hole_finale_locked.disconnect(_on_black_hole_finale_locked)
-	_black_hole_event_source = null
+func _cancel_black_hole_phase() -> void:
+	if _black_hole_phase_tween != null and _black_hole_phase_tween.is_valid():
+		_black_hole_phase_tween.kill()
+	_black_hole_phase_tween = null
+	_active_black_hole_phase_id = -1
+	_active_black_hole_phase_generation = -1
+	_reset_overlay()
 
 
 func _apply_dependent_layout() -> void:
@@ -342,7 +321,4 @@ func _reset_overlay() -> void:
 	shift_flash.color = Color(0.37, 0.68, 0.48, 0.0)
 	shift_label.visible = false
 	shift_label.modulate.a = 0.0
-
-
-func _exit_tree() -> void:
-	_disconnect_black_hole_event_source()
+	shift_label.text = "SCALE SHIFT"

@@ -52,7 +52,7 @@ Ground의 Moon과 Planetary의 Galaxy를 포함한 local Lv4는 생성 즉시 St
 
 초기 `base_time` 테스트 seed는 Ground 45초, Planetary 40초, Galactic 35초다. Lv14 Black Hole은 Galactic top Ball이며, 첫 Lv14는 마지막 Galactic Stage 안의 이동 Black Hole runtime 기믹으로 전환된다.
 기본 Run의 ordered Stage chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`다. Lv7 `Red Giant`와 Lv9 `Nebula`는 15종 BallCatalog에 보존하지만, 최근 팀 합의에 따라 기본 Run에서는 의도적으로 제외한다. 이는 누락이나 Resource drift가 아니며 Stage별 정확히 5종의 족보를 유지하기 위한 콘텐츠 배치다.
-`clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. Ground는 Giant Snowball(`1e6`) 기준 `4e6`, Planetary는 Supernova(`5e17`) 기준 `2e18`을 초기값으로 사용한다. local Lv4 생성 여부와 무관하게 Time Up 뒤 Final Settlement 결과로 비교한다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
+`clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. Ground는 Moon(`1e8`) 기준 `4e8`, Planetary는 Galaxy(`1e25`) 기준 `4e25`를 초기값으로 사용한다. 두 Stage 모두 최고 공 Active Cashout 점수의 4배를 목표로 한다. local Lv4 생성 여부와 무관하게 tick의 Cashout까지 반영한 `stage_score`가 이 값에 도달하면 즉시 Clear를 확정한다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
 둘 다 플레이테스트 전 확정값이 아니다.
 
 초기 구현에는 Stage 시간 cap을 넣지 않는다.
@@ -113,11 +113,12 @@ TIME +1.0s
 3. 이번 tick의 Merge 확정 및 local Lv3/Lv4 최초 생성 여부 기록
 4. 이번 tick의 Active Cashout Score / Time Bonus 반영
 5. 종료 판정
+   - non-final이고 stage_score >= clear_score → SCORE_CLEAR
    - stage_time_left <= 0 → TIME_UP
    - 그 외 → PLAYING
 ```
 
-따라서 시간이 잠시 0 이하가 되어도 같은 tick의 Cashout으로 양수가 되면 Time Up을 취소하고 계속 플레이한다.
+따라서 시간이 잠시 0 이하가 되어도 같은 tick의 Cashout으로 양수가 되면 Time Up을 취소하고 계속 플레이한다. 같은 Cashout으로 clear score를 채우면 시간 값보다 Score Clear가 우선한다.
 같은 tick에 local Lv4 생성과 Time Up 조건이 모두 있어도 Lv4 생성은 종료 사유가 아니다. Merge/Cashout commit 뒤 Time Up 경로를 사용한다.
 
 ---
@@ -138,16 +139,20 @@ local Lv4 생성은 Stage Clear나 Final Settlement를 직접 요청하지 않�
 
 ## 6. Time Up
 
-tick의 Cashout까지 반영한 뒤 `stage_time_left <= 0`이면:
+non-final Stage는 tick의 Cashout까지 반영한 뒤 `stage_score >= clear_score`이면 시간과 무관하게:
+
+1. `CLEAR_LOCKED`
+2. Spawn / Input / gameplay 정지
+3. Final Settlement
+4. `CLEARED` → 즉시 Scale Shift
+
+clear score 미달이고 tick의 Cashout까지 반영한 뒤 `stage_time_left <= 0`이면:
 
 1. `TIME_UP_LOCKED`
 2. Spawn / Input / gameplay 정지
 3. Final Settlement
-4. 마지막 Stage가 아니면 `stage_score >= clear_score` 판정
-5. 성공 → `CLEARED` → 축하 메시지와 `Next Stage` 확인 대기
-6. matching `Next Stage` 요청 → Scale Shift
-7. 실패 → `FAILED` → Run End
-8. 마지막 Stage → Result
+4. non-final → `FAILED` → Run End
+5. 마지막 Stage → Result
 
 ---
 

@@ -1155,7 +1155,7 @@ Moon → Earth → Gas Giant → Sun → Supernova → Galaxy
 
 초기 Spawn: 약 `15/s`
 
-초기 `clear_score`: `2e18` (Supernova 4개 Cashout 상당)
+초기 `clear_score`: `4e25` (Galaxy 4개 Cashout 상당)
 
 ### Galactic
 
@@ -5841,7 +5841,7 @@ Local Lv5 = +4s
 최고 local 공은 생성 즉시 Stage Clear가 잠기므로 일반 Active Cashout 보너스를 실제로 받지 않는다. 따라서 실제 Cashout 보너스 최대치는 Ground에서 +1s, Planetary와 Galactic에서 +2s다.
 
 초기 `base_time` 테스트 seed는 Ground 45초, Planetary 40초, Galactic 35초다. Black Hole은 별도 Stage가 아니라 마지막 Galactic Stage의 Lv14 Snowball 및 맵 기믹이다.
-`clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. 최고 공은 생성 즉시 Clear되므로, 최고 공보다 한 단계 낮은 Cashout 가능 공 점수의 4배를 초기값으로 사용한다. Ground는 Giant Snowball(`1e6`) 기준 `4e6`, Planetary는 Supernova(`5e17`) 기준 `2e18`이다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
+`clear_score`는 마지막 Stage를 제외한 Stage별 데이터다. Ground는 Moon(`1e8`) 기준 `4e8`, Planetary는 Galaxy(`1e25`) 기준 `4e25`을 초기값으로 사용한다. 두 Stage 모두 최고 공 Active Cashout 점수의 4배를 목표로 하며, local Lv4 생성 자체는 Clear가 아니다. 마지막 Galactic Stage는 `clear_score`를 판정에 사용하지 않으며 데이터 기본값은 `0`이다.
 둘 다 플레이테스트 전 확정값이 아니다.
 
 초기 구현에는 Stage 시간 cap을 넣지 않는다.

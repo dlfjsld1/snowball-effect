@@ -105,6 +105,16 @@
                        "pixel_grid":  2,
                        "binary_alpha":  true,
                        "role":  "pause and retry CRT"
+                   },
+                   {
+                       "path":  "crt_pause_b_v2_176x104.png",
+                       "size":  [
+                                    176,
+                                    104
+                                ],
+                       "pixel_grid":  1,
+                       "binary_alpha":  true,
+                       "role":  "direct-pixel edited B-design pause and retry CRT"
                    }
                ]
 }

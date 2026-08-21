@@ -141,9 +141,9 @@ Codex는 작업을 마치고 아래 형식으로 보고한다.
 - 각 Stage local Lv3/Lv4의 Run 내 최초 생성은 6종 FIRST CONTACT CUT-IN 대상이며, Ground/Planetary 최고 공 제작은 즉시 Clear하지 않는다. Galactic 첫 Lv14는 CUT-IN 뒤 이동 Black Hole 국면으로 전환하고 두 번째 Black Hole과 충돌할 때 Run End.
 - Time Up = 화면 공 `Final Settlement`.
 - Final Settlement = `Score only`; Time Bonus 없음.
-- Time Up 후 Final Stage Score가 `clear_score` 이상이면 Stage Clear.
-- 부족하면 Run End.
-- 성공한 Stage는 Settlement 후 축하 메시지에서 `Next Stage`를 확인한 뒤 `SCALE SHIFT`.
+- non-final Stage는 `stage_score >= clear_score` 순간 Stage Clear와 Final Settlement를 확정한다.
+- clear score 미달로 Time Up이면 Run End.
+- 성공한 Stage는 Settlement 직후 자동으로 `SCALE SHIFT`.
 - Time Up 판정은 해당 physics tick의 Merge와 Active Cashout을 모두 반영한 뒤 수행한다.
 - 같은 tick의 local Lv4 생성은 Time Up을 취소하지 않는다.
 - `stage_score`와 `run_score`는 점수 이벤트 때 함께 증가하며 Stage 종료 시 다시 합산하지 않는다.

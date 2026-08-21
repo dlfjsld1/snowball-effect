@@ -10,6 +10,7 @@ const Ledger = preload("res://scripts/core/score_ledger.gd")
 signal stage_changed(definition: StageDefinition)
 signal stage_state_changed(state: StringName)
 signal stage_shift_started(next_definition: StageDefinition, shift_id: int)
+signal stage_run_ended(result_snapshot: Dictionary)
 signal final_settlement_started(amount: float)
 signal final_settlement_finished(amount: float)
 signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
@@ -38,7 +39,6 @@ var _stage_catalog = StageCatalog.new()
 var _stage_runtime: StageRuntime
 var _settlement_service: SettlementService
 var _pending_cashouts: Array[Dictionary] = []
-var _top_ball_created := false
 var _pending_shift_id := -1
 var _pending_shift_definition: StageDefinition
 var _next_shift_id := 1
@@ -57,7 +57,6 @@ func _ready() -> void:
 	_settlement_service.configure(_stage_runtime.score_ledger)
 	_simulation.cashout_completed.connect(_on_cashout_completed)
 	_simulation.ball_merged.connect(_on_ball_merged)
-	_simulation.top_ball_created.connect(_on_top_ball_created)
 	_simulation.black_hole_absorbed.connect(_on_black_hole_absorbed)
 	_simulation.black_hole_finale_started.connect(_on_black_hole_finale_started)
 	_stage_runtime.end_decision_requested.connect(_on_end_decision_requested)
@@ -79,14 +78,13 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_pending_cashouts.clear()
-	_top_ball_created = false
 	_stage_runtime.advance_run_time(delta)
 	_stage_runtime.stage_time_left -= delta
 	_stage_runtime.stage_time_changed.emit(_stage_runtime.stage_time_left)
 	_simulation.step_simulation(delta)
 	if current_state != PLAYING:
 		return
-	_stage_runtime.process_tick(0.0, _top_ball_created, _pending_cashouts)
+	_stage_runtime.process_tick(0.0, false, _pending_cashouts)
 
 
 func start_run() -> void:
@@ -127,13 +125,6 @@ func get_runtime_snapshot() -> Dictionary:
 	}
 
 
-func debug_force_top_ball_clear() -> bool:
-	if not OS.is_debug_build() or current_state != PLAYING:
-		return false
-	_on_end_decision_requested(&"TOP_BALL_CLEAR")
-	return current_state == SHIFTING or current_state == CLEARED
-
-
 func debug_force_score_clear() -> bool:
 	if not OS.is_debug_build() or current_state != PLAYING or _stage_runtime.current_stage == null:
 		return false
@@ -143,7 +134,6 @@ func debug_force_score_clear() -> bool:
 	var missing_score := maxf(clear_score - _stage_runtime.score_ledger.stage_score, 0.0)
 	if missing_score > 0.0:
 		_stage_runtime.score_ledger.apply_score_event(missing_score)
-	_stage_runtime.stage_time_left = 0.0
 	_stage_runtime.process_tick(0.0, false, [])
 	return current_state == SHIFTING
 
@@ -215,11 +205,6 @@ func _on_ball_merged(_result_level: int, _world_position: Vector2) -> void:
 		_stage_runtime.record_run_merge()
 
 
-func _on_top_ball_created(global_level: int) -> void:
-	if current_state == PLAYING and _stage_runtime.is_current_stage_top_ball(global_level):
-		_top_ball_created = true
-
-
 func _on_black_hole_absorbed(score_amount: float, _global_level: int, _world_position: Vector2) -> void:
 	if current_state == PLAYING or current_state == BLACK_HOLE_PHASE_LOCKED:
 		_stage_runtime.apply_black_hole_absorption(score_amount)
@@ -258,10 +243,9 @@ func _on_final_settlement_finished(amount: float) -> void:
 
 
 func _on_end_decision_requested(reason: StringName) -> void:
-	if reason == &"TOP_BALL_CLEAR":
-		_set_state(CLEAR_LOCKED)
-	else:
-		_set_state(TIME_UP_LOCKED)
+	if reason != &"SCORE_CLEAR" and reason != &"TIME_UP":
+		return
+	_set_state(CLEAR_LOCKED if reason == &"SCORE_CLEAR" else TIME_UP_LOCKED)
 	_settle_and_resolve(reason)
 
 
@@ -276,12 +260,20 @@ func _settle_and_resolve(reason: StringName) -> void:
 	for index in active_indices:
 		_simulation.deactivate_ball(index)
 
-	if reason == &"TOP_BALL_CLEAR" or _stage_runtime.score_ledger.stage_score >= _stage_runtime.current_stage.clear_score:
+	var is_non_final_stage := _stage_catalog.get_stage(current_stage_index + 1) != null
+	if is_non_final_stage and _stage_runtime.score_ledger.stage_score >= _stage_runtime.current_stage.clear_score:
 		_set_state(CLEARED)
 		_begin_scale_shift_if_available()
 	else:
-		_set_state(FAILED)
-
+		if is_non_final_stage:
+			_set_state(FAILED)
+		else:
+			_set_state(RUN_ENDED)
+			stage_run_ended.emit({
+				"stage_index": current_stage_index,
+				"stage_score": _stage_runtime.score_ledger.stage_score,
+				"run_score": _stage_runtime.score_ledger.run_score,
+			})
 
 func _begin_scale_shift_if_available() -> void:
 	var next_definition := _stage_catalog.get_stage(current_stage_index + 1) as StageDefinition

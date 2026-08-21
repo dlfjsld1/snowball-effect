@@ -29,11 +29,15 @@ func _ready() -> void:
 	_audio_manager.audio_unlocked = true
 	var merge_t0_policy: Dictionary = _audio_manager.get_event_policy(&"merge_t0")
 	_expect(merge_t0_policy["priority"] == 10 and merge_t0_policy["polyphony"] == 2 and merge_t0_policy["volume_db"] == -12.0, "Tier 0 policy must have bounded priority, polyphony, and volume.")
+	_expect(_audio_manager.get_debug_snapshot()["sfx_volume_offset_db"] == -6.0, "All effects must use the shared -6 dB default attenuation.")
 	var finale_policy: Dictionary = _audio_manager.get_event_policy(&"black_hole_finale")
 	_expect(finale_policy["priority"] == 100 and finale_policy["terminal"], "Finale must be the highest terminal priority.")
+	var scale_shift_policy: Dictionary = _audio_manager.get_event_policy(&"scale_shift")
+	_expect(scale_shift_policy["priority"] == 85 and scale_shift_policy["volume_db"] == -7.0, "Scale Shift must remain important without overpowering stage BGM.")
 
 	ball_merged.emit(0, Vector2.ZERO)
 	_expect(_active_keys().has(&"merge_t0"), "Tier 0 merge must resolve to merge_t0.")
+	_expect(is_equal_approx(_active_player_volume(&"merge_t0"), -18.0), "The shared SFX attenuation must apply to normal gameplay effects.")
 	_expect(not _audio_manager.play_event(&"merge_t0"), "Tier 0 cooldown must drop an immediate duplicate.")
 	_expect(_audio_manager.get_debug_snapshot()["dropped_event_count"] >= 1, "Dropped events must be observable for verification.")
 
@@ -68,6 +72,7 @@ func _ready() -> void:
 	_expect(not _active_keys().has(&"black_hole_loop"), "Finale must stop the Black Hole loop.")
 	_expect(not _active_keys().has(&"black_hole_phase"), "Finale must clear lower-priority phase audio.")
 	_expect(_active_keys().has(&"black_hole_finale"), "Finale must play its one-shot event.")
+	_expect(is_equal_approx(_active_player_volume(&"black_hole_finale"), -6.0), "The shared SFX attenuation must also apply to terminal effects.")
 
 	_audio_manager.reset_runtime()
 	_audio_manager.configure_sources(self, self, self, self)
@@ -131,6 +136,13 @@ func _ready() -> void:
 
 func _active_keys() -> Array:
 	return _audio_manager.get_debug_snapshot()["active_event_keys"]
+
+
+func _active_player_volume(event_key: StringName) -> float:
+	for child in _audio_manager.get_children():
+		if child is AudioStreamPlayer and child.playing and StringName(child.get_meta(&"audio_event_key", &"")) == event_key:
+			return child.volume_db
+	return INF
 
 
 func _expect(condition: bool, message: String) -> void:

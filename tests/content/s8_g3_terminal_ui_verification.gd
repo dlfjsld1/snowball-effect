@@ -88,11 +88,14 @@ func _verify_result(result) -> void:
 	_expect(result.visible, "Result API must reveal the result panel.")
 	_expect(result.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST, "Result pixel assets must use nearest filtering.")
 	_expect(result.get_node("SlidePanel/Artwork").texture != null, "Result must present the approved Galactic terminal artwork.")
+	_expect(result.get_node("SlidePanel/Artwork").texture.resource_path.ends_with("result_galactic_terminal_plate_v3.png"), "Result must use the revised Title-style tube-gauge artwork.")
 	_expect(result.mechanical_motion != null, "Result must keep decorative tube and gauge motion separate from input controls.")
 	_expect(result.retry_button is Button and result.main_menu_button is Button, "Result actions must be real Godot Button components.")
 	_expect(result.mechanical_motion.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Result decorative motion must not intercept pointer input.")
 	_expect(is_equal_approx(result.mechanical_motion.RIGHT_GAUGE_CENTER.x, result.mechanical_motion.DESIGN_SIZE.x - result.mechanical_motion.LEFT_GAUGE_CENTER.x), "Result gauge centers must be horizontally symmetric in artwork coordinates.")
 	_expect(is_equal_approx(result.mechanical_motion.RIGHT_TUBE.get_center().x, result.mechanical_motion.DESIGN_SIZE.x - result.mechanical_motion.LEFT_TUBE.get_center().x), "Result tube animation bounds must be horizontally symmetric in artwork coordinates.")
+	_expect(is_equal_approx(result.mechanical_motion.LEFT_GAUGE_CENTER.y, result.mechanical_motion.LEFT_TUBE.end.y + 70.0) and is_equal_approx(result.mechanical_motion.RIGHT_GAUGE_CENTER.y, result.mechanical_motion.RIGHT_TUBE.end.y + 70.0), "Result tube gauges must sit below their lower caps with the recalculated 70px gap.")
+	_verify_pixel_tube_particles(result.mechanical_motion)
 	_verify_clear_button_chrome(result.retry_button, "Result Retry")
 	_verify_clear_button_chrome(result.main_menu_button, "Result Main")
 	_verify_result_hover_feedback(result)
@@ -168,6 +171,15 @@ func _verify_result_hover_feedback(result) -> void:
 	_expect(bool(motion.get("_main_hovered")), "Result Main hover must activate its custom face feedback.")
 	result.main_menu_button.mouse_exited.emit()
 	_expect(not bool(motion.get("_main_hovered")), "Result Main feedback must clear after pointer exit.")
+
+
+func _verify_pixel_tube_particles(motion) -> void:
+	var left_particles: Array = motion.get("_left_bubbles")
+	var right_particles: Array = motion.get("_right_bubbles")
+	_expect(left_particles.size() == 7 and right_particles.size() == 8, "Result must animate independent pixel droplets in both left and right tubes.")
+	for particle in left_particles + right_particles:
+		_expect(particle.has("pixel_size") and not particle.has("radius"), "Result tube droplets must use square pixel sizes instead of circular radii.")
+		_expect(int(particle.get("pixel_size", 0)) >= 2, "Result tube droplets must retain a visible pixel footprint.")
 
 
 func _expect(condition: bool, message: String) -> void:

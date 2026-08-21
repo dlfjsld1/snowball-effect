@@ -40,11 +40,10 @@ Stage Start
 → Galactic 첫 Black Hole 제작?
    ├─ YES → 이동 Black Hole 전환 + L3 확장 후 계속 플레이
    └─ 두 Black Hole 충돌 → 최종 폭발 + 타이틀 + Run End
-→ Time Up?
+→ clear_score 도달?
    ├─ 화면 공 Final Settlement (Score Only)
-   ├─ clear_score 이상 → Stage Clear
-   └─ 미달 → Run End
-→ Ground/Planetary 성공 시 축하 메시지 → `Next Stage` → SCALE SHIFT
+   └─ 즉시 SCALE SHIFT
+→ clear_score 미달 Time Up? → Run End
 → 이전 최고 공이 다음 Stage의 기본 공
 ```
 

@@ -47,6 +47,7 @@ func _verify_profile(
 	_expect(frame.get_field_rect() == expected_field, "Frame field rect must match the approved profile.")
 	_expect(simulation.play_field_rect == expected_field, "Simulation bounds must match the visible frame opening.")
 	_expect(paddle.play_field_rect == expected_field, "Paddle clamp must match the visible frame opening.")
+	_expect(frame.field_bezel.patch_margin_left == 90 and frame.field_bezel.patch_margin_top == 90, "Bezel nine-patch margins must include the full brass pipe edge.")
 	_expect(paddle.position.x <= expected_field.end.x - paddle.paddle_width * 0.5, "Paddle must remain fully inside the visible field after a Stage frame change.")
 	paddle.rotation = deg_to_rad(45.0)
 	paddle.clamp_to_play_field()

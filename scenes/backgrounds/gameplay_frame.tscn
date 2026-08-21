@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://deic2cryapcmb"]
+[gd_scene load_steps=13 format=3 uid="uid://deic2cryapcmb"]
 
 [ext_resource type="Script" uid="uid://bkmtnd1dgffmf" path="res://scripts/presentation/gameplay_frame.gd" id="1_frame"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/field_bezel_v2_910x900.png" id="2_bezel"]
@@ -9,16 +9,9 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_genealogy_v2_176x400.png" id="7_genealogy"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_score_v2_176x112.png" id="8_score"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_item_v2_176x300.png" id="9_item"]
-[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_pause_v2_176x104.png" id="10_pause"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/crt_pause_b_v2_176x104.png" id="10_pause"]
 [ext_resource type="Script" path="res://scripts/presentation/presentation_manager.gd" id="11_presentation"]
-[ext_resource type="PackedScene" path="res://scenes/effects/black_hole_phase_effect.tscn" id="12_black_hole"]
-
-[sub_resource type="SystemFont" id="PixelStatusFont"]
-font_names = PackedStringArray("Consolas", "Courier New", "monospace")
-font_weight = 700
-antialiasing = 0
-hinting = 0
-subpixel_positioning = 0
+[ext_resource type="PackedScene" path="res://scenes/effects/black_hole_presentation_overlay.tscn" id="12_black_hole_overlay"]
 
 [node name="GameplayFrame" type="Control" unique_id=1995335417]
 texture_filter = 1
@@ -29,9 +22,6 @@ offset_right = 1600.0
 offset_bottom = 900.0
 mouse_filter = 2
 script = ExtResource("1_frame")
-
-[node name="BlackHolePhaseEffect" parent="." instance=ExtResource("12_black_hole")]
-layout_mode = 1
 
 [node name="HousingPanels" type="Control" parent="."]
 mouse_filter = 2
@@ -68,10 +58,10 @@ offset_bottom = 900.0
 mouse_filter = 2
 texture = ExtResource("2_bezel")
 draw_center = false
-patch_margin_left = 50
-patch_margin_top = 50
-patch_margin_right = 50
-patch_margin_bottom = 50
+patch_margin_left = 90
+patch_margin_top = 90
+patch_margin_right = 90
+patch_margin_bottom = 90
 
 [node name="CrtShells" type="Control" parent="."]
 mouse_filter = 2
@@ -153,6 +143,9 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("11_presentation")
 
+[node name="BlackHoleOverlay" parent="PresentationManager" instance=ExtResource("12_black_hole_overlay")]
+unique_name_in_owner = true
+
 [node name="ShiftFlash" type="ColorRect" parent="PresentationManager"]
 unique_name_in_owner = true
 layout_mode = 1
@@ -180,21 +173,3 @@ theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
 theme_override_colors/font_outline_color = Color(0.1216, 0.1412, 0.2941, 1)
 theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 48
-
-[node name="BlackHolePhaseLabel" type="Label" parent="PresentationManager"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 0
-offset_left = 430.0
-offset_top = 54.0
-offset_right = 1170.0
-offset_bottom = 100.0
-mouse_filter = 2
-text = "BLACK HOLE PHASE  //  FIELD 1040"
-horizontal_alignment = 1
-vertical_alignment = 1
-theme_override_colors/font_color = Color(0.4549, 1, 0.9412, 1)
-theme_override_colors/font_outline_color = Color(0.0078, 0.0157, 0.0431, 1)
-theme_override_constants/outline_size = 6
-theme_override_fonts/font = SubResource("PixelStatusFont")
-theme_override_font_sizes/font_size = 22

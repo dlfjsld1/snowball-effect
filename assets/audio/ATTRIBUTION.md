@@ -2,10 +2,11 @@
 
 ## Provenance
 
-All `.ogg` files currently under this directory originate from audio obtained
-through Pixabay and were converted or edited for use in **Snowball Effect**.
+Audio provenance is split by asset family. The 22 event SFX files are sourced
+from Pixabay. The six `bgm_*.ogg` files were generated with **Google Gemini**
+for use in **Snowball Effect**.
 
-## Third-party assets and licenses
+## Pixabay SFX: third-party assets and licenses
 
 - Source: Pixabay.
 - License: [Pixabay Content License](https://pixabay.com/service/license-summary/)
@@ -21,6 +22,27 @@ through Pixabay and were converted or edited for use in **Snowball Effect**.
 - The source URLs below are recorded as provenance evidence. Contributor names
   and download dates are not yet recorded; preserve them when available before
   public release.
+
+## Gemini-generated BGM: provenance and applicable terms
+
+| File | Intended state | Source | Applicable license / terms |
+|---|---|---|---|
+| `bgm_title.ogg` | Main Title | Google Gemini-generated content | Google/Gemini terms applicable to the generating account and service |
+| `bgm_ground.ogg` | Ground Stage | Google Gemini-generated content | Google/Gemini terms applicable to the generating account and service |
+| `bgm_planetary.ogg` | Planetary Stage | Google Gemini-generated content | Google/Gemini terms applicable to the generating account and service |
+| `bgm_galactic.ogg` | Galactic Stage | Google Gemini-generated content | Google/Gemini terms applicable to the generating account and service |
+| `bgm_pause.ogg` | Pause | Google Gemini-generated content | Google/Gemini terms applicable to the generating account and service |
+| `bgm_result.ogg` | Final Result | Google Gemini-generated content | Google/Gemini terms applicable to the generating account and service |
+
+- These six files are not Pixabay assets and are not offered under the Pixabay
+  Content License or a separate Creative Commons license.
+- Their use is governed by the Google Terms of Service and the Gemini service
+  terms/policies that applied when they were generated, including the
+  [Google Terms of Service](https://policies.google.com/terms) and applicable
+  [Gemini service-specific terms](https://policies.google.com/terms/service-specific).
+- The project credits the provenance explicitly as Google Gemini-generated
+  content. Release owners must retain this attribution and confirm that the
+  generating account's then-current terms permit the intended distribution.
 
 ## Selected audio assets
 
