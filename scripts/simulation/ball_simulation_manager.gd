@@ -68,6 +68,7 @@ var _render_snapshot := {
 	"global_levels": _render_snapshot_global_levels,
 	"count": 0,
 }
+var _item_collision_snapshots: Array[Dictionary] = []
 var _simulation_metrics := {
 	"active_balls": 0,
 	"slot_capacity": 0,
@@ -423,6 +424,18 @@ func get_render_snapshot() -> Dictionary:
 	_render_snapshot["global_levels"] = _render_snapshot_global_levels
 	_render_snapshot["count"] = active_count
 	return _render_snapshot
+
+
+func get_active_item_collision_snapshots() -> Array[Dictionary]:
+	_item_collision_snapshots.clear()
+	for ball_index in active_indices:
+		_item_collision_snapshots.append({
+			"id": ball_index,
+			"global_level": global_levels[ball_index],
+			"position": positions[ball_index],
+			"radius": radii[ball_index],
+		})
+	return _item_collision_snapshots
 
 
 func _update_simulation_metrics() -> void:

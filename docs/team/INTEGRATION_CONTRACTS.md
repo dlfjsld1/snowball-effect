@@ -22,6 +22,9 @@
 | Content ItemManager | `item_collected(item_type: StringName, world_position)` | Presentation, Integration | Paddle 획득 뒤 CUT-IN과 1회 activation 중재 |
 | Content ItemManager | `item_orb_missed(item_type: StringName, world_position)` | Presentation | 열린 하단 이탈 소멸 표현; activation 없음 |
 | Content ItemManager | `active_items_changed(read_only_snapshot)` | Presentation HUD | 현재 활성 아이템 표시 |
+| Integration ItemEffectGateway | `item_cutin_requested(event_id: int, item_type: StringName, world_position)` | Presentation S6-G2 | Orb 획득 뒤에만 CUT-IN을 요청한다. Item Ball 파괴는 이 요청을 만들지 않는다. |
+| Presentation S6-G2 | `GameManager.accept_item_cutin_activation_cue(event_id)` 또는 `skip_item_cutin(event_id)` | Integration ItemEffectGateway | matching event만 1회 activation request로 commit한다. cue/skip 중복과 Retry 이전 stale event는 거부한다. |
+| Integration ItemEffectGateway | `item_effect_activation_requested(event_id: int, item_type: StringName, world_position)` | Content S7-G2~G4 | 실제 Blizzard/Fire Core/Magnet 효과의 유일한 activation request다. Gateway는 점수·Settlement·simulation을 직접 변경하지 않는다. |
 | Integration StageManager | `stage_shift_started(next_definition, shift_id)` | Presentation | non-final Stage가 `clear_score`에 도달해 Final Settlement를 마친 직후 `SHIFTING` 진입과 함께 Stage World/HUD 연출을 시작한다. Presentation은 gameplay state를 직접 변경하지 않는다. |
 | Presentation | `stage_shift_presentation_finished(shift_id)` → `StageManager.accept_stage_shift_presentation_finished(shift_id)` | Integration StageManager | matching `shift_id`일 때만 다음 Stage 진입 허용. 중복·stale 완료는 무시한다. S5-G3는 이 Presentation 완료 계약을 전제로 먼저 구현됐다. S5-G4 전 Main의 임시 adapter가 같은 API를 deferred 한 번 호출하며, Presentation 연결 시 Integration이 adapter를 제거한다. |
 | Presentation | `visual_field_rect_changed(visual_rect: Rect2)` | Integration GameManager | Scale Shift와 Black Hole L2→L3 보간 중 프레임 내부의 장식용 Backdrop만 같은 visual rect로 갱신한다. Simulation·Paddle·Cashout logical rect와 Stage state는 이 신호로 변경하지 않는다. |
