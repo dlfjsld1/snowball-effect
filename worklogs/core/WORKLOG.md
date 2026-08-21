@@ -810,3 +810,8 @@ Owner: Core
 - User requested that two Black Holes repel rather than automatically converge; finale must require a strong actual collision.
 - Replaced the `450 world units/s²` mutual attraction with equal-strength repulsion. Ordinary-Ball pull, all-level contact absorption, score penalties, and terminal contact sweep stay separate.
 - Updated S8 force coverage for increasing idle Black Hole separation, and finale coverage for a forced opposing-velocity collision.
+## 2026-08-21 — Black Hole Paddle Reflection
+
+- User identified that mutual repulsion alone makes the finale unreachable because Black Hole runtime entities previously bypassed Paddle collision.
+- Routed each Black Hole's movement through the existing Paddle continuous-collision provider before bounds/terminal handling. It now receives the same swept transform, contact velocity, impact cap, and separation behavior as normal Balls.
+- Added force-fixture coverage for a downward-moving Black Hole reflecting upward from the Paddle. No changes to Black Hole absorption, score penalty, wall behavior, or finale contact lock.
