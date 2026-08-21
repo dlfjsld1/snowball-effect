@@ -15,6 +15,7 @@ func _ready() -> void:
 	simulation.top_ball_created.connect(_on_top_ball_created)
 	_verify_deterministic_merge_commit()
 	_verify_catalog_top_event()
+	_verify_non_merge_contact_commit()
 	if _failures == 0:
 		print("S2_G3_VERIFIED pairs=deterministic one_consume_per_tick=true top_event=true")
 	get_tree().quit(_failures)
@@ -72,6 +73,29 @@ func _verify_catalog_top_event() -> void:
 	_expect(simulation.get_ball_global_level(second_index) == 14, "The reused second input slot must now hold the highest catalog output.")
 	_expect(simulation.is_ball_active(max_first) and simulation.is_ball_active(max_second), "Pairs without a next definition must remain active.")
 	_expect(_top_levels == [14], "Creating the highest catalog level must emit top_ball_created once.")
+
+
+func _verify_non_merge_contact_commit() -> void:
+	simulation.reset_runtime()
+	simulation.configure_stage_ball_levels(PackedInt32Array([0, 1, 2]))
+	simulation.merge_enabled = true
+	var lower_index := simulation.spawn_ball(Vector2(100.0, 100.0), Vector2(80.0, 0.0), 4.0, 0)
+	var top_index := simulation.spawn_ball(Vector2(118.0, 100.0), Vector2(-40.0, 0.0), 16.0, 2)
+	var other_top_index := simulation.spawn_ball(Vector2(300.0, 100.0), Vector2(50.0, 0.0), 16.0, 2)
+	var other_top_target := simulation.spawn_ball(Vector2(330.0, 100.0), Vector2(-50.0, 0.0), 16.0, 2)
+	simulation.step_simulation(0.1)
+	_expect(simulation.is_ball_active(lower_index) and simulation.is_ball_active(top_index), "Cross-level contact must not consume ordinary Balls.")
+	_expect(simulation.velocities[lower_index].x < simulation.velocities[top_index].x, "Top/lower contact must reverse the pair's relative normal velocity.")
+	_expect(simulation.velocities[other_top_index].x < 0.0 and simulation.velocities[other_top_target].x > 0.0, "Top/top contact must reflect without a Merge result.")
+	_expect(simulation.get_active_count() == 4, "Cross-level contact must not merge or remove either input.")
+
+	simulation.reset_runtime()
+	simulation.configure_stage_ball_levels(PackedInt32Array([0, 1, 2]))
+	var first_cross_level := simulation.spawn_ball(Vector2(100.0, 200.0), Vector2(80.0, 0.0), 4.0, 0)
+	var second_cross_level := simulation.spawn_ball(Vector2(118.0, 200.0), Vector2(-40.0, 0.0), 8.0, 1)
+	simulation.step_simulation(0.1)
+	_expect(simulation.is_ball_active(first_cross_level) and simulation.is_ball_active(second_cross_level), "Ordinary cross-level contact must keep both inputs active.")
+	_expect(simulation.velocities[first_cross_level].x < simulation.velocities[second_cross_level].x, "Ordinary different-level Balls must physically reflect instead of passing through.")
 
 
 func _find_active_index_for_level(global_level: int, excluded_index: int) -> int:

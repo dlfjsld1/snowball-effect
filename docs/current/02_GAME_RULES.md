@@ -135,7 +135,13 @@ current_stage.local_ball_levels[i] + same
 
 따라서 기본 Run의 Planetary에서는 Lv6 두 개가 Lv8로, Lv8 두 개가 Lv10으로 합쳐진다. 전역 ID가 연속이라는 가정으로 `global_level + 1`을 사용하지 않는다. 현재 Stage chain에 다음 항목이 없으면 더 합체하지 않는다.
 
-MVP에서 다른 레벨 공은 서로 통과 가능하다.
+일반 Snowball pair는 Merge 또는 물리 contact 중 하나로 처리한다.
+
+- 현재 Stage chain에서 다음 공이 있는 같은 `global_level` 두 공은 Merge한다.
+- 서로 다른 `global_level` pair는 원형 collision radius와 현재 velocity/mass를 사용해 물리적으로 반사·분리한다.
+- 현재 Stage 최고공 두 개는 더 Merge하지 않고 같은 물리 contact 규칙으로 반사·분리한다.
+- Merge하지 않는 contact pair는 접근 중일 때만 반사하고 penetration correction 뒤 분리해 붙음·반복 반사를 막는다.
+- Item Ball과 이동 Black Hole runtime entity는 각자의 전용 충돌 계약을 유지하며 이 최고공 예외 규칙에 자동 포함하지 않는다.
 
 합체 결과:
 
@@ -145,6 +151,8 @@ MVP에서 다른 레벨 공은 서로 통과 가능하다.
 - 다음 물리 프레임부터 재머지 가능
 - 점수 가치와 비주얼 레벨 상승
 - Stage local Lv3·Lv4 최초 생성 CUT-IN 대상 여부 확인. Ground/Planetary local Lv4 생성은 즉시 Clear를 요청하지 않는다.
+
+일반 Snowball 본체는 활성 Play Field 내부에서만 표시한다. 열린 하단을 통과해 Cashout되는 동안 simulation 공의 일부 또는 전체가 Play Field 밖 Stage World/기계 배경 위로 새어 보이지 않도록 렌더 경계에서 clip한다. Cashout popup·pixel debris 같은 별도 FX는 Presentation 계약에 따라 경계 근처에 표시할 수 있지만, 논리 공 본체와 같은 것으로 취급하지 않는다.
 
 ---
 

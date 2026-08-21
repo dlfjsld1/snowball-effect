@@ -109,8 +109,8 @@ S4 기준선에서 공별 `_draw()/draw_circle` 경로가 1,000개 Web stretch�
 - Merge/Cashout/Stage FX를 같은 MultiMesh에 통합
 - Item Ball 균열·파괴 렌더링
 - Black Hole 본체와 distortion shader 구현
-- collision, Merge, score, Stage 상태 변경
+- 공-공 collision, Merge, score, Stage 상태 변경. 단, 일반 공 본체가 active Play Field 밖으로 새지 않는 batch clip은 renderer 책임으로 포함한다.
 
 Presentation은 level별 Texture2D/머티리얼을 나중에 연결할 수 있으며 최종 asset 완성은 Core batch 구조의 선행 조건이 아니다.
 
-검증은 기존 draw 기준선과 위치·반지름·가시 수 동일성, Stage 전환 후 binding/reset, 500개 Merge ON 실제 Web, 1,000개 stretch, browser console error와 기존 S2/S4 회귀를 포함한다.
+검증은 기존 draw 기준선과 위치·반지름·가시 수 동일성, active Play Field clip과 Cashout 하단 누수 없음, Stage 전환 후 binding/reset, 500개 Merge ON과 대표 최고공 contact 실제 Web, 1,000개 stretch, browser console error와 기존 S2/S4 회귀를 포함한다.
