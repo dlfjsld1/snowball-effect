@@ -1,6 +1,7 @@
 shader_type canvas_item;
 
 uniform vec4 play_field_rect;
+uniform bool use_texture = false;
 
 varying vec2 world_position;
 
@@ -12,8 +13,12 @@ void fragment() {
 	if (world_position.x < play_field_rect.x || world_position.y < play_field_rect.y || world_position.x > play_field_rect.z || world_position.y > play_field_rect.w) {
 		discard;
 	}
-	vec2 centered_uv = UV * 2.0 - vec2(1.0);
-	if (dot(centered_uv, centered_uv) > 1.0) {
-		discard;
+	if (use_texture) {
+		COLOR *= texture(TEXTURE, UV);
+	} else {
+		vec2 centered_uv = UV * 2.0 - vec2(1.0);
+		if (dot(centered_uv, centered_uv) > 1.0) {
+			discard;
+		}
 	}
 }

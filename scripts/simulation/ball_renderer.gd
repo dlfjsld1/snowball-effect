@@ -123,8 +123,8 @@ func _create_standard_batches() -> void:
 		var definition = _ball_catalog.get_definition(global_level)
 		if definition != null and definition.texture != null:
 			batch.texture = definition.texture
-		else:
-			batch.material = circle_material
+		batch.material = circle_material
+		circle_material.set_shader_parameter("use_texture", batch.texture != null)
 		add_child(batch)
 		_batches.append(batch)
 		_multimeshes.append(multimesh)
@@ -232,7 +232,8 @@ func _update_batch_visual(global_level: int, runtime_diameter: float) -> void:
 	var use_texture := texture != null
 	var batch := _batches[global_level]
 	var next_texture: Texture2D = texture if use_texture else null
-	var next_material: Material = null if use_texture else _circle_materials[global_level]
+	var next_material: Material = _circle_materials[global_level]
+	_circle_materials[global_level].set_shader_parameter("use_texture", use_texture)
 	if batch.texture == next_texture and batch.material == next_material:
 		return
 	batch.texture = next_texture
