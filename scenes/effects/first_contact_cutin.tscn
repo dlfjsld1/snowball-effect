@@ -1,0 +1,74 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/presentation/cutin_controller.gd" id="1_controller"]
+[ext_resource type="Texture2D" path="res://assets/sprites/cutins/first_contact/first-contact-background-v1.png" id="2_background"]
+
+[node name="FirstContactCutIn" type="Control"]
+process_mode = 3
+visible = false
+z_index = 1000
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_controller")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.008, 0.012, 0.035, 0)
+
+[node name="CardRoot" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BackgroundTexture" type="TextureRect" parent="CardRoot"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.88)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_background")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="TitleTexture" type="TextureRect" parent="CardRoot"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 32.0
+offset_top = 96.0
+offset_right = 1012.0
+offset_bottom = 796.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PortraitTexture" type="TextureRect" parent="CardRoot"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 900.0
+offset_top = 130.0
+offset_right = 1540.0
+offset_bottom = 770.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5

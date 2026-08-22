@@ -16,6 +16,7 @@ const ITEM_DEFINITIONS := [
 ]
 
 signal item_planet_damaged(item_type: StringName, current_hits: int, required_hits: int, world_position: Vector2)
+signal item_planet_spawned(item_type: StringName, world_position: Vector2, radius: float)
 signal item_planet_broken(item_type: StringName, world_position: Vector2)
 signal item_orb_spawned(item_type: StringName, world_position: Vector2)
 signal item_collected(item_type: StringName, world_position: Vector2)
@@ -159,6 +160,7 @@ func _spawn_item_ball(definition) -> void:
 	var position := Vector2(_random.randf_range(min_x, max_x), _play_field_rect.position.y + _play_field_rect.size.y * 0.3)
 	_item_ball = ItemBallScript.new()
 	_item_ball.setup(definition, position)
+	item_planet_spawned.emit(_item_ball.item_type, _item_ball.world_position, _item_ball.radius)
 
 
 func _break_item_ball() -> void:

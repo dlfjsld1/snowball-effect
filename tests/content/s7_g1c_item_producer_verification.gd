@@ -5,6 +5,7 @@ const StageCatalogScript = preload("res://scripts/data/stage_catalog.gd")
 
 var _failures := 0
 var _damage_count := 0
+var _planet_spawned_count := 0
 var _broken_count := 0
 var _spawned_count := 0
 var _collected_count := 0
@@ -14,6 +15,7 @@ var _missed_count := 0
 func _ready() -> void:
 	var manager = ItemManagerScript.new()
 	add_child(manager)
+	manager.item_planet_spawned.connect(func(_type, _position, _radius): _planet_spawned_count += 1)
 	manager.item_planet_damaged.connect(func(_type, _hits, _required, _position): _damage_count += 1)
 	manager.item_planet_broken.connect(func(_type, _position): _broken_count += 1)
 	manager.item_orb_spawned.connect(func(_type, _position): _spawned_count += 1)
@@ -25,7 +27,7 @@ func _ready() -> void:
 	manager.enter_stage(stage, play_field, 16.0, 0.0, &"blizzard", 7)
 	manager.advance(0.01)
 	var planet := manager.get_item_ball_snapshot()
-	_expect(not planet.is_empty(), "Stage must spawn exactly one Item Ball after its scheduled delay.")
+	_expect(not planet.is_empty() and _planet_spawned_count == 1, "Stage must spawn exactly one Item Ball and one matching display signal after its scheduled delay.")
 
 	manager.process_ball_snapshots([_snapshot(1, 1, planet.position, 16.0)])
 	_expect(_damage_count == 0, "Local level below 2 must not damage an Item Ball.")

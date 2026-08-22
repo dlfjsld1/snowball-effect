@@ -3,6 +3,7 @@ extends Node2D
 
 const SimulationManager = preload("res://scripts/simulation/ball_simulation_manager.gd")
 const BallCatalogScript = preload("res://scripts/data/ball_catalog.gd")
+const BallTextureLodCatalogScript = preload("res://scripts/presentation/ball_texture_lod_catalog.gd")
 
 const FIRST_STANDARD_GLOBAL_LEVEL := 0
 const LAST_STANDARD_GLOBAL_LEVEL := 13
@@ -16,8 +17,10 @@ const CIRCLE_SHADER := preload("res://scripts/simulation/ball_renderer_circle.gd
 
 var _simulation: SimulationManager
 var _ball_catalog = BallCatalogScript.new()
+var _ball_texture_lod_catalog = BallTextureLodCatalogScript.new()
 var _batches: Array[MultiMeshInstance2D] = []
 var _multimeshes: Array[MultiMesh] = []
+var _circle_materials: Array[ShaderMaterial] = []
 var _batch_transform_cache: Array = []
 var _batch_capacities := PackedInt32Array()
 var _level_counts := PackedInt32Array()
@@ -33,6 +36,7 @@ var _clip_rect := Rect2()
 
 
 func _ready() -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_create_standard_batches()
 	if not simulation_path.is_empty():
 		set_simulation_manager(get_node_or_null(simulation_path) as SimulationManager)
@@ -114,10 +118,17 @@ func _create_standard_batches() -> void:
 		var batch := MultiMeshInstance2D.new()
 		batch.name = "LevelBatch%d" % global_level
 		batch.multimesh = multimesh
-		batch.material = _create_circle_material()
+		batch.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		var circle_material := _create_circle_material()
+		var definition = _ball_catalog.get_definition(global_level)
+		if definition != null and definition.texture != null:
+			batch.texture = definition.texture
+		else:
+			batch.material = circle_material
 		add_child(batch)
 		_batches.append(batch)
 		_multimeshes.append(multimesh)
+		_circle_materials.append(circle_material)
 		_batch_transform_cache.append([])
 
 
@@ -174,6 +185,9 @@ func _update_standard_batches(snapshot_positions: PackedVector2Array, snapshot_r
 	for global_level in range(STANDARD_BATCH_COUNT):
 		var count := _level_counts[global_level]
 		var offset := _level_offsets[global_level]
+		if count > 0:
+			var first_snapshot_index := _ordered_snapshot_indices[offset]
+			_update_batch_visual(global_level, snapshot_radii[first_snapshot_index] * 2.0)
 		for instance_index in range(count):
 			var snapshot_index := _ordered_snapshot_indices[offset + instance_index]
 			var radius := snapshot_radii[snapshot_index]
@@ -206,10 +220,33 @@ func _ensure_batch_capacity(global_level: int, required_count: int) -> void:
 	_batch_capacities[global_level] = new_capacity
 	_multimeshes[global_level].instance_count = new_capacity
 	_batch_transform_cache[global_level].resize(new_capacity)
-	var definition = _ball_catalog.get_definition(global_level)
-	var color: Color = definition.base_color if definition != null else ball_color
+	var color := _get_batch_instance_color(global_level)
 	for instance_index in range(new_capacity):
 		_multimeshes[global_level].set_instance_color(instance_index, color)
+
+
+func _update_batch_visual(global_level: int, runtime_diameter: float) -> void:
+	var definition = _ball_catalog.get_definition(global_level)
+	var primary_texture: Texture2D = definition.texture if definition != null else null
+	var texture := _ball_texture_lod_catalog.resolve_texture(global_level, runtime_diameter, primary_texture)
+	var use_texture := texture != null
+	var batch := _batches[global_level]
+	var next_texture: Texture2D = texture if use_texture else null
+	var next_material: Material = null if use_texture else _circle_materials[global_level]
+	if batch.texture == next_texture and batch.material == next_material:
+		return
+	batch.texture = next_texture
+	batch.material = next_material
+	var color := _get_batch_instance_color(global_level)
+	for instance_index in range(_batch_capacities[global_level]):
+		_multimeshes[global_level].set_instance_color(instance_index, color)
+
+
+func _get_batch_instance_color(global_level: int) -> Color:
+	if _batches[global_level].texture != null:
+		return Color.WHITE
+	var definition = _ball_catalog.get_definition(global_level)
+	return definition.base_color if definition != null else ball_color
 
 
 func _is_standard_global_level(global_level: int) -> bool:

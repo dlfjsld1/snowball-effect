@@ -361,6 +361,8 @@ func _is_terminal_event(event_key: StringName) -> bool:
 
 func _on_stage_state_changed(state: StringName) -> void:
 	match state:
+		&"READY":
+			reset_runtime_fx(true)
 		&"PLAYING":
 			if _presentation_phase == PHASE_TERMINAL:
 				reset_runtime_fx(true)

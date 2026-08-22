@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="BallDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="BallDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/ball_definition.gd" id="1_definition"]
+[ext_resource type="Texture2D" path="res://assets/sprites/balls/ground/runtime/ball_lv03_giant_snowball_64.png" id="2_texture"]
 
 [resource]
 script = ExtResource("1_definition")
@@ -11,4 +12,5 @@ radius = 16.0
 mass = 64.0
 visual_key = &"giant_snowball"
 base_color = Color(0.22745098, 0.55294118, 1, 1)
+texture = ExtResource("2_texture")
 fx_tier = 1

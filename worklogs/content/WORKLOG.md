@@ -1215,3 +1215,83 @@ Owned files: `scripts/gameplay/item_blizzard.gd`, `tests/content/s7_g2_blizzard_
 - Primary `godot` validate: `item_blizzard.gd`, S7-G2 verification script/scene 3/3 valid.
 - Primary `godot` verification scene은 process exit 0으로 종료했다. 빠른 종료로 MCP bridge가 attach되기 전 닫혀 stdout sentinel을 수집하지 못했지만, Godot runtime error는 없었다.
 - Godot CLI는 이 환경에서 PATH/standard install location에 없어 baseline 실행을 못 했다. 실제 Main wiring·CUT-IN activation·Web smoke는 Integration consumer가 추가된 뒤 재검증한다.
+
+## 2026-08-21 — S7-G2 Blizzard graphics ownership
+
+Owner: Content/Systems/Release 담당
+Goal: S7-G2 documentation/ownership update
+
+- 사용자 지정에 따라 Blizzard 전용 Item Ball·Orb styling, `BLIZZARD!` cue, active 동안의 장식 눈을 Content/Systems/Release 담당 범위로 확정했다.
+- `scripts/presentation/item_blizzard_visual.gd`, `scenes/effects/item_blizzard_visual.tscn`, `assets/particles/items/blizzard/**`, `tests/content/s7_g2_**`를 해당 범위의 Owned Files로 기록했다.
+- ItemManager producer event와 `ItemBlizzard.active_state_changed(snapshot)`은 read-only visual 입력이며, Integration이 Main mount/wiring만 담당하고 visual은 점수·타이머·spawn multiplier·simulation을 변경하지 않는 계약을 추가했다.
+- 이번 변경은 문서/소유권만 다루며 런타임 파일은 수정하지 않았다. 기존 S7-G2 logic의 `IMPLEMENTED` 상태는 유지하고, graphics 완료 근거는 추가하지 않았다.
+
+## 2026-08-21 — S7-G2 Blizzard graphics implementation
+
+Owner: Content/Systems/Release 담당
+Goal: S7-G2
+Owned files: `scripts/gameplay/item_manager.gd`, `scripts/presentation/item_blizzard_visual.gd`, `scenes/effects/item_blizzard_visual.tscn`, `tests/content/s7_g2_**`, `tests/content/s7_g1c_item_producer_verification.gd`
+
+- `ItemBlizzardVisual`을 추가했다. Blizzard Item Ball은 ice-core/5-hit crack 표시, Orb는 cyan snow-cross, 활성 Blizzard는 `BLIZZARD!` duration cue와 최대 48개의 절차적 장식 눈 픽셀로 표현한다.
+- `ItemManager.item_planet_spawned(item_type, world_position, radius)`를 read-only producer signal로 추가해 Item Ball이 첫 damage 이전부터 표시될 수 있게 했다. 기존 producer verification도 Stage당 1회 spawn 및 display signal 1회를 함께 확인하도록 보강했다.
+- visual은 ItemManager/ItemBlizzard의 read-only event/state만 소비하며 score, timer, spawn multiplier, simulation을 변경하지 않는다. Main mount와 signal 연결은 Integration 작업으로 남긴다.
+
+### 확인
+
+- Primary `godot` validate: ItemManager, Blizzard visual script, visual verification script/scene, producer regression scene 6/6 valid.
+- Primary visual verification scene은 exit 0으로 종료했다. 빠른 test 종료로 MCP bridge가 attach되기 전 닫혀 stdout sentinel은 수집하지 못했고 runtime error는 없었다.
+- Main wiring, 실제 Orb CUT-IN, Desktop/Web visual smoke는 아직 실행하지 않았다.
+
+## 2026-08-21 — S7-G2 Blizzard snow-crystal pixel pass
+
+Owner: Content/Systems/Release 담당
+Goal: S7-G2
+Owned files: `scripts/presentation/item_blizzard_visual.gd`, `assets/particles/items/blizzard/**`, `tests/content/s7_g2_blizzard_visual_runtime_preview.*`
+
+- Presentation/UI의 기존 asset concept 제작 방식인 built-in ImageGen을 사용해 자연 눈결정의 육각 대칭·분기 motif를 탐색했다. 고해상도 생성 결과는 production에 import하지 않았다.
+- `ItemBlizzardVisual`을 2px logical grid의 6방향 stepped branch, 진한 navy outline, cyan/white ice highlight, 5-hit crack overlay로 수작업 pixel-cleanup했다. 사용 tool, 원본 위치, cleanup 담당자, 최종 palette를 `assets/particles/items/blizzard/README.md`에 기록했다.
+- 실제 `Main`을 임시 preview에서 읽기 전용으로 instantiate하고 PlayField에 visual을 놓아 활성 Blizzard·Item Ball·Orb의 화면 배치를 capture했다. Integration-owned Main scene은 수정하지 않았다.
+
+### 확인
+
+- Primary `godot` validate: Blizzard visual script/scene/verification scene 및 Main runtime preview script/scene 5/5 valid.
+- Primary runtime preview: Main frame·HUD·Paddle 위에 `ICE CRYSTAL 2/5`, `BLIZZARD! 4.3s`, Orb, 48 snow pixels가 정상 표시됐고 runtime error 0이었다.
+- Godot CLI baseline은 이 환경에서 executable을 찾지 못한 기존 tooling issue로 실행하지 못했다.
+
+### 다음 작업 / 주의
+
+- 실제 Main mount 및 ItemManager/ItemBlizzard signal 연결은 Integration-owned 작업이다. 해당 연결 전에는 actual Orb pickup→CUT-IN과 Browser/Web smoke를 완료로 표시하지 않는다.
+
+## 2026-08-21 — S7-G2 Blizzard selected crystal in Main preview
+
+Owner: Content/Systems/Release 담당
+Goal: S7-G2
+Owned files: `assets/particles/items/blizzard/blizzard_crystal.png`, `scripts/presentation/item_blizzard_visual.gd`, `tests/content/s7_g2_blizzard_visual_runtime_preview.*`
+
+- 사용자가 선택한 built-in ImageGen 눈결정 PNG를 alpha 그대로 추가했다. `ItemBlizzardVisual`은 nearest filtering과 integer `96×96px` draw box로 해당 source의 도트 블록을 유지한다.
+- Godot importer가 이 생성 PNG를 resource로 등록하지 않는 환경에서도 안정적으로 표시하도록 `Image.load_from_file` → `ImageTexture.create_from_image` 경로를 사용했다. PNG는 raw project asset으로 유지된다.
+- Primary validation 3/3 뒤 실제 Main scene을 temporary read-only preview로 실행해 Blizzard Item Ball, `ICE CRYSTAL 2/5`, Orb, `BLIZZARD! 4.3s`, decorative snow가 함께 나오는 screenshot을 확보했다. runtime error는 0건이었다.
+
+### 다음 작업 / 주의
+
+- 이는 Main 기반의 temporary preview다. Integration이 visual scene을 mount하고 ItemManager/ItemBlizzard signal을 연결해야 live game event에도 자동 표시된다.
+
+## 2026-08-21 — S7-G2 Blizzard crystal scale adjustment
+
+- 사용자 피드백에 따라 Blizzard crystal display box를 `96×96px`에서 `64×64px`로 축소했다. nearest filtering과 투명 alpha 처리는 유지한다.
+- Primary `godot` validate 2/2 및 Main-based runtime preview screenshot에서 축소 크기와 runtime error 0을 확인했다.
+
+## 2026-08-22 — S7-G2 Blizzard Main·Web smoke
+
+- Presentation/UI와 Core/Integration 승인 뒤 Main에 Blizzard visual mount, ItemManager producer signal, Blizzard active state, CUT-IN completion cue→Gateway activation을 연결했다.
+- Primary `godot` validation에서 Blizzard visual, GameManager, Main scene 3/3 valid. 실제 Main runtime에서 5-hit Item Ball 파괴→Orb collect→CUT-IN→Gateway 1회 activation→Ground spawn `6→18`, 48 snow, 5초 active를 확인했다.
+- 최신 Web release export를 생성해 `http://127.0.0.1:8080`에서 사용자가 Item Ball·Orb·CUT-IN·Blizzard 출현을 확인했다. Retry/Main reset과 browser console error는 별도 확인이 남아 있다.
+
+### 추가 사용자 확인
+
+- 사용자가 Web 빌드에서 Retry와 Main 복귀가 정상 동작함을 확인했다. Browser console error 확인만 남긴다.
+
+### 완료 검증
+
+- 사용자가 Browser console error 없음까지 확인했다. Primary runtime에서 실제 패들 조작 중 Blizzard Item Ball 생성과 2/5 damage를 재현했고, 12회 Stage 생성에서 Blizzard 2회와 전용 visual 표시를 확인했다.
+- 앞서 확인한 5-hit→Orb collect→CUT-IN→spawn rate `6→18`, 48 snow, 5초 active 및 최신 Web 사용자 smoke와 합쳐 S7-G2를 `VERIFIED`로 전환했다.
