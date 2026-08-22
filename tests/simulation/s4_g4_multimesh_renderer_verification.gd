@@ -37,6 +37,8 @@ func _run_verification():
 	var visible_counts: PackedInt32Array = metrics["batch_visible_counts"]
 	_expect(visible_counts[0] == 1 and visible_counts[1] == 1 and visible_counts[4] == 1, "Each populated early level must expose one instance.")
 	_expect(visible_counts[10] == 1 and visible_counts[13] == 1, "Each populated late standard level must expose one instance.")
+	_expect(_standard_batch_keeps_clip_material(0), "A standard batch must retain the Play Field clip material.")
+	_expect(_standard_batch_keeps_clip_material(13), "A textured top-ball batch must retain the Play Field clip material.")
 	_expect(_transform_matches(0, 0, Vector2(100.0, 100.0), 4.0), "Lv0 transform must preserve position and runtime radius.")
 	_expect(_transform_matches(13, 0, Vector2(420.0, 340.0), 64.0), "Lv13 transform must preserve position and runtime radius.")
 
@@ -79,6 +81,12 @@ func _transform_matches(global_level: int, instance_index: int, expected_origin:
 		and is_equal_approx(transform.x.length(), expected_radius)
 		and is_equal_approx(transform.y.length(), expected_radius)
 	)
+
+
+func _standard_batch_keeps_clip_material(global_level: int) -> bool:
+	var batch: MultiMeshInstance2D = renderer._batches[global_level]
+	var material := batch.material as ShaderMaterial
+	return material != null and material.get_shader_parameter("use_texture") == (batch.texture != null)
 
 
 func _expect(condition: bool, message: String) -> void:
