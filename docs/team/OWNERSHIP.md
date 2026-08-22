@@ -94,5 +94,6 @@ docs/current/SUBMISSION/**
 | S3-G9 | Core | six-identity discovery, Run seen set, `event_id`/payload v1, begin/invalidate API |
 | S6-G2I | Integration | `run_epoch`, end-of-tick arbitration, gameplay pause lock, Main wiring, matching finish와 기존 S8-G4 handoff |
 | S6-G2 | Presentation | 공통 배경+identity별 title/portrait 조립, visible CUT-IN lifecycle, matching completion/reset |
+| S10-G1 | Content/Systems/Release | Settings session/return-view 계약과 adapter handoff 수락·검증을 소유한다. `GameManager`/Main의 완료된 구현은 Integration handoff이며 향후 변경은 별도 Integration 요청으로 제한한다. |
 
 S6-G2I가 `IN PROGRESS`가 될 때만 기존 Integration-owned `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/**`를 `STATUS.md`에 잠근다. 현재 세 Goal은 모두 구현 lock을 잡지 않으며, S6-G2는 S3-G9/S6-G2I의 실제 Evidence 전에는 runtime 파일을 만들거나 수정하지 않는다.

@@ -813,3 +813,32 @@ Owner: Integration
 - GameManager는 Stage base spawn rate와 effect multiplier를 별도 상태로 유지한다. `spawn_multiplier_changed(3.0/1.0)`은 effective spawn rate만 바꾸며, active Blizzard 중 Stage 변경은 새 base rate에 같은 multiplier를 적용한다. expiry, Retry, Main은 `1.0`으로 정확히 복구한다.
 - Verification: Godot 4.7.1 CLI/headless project load exit 0. Primary `godot` integration fixture exit 0 (`activation=once spawn_x3=true stage_rebase=true expiry_retry_main_reset=true`)에서 Ground `6→18`, spawn loop의 실제 3배 commit, Planetary `15→45`, expiry `45→15`, Retry/Main `→6`을 확인했다. Primary Main Start Run runtime error 0.
 - Presentation S6-G2의 actual item CUT-IN producer가 아직 없으므로 Orb 획득→visible CUT-IN→cue의 사용자 경로와 Web smoke는 미검증으로 남긴다. Gateway skip fallback 경로는 검증됐다.
+
+## 2026-08-23 — S10-G1 Settings adapter·state contract
+
+Owner: Integration
+
+- `SettingsAdapter`를 Main에 mount하고, `GameManager`가 기존 Title/Pause의 `settings_requested`를 각각 `title`/`pause` return view의 monotonic session으로 중재하도록 연결했다. Content panel은 이후 adapter/GameManager의 open/apply/close API와 read-only snapshot/closed signal만 사용하면 된다.
+- v1 snapshot은 Master Volume `0..100`, Mute, Fullscreen 세 필드만 허용한다. 유효 값만 Master AudioServer에 적용하고 `user://settings_v1.cfg`로 저장·복원한다. 누락·손상·저장 실패는 blocking UI 없이 default snapshot으로 fallback한다. fullscreen request는 Title/Pause Settings click 또는 이후 panel apply가 전달하는 user-gesture flag일 때만 시도한다.
+- Verification: Godot 4.7.1 Primary validate의 adapter/GameManager/Main 및 두 S10-G1 fixture target batches가 모두 valid였다. Adapter fixture exit 0 (`title_pause_sessions=true stale_rejected=true persistence=true`)로 stale/duplicate rejection, Master mute/volume 적용, persistence 및 corrupt-load fallback을 확인했다. Main wiring fixture exit 0 (`title_pause_origin=true no_auto_resume=true`)로 Title/Pause origin과 Settings close의 non-resume semantics를 확인했다. 빠른 fixture 종료 시 MCP bridge의 shutdown-only warning이 있었으며 게임 runtime error는 없었다. 실제 Web fullscreen/local persistence acceptance는 S10-G4에 남긴다.
+
+## 2026-08-23 — S10-G2I shared Settings panel wiring
+
+Owner: Integration
+
+- Main UI에 Content-owned `SettingsPanel`을 단일 mount하고, 기존 Title/Pause Settings request가 adapter의 user-gesture session을 열어 matching panel snapshot/return view를 표시하도록 연결했다.
+- panel의 session-bound Apply/Close request는 GameManager를 통해 adapter로만 전달된다. adapter snapshot은 같은 active session에만 panel draft를 갱신하고, matching closed signal만 panel을 숨긴다. Title/Pause와 SceneTree pause state는 이 relay가 직접 변경하지 않는다.
+- Verification: Godot 4.7.1 Primary validate에서 GameManager/Main/SettingsPanel/S10-G2I fixture 6/6 valid. Primary background Main fixture exit 0 (`S10_G2I_SETTINGS_WIRING_VERIFIED shared_mount=true title_pause=true apply_relay=true no_auto_resume=true`)로 Title/Pause shared mount, Apply→adapter update, close와 no-auto-resume을 확인했다. fixture 종료 시 MCP bridge shutdown/ObjectDB cleanup warning은 있었지만 script/runtime error는 없었다. Web fullscreen/persistence acceptance는 S10-G4에 남긴다.
+
+## 2026-08-23 — S10-G1 three-volume AudioManager relay
+
+- 새 SettingsAdapter snapshot의 BGM/SFX 값을 GameManager가 AudioManager로 전달하도록 연결했다. Adapter는 Master bus만 소유하며 AudioManager가 기존 music/effect base gain 위에 각 channel user gain을 적용한다.
+- Main three-volume fixture exit 0으로 valid adapter snapshot이 Master gain 및 AudioManager의 BGM/SFX 값에 반영됨을 확인했다. 현재 기존 SettingsPanel은 새 snapshot을 표시하지 않으며 S10-G2 migration 뒤에만 실제 Title/Pause UI 경로를 재검증한다.
+
+## 2026-08-23 — S10 Settings preview / Apply-close wiring
+
+Owner: Integration
+
+- `GameManager`가 panel의 `settings_preview_requested(session_id, draft)`를 SettingsAdapter로 relay한다. Preview는 current audio/FX state만 바꾸며 persist하지 않는다.
+- matching Apply가 성공하면 adapter persist 뒤 같은 session을 close해 panel을 숨기고 Title/Pause의 original Settings trigger로 focus를 되돌린다. Close 경로는 adapter가 last applied snapshot을 먼저 restore하므로 preview cancel이 즉시 audio/FX에 반영된다.
+- Primary validate 6/6과 updated adapter/panel/Main fixture exit 0으로 preview rollback과 Apply-close를 확인했다. Main runtime probe는 preview 50→Close 100 restore, preview 60→Apply modal hidden/persisted를 확인했고 default Master 100으로 복구했다.

@@ -620,3 +620,142 @@ Owner: Presentation
 - verifier에 runtime CUT-IN portrait와 approved draft의 byte-for-byte equality를 추가하고, Event Horizon의 우측 flare와 Black Hole의 상단 starburst 픽셀도 검사한다. CUT-IN 원화 파일 자체는 수정하지 않았다.
 - Godot 4.7.1 CLI: `GALACTIC_BALL_ASSETS_VERIFIED chain=10/11/12/13/14 sizes=8/16/32/64/128 alpha=binary palette_colors=[6, 10, 12, 12, 12] opaque_pixels=[28, 149, 462, 3403, 10362] nearest=true galaxy_native=true bindings=5 black_hole_special_unchanged=true ground_planetary_unchanged=true`, exit 0.
 - Native OpenGL Compatibility / Intel Arc 130V capture: `tmp/galactic_ball_family_cutin_aligned.png`, `1600x900`, save error `0`, standard balls `4`, Black Hole hero `true`, average `59.9 FPS`, minimum `34.4 FPS`, max frame `29.10ms`.
+
+## 2026-08-23 — S10-G3 Settings visual·focus
+
+Owner: Presentation
+
+- Settings v1 panel을 existing Title/Pause의 dark mechanical CRT visual language 안에서 확인했다. 현행 `500×420` modal, lime border, warm title, dim layer와 Title artwork의 조합은 logical `1600×900`에서 중앙에 안정적으로 표시되며, `1280×720`보다 작은 minimum size로 clip 여유를 확보한다.
+- Presentation-owned verifier `tests/presentation/s10_g3_settings_visual_focus_verification.*`를 추가했다. margin-contained content와 Master → BGM → SFX → Value Popups → Apply → Close → Master focus cycle, entry focus를 고정한다.
+- Primary Godot validate 4/4: SettingsPanel scene, G3 verifier script/scene, GameManager 모두 valid. G3 fixture process는 exit 0으로 완료됐으며 bridge 초기화 전에 종료되는 short-fixture 특성상 MCP가 shutdown warning만 보고했다.
+- 실제 Main background runtime에서 Title Settings를 열고, Tab 5회로 `CLOSE` focus ring을 확인했다. Enter close 뒤 focus owner는 `/root/Main/UI/TitleScreen/SettingsButton`였고 panel은 hidden이었다. Gameplay/Pause origin의 close return은 existing S10-G2I fixture로 보존한다.
+- persistence, AudioServer, gameplay state, Web acceptance/export는 변경하지 않았다. 다음 순차 작업은 S10-G4 Web acceptance·update다.
+
+## 2026-08-23 — S10-G3 Settings visual polish follow-up
+
+Owner: Presentation
+
+- 기존 Title/Pause의 dark mechanical CRT 언어에 맞춰 Settings panel을 실제로 고도화했다. copper/lime double frame과 shadow, `SYSTEM AUDIO // LIVE CALIBRATION` header, live-preview rule/copy, dark teal slider rail, warm value ink, 버튼 hover/pressed/focus 상태를 추가했다.
+- Apply/Close의 pointer cursor와 명확한 hover/focus outline을 제공한다. layout은 `520×450` logical modal로 조정했으며 1280×720보다 작아 기존 focus cycle/return semantics는 유지한다.
+- Primary Godot validate 4/4 및 `S10_G3_SETTINGS_VISUAL_FOCUS_VERIFIED viewport_fit=true focus_cycle=true entry_focus=true` fixture exit 0. clean Web export를 local `http://127.0.0.1:8080`의 actual browser 1280×720에서 열어 panel과 Apply hover를 확인했고 console error 0이었다.
+
+## 2026-08-23 — S10-G3 Pause-language alignment
+
+Owner: Presentation
+
+- 사용자 지시에 맞춰 평면형 calibration panel을 제거하고 Pause 모달과 같은 `field_bezel_v2_910x900` copper/lime 프레임, 각진 CRT chamber, dark inset으로 교체했다.
+- Apply와 Close를 Pause와 같은 full-width copper `field_bezel_96` bezel 버튼과 corner bolt로 재구성했다. 기존 live preview, Apply/Close 동작과 keyboard focus 순서는 변경하지 않았다.
+- Primary Godot scene/script validation 2/2을 통과했다. Main runtime에서 Title Settings를 실제 열어 새 모달의 frame, three-volume rows, toggle, two action buttons를 확인했다. Web release export를 갱신했고 local browser title smoke의 console error는 0건이었다.
+
+## 2026-08-23 — S10-G3 Escape close
+
+Owner: Presentation
+
+- Settings가 표시된 동안 `ui_cancel`(Esc)을 `_input` 단계에서 선점해 Close와 동일한 rollback request로 보낸다. 따라서 pause 단축키와 겹쳐도 Settings만 닫히며 key repeat은 무시된다.
+- Primary validation 3/3 후 Main runtime에서 Title Settings를 열고 Esc로 닫혀 Title 화면만 남는 것을 확인했다. Web release export도 갱신했다.
+
+## 2026-08-23 — S10-G3 Settings inset correction
+
+Owner: Presentation
+
+- copper pipe와 내부 CRT chamber 사이가 투명하게 비쳐 보이던 영역에 opaque dark backing을 추가했다. `LIVE PREVIEW · APPLY TO SAVE` 안내 문구는 제거했다.
+- Value Popups를 label/toggle row로 분리해 볼륨 label과 같은 left edge, 색, 글자 크기를 사용하게 했다.
+- Primary scene/script validation 3/3과 Main runtime screenshot으로 세 변경사항을 확인하고 Web release export를 갱신했다.
+
+## 2026-08-23 — S10-G3 Settings option spacing
+
+Owner: Presentation
+
+- Settings modal의 `540×560` 외곽 크기는 유지한 채 Master, BGM, SFX, Value Popups 각 행의 최소 높이를 `38px`로 고정해 옵션 사이의 세로 간격을 늘렸다. 확장 spacer가 줄어들므로 action buttons는 기존 위치를 유지한다.
+- Primary scene validation과 Main runtime screenshot을 확인하고 Web release export를 갱신했다.
+
+## 2026-08-23 — S10-G3 Brass pipe volume gauge
+
+Owner: Presentation/UI
+
+- 사용자가 선택한 ImageGen concept-reference의 상단 좌측 황동 관측창을 기준으로, 생성 이미지를 runtime asset으로 사용하지 않고 `PipeVolumeGauge`를 Godot draw API로 새로 작성했다. heavy coupling, square bolts, ten independent sight-glass chambers, amber active cells와 dark-brown inactive cells만 사용한다.
+- Master/BGM/SFX는 이제 직접 드래그할 수 없는 `0..10` read-only pipe gauge다. 양옆 `−`/`+`가 한 번에 한 칸(실제 adapter snapshot의 10%)만 조절하며, preview·Apply·Close rollback 계약은 유지한다. 기존 arbitrary 0..100값은 panel 진입 시 nearest step으로 표시된다.
+- Primary validation 6/6, Main runtime에서 Title Settings 진입과 Master `−` 두 번에 10→8 amber chamber로 즉시 갱신되는 것을 확인했다. runtime errors 0, Web release export 갱신 완료.
+
+## 2026-08-23 — S10-G3 Pipe gauge silhouette correction
+
+Owner: Presentation/UI
+
+- 첫 runtime 구현이 선택한 concept-reference의 실루엣보다 지나치게 사각 프레임에 가까웠다는 사용자 피드백을 반영했다. pipe gauge body를 위·아래의 노출 황동 파이프, 양끝의 두꺼운 bolt clamp, 중앙 black sight-glass로 다시 구성했다.
+- 10개 amber chamber 및 0..10 read-only step contract는 유지한다. Primary scene/script validation과 Main runtime capture에서 새 silhouette을 확인하고 Web release export를 갱신했다.
+
+## 2026-08-23 — S10-G3 Selected pipe artwork applied
+
+Owner: Presentation/UI
+
+- 사용자가 명시적으로 선택한 황동 파이프 이미지를 투명 배경의 runtime texture `assets/sprites/ui/settings/volume_pipe_selected.png`로 추출해 적용했다. 이전의 draw-API 재해석은 제거했다.
+- `PipeVolumeGauge`는 volume 10일 때 선택 원본의 clamp, rail, sight-glass, amber cell을 그대로 그린다. 0..9에서는 비어야 하는 셀만 dark mask로 덮어 `−`/`+`의 기존 0..10 계약을 유지한다.
+- Godot CLI editor import로 PNG import를 생성한 뒤 Primary validate 2/2(script, scene)를 통과했다. Main runtime에서 Settings 진입, 10칸 원본 외형, Master `−` 1회 후 마지막 칸 비활성화를 확인했다.
+- Web release export를 갱신했고, `http://127.0.0.1:8080/index.html` Chrome에서 Settings를 열어 세 게이지가 원본 pipe texture로 표시되는 것을 확인했다. browser console error는 0건이었다.
+
+## 2026-08-23 — S10-G3 Pipe gauge alignment and baseline level
+
+Owner: Presentation/UI + Settings contract
+
+- 세 volume label의 fixed width를 통일해 Master/BGM/SFX pipe gauge의 x 좌표를 정확히 맞췄다. gauge는 38px row 안에서 중앙 정렬한 32px 높이로 다시 그려, 외곽 modal 크기를 바꾸지 않고 약간 더 얇게 만들었다.
+- 선택 텍스처의 외곽에 남아 있던 near-white matte pixel을 제거해 흰 테두리를 없앴다.
+- Volume model을 0..10 정수 level로 변경했다. 기본값 5는 Master/BGM/SFX 모두 기존 authored 음량(0 dB 보정)을 유지하며, 사운드 에셋 자체를 절반으로 낮추지 않는다.
+- Primary validate 5/5, Main runtime에서 세 gauge rect가 모두 `x=788`, default level `[5,5,5]`, Master bus `0 dB`임을 확인했다. Web export와 Chrome `127.0.0.1:8080` Settings screenshot에서도 aligned/thinner/no-white-outline 상태 및 console error 0을 확인했다. Headless fixture는 환경의 `user://logs` 접근 실패 후 Godot engine crash로 실행 증거를 남기지 못했다.
+
+## 2026-08-23 — S10-G3 Step-button focus state
+
+Owner: Presentation/UI
+
+- Settings entry focus는 Master `−`에 그대로 유지하되, focus style을 hover style과 분리했다. 초기 진입에는 normal dark fill과 1px subtle brass outline만 표시되며, pointer hover만 기존의 밝은 amber fill을 사용한다.
+- Primary scene validation과 Main runtime Settings-entry screenshot으로 entry state가 hover처럼 밝아지지 않는 것을 확인했다.
+
+## 2026-08-23 — S10-G3 Compact step buttons
+
+Owner: Presentation/UI
+
+- 모든 `−`/`+` button의 minimum height를 28px에서 24px로 줄이고, 38px option row 안에서 vertical shrink-center로 정렬했다. 게이지와 행의 크기·가로 폭은 유지한다.
+- Primary scene validation 및 Main runtime Settings screenshot으로 더 낮아진 step button을 확인했다.
+
+## 2026-08-23 — S10-G3 Value Popups sliding breaker
+
+Owner: Presentation/UI
+
+- 사용자가 선택한 1번 sliding-breaker concept에서 OFF/ON 상태를 각각 `value_popups_toggle_off.png`, `value_popups_toggle_on.png`으로 추출해 runtime asset으로 적용했다.
+- 기존 CheckButton을 `BrassPopupToggle`로 교체했다. Button toggle/focus/keyboard contract와 Settings preview·Apply·Close 값 계약은 유지하면서, 상태에 따라 선택 artwork를 nearest filtering으로 그린다.
+- Primary validate 3/3, Main runtime의 on→off preview와 clean debug output, Web export 및 Chrome `127.0.0.1:8080` Settings screenshot/console error 0을 확인했다.
+
+## 2026-08-23 — S10-G3 Corrected Value Popups ON artwork
+
+Owner: Presentation/UI
+
+- 사용자가 정정해 지정한 단일 sliding-breaker artwork를 ON texture로 교체했다. Value Popups의 fresh default는 기존대로 `true`이며, Main runtime에서 ON texture와 `value_popups_enabled=true`를 함께 확인했다.
+- OFF texture도 같은 외형에서 앰버 관측창만 소등한 상태로 재생성했다. Web release export를 갱신했다.
+
+## 2026-08-23 — S10-G3 Final Value Popups breaker source
+
+Owner: Presentation/UI
+
+- 사용자가 마지막으로 첨부한 sliding-breaker 이미지를 ON 원본으로 다시 추출해 적용했다. OFF 상태는 동일한 장치 외형을 유지하고 오른쪽 앰버 관측창만 소등한다.
+- 중간 축소 요청은 취소되어 toggle의 원래 86×24px layout과 22px 표시 높이를 유지한다. 기본 상태는 ON이다.
+- Godot CLI import, Primary validate 2/2, Main runtime Settings screenshot을 통과했다. runtime에서 `value_popups_on=true`, toggle size `86×24`, debug error 0을 확인했다. Web release export와 `127.0.0.1:8080` Chrome Settings 화면도 갱신했고 console error는 0건이었다.
+
+## 2026-08-23 — S10-G3 Compact Value Popups toggle
+
+Owner: Presentation/UI
+
+- 사용자의 요청에 따라 Value Popups toggle의 가로 폭만 약 70%로 줄였다: `86×24px` → `60×24px`.
+- Godot CLI import, Primary scene validation, Main runtime Settings screenshot에서 ON 기본 상태와 실제 `60×24px` layout을 확인했다. Web release export와 `127.0.0.1:8080` Chrome 화면에서도 적용 상태 및 console error 0을 확인했다.
+
+## 2026-08-23 — S10-G3 Value Popups OFF lever position
+
+Owner: Presentation/UI
+
+- OFF texture에서 황동 레버를 왼쪽 고정점으로 이동시켜, ON의 오른쪽 결합 위치와 명확히 다른 실제 switch position을 만들었다. 오른쪽 앰버 관측창의 소등도 유지한다.
+- Godot CLI import 및 Main runtime OFF-state screenshot을 확인했다. Web release export와 `127.0.0.1:8080` Chrome에서 실제 toggle click으로 OFF 레버 위치와 console error 0을 확인했다.
+
+## 2026-08-23 — S10-G3 Remove Settings focus outlines
+
+Owner: Presentation/UI
+
+- Value Popups toggle의 커스텀 focus rectangle을 제거했다. APPLY/CLOSE에는 hover 강조색만 남기고, 클릭 후 focus state가 hover의 노란 2px border를 재사용하지 않도록 별도 무테 focus style을 적용했다.
+- Godot CLI import, Primary validate 2/2, Main runtime에서 Toggle과 APPLY focus 상태를 각각 확인했다. Web release export와 `127.0.0.1:8080` Chrome toggle-click 상태에서도 노란 외곽선이 없고 console error 0을 확인했다.

@@ -253,6 +253,8 @@ Result는 typed immutable `ResultViewState(run_id, run_epoch, terminal_reason, r
 
 ### Pause/Settings UI Goal — required
 
+2026-08-23 확정: Pause 모달 자체는 이미 구현 완료다. 이 초안의 Settings 범위는 실행 계획의 `S10_SETTINGS`(`S10-G1`~`S10-G4`)으로 분리하며, Pause를 재구현하지 않는다.
+
 현재 S1-G5의 항상 보이는 Pause/Retry toolbar는 v1 최종 UI가 아니다. 별도 Content/Systems Goal을 추가한다.
 
 - Owned Files: `scripts/ui/pause*.gd`, `scenes/ui/pause*.tscn`, 새 `scripts/ui/settings*.gd`, `scenes/ui/settings*.tscn`, `tests/content/**`.

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/integration/s10_g1_three_volume_verification.gd" id="1_test"]
+
+[node name="S10G1ThreeVolumeVerification" type="Node"]
+script = ExtResource("1_test")

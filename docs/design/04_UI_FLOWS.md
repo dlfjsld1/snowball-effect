@@ -119,13 +119,15 @@ Main Screen과 Pause가 같은 Settings panel을 공유한다.
 
 | Setting | Behavior |
 |---|---|
-| Master Volume | 전체 audio bus의 0~100 값 |
-| Mute | Master output on/off; volume 값을 파괴하지 않음 |
-| Fullscreen | Web fullscreen request; browser 거부 시 windowed 표시 |
+| Master Volume | 전체 audio output의 0~100 값 |
+| BGM Volume | Title·Stage·Pause·Result 음악 channel의 0~100 값 |
+| SFX Volume | Merge·Cashout·UI·경고·Black Hole 등 효과음 channel의 0~100 값 |
+| Value Popups | Merge/Cashout의 짧은 값·이름 글자만 on/off; 점수·사운드·파티클 규칙은 변경하지 않음 |
 
 - 설정은 브라우저 local storage/config에 저장하고 다음 실행에 복원한다.
 - 저장·로드 실패는 crash나 blocking modal 없이 default 값으로 fallback한다.
-- Fullscreen 선호값은 저장하지만 브라우저 정책상 자동 적용하지 못하면 다음 `START` 또는 설정 click 같은 사용자 gesture에서 요청한다.
+- 슬라이더와 Value Popups 토글은 조작 중 즉시 현재 audio/FX 출력에 미리 반영한다. `APPLY`는 현재 값을 저장하고 Settings를 닫는다. `CLOSE`는 마지막 Apply 값으로 즉시 되돌린 뒤 닫는다.
+- Apply/Close는 mouse release가 아니라 press에서 즉시 수락한다. 따라서 버튼을 누른 뒤 포인터가 살짝 벗어나는 drag-end도 클릭 취소로 보이지 않으며, modal이 이미 닫힌 뒤의 double-click 두 번째 입력은 의도적으로 무시한다.
 - Main에서 닫으면 Main, Pause에서 닫으면 동결된 Pause modal로 돌아간다.
 - Settings 진입이나 종료가 gameplay를 자동 재개하지 않는다.
 - Reduced Effects는 v1 범위가 아니다. 실제 FX 시안 검토 뒤 별도 Goal 여부를 논의한다.

@@ -43,6 +43,7 @@ const CASHOUT_EFFECT_BOTTOM_MARGIN := 96.0
 
 var merge_effect_count := 0
 var cashout_effect_count := 0
+var value_popups_enabled := true
 var dropped_effect_count := 0
 var evicted_effect_count := 0
 var priority_event_count := 0
@@ -161,6 +162,10 @@ func get_active_cashout_effect_count() -> int:
 	return _get_active_effect_count(&"CASHOUT")
 
 
+func set_value_popups_enabled(enabled: bool) -> void:
+	value_popups_enabled = enabled
+
+
 func get_active_effect_count_for_tier(tier: int) -> int:
 	if tier < 0 or tier >= ACTIVE_LIMIT_BY_TIER.size():
 		return 0
@@ -196,7 +201,7 @@ func _on_ball_merged(result_level: int, world_position: Vector2) -> void:
 	_register_effect(effect, &"MERGE", tier)
 	add_child(effect)
 	effect.setup(world_position, definition.display_name, _get_effect_color(definition.base_color, tier), tier)
-	if tier == 0:
+	if tier == 0 or not value_popups_enabled:
 		effect.value_label.visible = false
 	merge_effect_count += 1
 	merge_effect_spawned.emit(result_level, world_position)
@@ -217,6 +222,8 @@ func _on_cashout_completed(score_amount: float, global_level: int, world_positio
 		minf(world_position.y, get_viewport_rect().end.y - CASHOUT_EFFECT_BOTTOM_MARGIN)
 	)
 	effect.setup(visual_position, definition.display_name, score_amount, _get_effect_color(definition.base_color, tier), tier)
+	if not value_popups_enabled:
+		effect.value_label.visible = false
 	cashout_effect_count += 1
 	cashout_effect_spawned.emit(global_level, world_position)
 

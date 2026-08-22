@@ -143,6 +143,10 @@ func _on_ball_merged(result_level: int, _world_position: Vector2) -> void:
 	_update_genealogy()
 
 
+func set_value_popups_enabled(enabled: bool) -> void:
+	effect_manager.set_value_popups_enabled(enabled)
+
+
 func _update_genealogy() -> void:
 	for slot_index in range(genealogy_slots.size()):
 		var slot := genealogy_slots[slot_index]

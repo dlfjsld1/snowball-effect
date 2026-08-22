@@ -1344,3 +1344,72 @@ Owned files: `scripts/gameplay/item_magnet.gd`, `scripts/data/item_definition.gd
 - Integration은 ItemMagnet mount, matching Gateway activation, per-tick `advance(delta)`, Retry/Main `reset_runtime()`을 연결해야 한다.
 - Core는 active command를 Spatial Grid consumer로 받아 같은 level의 최대 두 이웃만 처리하는 bounded attraction을 구현하고, 1,000-ball metric 회귀를 측정해야 한다.
 - 그 wiring 이후 실제 Orb→CUT-IN→Magnet, 만료 복구, Desktop/Web Q-S7 smoke를 수행하기 전에는 `VERIFIED`로 올리지 않는다.
+
+## 2026-08-23 — S10-G2 Settings v1 panel
+
+Owner: Content/Systems/Release
+
+### 작업
+
+- `SettingsPanel` 단일 재사용 view와 scene을 추가했다. Master Volume `0..100`, Mute, Fullscreen의 snapshot을 draft로 표시하며, system API나 persistence에 접근하지 않는다.
+- panel은 Integration adapter가 전달할 valid `(session_id, snapshot, return_view)`로만 열리고, `settings_apply_requested(session_id, draft)`와 `settings_close_requested(session_id)`만 발행한다. matching snapshot은 Apply 중복 잠금을 해제하고 matching closed return만 panel을 숨긴다.
+- stale close·중복 Apply/Close를 거부하고, Title/Pause return view를 panel state에 보존한다. 최소 focus 진입점은 Volume slider로 두었고 이후 visual/focus polish는 S10-G3에 남긴다.
+
+### 확인
+
+- Primary `godot` validation: SettingsPanel script/scene 및 Content verification script/scene 4/4 valid.
+- Primary background runtime: `S10_G2_SETTINGS_PANEL_VERIFIED shared_instance=true draft=true request_once=true return_views=true`, exit 0. MCP bridge shutdown-only warning 외 runtime script error는 없었다.
+
+### 다음 작업 / 주의
+
+- 현재 S10-G1 Main handoff에는 `SettingsPanel` mount와 Title/Pause request에서 panel session을 여는 relay가 없다. 이 Content Goal의 owned files 밖이므로 별도 Integration Goal에서 Main mount, GameManager/adapter signal relay, matching close return wiring을 추가해야 한다.
+- 실제 Web fullscreen/persistence와 frozen Pause return은 S10-G4 acceptance에서 검증한다.
+
+## 2026-08-23 — S10-G1 three-volume settings contract
+
+Owner: Content/Systems/Release
+
+### 작업
+
+- 사용자 확정에 따라 Settings v1 snapshot을 `master_volume`, `bgm_volume`, `sfx_volume`의 0~100 정수 세 값으로 교체했다. Mute와 Fullscreen persistence·system call은 제거했다.
+- SettingsAdapter는 Master bus gain만 직접 적용하고, GameManager가 read-only snapshot을 AudioManager로 넘긴다. AudioManager는 BGM과 SFX의 기존 base gain을 유지한 채 각각의 user gain을 합성한다.
+
+### 확인
+
+- Primary `godot` validation: SettingsAdapter, AudioManager, GameManager, adapter fixture, three-volume Main fixture와 Main scene 7/7 valid.
+- Adapter fixture exit 0으로 session/stale rejection, persistence/corrupt fallback, Master gain을 확인했다. Main fixture exit 0(`S10_G1_THREE_VOLUME_VERIFIED persistence=true master=true bgm_sfx_relay=true`)으로 BGM/SFX channel relay를 확인했다.
+
+### 다음 작업 / 주의
+
+- 기존 Mute/Fullscreen `SettingsPanel`은 새 snapshot을 의도적으로 거부한다. 다음 S10-G2에서 Master/BGM/SFX 세 slider UI와 fixture를 새 contract로 교체해야 실제 Settings 진입을 다시 열 수 있다.
+
+## 2026-08-23 — S10-G4 Settings Web acceptance·update
+
+Owner: Content/Systems/Release
+
+### 확인
+
+- 최신 local Web build를 `http://127.0.0.1:8080`에서 실제 browser canvas `1280×720`로 열었다. Title 화면과 Settings modal의 정상 표시, console error 0건을 확인했다.
+- Title Settings에서 Master Volume을 `48%`, Value Popups를 off로 Apply한 뒤 Close→page reload→Settings 재진입해 같은 값이 복원됨을 확인했다. 이어 Master/BGM/SFX를 각각 조절해 value label 반영을 확인했다.
+- Run 진입 후 Escape Pause에서 Settings를 열고 Close했을 때 frozen Pause modal로 정확히 돌아오는 것을 확인했다. 테스트로 변경한 값은 Master/BGM/SFX `100%`, Value Popups on으로 Apply 복구했다.
+
+### 범위
+
+- itch.io upload/publish는 이번 요청의 범위에 포함하지 않았고, local Web build acceptance만 수행했다.
+
+## 2026-08-23 — S10 Settings preview / Apply-close refinement
+
+Owner: Content/Systems/Release with Integration handoff
+
+- SettingsPanel은 각 slider/toggle change에 full draft를 담은 `settings_preview_requested(session_id, draft)`를 내보낸다. Preview는 저장 없이 현재 Master/BGM/SFX 및 Value Popups 출력에 즉시 반영된다.
+- `APPLY`는 현재 preview draft를 저장한 뒤 matching Settings modal을 닫는다. `CLOSE`는 저장하지 않은 preview를 마지막 Apply snapshot으로 복원한 뒤 닫는다.
+- Primary `godot` validate 6/6, panel fixture exit 0, adapter fixture exit 0을 통과했다. Main runtime probe는 preview `50` → Close restore `100`, preview `60` → Apply modal closed/persisted `60`을 확인했고 마지막으로 Master를 `100`으로 복구했다.
+- Godot 4.7.1 Web release export를 `build/web/`에 다시 만들었다. local `http://127.0.0.1:8080` browser `1280×720`에서 Master preview `48%` 표시와 Apply 즉시 modal close, console error 0을 확인한 뒤 Master `100%`를 Apply 복구했다. export 중 Windows root certificate/editor settings write warning이 있었으나 savepack은 완료됐고 Web runtime 오류는 없었다.
+
+## 2026-08-23 — S10 Settings mouse acceptance
+
+Owner: Content/Systems/Release
+
+- 원인은 Godot Button의 default release activation이었다. 마우스를 버튼 안에서 누른 뒤 바깥에서 놓으면 press가 취소되므로, drag-end 상황에서 클릭이 무시된 것처럼 보였다.
+- Apply/Close를 `ACTION_MODE_BUTTON_PRESS`로 전환하고 pointer cursor를 추가했다. 첫 mouse press에서 한 번 수락하므로 drag-out 뒤에도 확정되며, double-click의 두 번째 press는 이미 닫힌 modal에 전달되지 않아 의도적으로 무시된다.
+- Primary validate 3/3 및 panel fixture exit 0. clean Web export를 새로 만들고 browser에서 slider drag, Apply press-drag-out, Close double-click을 확인했으며 console error 0이었다. export 전 development `McpBridge` autoload를 일시 제외하고 원본 project setting은 복구했다.

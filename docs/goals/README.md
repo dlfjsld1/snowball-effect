@@ -24,6 +24,7 @@
 | S7 | Optional Item Layer가 코어 계약을 바꾸지 않고 동작한다 | S5 | Task 06 |
 | S8 | 첫 Lv14가 이동 Black Hole로 전환되고 두 Black Hole 충돌 finale로 Run이 끝난다 | S5 | Task 07 |
 | S9 | Stage 기반 한 판을 Public Web Build로 제출할 수 있다 | S6, S8; S7 선택 | Task 08/09 |
+| S10 | Title/Pause에서 같은 Settings v1을 열고 Web 환경에 안전하게 저장·복원한다 | S9; 기존 Pause 모달 | Design UI Flow §6 |
 
 ## Owner lanes
 
@@ -60,6 +61,8 @@ Core/Presentation/Content의 세 Goal은 선행 조건과 Integration 계약이 
 
 Optional Item인 S7은 S9의 필수 선행이 아니다. 일정이 부족하면 S7을 잘라도 Core 흐름과 문서는 바뀌지 않는다.
 
+S10은 Content/Systems/Release 담당이 Slice Owner인 공개 배포 뒤 확장 Slice다. 기존 Pause 모달을 다시 만들거나 gameplay를 변경하지 않으며, Title/Pause의 Settings 진입점과 공유 Settings v1만 다룬다. S10-G1의 완료된 Integration handoff는 Content/Systems/Release가 수락·소유하며, 이후 Integration-owned 파일 변경은 별도 요청으로 처리한다.
+
 역할, 파일 소유권, Goal 분해는 모두 초기안이다. 병목에 따라 바꿀 수 있지만 변경 시 [`../team/`](../team/)과 `STATUS.md`를 함께 갱신한다.
 
 ## Slice 문서
@@ -74,3 +77,4 @@ Optional Item인 S7은 S9의 필수 선행이 아니다. 일정이 부족하면 
 - [`S7_OPTIONAL_ITEMS.md`](slices/S7_OPTIONAL_ITEMS.md)
 - [`S8_BLACK_HOLE.md`](slices/S8_BLACK_HOLE.md)
 - [`S9_WEB_RELEASE.md`](slices/S9_WEB_RELEASE.md)
+- [`S10_SETTINGS.md`](slices/S10_SETTINGS.md)
