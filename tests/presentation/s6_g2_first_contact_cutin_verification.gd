@@ -67,19 +67,24 @@ func _ready() -> void:
 	await _verify_actual_main_handoff()
 
 	if _failures == 0:
-		print("S6_G2_VERIFIED mappings=6 common_background=true duration=2.00 reduced_duration=1.80 same_epoch_stage_reset=true duplicate_stale=true reset_no_emit=true exact_once=true main_handoff=true core_readonly=true")
+		print("S6_G2_VERIFIED mappings=6 field_clipped=true duration=1.10 reduced_duration=0.85 same_epoch_stage_reset=true duplicate_stale=true reset_no_emit=true exact_once=true main_handoff=true core_readonly=true")
 	get_tree().quit(_failures)
 
 
 func _verify_six_mappings_and_composition(controller: CutInController) -> void:
+	var field_rect := Rect2(520.0, 50.0, 560.0, 800.0)
+	controller.configure_field_visual_rect(field_rect)
 	controller.set_reduced_effects(true)
 	var roster_paths := controller.get_roster_asset_paths()
 	_expect(roster_paths.size() == 6, "The active roster must contain exactly six identities.")
 	_expect(not str(roster_paths).to_lower().contains("galaxy-cluster") and not str(roster_paths).to_lower().contains("quasar"), "Galaxy Cluster and Quasar drafts must not be registered.")
 	_expect(controller.background_texture.texture.resource_path == BACKGROUND_PATH, "Every identity must use the one common background resource.")
 	_expect(controller.background_texture.texture.get_size() == Vector2(1600.0, 900.0), "The common background must be exactly 1600x900.")
-	_expect(controller.dim_overlay.size == Vector2(1600.0, 900.0), "The dim layer must cover the whole 16:9 gameplay viewport.")
-	_expect(controller.background_texture.size == Vector2(1600.0, 900.0), "The common card background must cover the whole gameplay viewport.")
+	_expect(controller.field_clip.clip_contents, "CUT-IN must clip its visuals to the active Play Field.")
+	_expect(Rect2(controller.field_clip.position, controller.field_clip.size).is_equal_approx(field_rect), "CUT-IN field clip must match the supplied active Play Field rect.")
+	_expect(controller.dim_overlay.size == field_rect.size, "Dim layer must cover only the active Play Field.")
+	_expect(is_equal_approx(controller.background_texture.size.x, field_rect.size.x), "Banner background width must fill the active Play Field.")
+	_expect(is_equal_approx(controller.background_texture.size.y, field_rect.size.y * CutInController.BANNER_HEIGHT_RATIO), "Banner height must follow the field-local ratio.")
 
 	var seen_titles := {}
 	var seen_portraits := {}
@@ -99,8 +104,9 @@ func _verify_six_mappings_and_composition(controller: CutInController) -> void:
 		_expect(metrics["portrait_path"] == roster_entry["portrait_path"], "Identity must bind its approved portrait layer.")
 		_expect(controller.title_texture.texture.get_image().detect_alpha() != Image.ALPHA_NONE, "Approved title layers must retain transparency.")
 		_expect(controller.portrait_texture.texture.get_image().detect_alpha() != Image.ALPHA_NONE, "Approved portrait layers must retain transparency.")
-		_expect(float(metrics["dim_alpha"]) > 0.0, "The whole gameplay screen must dim while the overlay is visible.")
-		_expect((metrics["card_position"] as Vector2).is_equal_approx(Vector2.ZERO), "Reduced effects must remove slide motion without removing the card.")
+		_expect(float(metrics["dim_alpha"]) > 0.0, "The active Play Field must dim while the overlay is visible.")
+		_expect((metrics["field_clip_rect"] as Rect2).is_equal_approx(field_rect), "Visible CUT-IN must retain its active Play Field clip.")
+		_expect(is_zero_approx((metrics["card_position"] as Vector2).x), "Reduced effects must remove slide motion without removing the card.")
 		seen_titles[metrics["title_path"]] = true
 		seen_portraits[metrics["portrait_path"]] = true
 		await get_tree().create_timer(controller.get_total_duration() + 0.08).timeout
@@ -113,12 +119,12 @@ func _verify_six_mappings_and_composition(controller: CutInController) -> void:
 
 func _verify_timing_validation_and_lifecycle(controller: CutInController) -> void:
 	controller.set_reduced_effects(false)
-	_expect(CutInController.ENTER_DURATION >= 0.45 and CutInController.ENTER_DURATION <= 0.55, "Enter duration must remain in the 0.45-0.55s contract.")
-	_expect(CutInController.HOLD_DURATION >= 1.00 and CutInController.HOLD_DURATION <= 1.10, "Hold duration must remain in the 1.00-1.10s contract.")
-	_expect(CutInController.EXIT_DURATION >= 0.45 and CutInController.EXIT_DURATION <= 0.55, "Exit duration must remain in the 0.45-0.55s contract.")
-	_expect(controller.get_total_duration() >= 1.95 and controller.get_total_duration() <= 2.05, "Normal total duration must remain in the 1.95-2.05s contract.")
+	_expect(is_equal_approx(CutInController.ENTER_DURATION, 0.20), "Enter duration must use the field-local banner contract.")
+	_expect(is_equal_approx(CutInController.HOLD_DURATION, 0.65), "Hold duration must use the field-local banner contract.")
+	_expect(is_equal_approx(CutInController.EXIT_DURATION, 0.25), "Exit duration must use the field-local banner contract.")
+	_expect(is_equal_approx(controller.get_total_duration(), 1.10), "Normal total duration must remain 1.10s.")
 	controller.set_reduced_effects(true)
-	_expect(controller.get_total_duration() >= 1.75 and controller.get_total_duration() <= 1.85, "Reduced-effects duration must remain in the 1.75-1.85s contract.")
+	_expect(is_equal_approx(controller.get_total_duration(), 0.85), "Reduced-effects duration must remain 0.85s.")
 
 	var base_entry: Dictionary = ACTIVE_ROSTER[0]
 	var valid := _payload_from_entry(base_entry, 2, 100)

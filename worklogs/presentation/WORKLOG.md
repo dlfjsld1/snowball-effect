@@ -593,6 +593,15 @@ Owner: Presentation
 - 실제 Web/manual Tween·dim·입력 복귀 검증은 여전히 pending이므로 S6-G2는 `IMPLEMENTED`를 유지한다.
 - CUT-IN의 normal/reduced 총 노출 시간을 사용자 요청대로 `2.00s/1.80s`로 조정했다. enter/hold/exit의 기존 비율과 completion·pause handoff는 유지하며 전용 verifier의 timing contract도 함께 갱신했다.
 
+## 2026-08-22 — S6-G2 Play Field 횡단 CUT-IN
+
+Owner: Presentation (사용자 요청 handoff)
+
+- FIRST CONTACT CUT-IN의 gameplay pause, payload 검증, exact-once completion과 S8 Black Hole handoff는 그대로 두고 표시 범위만 active visual Play Field 내부로 변경했다. HUD·좌우 기계 UI·Stage World를 덮거나 dim하지 않으며 FieldClip이 banner와 dim을 실제 field rect에 한정한다.
+- 배너는 field 폭 전체와 높이 `44%`를 사용해 오른쪽에서 진입, 중앙 hold, 왼쪽으로 퇴장한다. normal `0.20/0.65/0.25s` 총 `1.10s`, reduced-effects는 이동 없이 `0.12/0.55/0.18s` 총 `0.85s` fade다. 공통 background와 6종 title/portrait 원화는 새로 만들거나 변경하지 않았다.
+- PresentationManager가 매 visible request 전에 `GameplayFrame.get_field_visual_rect()`를 controller에 전달한다. 따라서 Ground/Planetary/Galactic의 서로 다른 Stage field 폭에도 field-local clip과 banner 크기가 다시 계산된다.
+- Godot 4.7.1 CLI S6-G2 verification exit 0, Primary validate controller/manager/scene 3/3, Primary Main runtime screenshot에서 Planetary field 내부 배너·외부 HUD/기계 UI 비가림·runtime error 0을 확인했다. clean Web의 실제 수동 Tween·입력 복귀 확인이 남아 Goal은 `IMPLEMENTED`를 유지한다.
+
 ## 2026-08-21 — Planetary visual-chain correction
 
 Owner: Presentation

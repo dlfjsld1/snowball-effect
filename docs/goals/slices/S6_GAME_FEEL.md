@@ -23,7 +23,7 @@
 - Owned Files: `scripts/presentation/presentation_manager.gd`, `scripts/presentation/cutin_controller.gd`, `scenes/effects/**`, `tests/presentation/s6_g2_**`
 - Integration Point: Integration이 pause lock을 수락한 뒤에만 `play_first_contact_cutin(payload: Dictionary) -> bool`를 호출한다. Presentation은 `first_contact_cutin_finished(event_id: int, run_epoch: int)`를 정확히 한 번 반환하고 `reset_first_contact_cutin(run_epoch: int)`로 stale visual/callback을 정리한다.
 - Dependencies: S6-G1 `VERIFIED`; S3-G9와 S6-G2I가 실제 검증 Evidence와 함께 `VERIFIED`. 두 선행 Goal이 계약 문서만 가진 `PENDING` 상태에서는 controller·scene·Main wiring 구현을 시작하지 않는다.
-- Verification: active roster는 Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`의 정확히 6종; v1 payload의 `first_contact_id`로 공통 `1600×900` 배경 하나와 공별 투명 title/portrait 레이어 조립; 0.45~0.70초, 기본 1초 미만; Integration 호출 전 visible panel 없음; active/completed `(run_epoch, event_id)` 중복·stale 방어; matching 완료 signal 한 번; reset 즉시 hide/cancel; reduced-effects에서도 identity와 완료 semantics 유지; Core/Stage/gameplay 불변.
+- Verification: active roster는 Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`의 정확히 6종; v1 payload의 `first_contact_id`로 공통 `1600×900` 배경 하나와 공별 투명 title/portrait 레이어 조립; 현재 `GameplayFrame`의 active visual Play Field 안에서만 clip되는 가로 배너; Play Field만 약하게 dim하고 HUD·기계 프레임은 덮거나 dim하지 않음; 배너는 오른쪽에서 진입해 중앙에서 hold한 뒤 왼쪽으로 퇴장하며 normal 약 `1.10s`, reduced-effects 약 `0.85s`; Integration 호출 전 visible panel 없음; active/completed `(run_epoch, event_id)` 중복·stale 방어; matching 완료 signal 한 번; reset 즉시 hide/cancel; reduced-effects에서도 identity와 완료 semantics 유지; Core/Stage/gameplay 불변.
 - Do Not Modify: GameManager/StageManager와 Merge logic.
 
 #### Presentation producer 경계
