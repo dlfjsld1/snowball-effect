@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "family": "galactic",
+  "owner": "Presentation",
+  "source": "res://tools/presentation/galactic_ball_assets/generate_galactic_ball_assets.py",
+  "generation": "deterministic_hand_authored_native_grid",
+  "imagegen_used": false,
+  "background": "transparent_binary_alpha",
+  "anchor": [0.5, 0.5],
+  "pixel_grid": 1,
+  "texture_filter": "nearest",
+  "mipmaps": false,
+  "maximum_opaque_colors_per_asset": 13,
+  "palette": [
+    "#02040C",
+    "#0B1026",
+    "#16143E",
+    "#342766",
+    "#5146A3",
+    "#805CFF",
+    "#3977B8",
+    "#C96BAF",
+    "#57C4C8",
+    "#85DED1",
+    "#F1C66B",
+    "#FFF1B8",
+    "#F7FAFF"
+  ],
+  "assets": [
+    {
+      "global_level": 10,
+      "local_level": 0,
+      "visual_identity": "galaxy",
+      "display_name": "Galaxy",
+      "path": "runtime/ball_lv10_galaxy_8.png",
+      "size": [8, 8],
+      "runtime_diameter": 8,
+      "binding": "BallTextureLodCatalog exact-size override",
+      "motif": "separately authored open two-arm spiral symbol"
+    },
+    {
+      "global_level": 11,
+      "local_level": 1,
+      "visual_identity": "galaxy_cluster",
+      "display_name": "Galaxy Cluster",
+      "path": "runtime/ball_lv11_galaxy_cluster_16.png",
+      "size": [16, 16],
+      "runtime_diameter": 16,
+      "binding": "BallTextureLodCatalog exact-size override",
+      "motif": "loose gravity-bound group of compact galaxies and bright knots"
+    },
+    {
+      "global_level": 12,
+      "local_level": 2,
+      "visual_identity": "quasar",
+      "display_name": "Quasar",
+      "path": "runtime/ball_lv12_quasar_32.png",
+      "size": [32, 32],
+      "runtime_diameter": 32,
+      "binding": "BallTextureLodCatalog exact-size override",
+      "motif": "radiant nucleus, stepped accretion disk, and opposing polar jets"
+    },
+    {
+      "global_level": 13,
+      "local_level": 3,
+      "visual_identity": "event_horizon",
+      "display_name": "Event Horizon",
+      "path": "runtime/ball_lv13_event_horizon_64.png",
+      "size": [64, 64],
+      "runtime_diameter": 64,
+      "binding": "BallTextureLodCatalog exact-size override",
+      "motif": "CUT-IN-derived fractured navy sphere, broken violet shell, and right-side white-gold lens flare"
+    },
+    {
+      "global_level": 14,
+      "local_level": 4,
+      "visual_identity": "black_hole",
+      "display_name": "Black Hole",
+      "path": "runtime/ball_lv14_black_hole_128.png",
+      "size": [128, 128],
+      "runtime_diameter": 128,
+      "binding": "BallTextureLodCatalog exact-size hero handoff",
+      "motif": "CUT-IN-derived central void, segmented violet ring, cyan orbit dashes, and four cardinal starbursts"
+    }
+  ]
+}

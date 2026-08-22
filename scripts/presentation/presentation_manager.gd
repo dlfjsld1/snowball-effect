@@ -5,6 +5,9 @@ signal stage_shift_presentation_finished(shift_id: int)
 signal visual_field_rect_changed(visual_rect: Rect2)
 signal black_hole_phase_presentation_finished(phase_id: int)
 signal black_hole_finale_presentation_finished
+signal first_contact_cutin_finished(event_id: int, run_epoch: int)
+
+const FirstContactCutInScene := preload("res://scenes/effects/first_contact_cutin.tscn")
 
 @export_range(0.05, 3.0, 0.05) var shift_duration := 0.9
 @export_range(0.05, 3.0, 0.05) var black_hole_phase_duration := 0.9
@@ -39,11 +42,15 @@ var _black_hole_finale_completed_generation := -1
 var _black_hole_finale_snapshot: Dictionary = {}
 var _black_hole_finale_tween: Tween
 var _black_hole_run_generation := 0
+var _first_contact_cutin_controller: CutInController
 
 
 func _ready() -> void:
 	_frame = get_parent() as GameplayFrame
 	_reset_overlay()
+	_first_contact_cutin_controller = FirstContactCutInScene.instantiate() as CutInController
+	add_child(_first_contact_cutin_controller)
+	_first_contact_cutin_controller.cutin_finished.connect(_on_first_contact_cutin_finished)
 	call_deferred("_bind_main_black_hole_source")
 
 
@@ -51,6 +58,28 @@ func configure(background_manager: BackgroundManager, hud: Hud, pause_menu: Paus
 	_background_manager = background_manager
 	_hud = hud
 	_pause_menu = pause_menu
+
+
+func play_first_contact_cutin(payload: Dictionary) -> bool:
+	if _first_contact_cutin_controller == null:
+		return false
+	_first_contact_cutin_controller.set_reduced_effects(reduced_effects)
+	return _first_contact_cutin_controller.play_first_contact_cutin(payload)
+
+
+func reset_first_contact_cutin(run_epoch: int) -> void:
+	if _first_contact_cutin_controller != null:
+		_first_contact_cutin_controller.reset_first_contact_cutin(run_epoch)
+
+
+func get_first_contact_cutin_metrics() -> Dictionary:
+	if _first_contact_cutin_controller == null:
+		return {}
+	return _first_contact_cutin_controller.get_visual_metrics()
+
+
+func _on_first_contact_cutin_finished(event_id: int, run_epoch: int) -> void:
+	first_contact_cutin_finished.emit(event_id, run_epoch)
 
 
 func configure_black_hole_sources(_event_source: Node, simulation_source: Node) -> void:

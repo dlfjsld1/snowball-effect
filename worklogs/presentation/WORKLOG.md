@@ -522,3 +522,101 @@ Owner: Presentation / design-only
 - `export_filter="all_resources"`에서 문서용 mockup PNG가 Web payload로 import될 수 있어 `docs/design/mockups/.gdignore`로 전체 mockup tree를 runtime import/export 대상에서 제외했다. repository 문서와 Markdown 링크는 유지한다.
 - Time CRT 승인 계약에 Reduced Effects의 정적 황색 outline·상태 문구 fallback과 Time Up 감광 cleanup 경계를 추가했다.
 - 런타임 HUD/Time 구현이나 Core/Integration 판정은 변경하지 않았으며 후속 구현 상태는 계속 `PENDING`이다.
+
+## 2026-08-21 — Presentation lifecycle 최종 출고 보정
+
+Owner: Presentation
+
+- Main Menu의 실제 `StageManager.READY` 전환에서도 active Final Settlement draw node를 즉시 retire하도록 EffectManager 상태 소비를 보강하고, verification이 직접 reset helper 대신 이 READY 경로를 실행하도록 수정했다.
+- S8-G5 renderer 교체 뒤 consumer가 사라진 기존 `BlackHolePresentationOverlay` scene/script/UID를 제거했다. active `BlackHolePhaseEffect`와 외부 Core/Integration handoff는 그대로 유지한다.
+
+## 2026-08-21 — Ground Lv0–Lv4 production ball assets
+
+Owner: Presentation / delegated game-asset implementation
+
+- 사용자의 명시적 구현 승인으로 Ground `Snowflake/Snowball/Big Snowball/Giant Snowball/Moon`만 실제 runtime diameter `8/16/32/64/128px` native grid에 deterministic hand-authored PNG로 제작했다. 리뷰 보드는 silhouette/mass/motif 참조로만 사용했고 ImageGen 출력이나 board crop은 final asset에 사용하지 않았다.
+- `assets/sprites/balls/ground/manifest.json`에 centered anchor, 1px canonical grid, 11색 family palette, binary alpha, nearest, mipmap off와 개별 motif를 기록했다. 실제 불투명 색 수는 level 순서대로 `6/6/8/8/9`다.
+- 기존 `BallDefinition.texture` 5개와 global-level MultiMesh batch를 연결했다. renderer는 exact runtime diameter와 source texture 크기가 일치할 때만 texture를 사용해 Ground hero Moon 128px를 Planetary local Lv0 8px로 축소하지 않는다. exact-size LOD가 없는 경우 기존 procedural circle fallback을 유지한다.
+- simulation snapshot, radius transform, collision, mass, score, Merge/Cashout/Stage data는 변경하지 않았다. Integration-owned 파일과 lock은 사용하지 않았고 Goal 상태도 변경하지 않았다.
+- 자동 검증: `GROUND_BALL_ASSETS_VERIFIED sizes=8/16/32/64/128 alpha=binary palette_colors=[6, 6, 8, 8, 9] nearest=true mipmaps=false bindings=5 fallback_levels=5-13`; `S2_G1_VERIFIED`; `S4_G4_MULTIMESH_VERIFIED`; generator 재실행 전후 5개 SHA-256 동일.
+- Native OpenGL Compatibility / Intel Arc 130V에서 1280×720, 1366×768 요청(실제 16:9 Canvas 1365×768), 1600×900, 1920×1080 capture로 실제 MultiMesh 5개와 대표 runtime 크기를 확인했다. `ground_ball_assets_runtime_capture_{1280x720,1366x768,1600x900,1920x1080}.png`, save error 0, runtime error 0.
+- Main 120-frame headless smoke는 exit 0이며 기존 shutdown-only ObjectDB 3개/resource 1개 warning은 유지됐다. 이번 소규모 capture에서는 성능 수치를 측정하지 않았다.
+- Planetary/Galactic production family와 Planetary-base Moon symbolic `8×8px` LOD는 후속 범위다.
+
+## 2026-08-21 — Planetary Lv0–Lv4 production ball assets
+
+Owner: Presentation / delegated game-asset implementation
+
+- 사용자의 명시적 구현 승인으로 Planetary ordered chain `[4,5,6,8,10]`의 visual identity `Moon/Mercury/Mars/Earth/Galaxy`를 실제 runtime diameter `8/16/32/64/128px` native grid에 deterministic hand-authored PNG로 제작했다. ImageGen 결과·Ground crop·resized intermediate·antialiasing은 사용하지 않았다.
+- Moon은 Ground `128px` hero와 pixel data가 다른 별도 `8px` symbolic master다. Moon/Mercury body grayscale, Mars warm red/orange, Earth blue/green/white, Galaxy open two-arm phenomenon을 manifest와 자동 검증으로 고정했다. 불투명 색 수는 local level 순서대로 `6/6/7/10/11`, 모든 alpha는 `0/255`, transparent matte RGB는 `0`이다.
+- global Lv5/Lv6/Lv8/Lv10의 `BallDefinition.texture`를 연결했다. 공유 Lv4는 Ground hero primary binding을 보존하고 Presentation-owned `BallTextureLodCatalog`가 runtime diameter `8`에서만 Planetary Moon을 선택한다. Galactic base Galaxy는 전용 `8px` LOD가 없어 기존 procedural fallback을 유지한다.
+- renderer는 existing global-level `MultiMeshInstance2D`와 runtime radius transform을 그대로 사용한다. simulation snapshot, collision/physics, score/mass/fx tier, Merge/Cashout/Stage data, Content catalog display name/visual key, FIRST_CONTACT identity와 Integration-owned 파일은 변경하지 않았고 Goal 상태도 갱신하지 않았다.
+- generator 재실행 전후 5개 SHA-256이 모두 동일했다. Python/Pillow 정적 audit는 sizes, binary alpha, clear-black transparency, declared palette와 per-asset color cap을 모두 통과했다.
+- Godot 4.7.1 CLI import/load exit 0. 전용 scene은 `PLANETARY_BALL_ASSETS_VERIFIED chain=4/5/6/8/10 sizes=8/16/32/64/128 alpha=binary palette_colors=[6, 6, 7, 10, 11] nearest=true moon_native=true bindings=5 ground_galactic_unchanged=true`; Ground asset, S2-G1 BallCatalog, S4-G4 MultiMesh 회귀도 각각 exit 0이다.
+- Main 120-frame headless smoke exit 0. 기존 shutdown-only ObjectDB 3/resource 1 warning과 Windows root certificate store warning은 유지되며 새 runtime/script error는 없다. 이번 5공 fixture는 성능 benchmark 대상이 아니어서 FPS 수치를 만들지 않았다.
+- native `1600×900` capture scene은 추가했지만 visible Windows/OpenGL 실행 승인이 환경에서 거부되어 실제 native PNG는 `UNVERIFIED — tool permission`. headless dummy renderer는 viewport texture를 제공하지 않아 native 전용 guard로 명시했고, ignored local static native-size preview로 family hierarchy만 별도 시각 검수했다.
+
+## 2026-08-21 — Galactic Lv0–Lv4 production ball assets
+
+Owner: Presentation / game-asset implementation
+
+- 사용자의 명시적 구현 승인으로 Galactic ordered chain `[10,11,12,13,14]`의 `Galaxy/Galaxy Cluster/Quasar/Event Horizon/Black Hole`을 실제 runtime diameter `8/16/32/64/128px` native grid에 deterministic hand-authored PNG로 제작했다. ImageGen 결과, Planetary Galaxy resize, antialiasing, blur, filtered intermediate는 사용하지 않았다.
+- Galaxy `8px`는 Planetary `128px` hero와 pixel data가 다른 symbolic master다. compact galaxy group, accretion disk·polar jets, broken lensing band와 opaque void를 generic circular container 없이 단계별 silhouette로 구성했다. palette는 최대 13색, 실제 불투명 색 수는 `6/10/12/11/13`, alpha는 모두 `0/255`, transparent matte RGB는 `0`이다.
+- Presentation-owned `BallTextureLodCatalog`에 다섯 exact-size binding을 추가했다. 기존 MultiMesh는 Lv10~13만 소비하고 Lv14 hero는 Black Hole creation/CUT-IN handoff로 등록했다. Lv14 special fallback과 이동 Black Hole renderer/footprint/force/conversion/phase/finale, collision·physics·score·Stage transition·FIRST_CONTACT, Content resource와 Integration-owned 파일은 변경하지 않았다. Goal status와 Integration lock도 변경하지 않았다.
+- generator 재실행 전후 5개 SHA-256이 모두 동일했다. 전용 Godot verifier는 `GALACTIC_BALL_ASSETS_VERIFIED chain=10/11/12/13/14 sizes=8/16/32/64/128 alpha=binary palette_colors=[6, 10, 12, 11, 13] opaque_pixels=[28, 149, 462, 3023, 9945] nearest=true galaxy_native=true bindings=5 black_hole_special_unchanged=true ground_planetary_unchanged=true`로 exit 0이었다.
+- Ground, Planetary, S2-G1 BallCatalog, S4-G4 MultiMesh 회귀는 모두 exit 0이었다. Main 120-frame headless smoke도 exit 0이며 기존 Windows root certificate store warning과 shutdown-only ObjectDB 3/resource 1 warning만 유지됐다.
+- native `1600×900` capture scene과 60-frame timing probe를 추가했지만 visible Windows/OpenGL 실행 승인이 환경에서 두 번 거부되어 실제 PNG와 FPS는 `UNVERIFIED — tool permission`; capture path는 생성되지 않았다. headless dummy renderer를 runtime capture로 오인하지 않도록 native-only guard를 유지했다.
+
+## 2026-08-21 — S6-G2 FIRST CONTACT CUT-IN Presentation producer
+
+Owner: Presentation
+
+- 기존 S6-G2I Main wiring을 수정하지 않고 `PresentationManager.play_first_contact_cutin(payload) -> bool`, `reset_first_contact_cutin(run_epoch)`와 `first_contact_cutin_finished(event_id, run_epoch)`를 실제 `CutInController`에 연결했다. Integration-owned 파일과 lock은 사용하지 않았다.
+- approved draft의 공통 `1600×900` background 1개와 정확한 6종 `Giant Snowball/Moon/Supernova/Galaxy/Event Horizon/Black Hole` transparent title·portrait layer를 byte-identical copy해 runtime 조립한다. Galaxy Cluster와 Quasar draft는 asset path와 roster 모두에 등록하지 않았다.
+- normal enter/hold/exit는 `0.12/0.26/0.12s`로 총 `0.50s`, reduced-effects는 slide를 제거한 `0.10/0.25/0.10s`로 총 `0.45s`다. 전체 16:9 dim과 공통 frame은 기존 gameplay 위에서 동작하며 normal exit 후 dim을 복원·hide한 다음 matching completion을 한 번 발행한다.
+- Controller는 payload v1의 11개 필드 type, six-identity별 Stage/global/local/handoff/Black Hole ordinal을 검증하고 active/completed `(run_epoch,event_id)`와 process-lifetime monotonic high-water로 duplicate/stale을 거부한다. reset은 matching/previous visual Tween을 즉시 취소하지만 completion을 만들지 않으며 Core/Stage/Simulation을 조회하거나 변경하지 않는다.
+- Godot 4.7.1 CLI 전용 검증은 `S6_G2_VERIFIED mappings=6 common_background=true duration=0.50 reduced_duration=0.45 duplicate_stale=true reset_no_emit=true exact_once=true main_handoff=true core_readonly=true`, exit 0. S6-G2I, S8-G4, S8-G5 phase와 finale Presentation 회귀도 각각 exit 0이었다.
+- Main 120-frame headless smoke exit 0. pre-existing Windows root certificate store warning과 shutdown-only ObjectDB 3/resource 1 warning이 유지됐다. 별도 S5-G4 wiring fixture는 latest Main Title 시작을 반영하지 않은 기존 `get_current_stage().clear_score` null assertion에서 중단됐고 S6-G2 범위에서는 수정하지 않았다.
+- Native OpenGL Compatibility / Intel Arc 130V의 실제 Main producer fixture에서 pause lock 아래 visible hold를 캡처했다. `C:/Users/gktjd/Desktop/gangnam/snowball-effect/tmp/s6_g2_first_contact_cutin_main_capture.png`, save error 0, 8-frame sample 평균 `31.9 FPS`, 최대 frame `31.68ms`, matching completion 1회와 pause release를 확인했다.
+- 실제 Web/browser Tween·dim·입력 복귀 품질 검증은 남아 있어 Goal은 `IMPLEMENTED`이며 `VERIFIED`로 올리지 않았다.
+
+## 2026-08-21 — S6-G2 same-Run Stage reset regression
+
+Owner: Presentation
+
+- Root cause는 `CutInController.reset_first_contact_cutin(run_epoch)`가 `_reset_epoch_high_water`를 올린 뒤 `play_first_contact_cutin`이 `run_epoch <= _reset_epoch_high_water`를 거부한 것이었다. GameManager의 Stage 전환 visual cleanup은 Run epoch를 유지하므로 Ground 뒤 같은 Run의 Planetary/Galactic payload가 모두 차단됐다.
+- Presentation-owned controller의 reset watermark 비교만 strict older-epoch(`<`)로 바꿨다. 기존 process-lifetime event ID high-water, completed pair, active pair와 highest Run epoch 방어는 유지했고 GameManager/StageManager/Main/Core/Integration은 수정하지 않았다.
+- S6-G2 verification을 Ground `epoch N/event 100` 정상 완료→`reset_first_contact_cutin(N)` Stage cleanup→Planetary `epoch N/event 101` 수락·visible·matching completion 1회로 갱신했다. 같은 fixture에서 active duplicate, completed pair, non-monotonic old event ID, older Run epoch를 계속 거부하고 active visual reset은 즉시 hide/cancel하되 completion 0회임을 확인한다.
+- 수정 전 새 회귀는 `A later Planetary event in the same Run epoch must survive Stage-transition visual reset`에서 재현됐다. 수정 후 Godot 4.7.1 headless는 `S6_G2_VERIFIED mappings=6 common_background=true duration=0.50 reduced_duration=0.45 same_epoch_stage_reset=true duplicate_stale=true reset_no_emit=true exact_once=true main_handoff=true core_readonly=true`, exit 0이다.
+- S6-G2I Integration regression은 `S6_G2I_VERIFIED fifo=true pause=true stale_rejected=true black_hole_gate=true reset=true`, exit 0이다. 두 성공 실행에는 기존 Windows root certificate store warning만 있었고 새 GDScript/runtime error는 없다. 기본 `user://logs` 경로 실행은 log write 실패 뒤 Godot signal 11이어서 workspace `--log-file`로 재실행해 프로젝트와 tooling 문제를 구분했다.
+- 수정 뒤 Native OpenGL Compatibility로 Main CUT-IN capture를 새로 실행했다. Intel Arc 130V, `1600×900`, 8-frame 평균 `145.4 FPS`, 최대 `10.41ms`, completion 1회를 확인했으며 artifact `tmp/s6_g2_first_contact_cutin_main_capture.png`를 갱신했다.
+- 실제 Web/manual Tween·dim·입력 복귀 검증은 여전히 pending이므로 S6-G2는 `IMPLEMENTED`를 유지한다.
+- CUT-IN의 normal/reduced 총 노출 시간을 사용자 요청대로 `2.00s/1.80s`로 조정했다. enter/hold/exit의 기존 비율과 completion·pause handoff는 유지하며 전용 verifier의 timing contract도 함께 갱신했다.
+
+## 2026-08-21 — Planetary visual-chain correction
+
+Owner: Presentation
+
+- 사용자 승인 방향인 Planetary visual chain `Moon → Earth → Sun → Supernova → Galaxy`를 global `[4,5,6,8,10]`, native `8/16/32/64/128px` master에 다시 적용했다. 기존 Content-owned BallDefinition의 display name·score·physics·primary texture는 수정하지 않았다.
+- Presentation-owned `BallTextureLodCatalog`가 Planetary exact-size master를 primary texture보다 먼저 선택하도록 해, 이전 Mercury/Mars/Earth 그림이 Earth/Sun/Supernova 데이터에 표시되던 drift를 고쳤다. Galactic local Lv0의 Galaxy `8px` LOD와 Ground Moon hero primary는 보존한다.
+- Supernova와 Galaxy FIRST CONTACT portrait를 해당 `64px/128px` runtime master의 nearest-only `512px` 확대본으로 재생성했다. verification은 모든 source pixel이 portrait의 대응 block 전체에 동일함을 확인해 CUT-IN과 in-game visual identity가 분리되지 않게 한다.
+- Godot 4.7.1 CLI: `PLANETARY_BALL_ASSETS_VERIFIED chain=4/5/6/8/10 sizes=8/16/32/64/128 alpha=binary palette_colors=[6, 8, 7, 6, 11] nearest=true moon_native=true bindings=5 ground_primary_unchanged=true galactic_lod_separate=true`; `S6_G2_VERIFIED ... duration=2.00 reduced_duration=1.80 ...`, 모두 exit 0.
+- Native OpenGL Compatibility / Intel Arc 130V에서 `tmp/planetary_ball_family_corrected.png`를 생성했다. save error 0, standard ball 5이며 실제 MultiMesh가 `Moon/Earth/Sun/Supernova/Galaxy` 라벨과 native size로 표시됐다.
+
+## 2026-08-21 — CUT-IN reference priority correction
+
+Owner: Presentation
+
+- 사용자 지시에 따라 Supernova·Galaxy CUT-IN portrait를 canonical draft의 byte-identical 원본으로 복원했다. CUT-IN은 인게임 asset으로부터 파생하지 않으며, 원화가 인게임 디자인의 기준이다.
+- Planetary Supernova `64px`는 CUT-IN의 white-gold rupture core·warm-violet orbit ribbon을, Galaxy `128px`는 folded violet body·cyan/gold/cream ribbon lane을 native-grid로 축약한다. 기존의 Supernova shock-petal과 Galaxy open-spiral 방향은 폐기했다.
+- Presentation verification은 runtime CUT-IN 파일과 approved draft의 bytes equality를 확인하고, in-game master가 각각의 canonical motif color language를 갖는지 검사한다.
+
+## 2026-08-21 — Galactic Lv3/Lv4 CUT-IN-aligned runtime masters
+
+Owner: Presentation
+
+- 사용자 지시대로 approved FIRST CONTACT CUT-IN illustration은 변경하지 않고, in-game Galactic Lv3 Event Horizon과 Lv4 Black Hole만 원화에 맞춰 다시 제작했다.
+- Event Horizon `64px`는 금 간 남색 구체, 보랏빛 shell, 분리된 cyan lensing dash, 우측 white/gold flare로 축약했다. Black Hole `128px`는 완전한 dark void, 밝은 inner rim, segmented violet torus, cyan outer marks, 네 방향 starburst로 축약했다.
+- verifier에 runtime CUT-IN portrait와 approved draft의 byte-for-byte equality를 추가하고, Event Horizon의 우측 flare와 Black Hole의 상단 starburst 픽셀도 검사한다. CUT-IN 원화 파일 자체는 수정하지 않았다.
+- Godot 4.7.1 CLI: `GALACTIC_BALL_ASSETS_VERIFIED chain=10/11/12/13/14 sizes=8/16/32/64/128 alpha=binary palette_colors=[6, 10, 12, 12, 12] opaque_pixels=[28, 149, 462, 3403, 10362] nearest=true galaxy_native=true bindings=5 black_hole_special_unchanged=true ground_planetary_unchanged=true`, exit 0.
+- Native OpenGL Compatibility / Intel Arc 130V capture: `tmp/galactic_ball_family_cutin_aligned.png`, `1600x900`, save error `0`, standard balls `4`, Black Hole hero `true`, average `59.9 FPS`, minimum `34.4 FPS`, max frame `29.10ms`.

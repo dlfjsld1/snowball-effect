@@ -54,6 +54,30 @@ P0는 모두 `docs/design/**`의 문서·비교판·source reference다. P0 제�
 - 현재 S2-G5 Owned Files에는 Ball asset/renderer가 없다. S2에서는 visual bible과 Merge FX만 만들고 production Ball sprite adoption은 별도 Goal 전까지 보류한다.
 - Plan 1 runtime은 13종을 사용하지만 Red Giant와 Nebula export도 Plan 2 비교용으로 제작한다. 사용 여부와 asset 존재 여부를 같은 것으로 취급하지 않는다.
 
+#### Ground production handoff v1
+
+- 사용자의 별도 명시적 구현 승인으로 Ground `Lv0–Lv4`를 `assets/sprites/balls/ground/**`에 제작했다. 당시 이 예외는 Planetary/Galactic 제작 승인으로 확대하지 않았고, Planetary는 아래 별도 후속 승인으로 진행했다.
+- source of truth는 `assets/sprites/balls/ground/manifest.json`, 재현 source는 `tools/presentation/ground_ball_assets/generate_ground_ball_assets.gd`다.
+- 최종 PNG는 AI 생성물이 아니라 `8/16/32/64/128px` native grid에 직접 작성한 deterministic palette-indexed output이다.
+- 기존 `BallDefinition.texture`와 MultiMesh renderer의 exact-size binding을 사용한다. texture source 크기와 runtime 지름이 다르면 hero LOD를 축소하지 않고 기존 procedural fallback을 사용한다.
+- 이번 handoff는 물리/충돌/점수/Stage data와 Goal 상태를 변경하지 않는다.
+
+#### Planetary production handoff v1
+
+- 사용자의 별도 명시적 구현 승인으로 Planetary ordered chain `[4,5,6,8,10]`의 visual identity `Moon/Mercury/Mars/Earth/Galaxy`를 `assets/sprites/balls/planetary/**`에 제작했다. Galactic family는 승인 범위가 아니다.
+- source of truth는 `assets/sprites/balls/planetary/manifest.json`, 재현 source는 `tools/presentation/planetary_ball_assets/generate_planetary_ball_assets.py`다.
+- 최종 PNG는 ImageGen 결과나 Ground crop이 아니라 `8/16/32/64/128px` native grid에 직접 작성한 deterministic palette output이다. Moon `8px`는 Ground Moon `128px`와 별도 authored master다.
+- global Lv5/Lv6/Lv8/Lv10은 `BallDefinition.texture`, 공유 Lv4 Moon은 Presentation-owned exact-size `BallTextureLodCatalog`를 사용한다. 기존 MultiMesh transform과 procedural fallback은 유지한다.
+- 이 handoff는 Content catalog 이름/visual key와 FIRST_CONTACT identity, score/mass/fx tier, physics/collision/Stage data, Integration-owned 파일과 Goal 상태를 변경하지 않는다.
+
+#### Galactic production handoff v1
+
+- 사용자의 별도 명시적 구현 승인으로 Galactic ordered chain `[10,11,12,13,14]`의 `Galaxy/Galaxy Cluster/Quasar/Event Horizon/Black Hole`을 `assets/sprites/balls/galactic/**`에 제작했다.
+- source of truth는 `assets/sprites/balls/galactic/manifest.json`, 재현 source는 `tools/presentation/galactic_ball_assets/generate_galactic_ball_assets.py`다.
+- 최종 PNG는 AI 생성물이나 Planetary Galaxy resize가 아니라 `8/16/32/64/128px` native grid에 직접 작성한 deterministic hard-palette output이다. Galaxy `8px`는 Planetary Galaxy `128px`와 별도 authored master다.
+- Presentation-owned `BallTextureLodCatalog`가 다섯 exact-size master를 제공하며 기존 MultiMesh는 일반 Lv10~13의 radius transform을 그대로 유지한다. Lv14 asset registration은 기존 Black Hole special/final-phase renderer나 gameplay entity를 대체하지 않는다.
+- 이 handoff는 Black Hole을 새 Stage나 Clear 조건으로 만들지 않으며 Content resource 값, FIRST_CONTACT, score/mass/fx tier, physics/collision/Stage transition, Black Hole Core mechanics, Integration-owned 파일과 Goal 상태를 변경하지 않는다.
+
 ### Frame and Stage World
 
 - `assets/backgrounds/**`

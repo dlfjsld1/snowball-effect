@@ -244,11 +244,11 @@ func resolve_continuous_ball_collision(
 			contact_point = penetration["contact_position"]
 			corrected_position = penetration["corrected_position"]
 		var impact_velocity := _contact_impact_velocity(contact_point - paddle_center)
-		var relative_velocity := ball_velocity - impact_velocity
-		if relative_velocity.dot(normal) >= 0.0:
-			if toi["starts_inside"]:
-				var remaining_time := delta * (1.0 - global_t)
-				return _no_collision(corrected_position + ball_velocity * remaining_time, ball_velocity)
+		# Contact validity follows the actual swept Paddle transform. The impact cap limits
+		# only the energy transferred after a hit; it must not make a fast Mouse sweep look
+		# stationary and let a ball remain inside the Paddle.
+		var relative_velocity := ball_velocity - _raw_contact_velocity(contact_point - paddle_center)
+		if relative_velocity.dot(normal) >= 0.0 and not toi["starts_inside"]:
 			continue
 		earliest = {
 			"time": global_t,
@@ -295,6 +295,12 @@ func is_ball_separated(ball_position: Vector2, ball_radius: float) -> bool:
 	return (local_position - closest).length_squared() > pow(ball_radius + separation_epsilon, 2.0)
 
 
+func is_ball_reapproaching(ball_position: Vector2, ball_velocity: Vector2, contact_normal: Vector2) -> bool:
+	if contact_normal.is_zero_approx():
+		return false
+	return (ball_velocity - _raw_contact_velocity(ball_position - global_position)).dot(contact_normal) < -separation_epsilon
+
+
 func get_contact_impact_velocity(contact_world_position: Vector2) -> Vector2:
 	return _contact_impact_velocity(contact_world_position - global_position)
 
@@ -325,8 +331,12 @@ func _reflect_velocity(
 
 
 func _contact_impact_velocity(contact_offset: Vector2) -> Vector2:
+	return _raw_contact_velocity(contact_offset).limit_length(maximum_impact_velocity)
+
+
+func _raw_contact_velocity(contact_offset: Vector2) -> Vector2:
 	var angular_contact_velocity := angular_velocity * Vector2(-contact_offset.y, contact_offset.x)
-	return (linear_velocity + angular_contact_velocity).limit_length(maximum_impact_velocity)
+	return linear_velocity + angular_contact_velocity
 
 
 func _segment_expanded_obb_toi(start: Vector2, finish: Vector2, half_extents: Vector2) -> Dictionary:
@@ -387,13 +397,35 @@ func _resolve_inside_ball_overlap(
 	if not local_delta.is_zero_approx() and local_delta.length_squared() > ball_radius * ball_radius:
 		return {"overlapping": false}
 
-	var local_normal := preferred_normal.rotated(-paddle_rotation)
-	if absf(local_normal.x) >= absf(local_normal.y):
-		local_normal = Vector2.RIGHT if local_normal.x >= 0.0 else Vector2.LEFT
-		closest_point = Vector2(local_normal.x * half_extents.x, clampf(local_ball.y, -half_extents.y, half_extents.y))
+	var local_normal: Vector2
+	if not local_delta.is_zero_approx():
+		# The center is outside the OBB near an edge or tip. Keep the correction on
+		# that actual feature; a swept preferred normal may point at the opposite
+		# end and otherwise teleport the ball across the full Paddle length.
+		local_normal = local_delta.normalized()
 	else:
-		local_normal = Vector2.DOWN if local_normal.y >= 0.0 else Vector2.UP
-		closest_point = Vector2(clampf(local_ball.x, -half_extents.x, half_extents.x), local_normal.y * half_extents.y)
+		# The center is inside the OBB, so there is no geometric outside direction.
+		# Use the nearest face and reserve motion direction only for exact ties.
+		var face_gaps := [
+			half_extents.x - local_ball.x,
+			half_extents.x + local_ball.x,
+			half_extents.y - local_ball.y,
+			half_extents.y + local_ball.y,
+		]
+		var face_normals := [Vector2.RIGHT, Vector2.LEFT, Vector2.DOWN, Vector2.UP]
+		var nearest_index := 0
+		for index in range(1, face_gaps.size()):
+			if face_gaps[index] < face_gaps[nearest_index] - separation_epsilon:
+				nearest_index = index
+			elif is_equal_approx(face_gaps[index], face_gaps[nearest_index]):
+				var local_preferred := preferred_normal.rotated(-paddle_rotation)
+				if face_normals[index].dot(local_preferred) > face_normals[nearest_index].dot(local_preferred):
+					nearest_index = index
+		local_normal = face_normals[nearest_index]
+		if absf(local_normal.x) > 0.0:
+			closest_point = Vector2(local_normal.x * half_extents.x, local_ball.y)
+		else:
+			closest_point = Vector2(local_ball.x, local_normal.y * half_extents.y)
 
 	var normal := local_normal.rotated(paddle_rotation)
 	var contact_position := paddle_center + closest_point.rotated(paddle_rotation)

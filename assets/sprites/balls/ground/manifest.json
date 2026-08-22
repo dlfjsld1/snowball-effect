@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "family": "ground",
+  "owner": "Presentation",
+  "source": "res://tools/presentation/ground_ball_assets/generate_ground_ball_assets.gd",
+  "generation": "deterministic_hand_authored_native_grid",
+  "imagegen_used": false,
+  "background": "transparent_binary_alpha",
+  "anchor": [0.5, 0.5],
+  "pixel_grid": 1,
+  "texture_filter": "nearest",
+  "mipmaps": false,
+  "maximum_opaque_colors_per_asset": 9,
+  "palette": [
+    "#0B1730",
+    "#1F285D",
+    "#2E5577",
+    "#3A8DFF",
+    "#4B849A",
+    "#72D8FF",
+    "#98D8B1",
+    "#C8C9D8",
+    "#ECF2CB",
+    "#EAF8FF",
+    "#F4FCFF"
+  ],
+  "assets": [
+    {
+      "global_level": 0,
+      "local_level": 0,
+      "visual_key": "snowflake",
+      "display_name": "Snowflake",
+      "path": "runtime/ball_lv00_snowflake_8.png",
+      "size": [8, 8],
+      "runtime_diameter": 8,
+      "motif": "rounded crystalline snow pellet"
+    },
+    {
+      "global_level": 1,
+      "local_level": 1,
+      "visual_key": "snowball",
+      "display_name": "Snowball",
+      "path": "runtime/ball_lv01_snowball_16.png",
+      "size": [16, 16],
+      "runtime_diameter": 16,
+      "motif": "soft packed snow with underside depth"
+    },
+    {
+      "global_level": 2,
+      "local_level": 2,
+      "visual_key": "big_snowball",
+      "display_name": "Big Snowball",
+      "path": "runtime/ball_lv02_big_snowball_32.png",
+      "size": [32, 32],
+      "runtime_diameter": 32,
+      "motif": "compressed shelves and sparse ice facets"
+    },
+    {
+      "global_level": 3,
+      "local_level": 3,
+      "visual_key": "giant_snowball",
+      "display_name": "Giant Snowball",
+      "path": "runtime/ball_lv03_giant_snowball_64.png",
+      "size": [64, 64],
+      "runtime_diameter": 64,
+      "motif": "heavy packed mass with irregular frozen slabs, no craters"
+    },
+    {
+      "global_level": 4,
+      "local_level": 4,
+      "visual_key": "moon",
+      "display_name": "Moon",
+      "path": "runtime/ball_lv04_moon_128.png",
+      "size": [128, 128],
+      "runtime_diameter": 128,
+      "motif": "massive stepped cratered celestial sphere"
+    }
+  ]
+}

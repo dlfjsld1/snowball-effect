@@ -208,6 +208,8 @@ Native 또는 MCP에서만 성공하고 Browser에서 확인하지 못한 Web �
 * 기본 공 물리에는 지속적인 아래 방향 중력이 없으며 `gravity = 0`이다.
 * Spawn 시 아래쪽 반구를 향하는 초기 velocity를 부여하고, 충돌이나 명시적 gameplay effect가 없으면 runtime velocity와 speed를 유지한다.
 * Play Field의 좌·우·상단은 반사 경계이고 하단은 열린 Cashout 경계다.
+* 성장 가능한 같은 level 일반 Snowball은 Merge한다. Merge하지 않는 서로 다른 level pair와 더 성장할 수 없는 현재 Stage 최고공 pair는 모두 mass/current velocity 기반 물리 collision으로 반사·분리한다.
+* 일반 Snowball 본체 렌더는 active logical Play Field에서 clip하며 Cashout 중 Stage World나 기계 배경 위로 새지 않는다.
 * `base_speed` 또는 Spawn speed는 초기 velocity를 만드는 기준값이지 runtime speed 고정값이 아니다.
 * 현재 버전은 등급별 base speed 차이를 사용하지 않는다. 향후 도입할 수 있지만 runtime speed를 고정해서는 안 된다.
 * Paddle 각도·접촉 위치·이동 속도는 반사 방향과 runtime speed를 바꿀 수 있으며, 폭주 방지 cap의 정확한 값은 tuning 대상이다.

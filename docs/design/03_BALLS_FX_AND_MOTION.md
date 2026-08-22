@@ -45,6 +45,34 @@ Ball은 장식 입자가 아니라 규칙 상태다. 화면에 공이 많아져�
 5. color-vision grayscale check.
 6. S2 전에는 합성 100/500/1000 density mock, S4-G3 이후에는 실제 runtime capture.
 
+### Ground Lv0–Lv4 production family v1 — IMPLEMENTED ASSET HANDOFF
+
+- Visual reference only: [`mockups/drafts/ground-ball-family-concept-board-v1.png`](mockups/drafts/ground-ball-family-concept-board-v1.png). 이 보드 자체나 축소본은 production texture로 사용하지 않는다.
+- Runtime handoff: [`../../assets/sprites/balls/ground/README.md`](../../assets/sprites/balls/ground/README.md)와 [`../../assets/sprites/balls/ground/manifest.json`](../../assets/sprites/balls/ground/manifest.json).
+- Ground 실제 local runtime 지름 `8/16/32/64/128px`에서 각각 직접 그린 native master를 사용한다. `BallDefinition.texture`와 기존 global-level MultiMesh batch가 이를 소비하며 simulation radius·collision·mass·score는 변경하지 않는다.
+- 공통 팔레트는 Ground Stage의 `#1F285D/#4B849A/#98D8B1/#ECF2CB`, Giant Snowball seed `#3A8DFF`와 ice/snow 보조색을 포함한 manifest 11색이며 개별 asset은 최대 9색 subset만 사용한다.
+- 모든 PNG는 binary alpha, clear-black transparent pixel, centered anchor, nearest filtering, mipmap off를 사용한다. Giant Snowball은 압축 shelf·불규칙 frozen slab만 사용하고 원형 crater를 금지하며, Moon만 넓은 stepped crater를 고유 motif로 사용한다.
+- Planetary/Galactic family와 Planetary base에서 사용할 Moon `8×8px` symbolic production LOD는 이 Ground handoff 당시 범위 밖이었다. Planetary LOD는 아래 후속 handoff에서 별도로 구현됐고 `128×128px` Ground hero Moon은 그대로 보존한다.
+- 이 handoff는 사용자가 명시적으로 승인한 Ground asset 구현이며 기존 Goal 상태를 변경하지 않는다.
+
+### Planetary Lv0–Lv4 production family v1 — IMPLEMENTED ASSET HANDOFF
+
+- Runtime handoff: [`../../assets/sprites/balls/planetary/README.md`](../../assets/sprites/balls/planetary/README.md)와 [`../../assets/sprites/balls/planetary/manifest.json`](../../assets/sprites/balls/planetary/manifest.json).
+- ordered global chain `[4,5,6,8,10]`을 local runtime 지름 `8/16/32/64/128px`에서 각각 직접 그렸다. visual identity는 최신 사용자 방향인 `Moon / Earth / Sun / Supernova / Galaxy`를 사용한다.
+- Moon은 Ground `128×128px` hero를 축소하지 않은 별도 `8×8px` symbolic master다. 공유 global Lv4의 primary `BallDefinition.texture`는 Ground hero를 유지하고 Presentation exact-size LOD catalog가 Planetary Moon만 선택한다.
+- Moon은 grayscale crater symbol, Earth는 blue/green/white, Sun은 angular gold-orange corona, Supernova는 승인된 CUT-IN의 white-gold rupture와 warm-violet orbit ribbon, Galaxy는 승인된 CUT-IN의 folded violet body와 cyan-gold ribbon lane을 사용한다. 모든 asset은 좌상단 광원, dark outline, binary alpha, clear-black transparency, nearest와 mipmap off 계약을 공유한다. Supernova·Galaxy CUT-IN portrait는 canonical reference artwork로 유지하며 in-game master가 그 원화를 축약한다.
+- global Lv5/Lv6/Lv8/Lv10의 `BallDefinition.texture`와 기존 global-level MultiMesh batch를 연결한다. texture와 runtime diameter가 정확히 같을 때만 사용한다. 이 handoff 당시 Galactic base Galaxy는 procedural fallback이었고 아래 Galactic handoff가 별도 `8px` LOD로 교체한다.
+- 이번 Presentation handoff는 authoritative Content catalog의 display name/visual key, FIRST_CONTACT identity, score, mass, FX tier, physics/collision, Merge/Cashout/Stage data와 Goal 상태를 변경하지 않는다.
+
+### Galactic Lv0–Lv4 production family v1 — IMPLEMENTED ASSET HANDOFF
+
+- Runtime handoff: [`../../assets/sprites/balls/galactic/README.md`](../../assets/sprites/balls/galactic/README.md)와 [`../../assets/sprites/balls/galactic/manifest.json`](../../assets/sprites/balls/galactic/manifest.json).
+- ordered global chain `[10,11,12,13,14]`를 local runtime 지름 `8/16/32/64/128px`에서 각각 직접 그렸다. visual identity는 `Galaxy / Galaxy Cluster / Quasar / Event Horizon / Black Hole`이다.
+- Galaxy는 Planetary `128×128px` hero를 축소하지 않은 별도 `8×8px` symbolic master다. 다섯 asset은 generic circular container 대신 open spiral, compact body group, accretion disk·polar jet, broken lensing band, opaque void를 실제 astronomical silhouette로 사용한다.
+- 공통 hard-edged deep-space/cyan/magenta/gold 팔레트, 상단·좌측 bright-band motif, binary alpha, clear-black transparency, nearest와 mipmap off 계약을 공유한다. Event Horizon `64px`와 Black Hole `128px`는 blur/glow가 없어도 void 면적·band 수·silhouette extent로 단계 차이를 만든다.
+- Presentation `BallTextureLodCatalog`가 다섯 exact-size master를 제공하고 기존 MultiMesh는 Lv10~13만 소비한다. Lv14 hero는 Black Hole 생성/CUT-IN handoff에 등록하되 기존 special fallback, 이동 Black Hole footprint·force·phase/finale renderer를 변경하지 않는다.
+- Black Hole은 Galactic local Lv4이자 최종 국면 기믹의 입력이며 Stage 4나 Stage Clear 조건이 아니다. Content resource 값, FIRST_CONTACT identity, score/mass/fx tier, physics/collision, Merge/Cashout/Stage transition, Integration-owned 파일과 Goal 상태는 변경하지 않는다.
+
 ### v1 Stage Plan — Plan 1
 
 v1은 3개 Stage에 5등급씩 배치하며 Stage 경계 Ball 한 종을 공유한다.
@@ -232,6 +260,12 @@ T2의 핵심 burst, T3/T4 state transition, Paddle/Ball outline, 필수 HUD는 �
 - secondary shake/flash/particle을 제거한 reference에서도 state text/outline만으로 전환이 읽혀야 한다.
 
 현재 release scope에는 사용자용 reduced-effects setting이나 runtime toggle이 없다. 해당 기능은 별도 Goal이 생기기 전까지 구현 요구사항이 아니다.
+
+## 2026-08-21 Galactic Lv3/Lv4 CUT-IN visual authority
+
+- Event Horizon (Galactic local Lv3, runtime 64px) and Black Hole (Galactic local Lv4, runtime 128px) take their visual authority from the approved FIRST CONTACT CUT-IN portraits. The CUT-IN PNGs are immutable reference art; gameplay masters adapt those motifs and never replace the portrait files.
+- Event Horizon reduces the portrait to a fractured navy mass, broken violet shell, detached cyan lensing dashes, and a dominant right-side white/gold flare.
+- Black Hole reduces the portrait to a perfectly dark central void, bright inner rim, segmented violet torus, cyan outer orbit dashes, and four cardinal starbursts. The final-gimmick renderer remains a separate system and is not modified by this asset direction.
 
 V4 `Cabinet Score Lock`의 1200ms keyframe seed를 Score Milestone 방향으로 채택한다. gameplay를 pause하거나 중앙 action area를 덮지 않으며, threshold와 current run score는 authoritative data에서 받는다. 목업의 `10K`는 fixture다.
 
