@@ -1295,3 +1295,52 @@ Owned files: `assets/particles/items/blizzard/blizzard_crystal.png`, `scripts/pr
 
 - 사용자가 Browser console error 없음까지 확인했다. Primary runtime에서 실제 패들 조작 중 Blizzard Item Ball 생성과 2/5 damage를 재현했고, 12회 Stage 생성에서 Blizzard 2회와 전용 visual 표시를 확인했다.
 - 앞서 확인한 5-hit→Orb collect→CUT-IN→spawn rate `6→18`, 48 snow, 5초 active 및 최신 Web 사용자 smoke와 합쳐 S7-G2를 `VERIFIED`로 전환했다.
+
+## 2026-08-22 — S7-G3 Fire Core content runtime
+
+Owner: Content/Systems/Release 담당
+Goal: S7-G3
+Owned files: `scripts/gameplay/item_fire_core.gd`, `tests/content/s7_g3_fire_core_verification.*`, `docs/team/INTEGRATION_CONTRACTS.md`, `docs/goals/STATUS.md`
+
+### 작업
+
+- `ItemFireCore`를 추가해 `item_fire_core.tres`의 duration `8s`, magnitude `×10`을 timed read-only state로 제공했다.
+- 잘못된 ItemDefinition은 거부하고, 재획득은 열린 Fire window를 중첩하지 않고 full duration으로 갱신한다.
+- `fire_window_changed(active)`와 `active_state_changed(snapshot)`를 제공하며, 만료와 Retry/Main reset은 neutral multiplier `1.0` 상태로 한 번 복구한다.
+- Fire component는 ScoreLedger, SettlementService, StageManager, GameManager 또는 simulation을 직접 수정하지 않는다.
+
+### 확인
+
+- Primary `godot` validation: Fire Core runtime, verification script, verification scene 3/3 valid.
+- 전용 verification scene은 Godot process exit `0`으로 종료했다. 단, short-lived scene이 MCP bridge 초기화 전에 종료돼 stdout sentinel을 회수하지 못했다. stderr에는 bridge teardown warning만 있었고 project parse/runtime error는 없었다.
+- Godot CLI executable은 PATH와 standard install location에서 발견되지 않아 headless baseline을 실행하지 못했다. Primary 관찰 한계와 대조한 fallback debug run도 intentional exit 뒤 active process/output을 보존하지 못했다. 이는 local tooling/short-lived-scene 관찰 제약으로 분리한다.
+
+### 다음 작업 / 주의
+
+- Core/Integration은 Fire window를 소비해 Paddle contact 시 Fire flag를 중앙 simulation 배열에 부여하고, Merge OR 계승과 Fire ball Active Cashout ×10을 구현해야 한다.
+- Time Bonus와 Final Settlement는 Fire multiplier를 읽지 않는다. 실제 Item CUT-IN, Main wiring, Desktop/Web Q-S7 검증은 아직 범위 밖이다.
+
+## 2026-08-22 — S7-G4 Magnet content command
+
+Owner: Content/Systems/Release 담당
+Goal: S7-G4
+Owned files: `scripts/gameplay/item_magnet.gd`, `scripts/data/item_definition.gd`, `resources/items/item_magnet.tres`, `tests/content/s7_g4_magnet_verification.*`, `docs/team/INTEGRATION_CONTRACTS.md`, `docs/goals/STATUS.md`
+
+### 작업
+
+- `ItemMagnet`을 추가해 ItemDefinition의 duration `7s`, influence range `96`, pair acceleration cap `120`, neighbour limit `2`를 read-only timed force command로 제공했다.
+- 재획득은 force를 중첩하지 않고 남은 시간을 full duration으로 갱신하며, 만료·Retry/Main reset은 `active=false`, range/cap `0`, neighbour limit `0`의 neutral command를 발행한다.
+- `ItemDefinition`에 Magnet 전용 tuning 필드를 추가했다. Content는 ball snapshot, Spatial Grid, position/velocity, simulation loop를 직접 수정하지 않는다.
+- Integration/Core가 사용할 계약을 추가했다: Gateway의 matching activation을 ItemMagnet에 전달하고, Core가 기존 Spatial Grid에서 같은 level의 가까운 1~2개 이웃만 선택해 cap 안의 pair force를 적용한다.
+
+### 확인
+
+- Primary `godot` validation: ItemDefinition, ItemMagnet, verification script, verification scene 4/4 valid.
+- Primary Godot background runtime: `S7_G4_IMPLEMENTED duration=7 range=96 acceleration_cap=120 neighbour_limit=2 reset=neutral simulation_unchanged=true`, process exit 0. Runtime script error 없음.
+- Godot CLI executable은 PATH 및 표준 설치 경로에서 찾지 못해 CLI/headless baseline은 실행하지 못했다. 이는 기존 local tooling issue로 분리한다.
+
+### 다음 작업 / 주의
+
+- Integration은 ItemMagnet mount, matching Gateway activation, per-tick `advance(delta)`, Retry/Main `reset_runtime()`을 연결해야 한다.
+- Core는 active command를 Spatial Grid consumer로 받아 같은 level의 최대 두 이웃만 처리하는 bounded attraction을 구현하고, 1,000-ball metric 회귀를 측정해야 한다.
+- 그 wiring 이후 실제 Orb→CUT-IN→Magnet, 만료 복구, Desktop/Web Q-S7 smoke를 수행하기 전에는 `VERIFIED`로 올리지 않는다.
