@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://scripts/core/item_effect_gateway.gd" id="14_item_gateway"]
 [ext_resource type="Script" path="res://scripts/gameplay/item_blizzard.gd" id="16_item_blizzard"]
 [ext_resource type="Resource" path="res://resources/items/item_blizzard.tres" id="17_item_blizzard_definition"]
+[ext_resource type="PackedScene" path="res://scenes/effects/item_blizzard_visual.tscn" id="18_item_blizzard_visual"]
 
 [node name="Main" type="Node2D"]
 
@@ -39,6 +40,7 @@ audio_manager_path = NodePath("../AudioManager")
 item_manager_path = NodePath("../ItemManager")
 item_effect_gateway_path = NodePath("../ItemEffectGateway")
 item_blizzard_path = NodePath("../ItemBlizzard")
+item_blizzard_visual_path = NodePath("../PlayField/ItemBlizzardVisual")
 blizzard_definition = ExtResource("17_item_blizzard_definition")
 
 [node name="StageManager" type="Node" parent="."]
@@ -78,6 +80,8 @@ script = ExtResource("4_renderer")
 simulation_path = NodePath("../BallSimulationManager")
 
 [node name="PaddleMount" type="Node2D" parent="PlayField"]
+
+[node name="ItemBlizzardVisual" parent="PlayField" instance=ExtResource("18_item_blizzard_visual")]
 
 [node name="Paddle" parent="PlayField/PaddleMount" instance=ExtResource("5_paddle")]
 runtime_start_position = Vector2(800, 760)

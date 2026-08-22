@@ -29,10 +29,10 @@
 ### S7-G2 Blizzard
 
 - Owner: Content/Systems
-- Owned Files: `scripts/gameplay/item_blizzard.gd`, `resources/items/**`, `tests/content/**`
-- Integration Point: S7-G1 gateway의 제한된 spawn/movement command 사용.
+- Owned Files: `scripts/gameplay/item_manager.gd` (Blizzard visual spawn signal만), `scripts/gameplay/item_blizzard.gd`, `scripts/presentation/item_blizzard_visual.gd`, `scenes/effects/item_blizzard_visual.tscn`, `assets/particles/items/blizzard/**`, `resources/items/**`, `tests/content/s7_g2_**`
+- Integration Point: S7-G1 gateway의 제한된 spawn/movement command와 ItemManager의 read-only planet/orb 이벤트, `ItemBlizzard.active_state_changed(snapshot)`을 사용한다. Content/Systems/Release 담당이 Blizzard 전용 Item Ball·Orb styling, `BLIZZARD!` cue, 장식 눈을 직접 소유하며, Main mount/신호 연결은 Integration에 요청한다.
 - Dependencies: S7-G1 API.
-- Verification: 정의된 범위/시간에만 효과, 종료 후 완전 복구, Core 파일 직접 변경 없음.
+- Verification: 정의된 범위/시간에만 효과, 종료 후 완전 복구, Blizzard 전용 Item Ball·Orb styling·`BLIZZARD!` cue·장식 눈이 active state와 함께 시작/정리, Core 파일 직접 변경 없음.
 - Do Not Modify: Ball simulation 내부와 StageManager.
 
 ### S7-G3 Fire Core

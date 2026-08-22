@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/content/s7_g2_blizzard_visual_runtime_preview.gd" id="1_preview"]
+
+[node name="S7G2BlizzardVisualRuntimePreview" type="Node"]
+script = ExtResource("1_preview")
