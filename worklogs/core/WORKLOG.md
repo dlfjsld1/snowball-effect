@@ -815,3 +815,8 @@ Owner: Core
 - User identified that mutual repulsion alone makes the finale unreachable because Black Hole runtime entities previously bypassed Paddle collision.
 - Routed each Black Hole's movement through the existing Paddle continuous-collision provider before bounds/terminal handling. It now receives the same swept transform, contact velocity, impact cap, and separation behavior as normal Balls.
 - Added force-fixture coverage for a downward-moving Black Hole reflecting upward from the Paddle. No changes to Black Hole absorption, score penalty, wall behavior, or finale contact lock.
+
+## 2026-08-22 — Black Hole Paddle reflection fixture correction
+
+- 기존 fixture가 radius 16 Black Hole을 Paddle 접촉면에서 26 logical units 떨어뜨린 뒤 한 tick에 5 units만 이동시켜 실제 접촉 없이 반사를 기대하던 stale 조건을 수정했다.
+- Black Hole을 Paddle 표면 1 logical unit 위에서 시작시켜 동일 continuous-collision 계약의 실제 TOI를 검증한다. runtime 물리와 tuning 값은 변경하지 않았다.
