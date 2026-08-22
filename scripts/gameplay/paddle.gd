@@ -276,9 +276,23 @@ func resolve_continuous_ball_collision(
 	)
 	var remaining_time: float = delta * (1.0 - earliest["time"])
 	var corrected_position: Vector2 = earliest["corrected_position"]
+	var resolved_position := corrected_position + reflected_velocity * remaining_time
+	# The swept hit can happen early in a large direct Mouse translation. Projecting the
+	# reflected Ball through the remaining tick alone can still leave it inside the final
+	# Paddle transform, which would preserve the contact lock and look like a pass-through.
+	# Correct once against that final transform; this is separation, not a second reflection.
+	var final_overlap := _resolve_inside_ball_overlap(
+		resolved_position,
+		global_position,
+		global_rotation,
+		ball_radius,
+		normal
+	)
+	if final_overlap["overlapping"]:
+		resolved_position = final_overlap["corrected_position"]
 	return {
 		"collided": true,
-		"position": corrected_position + reflected_velocity * remaining_time,
+		"position": resolved_position,
 		"velocity": reflected_velocity,
 		"contact_position": earliest["contact_position"],
 		"normal": normal,
@@ -287,7 +301,20 @@ func resolve_continuous_ball_collision(
 
 
 func is_ball_separated(ball_position: Vector2, ball_radius: float) -> bool:
-	var local_position := to_local(ball_position)
+	return _is_ball_separated_from_transform(ball_position, ball_radius, global_position, global_rotation)
+
+
+func was_ball_separated_before_current_motion(ball_position: Vector2, ball_radius: float) -> bool:
+	return _is_ball_separated_from_transform(ball_position, ball_radius, _previous_position, _previous_rotation)
+
+
+func _is_ball_separated_from_transform(
+	ball_position: Vector2,
+	ball_radius: float,
+	paddle_center: Vector2,
+	paddle_rotation: float
+) -> bool:
+	var local_position := (ball_position - paddle_center).rotated(-paddle_rotation)
 	var closest := Vector2(
 		clampf(local_position.x, -paddle_width * 0.5, paddle_width * 0.5),
 		clampf(local_position.y, -paddle_thickness * 0.5, paddle_thickness * 0.5)

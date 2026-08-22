@@ -17,6 +17,7 @@ func _ready() -> void:
 	_verify_translation_sweep_and_impact_cap()
 	_verify_mouse_recontact_uses_raw_sweep_velocity()
 	_verify_mouse_recontact_releases_simulation_lock()
+	_verify_tangential_mouse_sweep_releases_stale_lock()
 	_verify_large_overlap_correction()
 	_verify_tip_overlap_correction_stays_local()
 	_verify_rotation_sweep()
@@ -113,6 +114,34 @@ func _verify_mouse_recontact_releases_simulation_lock() -> void:
 	_expect(
 		paddle.is_ball_separated(simulation.positions[ball_index], simulation.radii[ball_index]),
 		"A rapid Mouse recontact must eject a previously locked ball instead of letting it pass through the Paddle."
+	)
+	simulation.queue_free()
+
+
+func _verify_tangential_mouse_sweep_releases_stale_lock() -> void:
+	var simulation: SimulationManager = SimulationManager.new()
+	simulation.play_field_rect = Rect2(0.0, 0.0, 800.0, 600.0)
+	simulation.cashout_enabled = false
+	simulation.merge_enabled = false
+	simulation.set_physics_process(false)
+	add_child(simulation)
+	simulation.set_paddle_collision_provider(paddle)
+
+	var short_delta := 1.0 / 60.0
+	paddle.position = Vector2(120.0, 400.0)
+	paddle.rotation = 0.0
+	paddle._reset_motion_history()
+	var ball_index := simulation.spawn_ball(Vector2(400.0, 400.0), Vector2.ZERO, 4.0, 0)
+	# Model a previous hit from above. A new horizontal Mouse sweep ends on the Ball,
+	# so the old vertical lock normal must not suppress the new continuous collision.
+	simulation.paddle_contact_locks[ball_index] = 1
+	simulation.paddle_contact_lock_normals[ball_index] = Vector2.UP
+	paddle.apply_input(0.0, 0.0, short_delta, 400.0)
+	paddle._prepared_physics_frame = Engine.get_physics_frames()
+	simulation.step_simulation(short_delta)
+	_expect(
+		paddle.is_ball_separated(simulation.positions[ball_index], simulation.radii[ball_index]),
+		"A tangential direct Mouse sweep must release a stale lock and eject the Ball instead of passing through it."
 	)
 	simulation.queue_free()
 
