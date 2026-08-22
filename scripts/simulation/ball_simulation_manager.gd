@@ -672,7 +672,10 @@ func step_simulation(delta: float) -> void:
 		if is_instance_valid(_paddle_collision_provider):
 			if paddle_contact_locks[index] == 1:
 				var lock_normal := paddle_contact_lock_normals[index]
-				if _paddle_collision_provider.is_ball_separated(position, radius) or _paddle_collision_provider.is_ball_reapproaching(position, velocity, lock_normal):
+				# A contact lock only covers an uninterrupted contact. If the Ball was already
+				# outside the Paddle at this tick's previous transform, a direct Mouse sweep
+				# is a new collision and must not be skipped because its old normal was tangential.
+				if _paddle_collision_provider.was_ball_separated_before_current_motion(position, radius) or _paddle_collision_provider.is_ball_separated(position, radius) or _paddle_collision_provider.is_ball_reapproaching(position, velocity, lock_normal):
 					paddle_contact_locks[index] = 0
 					paddle_contact_lock_normals[index] = Vector2.ZERO
 			if paddle_contact_locks[index] == 0:

@@ -798,3 +798,21 @@ Owner: Core
 - Godot 4.7.1 CLI/headless reflection fixture: `S1_G2_VERIFIED`, tip-local correction 포함 exit 0.
 - Godot 4.7.1 CLI/headless mouse fixture: `S1_G2_MOUSE_VERIFIED`, exit 0.
 - S8-G1 force fixture의 기존 Paddle 검증은 radius 16 공을 접촉 거리 밖에서 1 tick만 진행하는 stale assertion으로 별도 확인이 필요하며, 이번 S1-G2 수정의 회귀로 판정하지 않았다.
+
+## 2026-08-22 — Textured MultiMesh Cashout clip regression
+
+Owner: Core
+
+- Presentation texture 적용 시 standard MultiMesh batch가 clip ShaderMaterial을 잃어, Cashout 중 일반 공 본체가 active Play Field 아래 배경까지 그려질 수 있던 회귀를 수정했다.
+- 표준 batch는 texture 유무와 관계없이 동일 clip material을 유지하고, shader의 `use_texture` uniform으로 텍스처 샘플링만 전환한다.
+- S4-G4 renderer verification은 texture batch가 material과 clip rect를 계속 보유하는지 확인하도록 보강했다.
+- Primary `godot` validation: renderer, shader fixture, Main scene valid. Main runtime에서 texture batch와 clip uniform을 읽어 확인했다. clean Web release 수동 확인은 이번 변경에서 수행하지 않았다.
+
+## 2026-08-22 — Fast Mouse Paddle sweep pass-through regression
+
+Owner: Core
+
+- 이전 Paddle contact lock이 새 수평 Mouse sweep을 막고, 이른 TOI 반사 뒤 최종 Paddle transform 안에 공이 다시 남을 수 있던 pass-through를 수정했다.
+- 이전 Paddle transform에서 이미 분리된 공은 stale lock을 해제해 새 continuous sweep을 수행한다. 반사 후 최종 transform 기준 separation correction을 한 번 적용하며, 추가 반사는 발생시키지 않는다.
+- reflection fixture에 이전 위쪽 lock이 남은 공을 빠른 수평 Mouse sweep으로 가로지르는 회귀를 추가했다.
+- Primary `godot` validation 4/4 통과, reflection fixture exit 0, Main runtime error 0. 재현 시나리오에서 Paddle velocity 16800에서도 공은 final Paddle 밖으로 분리되고 impact velocity는 900 cap을 유지했다.
