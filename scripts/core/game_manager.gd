@@ -34,6 +34,7 @@ signal first_contact_cutin_requested(payload: Dictionary)
 @export var item_manager_path: NodePath
 @export var item_effect_gateway_path: NodePath
 @export var item_blizzard_path: NodePath
+@export var item_blizzard_visual_path: NodePath
 @export var blizzard_definition: Resource
 @export var spawn_rate := 6.0
 @export var lv1_ball_radius := 4.0
@@ -58,6 +59,7 @@ var _audio_manager: AudioManagerScript
 var _item_manager: Node
 var _item_effect_gateway: Node
 var _item_blizzard: Node
+var _item_blizzard_visual
 var _spawn_accumulator := 0.0
 var _base_stage_spawn_rate := 6.0
 var _spawn_rate_multiplier := 1.0
@@ -93,6 +95,7 @@ func _ready() -> void:
 	_item_manager = get_node(item_manager_path)
 	_item_effect_gateway = get_node(item_effect_gateway_path)
 	_item_blizzard = get_node(item_blizzard_path)
+	_item_blizzard_visual = get_node(item_blizzard_visual_path)
 	_base_stage_spawn_rate = spawn_rate
 	call_deferred("_initialize_runtime")
 
@@ -118,9 +121,17 @@ func _initialize_runtime() -> void:
 	_simulation.first_contact_discovered.connect(_on_first_contact_discovered)
 	_simulation.black_hole_phase_requested.connect(_on_black_hole_phase_requested)
 	_item_manager.item_collected.connect(_on_item_collected)
+	_item_manager.item_planet_spawned.connect(_item_blizzard_visual.show_item_planet_spawned)
+	_item_manager.item_planet_damaged.connect(_item_blizzard_visual.show_item_planet_damaged)
+	_item_manager.item_planet_broken.connect(_item_blizzard_visual.show_item_planet_broken)
+	_item_manager.item_orb_spawned.connect(_item_blizzard_visual.show_item_orb_spawned)
+	_item_manager.item_collected.connect(_item_blizzard_visual.hide_item_orb)
+	_item_manager.item_orb_missed.connect(_item_blizzard_visual.hide_item_orb)
 	_item_effect_gateway.item_cutin_requested.connect(_on_item_cutin_requested)
 	_item_effect_gateway.item_effect_activation_requested.connect(_on_item_effect_activation_requested)
 	_item_blizzard.spawn_multiplier_changed.connect(_on_blizzard_spawn_multiplier_changed)
+	_item_blizzard.active_state_changed.connect(_item_blizzard_visual.set_blizzard_state)
+	_item_blizzard_visual.activation_cue_requested.connect(_on_blizzard_visual_activation_cue)
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
 	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu, _title_screen)
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation, _stage_manager)
@@ -258,6 +269,7 @@ func _start_run() -> void:
 	_simulation.begin_first_contact_run(_first_contact_run_epoch)
 	_item_effect_gateway.reset_runtime()
 	_item_blizzard.reset_runtime()
+	_item_blizzard_visual.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.start_run()
 	_paddle.reset_runtime()
@@ -280,6 +292,7 @@ func _enter_title_screen() -> void:
 	_item_manager.reset_runtime()
 	_item_effect_gateway.reset_runtime()
 	_item_blizzard.reset_runtime()
+	_item_blizzard_visual.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.end_run_to_main_menu()
 	_paddle.set_physics_process(false)
@@ -455,7 +468,13 @@ func _on_item_collected(item_type: StringName, world_position: Vector2) -> void:
 
 
 func _on_item_cutin_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
+	if item_type == &"blizzard":
+		_item_blizzard_visual.play_item_cutin(event_id, item_type, world_position)
 	item_cutin_requested.emit(event_id, item_type, world_position)
+
+
+func _on_blizzard_visual_activation_cue(event_id: int) -> void:
+	accept_item_cutin_activation_cue(event_id)
 
 
 func _on_item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:

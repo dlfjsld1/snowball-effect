@@ -1280,3 +1280,18 @@ Owned files: `assets/particles/items/blizzard/blizzard_crystal.png`, `scripts/pr
 
 - 사용자 피드백에 따라 Blizzard crystal display box를 `96×96px`에서 `64×64px`로 축소했다. nearest filtering과 투명 alpha 처리는 유지한다.
 - Primary `godot` validate 2/2 및 Main-based runtime preview screenshot에서 축소 크기와 runtime error 0을 확인했다.
+
+## 2026-08-22 — S7-G2 Blizzard Main·Web smoke
+
+- Presentation/UI와 Core/Integration 승인 뒤 Main에 Blizzard visual mount, ItemManager producer signal, Blizzard active state, CUT-IN completion cue→Gateway activation을 연결했다.
+- Primary `godot` validation에서 Blizzard visual, GameManager, Main scene 3/3 valid. 실제 Main runtime에서 5-hit Item Ball 파괴→Orb collect→CUT-IN→Gateway 1회 activation→Ground spawn `6→18`, 48 snow, 5초 active를 확인했다.
+- 최신 Web release export를 생성해 `http://127.0.0.1:8080`에서 사용자가 Item Ball·Orb·CUT-IN·Blizzard 출현을 확인했다. Retry/Main reset과 browser console error는 별도 확인이 남아 있다.
+
+### 추가 사용자 확인
+
+- 사용자가 Web 빌드에서 Retry와 Main 복귀가 정상 동작함을 확인했다. Browser console error 확인만 남긴다.
+
+### 완료 검증
+
+- 사용자가 Browser console error 없음까지 확인했다. Primary runtime에서 실제 패들 조작 중 Blizzard Item Ball 생성과 2/5 damage를 재현했고, 12회 Stage 생성에서 Blizzard 2회와 전용 visual 표시를 확인했다.
+- 앞서 확인한 5-hit→Orb collect→CUT-IN→spawn rate `6→18`, 48 snow, 5초 active 및 최신 Web 사용자 smoke와 합쳐 S7-G2를 `VERIFIED`로 전환했다.

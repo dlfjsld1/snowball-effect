@@ -11,22 +11,22 @@ const ICE_DARK := Color("244466")
 const ICE_MID := Color("5caed0")
 const ICE_LIGHT := Color("d8fbff")
 const AURORA := Color("78f4ee")
-const BLIZZARD_CRYSTAL_SOURCE_PATH := "res://assets/particles/items/blizzard/blizzard_crystal.png"
+const BLIZZARD_CRYSTAL_TEXTURE: Texture2D = preload("res://assets/particles/items/blizzard/blizzard_crystal.png")
+
+signal activation_cue_requested(event_id: int)
 
 var _planet := {}
 var _orb := {}
 var _blizzard_active := false
 var _blizzard_remaining := 0.0
 var _elapsed := 0.0
-var _blizzard_crystal_texture: ImageTexture
+var _cutin_event_id := -1
+var _cutin_seconds := 0.0
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	var crystal_image := Image.load_from_file(BLIZZARD_CRYSTAL_SOURCE_PATH)
-	if crystal_image != null:
-		_blizzard_crystal_texture = ImageTexture.create_from_image(crystal_image)
 	queue_redraw()
 
 
@@ -76,17 +76,34 @@ func set_blizzard_state(snapshot: Dictionary) -> void:
 	queue_redraw()
 
 
+func play_item_cutin(event_id: int, item_type: StringName, _world_position: Vector2) -> bool:
+	if item_type != ITEM_TYPE or event_id < 0 or _cutin_event_id >= 0:
+		return false
+	_cutin_event_id = event_id
+	_cutin_seconds = 0.65
+	queue_redraw()
+	return true
+
+
 func reset_runtime() -> void:
 	_planet.clear()
 	_orb.clear()
 	_blizzard_active = false
 	_blizzard_remaining = 0.0
 	_elapsed = 0.0
+	_cutin_event_id = -1
+	_cutin_seconds = 0.0
 	queue_redraw()
 
 
 func _physics_process(delta: float) -> void:
 	_elapsed += maxf(delta, 0.0)
+	if _cutin_event_id >= 0:
+		_cutin_seconds = maxf(0.0, _cutin_seconds - delta)
+		if is_zero_approx(_cutin_seconds):
+			var event_id := _cutin_event_id
+			_cutin_event_id = -1
+			activation_cue_requested.emit(event_id)
 	if not _orb.is_empty():
 		_orb["position"] = (_orb["position"] as Vector2) + Vector2.DOWN * 160.0 * delta
 	queue_redraw()
@@ -99,6 +116,8 @@ func _draw() -> void:
 		_draw_ice_planet()
 	if not _orb.is_empty():
 		_draw_orb()
+	if _cutin_event_id >= 0:
+		_draw_item_cutin()
 
 
 func _draw_blizzard() -> void:
@@ -114,14 +133,23 @@ func _draw_blizzard() -> void:
 	draw_string(ThemeDB.fallback_font, banner.position + Vector2(27.0, 17.0), "BLIZZARD!  %.1fs" % _blizzard_remaining, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, ICE_LIGHT)
 
 
+func _draw_item_cutin() -> void:
+	var panel := Rect2(PLAY_FIELD.get_center() - Vector2(132.0, 67.0), Vector2(264.0, 134.0))
+	draw_rect(PLAY_FIELD, Color(0.02, 0.10, 0.19, 0.58))
+	draw_rect(panel.grow(4.0), ICE_DARK)
+	draw_rect(panel, AURORA, false, 2.0)
+	draw_texture_rect(BLIZZARD_CRYSTAL_TEXTURE, Rect2(panel.position + Vector2(16.0, 19.0), Vector2(96.0, 96.0)), false)
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(126.0, 51.0), "BLIZZARD", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, ICE_LIGHT)
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(126.0, 79.0), "SPAWN RATE x3", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, Color.WHITE)
+
+
 func _draw_ice_planet() -> void:
 	var center: Vector2 = _planet["position"]
 	var radius: float = _planet["radius"]
 	# User-selected ImageGen crystal. It keeps its transparent pixel-art source
 	# and is rendered on an integer 64px display box with nearest filtering.
 	var display_size := Vector2.ONE * maxf(radius * 2.67, 64.0)
-	if _blizzard_crystal_texture != null:
-		draw_texture_rect(_blizzard_crystal_texture, Rect2(center - display_size * 0.5, display_size), false)
+	draw_texture_rect(BLIZZARD_CRYSTAL_TEXTURE, Rect2(center - display_size * 0.5, display_size), false)
 	var hits: int = _planet["hits"]
 	for crack in range(hits):
 		var direction := Vector2.RIGHT.rotated(TAU * float(crack) / 5.0)
@@ -147,4 +175,5 @@ func get_visual_snapshot() -> Dictionary:
 		"blizzard_active": _blizzard_active,
 		"snow_particle_count": SNOW_PARTICLE_COUNT if _blizzard_active else 0,
 		"remaining_seconds": _blizzard_remaining,
+		"cutin_active": _cutin_event_id >= 0,
 	}
