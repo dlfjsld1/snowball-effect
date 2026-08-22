@@ -487,8 +487,9 @@ Frame의 바닥 장식과 Paddle/공의 실제 충돌 영역을 분리한다. �
 ### 이동·흡수·인력
 
 - Black Hole은 Play Field 안을 공처럼 이동한다.
+- Black Hole은 일반 Snowball과 같은 Paddle continuous collision·접촉점 velocity·speed cap 계약으로 반사된다. 따라서 패들 강타로 척력을 이기고 다른 Black Hole 쪽으로 보낼 수 있다.
 - 주변 공이 가까워지면 제한된 인력으로 궤도를 휘게 한다.
-- Galactic의 사람 기준 3단계 이하, 즉 `local_level <= 2` 공은 Black Hole 접촉 시 흡수된다.
+- Galactic의 모든 일반 Snowball은 Black Hole 접촉 시 흡수된다. 이미 전환된 Black Hole runtime entity는 이 대상이 아니다.
 - Black Hole은 다른 Black Hole을 제외한 어떤 공과도 Merge하지 않고 성장하지 않는다.
 - 인력과 흡수는 패들 조작의 의미를 없애거나 공 속도를 폭주시켜서는 안 된다.
 - Black Hole은 하단 Cashout 대상이 아니며, 다른 공과 달리 Play Field 하단에서 반사한다.
@@ -496,8 +497,8 @@ Frame의 바닥 장식과 Paddle/공의 실제 충돌 영역을 분리한다. �
 인력의 첫 플레이테스트 seed:
 
 ```text
-influence_radius = 300 world units
-maximum_pull_acceleration = 450 world units/s²
+influence_radius = 480 world units
+maximum_pull_acceleration = 1200 world units/s²
 pull_falloff = (1 - distance / influence_radius)²
 ```
 
@@ -506,12 +507,12 @@ pull_falloff = (1 - distance / influence_radius)²
 두 Black Hole이 존재하면 일반 공은 각 Black Hole이 만드는 pull vector를 합산해서 받는다. 따라서 항상 정확히 2배가 되는 것은 아니다. 두 힘이 같은 방향이면 강해지고, 두 Black Hole 사이에서는 일부 상쇄될 수 있다. 합산 결과에는 별도 cap을 한 번 적용한다.
 
 ```text
-ordinary_ball_pull_per_black_hole_max = 450 world units/s²
-ordinary_ball_total_pull_cap = 900 world units/s²
-black_hole_mutual_pull_max = 450 world units/s²
+ordinary_ball_pull_per_black_hole_max = 1200 world units/s²
+ordinary_ball_total_pull_cap = 1500 world units/s²
+black_hole_mutual_repulsion_max = 450 world units/s²
 ```
 
-Black Hole끼리는 저등급 공 흡수 규칙을 적용하지 않고 서로에게만 전용 mutual pull을 적용한다. 접촉이 확정되면 일반 force simulation을 중단하고 terminal lock 뒤 연출용 회전·폭발로 전환한다. 세 수치 모두 초기 플레이테스트 seed다.
+Black Hole끼리는 일반 Snowball 흡수 규칙을 적용하지 않고, 접촉 전에는 전용 척력으로 서로 멀어진다. 따라서 두 번째 Black Hole 생성만으로 자동 finale가 되지 않으며, 패들이 만든 충분한 상대속도로 실제 접촉해야 terminal이 시작된다. 접촉이 확정되면 일반 force simulation을 중단하고 terminal lock 뒤 연출용 회전·폭발로 전환한다. 세 수치 모두 초기 플레이테스트 seed다.
 
 첫 Black Hole이 등장하는 순간의 `run_score`를 `black_hole_phase_score_baseline`으로 한 번 저장한다. 공을 흡수할 때는 해당 공의 Active Cashout 가치 전액을 직접 빼지 않고 다음 값을 `absorption_penalty`로 사용한다.
 

@@ -42,6 +42,7 @@ Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성�
 ## 블랙홀 이동
 
 - Play Field 안을 공처럼 이동한다.
+- 일반 Snowball과 동일한 Paddle continuous collision으로 반사된다. 패들 이동·회전의 실제 contact velocity를 받아 척력을 이기고 다른 Black Hole을 향해 강타할 수 있다.
 - Black Hole 외형을 유지하되 gameplay footprint는 사람 기준 Galactic 3단계 공 Quasar(`local_level = 2`) 크기를 기준으로 한다.
 - 이동 속도와 범위는 tuning 데이터다.
 - 논리 위치와 시각 중심을 일치시킨다.
@@ -53,7 +54,7 @@ Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성�
 
 ## 인력
 
-주변 활성 공에 제한된 가속도를 적용하고, 사람 기준 Galactic 3단계 이하(`local_level <= 2`) 공은 접촉 시 흡수한다.
+주변 활성 공에 제한된 가속도를 적용하고, 모든 일반 Snowball은 접촉 시 흡수한다.
 
 요구:
 
@@ -66,14 +67,14 @@ Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성�
 초기 플레이테스트 seed:
 
 ```text
-influence_radius = 300 world units
-maximum_pull_acceleration = 450 world units/s²
-total_pull_cap = 900 world units/s²
-black_hole_mutual_pull_max = 450 world units/s²
+influence_radius = 480 world units
+maximum_pull_acceleration = 1200 world units/s²
+total_pull_cap = 1500 world units/s²
+black_hole_mutual_repulsion_max = 450 world units/s²
 pull_falloff = (1 - distance / influence_radius)²
 ```
 
-반경 밖의 pull은 0이며 기존 Ball runtime speed cap을 유지한다. 두 Black Hole이 존재하면 일반 공은 두 pull vector의 합을 받되 합산 cap을 한 번 적용한다. 같은 방향에서는 강해지고 두 Black Hole 사이에서는 일부 상쇄될 수 있으므로 항상 정확히 2배가 되는 것은 아니다. Black Hole끼리는 전용 mutual pull로 서로를 끌어당기며 접촉 후 terminal 연출로 전환한다. 수치는 tuning data다.
+반경 밖의 pull은 0이며 기존 Ball runtime speed cap을 유지한다. 두 Black Hole이 존재하면 일반 공은 두 pull vector의 합을 받되 합산 cap을 한 번 적용한다. 같은 방향에서는 강해지고 두 Black Hole 사이에서는 일부 상쇄될 수 있으므로 항상 정확히 2배가 되는 것은 아니다. Black Hole끼리는 전용 척력으로 서로 멀어지며, 강한 상대속도로 실제 접촉했을 때만 terminal 연출로 전환한다. 수치는 tuning data다.
 
 흡수는 실제 contact에서만 발생한다. 첫 Black Hole 등장 시점 Run Score를 한 번 baseline으로 저장하고, 흡수된 공의 Active Cashout 가치 `12.5%`와 baseline `25%` 중 작은 값을 stage/run score에서 각각 차감한다. 전액 차감으로 첫 Galaxy 흡수 즉시 Run이 끝나던 문제를 피하면서, 고가 공 반복 손실은 여전히 치명적으로 유지하기 위한 첫 플레이테스트 seed다. Stage score는 0에서 clamp하고, Run score가 0 이하가 되면 0으로 고정한 뒤 즉시 Game Over/Run End한다. Time Bonus와 Cashout popup은 없다.
 
@@ -83,9 +84,9 @@ pull_falloff = (1 - distance / influence_radius)²
 
 - 블랙홀이 왼쪽이면 궤도가 왼쪽으로 휨
 - 이동하면서 공 무리가 따라 움직임
-- 낮은 단계 공은 가까워지면 흡수됨
-- 높은 단계 공은 휘어진 궤도 속에서 Merge를 계속 노릴 수 있음
-- 높은 공을 의도한 곳에 보내기 어려워짐
+- 모든 일반 공은 가까워지면 흡수됨
+- 높은 단계 공도 궤도를 잃거나 흡수될 위험 속에서 Merge를 계속 노릴 수 있음
+- 두 번째 Black Hole 재료를 의도한 곳에 보내기 어려워짐
 - 혼돈이지만 패들 조작은 여전히 의미 있음
 
 ---
@@ -95,8 +96,8 @@ pull_falloff = (1 - distance / influence_radius)²
 Black Hole Phase 중 두 번째 Lv14를 만들면 두 번째 이동 Black Hole entity로 전환한다. 두 Black Hole이 접촉하면 일반 Merge 대신 terminal sequence를 한 번만 실행한다.
 
 ```text
-contact lock
-→ mutual pull / orbit
+strong contact lock
+→ presentation orbit
 → finale explosion
 → gameplay UI hide
 → SNOWBALL EFFECT title
@@ -125,9 +126,10 @@ contact lock
 ## 완료 조건
 
 - 블랙홀 위치에 따라 공 궤도가 명확히 변함
-- `local_level <= 2` 공 흡수와 그 외 공의 궤도 변화가 구분됨
+- 모든 일반 공이 실제 Black Hole contact에서 흡수됨
 - Black Hole이 하단 Cashout되지 않음
 - Black Hole 하단 반사, 비성장, 일반 Merge 제외
+- Black Hole Paddle 반사와 강한 충돌 finale
 - 인력이 강해도 두 번째 Black Hole 제작 gameplay가 계속 가능
 - 흡수 패널티가 Cashout 가치 `12.5%`와 phase-entry Run Score `25%` 상한으로 계산되어 stage/run에서 차감되고, run score가 0이 되면 즉시 Game Over
 - Galactic 최종 국면의 생성량에서 성능 확인

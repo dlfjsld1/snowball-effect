@@ -23,10 +23,10 @@ signal simulation_metrics_updated(metrics: Dictionary)
 @export var stage_base_ball_radius := 4.0
 @export_range(1.0, 1024.0, 1.0, "or_greater") var spatial_grid_cell_size := 32.0
 
-const BLACK_HOLE_INFLUENCE_RADIUS := 300.0
-const BLACK_HOLE_MAX_PULL_ACCELERATION := 450.0
-const BLACK_HOLE_TOTAL_PULL_CAP := 900.0
-const BLACK_HOLE_MUTUAL_PULL_ACCELERATION := 450.0
+const BLACK_HOLE_INFLUENCE_RADIUS := 480.0
+const BLACK_HOLE_MAX_PULL_ACCELERATION := 1200.0
+const BLACK_HOLE_TOTAL_PULL_CAP := 1500.0
+const BLACK_HOLE_MUTUAL_REPULSION_ACCELERATION := 450.0
 const BLACK_HOLE_MAX_COUNT := 2
 const BLACK_HOLE_EPSILON_SQUARED := 0.0001
 const FIRST_CONTACT_SCHEMA_VERSION := 1
@@ -816,9 +816,19 @@ func _step_black_holes(delta: float) -> void:
 		var position := previous_positions[index]
 		for other_index in range(_black_hole_positions.size()):
 			if other_index != index:
-				velocity += _get_pull_from_source(position, previous_positions[other_index], BLACK_HOLE_MUTUAL_PULL_ACCELERATION) * delta
+				velocity -= _get_pull_from_source(position, previous_positions[other_index], BLACK_HOLE_MUTUAL_REPULSION_ACCELERATION) * delta
 		velocity = velocity.limit_length(maximum_ball_runtime_speed)
-		position += velocity * delta
+		if is_instance_valid(_paddle_collision_provider):
+			var collision: Dictionary = _paddle_collision_provider.resolve_continuous_ball_collision(
+				position,
+				velocity,
+				_black_hole_radii[index],
+				delta
+			)
+			position = collision["position"]
+			velocity = collision["velocity"]
+		else:
+			position += velocity * delta
 		next_velocities.append(velocity)
 		next_positions.append(position)
 
@@ -906,9 +916,6 @@ func _commit_black_hole_absorptions() -> void:
 		return
 	var absorbed_indices: Array[int] = []
 	for index in active_indices:
-		var local_level := _stage_ball_levels.find(global_levels[index])
-		if local_level < 0 or local_level > 2:
-			continue
 		for black_hole_index in range(_black_hole_positions.size()):
 			var contact_radius := radii[index] + _black_hole_radii[black_hole_index]
 			if positions[index].distance_squared_to(_black_hole_positions[black_hole_index]) <= contact_radius * contact_radius:

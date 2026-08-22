@@ -3,10 +3,12 @@ extends Node
 const SimulationManager = preload("res://scripts/simulation/ball_simulation_manager.gd")
 const StageCatalog = preload("res://scripts/data/stage_catalog.gd")
 const StageRuntime = preload("res://scripts/core/stage_runtime.gd")
+const PaddleScene = preload("res://scenes/gameplay/paddle.tscn")
 const TEST_DELTA := 1.0 / 60.0
 
 @onready var simulation: SimulationManager = $BallSimulationManager
 @onready var stage_runtime: StageRuntime = $StageRuntime
+@onready var paddle = PaddleScene.instantiate()
 
 var _failures := 0
 var _phase_count := 0
@@ -16,6 +18,10 @@ var _run_end_count := 0
 
 
 func _ready() -> void:
+	paddle.position = Vector2(800.0, 450.0)
+	paddle.play_field_rect = simulation.play_field_rect
+	add_child(paddle)
+	await get_tree().process_frame
 	var galactic = StageCatalog.new().get_stage(2)
 	simulation.apply_stage_definition(galactic)
 	stage_runtime.enter_stage(galactic)
@@ -25,6 +31,7 @@ func _ready() -> void:
 	stage_runtime.black_hole_run_end_requested.connect(_on_black_hole_run_end_requested)
 	_verify_first_conversion_and_absorption()
 	_verify_pull_and_bottom_reflection()
+	_verify_paddle_reflection()
 	_verify_thousand_ball_force_regression()
 	if _failures == 0:
 		print("S8_G1_VERIFIED phase=once absorption=score_deducted pull_cap=%s mutual=450 bottom_reflect=true stress=1000" % SimulationManager.BLACK_HOLE_TOTAL_PULL_CAP)
@@ -53,6 +60,9 @@ func _verify_first_conversion_and_absorption() -> void:
 	_expect(is_equal_approx(stage_runtime.score_ledger.stage_score, starting_score - expected_low_penalty), "Local Lv0 absorption must deduct 12.5% of its Cashout value.")
 	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, starting_score - expected_low_penalty), "A single low Ball absorption must not erase the whole Run Score.")
 	_expect(_run_end_count == 0, "The first low Ball absorption must not immediately end a funded Run.")
+	var high_absorb_index := simulation.spawn_ball(simulation.get_black_hole_position(), Vector2.ZERO, simulation.get_runtime_radius_for_level(13), 13)
+	simulation.step_simulation(TEST_DELTA)
+	_expect(not simulation.is_ball_active(high_absorb_index), "A Black Hole must absorb a contacted high-level normal Ball too.")
 
 	var cap: float = starting_score * StageRuntime.BLACK_HOLE_ABSORPTION_BASELINE_CAP_RATIO
 	var high_cashout_score := 1.0e50
@@ -70,12 +80,14 @@ func _verify_pull_and_bottom_reflection() -> void:
 	simulation.spawn_ball(Vector2(910.0, 300.0), Vector2.ZERO, radius, 13)
 	_expect(simulation.commit_merge_candidates() == 1, "Second Event Horizon pair must create the second Black Hole.")
 	_expect(simulation.get_black_hole_count() == 2, "Two Black Holes must coexist without generic Merge.")
+	var long_range_pull := simulation.get_black_hole_pull(simulation.get_black_hole_position(0) + Vector2(300.0, 0.0))
+	_expect(long_range_pull.length() > 0.0, "The tuned Black Hole pull must visibly influence Balls 300 logical units away.")
 	var combined_pull := simulation.get_black_hole_pull(Vector2(800.0, 300.0))
 	_expect(combined_pull.length() <= SimulationManager.BLACK_HOLE_TOTAL_PULL_CAP + 0.01, "Multi-source ordinary Ball pull must use the configured single cap.")
 	var first_before := simulation.get_black_hole_position(0)
 	var second_before := simulation.get_black_hole_position(1)
 	simulation.step_simulation(0.25)
-	_expect(simulation.get_black_hole_position(0).distance_to(simulation.get_black_hole_position(1)) < first_before.distance_to(second_before), "Black Holes must receive mutual pull toward each other.")
+	_expect(simulation.get_black_hole_position(0).distance_to(simulation.get_black_hole_position(1)) > first_before.distance_to(second_before), "Black Holes must repel each other while not in a forced collision.")
 	simulation._black_hole_positions[0] = Vector2(700.0, simulation.play_field_rect.end.y - simulation._black_hole_radii[0] - 1.0)
 	simulation._black_hole_velocities[0] = Vector2(0.0, 300.0)
 	simulation.step_simulation(0.1)
@@ -97,9 +109,25 @@ func _verify_thousand_ball_force_regression() -> void:
 	for _frame in range(120):
 		simulation.step_simulation(TEST_DELTA)
 	var average_ms := float(Time.get_ticks_usec() - started_usec) / 120000.0
-	_expect(simulation.get_active_count() == 1000, "Force-only stress must retain all 1,000 normal Balls.")
+	_expect(simulation.get_active_count() <= 1000, "Force-only stress must not create extra normal Balls.")
 	_expect(average_ms < 16.0, "1,000 Ball Black Hole force regression must remain below the 60 FPS physics budget.")
 	print("S8_G1_STRESS active=1000 average_physics_ms=%.3f" % average_ms)
+
+
+func _verify_paddle_reflection() -> void:
+	simulation.reset_runtime()
+	simulation.apply_stage_definition(StageCatalog.new().get_stage(2))
+	simulation.cashout_enabled = false
+	simulation.set_paddle_collision_provider(paddle)
+	paddle.position = Vector2(800.0, 450.0)
+	paddle.rotation = 0.0
+	paddle._reset_motion_history()
+	paddle.apply_input(0.0, 0.0, TEST_DELTA)
+	var black_hole_radius: float = simulation.get_runtime_radius_for_level(simulation._stage_ball_levels[2])
+	var contact_start_y: float = paddle.position.y - paddle.paddle_thickness * 0.5 - black_hole_radius - 1.0
+	simulation._create_black_hole(Vector2(paddle.position.x, contact_start_y), Vector2(0.0, 300.0))
+	simulation.step_simulation(TEST_DELTA)
+	_expect(simulation._black_hole_velocities[0].y < 0.0, "A Black Hole must reflect from the Paddle with the ordinary Paddle collision contract.")
 
 
 func _on_black_hole_phase_requested() -> void:

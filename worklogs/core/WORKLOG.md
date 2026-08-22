@@ -793,3 +793,30 @@ Owner: Core
 - 이전 Paddle transform에서 이미 분리된 공은 stale lock을 해제해 새 continuous sweep을 수행한다. 반사 후 최종 transform 기준 separation correction을 한 번 적용하며, 추가 반사는 발생시키지 않는다.
 - reflection fixture에 이전 위쪽 lock이 남은 공을 빠른 수평 Mouse sweep으로 가로지르는 회귀를 추가했다.
 - Primary `godot` validation 4/4 통과, reflection fixture exit 0, Main runtime error 0. 재현 시나리오에서 Paddle velocity 16800에서도 공은 final Paddle 밖으로 분리되고 impact velocity는 900 cap을 유지했다.
+## 2026-08-21 — Black Hole Pull Playtest Tuning
+
+- User feedback: the existing Black Hole pull was only barely noticeable, so nearby balls did not feel meaningfully threatened or drawn toward absorption.
+- Raised ordinary-ball influence radius `300 → 480`, per-source acceleration `450 → 1200`, and multi-source cap `900 → 1500` world units/s².
+- Kept Black Hole mutual pull at `450`, the ball runtime speed cap, actual-contact-only absorption, score penalty, and all terminal rules unchanged.
+- Added a force fixture assertion that a ball 300 logical units from a Black Hole receives non-zero pull. These remain playtest tuning values, not final balance.
+## 2026-08-21 — Black Hole All-Level Absorption
+
+- User requested that the Black Hole absorb high-level Snowballs too, not only the former `local_level <= 2` subset.
+- Removed the local-level filter: any active normal Ball that makes actual contact with a Black Hole is consumed. Converted Black Hole entities remain excluded.
+- This intentionally raises the risk of protecting Event Horizon pairs long enough to create the second Black Hole; no remote absorption radius was added.
+- Updated the S8 force fixture to cover a contacted high-level Ball. Revised runtime verification remains pending.
+## 2026-08-21 — Black Hole Mutual Repulsion
+
+- User requested that two Black Holes repel rather than automatically converge; finale must require a strong actual collision.
+- Replaced the `450 world units/s²` mutual attraction with equal-strength repulsion. Ordinary-Ball pull, all-level contact absorption, score penalties, and terminal contact sweep stay separate.
+- Updated S8 force coverage for increasing idle Black Hole separation, and finale coverage for a forced opposing-velocity collision.
+## 2026-08-21 — Black Hole Paddle Reflection
+
+- User identified that mutual repulsion alone makes the finale unreachable because Black Hole runtime entities previously bypassed Paddle collision.
+- Routed each Black Hole's movement through the existing Paddle continuous-collision provider before bounds/terminal handling. It now receives the same swept transform, contact velocity, impact cap, and separation behavior as normal Balls.
+- Added force-fixture coverage for a downward-moving Black Hole reflecting upward from the Paddle. No changes to Black Hole absorption, score penalty, wall behavior, or finale contact lock.
+
+## 2026-08-22 — Black Hole Paddle reflection fixture correction
+
+- 기존 fixture가 radius 16 Black Hole을 Paddle 접촉면에서 26 logical units 떨어뜨린 뒤 한 tick에 5 units만 이동시켜 실제 접촉 없이 반사를 기대하던 stale 조건을 수정했다.
+- Black Hole을 Paddle 표면 1 logical unit 위에서 시작시켜 동일 continuous-collision 계약의 실제 TOI를 검증한다. runtime 물리와 tuning 값은 변경하지 않았다.
