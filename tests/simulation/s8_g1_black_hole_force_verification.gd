@@ -123,7 +123,9 @@ func _verify_paddle_reflection() -> void:
 	paddle.rotation = 0.0
 	paddle._reset_motion_history()
 	paddle.apply_input(0.0, 0.0, TEST_DELTA)
-	simulation._create_black_hole(Vector2(800.0, 400.0), Vector2(0.0, 300.0))
+	var black_hole_radius: float = simulation.get_runtime_radius_for_level(simulation._stage_ball_levels[2])
+	var contact_start_y: float = paddle.position.y - paddle.paddle_thickness * 0.5 - black_hole_radius - 1.0
+	simulation._create_black_hole(Vector2(paddle.position.x, contact_start_y), Vector2(0.0, 300.0))
 	simulation.step_simulation(TEST_DELTA)
 	_expect(simulation._black_hole_velocities[0].y < 0.0, "A Black Hole must reflect from the Paddle with the ordinary Paddle collision contract.")
 
