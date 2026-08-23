@@ -820,3 +820,38 @@ Owner: Core
 
 - 기존 fixture가 radius 16 Black Hole을 Paddle 접촉면에서 26 logical units 떨어뜨린 뒤 한 tick에 5 units만 이동시켜 실제 접촉 없이 반사를 기대하던 stale 조건을 수정했다.
 - Black Hole을 Paddle 표면 1 logical unit 위에서 시작시켜 동일 continuous-collision 계약의 실제 TOI를 검증한다. runtime 물리와 tuning 값은 변경하지 않았다.
+
+## 2026-08-23 — S7-G3 Fire Core consumer
+
+Owner: Core
+
+- 중앙 Ball simulation SoA에 `special_types` Normal/Fire 상태를 추가했다. Fire window가 켜진 Paddle의 실제 continuous contact가 commit될 때만 공을 Fire로 바꾸며, slot reuse와 Retry/reset에서 상태가 누출되지 않는다.
+- same-level Merge는 입력 중 하나라도 Fire면 Fire 결과를 만들고, Active Cashout만 base score에 `×10`을 적용한다. Time Bonus와 Final Settlement의 base-score-only 규칙은 건드리지 않았다.
+- Core fixture는 Fire/Normal Paddle contact, Fire+Normal/Fire+Fire Merge 계승, Lv1 `100→1000` Active Cashout, Normal cashout, slot reuse/reset을 확인한다.
+- Godot 4.7.1 CLI fixture와 S2-G3/S1-G3/S3-G4 회귀가 통과했고 Primary `godot` validate 4/4도 통과했다. 최초 CLI 시도는 기존 `user://logs` 경로 오류 뒤 signal 11이었고, `--log-file`을 workspace `.godot`로 지정해 프로젝트 검증과 분리했다.
+- 제외: `ItemFireCore` state를 Paddle로 연결하는 Main/CUT-IN activation wiring, Fire renderer/FX, 실제 Web/manual activation 경로.
+
+## 2026-08-23 — S7-G4 Magnet Core consumer
+
+Owner: Core
+
+- Spatial Grid의 same-global-level bucket을 재사용해 Magnet force를 적용했다. active 공은 최대 8개의 local candidate만 검사하고, 그중 거리순 최대 2 이웃에 range 내 선형 falloff 흡인을 적용한다.
+- pair force의 합은 `max_pair_acceleration × neighbour_limit`에서 한 번 제한하고 기존 runtime ball speed cap을 유지한다. invalid command, neutral command, reset은 force state를 비운다.
+- Core fixture는 same-level attraction, different-level 제외, neighbour/candidate bound, invalid/neutral command와 1,000 sparse-ball candidate budget을 확인한다. Main/Gateway activation 및 visible/Web acceptance는 Integration/Presentation 범위다.
+
+## 2026-08-23 — S4-G4 clean Web acceptance close
+
+Owner: Core verification
+
+- 기존 MultiMesh·textured batch의 active Play Field clip 구현과 자동 회귀 증거에 최신 사용자 수동 Web 검증을 결합했다.
+- 사용자가 최신 clean Web release를 직접 플레이해 Cashout되는 일반 Snowball 본체가 Play Field 아래 Stage World/기계 배경으로 새지 않는 것을 확인했다.
+- 기존 실제 Web 성능 증거인 500 Merge ON `60.0 FPS`·physics `1.44ms`, 1,000 Merge ON `60.0 FPS`·physics `2.67ms`, console warning/error 0과 renderer fixture의 clip/reset/Black Hole fallback 결과를 유지한다.
+- Q-S4의 남은 시각 acceptance가 충족되어 S4-G4를 `VERIFIED`로 닫았다. 이번 기록에서 runtime 코드나 renderer 설정은 변경하지 않았다.
+
+## 2026-08-23 — S7-G4 Magnet Core verification evidence
+
+Owner: Core
+
+- Godot 4.7.1 CLI/headless fixture는 same-level attraction, 공당 최대 이웃 2·local candidate 8, acceleration cap 120, neutral/reset과 1,000 sparse-ball candidate `≤8000`을 통과했다.
+- 기존 S7-G1 Fire wiring, Item Gateway와 S4-G1 Spatial Grid 회귀도 각각 exit 0이었다. Primary Godot validate는 Spatial Grid, Simulation, Magnet fixture script/scene 4/4 valid였다.
+- Magnet visible CUT-IN/visual과 실제 Web 사용 경로는 구현 증거에 포함하지 않으며 S7-G4를 `IMPLEMENTED`로 유지한다.

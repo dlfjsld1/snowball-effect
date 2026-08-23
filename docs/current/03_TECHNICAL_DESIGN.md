@@ -699,13 +699,20 @@ scale shift: up to about 0.8~1.0s
 
 ### Magnet
 
-공간 그리드에서 같은 레벨 이웃 한두 개만 선택해 약한 힘 적용.  
-모든 동일 레벨 쌍에 힘을 계산하지 않는다.
+공간 그리드의 같은 global-level bucket에서 공당 최대 두 이웃만 선택해 약한 흡인력을 적용한다. 각 pair는 influence radius 안에서만 선형 falloff로 `max_pair_acceleration` 이하를 내고, 공별 합산 힘도 `max_pair_acceleration × neighbor_limit`으로 한 번 제한한 뒤 기존 runtime speed cap을 적용한다.
+
+후보 탐색은 center cell부터 ring 순서로 진행하며 공당 최대 8개의 local candidate만 검사한다. 따라서 1,000공에서도 global all-pairs 검색으로 확장되지 않는다. Magnet command의 시작·만료·Retry reset과 Item Gateway 연결은 Integration 책임이다.
 
 ### Fire
 
-공의 `special_type` 플래그 변경.  
-렌더러와 점수 계산이 이 플래그를 참조한다.
+중앙 simulation SoA의 `special_types[index]`를 공 상태로 사용한다. `NORMAL = 0`,
+`FIRE = 1`이며 slot 재사용·deactivate·Retry/reset에서 Normal으로 초기화한다.
+
+Fire window가 활성인 Paddle의 commit된 continuous contact만 해당 공의 상태를 `FIRE`로
+바꾼다. Merge plan은 두 입력 중 하나라도 Fire이면 Fire 결과를 만들며, 이는 렌더 snapshot의
+`special_types`에도 함께 전달한다. Active Cashout만 Fire flag를 읽어 base score에 `×10`을
+적용한다. Settlement service는 snapshot의 base score만 사용하므로 Fire flag나 modifier를
+읽지 않는다. Paddle Fire window의 시작/종료와 CUT-IN/Main wiring은 Integration의 별도 책임이다.
 
 ---
 

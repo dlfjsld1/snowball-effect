@@ -29,6 +29,9 @@ const BLACK_HOLE_TOTAL_PULL_CAP := 1500.0
 const BLACK_HOLE_MUTUAL_REPULSION_ACCELERATION := 450.0
 const BLACK_HOLE_MAX_COUNT := 2
 const BLACK_HOLE_EPSILON_SQUARED := 0.0001
+const FIRE_ACTIVE_CASHOUT_MULTIPLIER := 10.0
+const MAGNET_MAX_NEIGHBORS := 2
+const MAGNET_CANDIDATE_SAMPLE_LIMIT := 8
 const FIRST_CONTACT_SCHEMA_VERSION := 1
 const FIRST_CONTACT_RESUME_PLAYING := &"RESUME_PLAYING"
 const FIRST_CONTACT_BLACK_HOLE_PHASE := &"BLACK_HOLE_PHASE"
@@ -101,6 +104,7 @@ var previous_positions := PackedVector2Array()
 var velocities := PackedVector2Array()
 var radii := PackedFloat32Array()
 var global_levels := PackedInt32Array()
+var special_types := PackedByteArray()
 var active_flags := PackedByteArray()
 var paddle_contact_locks := PackedByteArray()
 var paddle_contact_lock_normals := PackedVector2Array()
@@ -116,6 +120,13 @@ var _stage_base_global_level := 0
 var _stage_top_global_level := -1
 var _stage_spawn_rate := 0.0
 var _stage_black_hole_enabled := false
+var _magnet_active := false
+var _magnet_influence_radius := 0.0
+var _magnet_max_pair_acceleration := 0.0
+var _magnet_neighbor_limit := 0
+var _magnet_neighbor_scratch: Array[int] = []
+var _last_magnet_candidate_count := 0
+var _last_magnet_force_application_count := 0
 var _last_candidate_count := 0
 var _last_grid_cell_count := 0
 var _last_merge_count := 0
@@ -137,6 +148,7 @@ var _first_contact_seen_ids: Dictionary = {}
 var _render_snapshot_positions := PackedVector2Array()
 var _render_snapshot_radii := PackedFloat32Array()
 var _render_snapshot_global_levels := PackedInt32Array()
+var _render_snapshot_special_types := PackedByteArray()
 var _render_snapshot := {
 	"positions": _render_snapshot_positions,
 	"radii": _render_snapshot_radii,
@@ -152,8 +164,15 @@ var _simulation_metrics := {
 	"grid_cell_count": 0,
 	"grid_bucket_capacity": 0,
 	"grid_new_buckets": 0,
+	"magnet_candidate_count": 0,
+	"magnet_force_applications": 0,
 	"merges": 0,
 	"black_holes": 0,
+}
+
+enum BallSpecialType {
+	NORMAL,
+	FIRE,
 }
 
 
@@ -161,10 +180,11 @@ func _physics_process(delta: float) -> void:
 	step_simulation(delta)
 
 
-func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0, global_level := 0) -> int:
+func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0, global_level := 0, special_type := BallSpecialType.NORMAL) -> int:
 	assert(radius > 0.0, "Ball radius must be positive.")
 	assert(global_level >= 0, "Ball global level must not be negative.")
 	assert(_ball_catalog.has_definition(global_level), "Ball global level must have a catalog definition.")
+	assert(special_type >= BallSpecialType.NORMAL and special_type <= BallSpecialType.FIRE, "Ball special type must be supported.")
 
 	var index: int
 	if free_indices.is_empty():
@@ -174,6 +194,7 @@ func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0, glob
 		velocities.append(velocity)
 		radii.append(radius)
 		global_levels.append(global_level)
+		special_types.append(special_type)
 		active_flags.append(1)
 		paddle_contact_locks.append(0)
 		paddle_contact_lock_normals.append(Vector2.ZERO)
@@ -184,6 +205,7 @@ func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0, glob
 		velocities[index] = velocity
 		radii[index] = radius
 		global_levels[index] = global_level
+		special_types[index] = special_type
 		active_flags[index] = 1
 		paddle_contact_locks[index] = 0
 		paddle_contact_lock_normals[index] = Vector2.ZERO
@@ -198,6 +220,7 @@ func deactivate_ball(index: int) -> bool:
 		return false
 
 	active_flags[index] = 0
+	special_types[index] = BallSpecialType.NORMAL
 	paddle_contact_locks[index] = 0
 	paddle_contact_lock_normals[index] = Vector2.ZERO
 	free_indices.append(index)
@@ -217,6 +240,10 @@ func is_ball_active(index: int) -> bool:
 
 func get_active_count() -> int:
 	return active_indices.size()
+
+
+func is_ball_fire(index: int) -> bool:
+	return is_ball_active(index) and special_types[index] == BallSpecialType.FIRE
 
 
 func get_capacity() -> int:
@@ -350,6 +377,35 @@ func get_black_hole_pull(position: Vector2) -> Vector2:
 	return total_pull.limit_length(BLACK_HOLE_TOTAL_PULL_CAP)
 
 
+func set_magnet_force_command(command: Dictionary) -> bool:
+	if not bool(command.get("active", false)):
+		_clear_magnet_force_command()
+		return true
+	if StringName(command.get("item_type", &"")) != &"magnet":
+		return false
+	var influence_radius := float(command.get("influence_radius", 0.0))
+	var max_pair_acceleration := float(command.get("max_pair_acceleration", 0.0))
+	var neighbor_limit := int(command.get("neighbor_limit", 0))
+	if influence_radius <= 0.0 or max_pair_acceleration <= 0.0 or neighbor_limit < 1 or neighbor_limit > MAGNET_MAX_NEIGHBORS:
+		return false
+	_magnet_active = true
+	_magnet_influence_radius = influence_radius
+	_magnet_max_pair_acceleration = max_pair_acceleration
+	_magnet_neighbor_limit = neighbor_limit
+	return true
+
+
+func get_magnet_force_metrics() -> Dictionary:
+	return {
+		"active": _magnet_active,
+		"influence_radius": _magnet_influence_radius,
+		"max_pair_acceleration": _magnet_max_pair_acceleration,
+		"neighbor_limit": _magnet_neighbor_limit,
+		"candidate_count": _last_magnet_candidate_count,
+		"force_applications": _last_magnet_force_application_count,
+	}
+
+
 func get_merge_candidate_pairs() -> Array[Vector2i]:
 	_rebuild_merge_candidate_pairs()
 	return _merge_candidate_pairs.duplicate()
@@ -392,6 +448,8 @@ func get_spatial_metrics() -> Dictionary:
 		"grid_cell_count": _last_grid_cell_count,
 		"grid_bucket_capacity": _spatial_grid.get_allocated_bucket_count(),
 		"grid_new_buckets": _spatial_grid.get_new_bucket_count(),
+		"magnet_candidate_count": _last_magnet_candidate_count,
+		"magnet_force_applications": _last_magnet_force_application_count,
 	}
 
 
@@ -425,6 +483,7 @@ func commit_merge_candidates() -> int:
 			"result_level": result_level,
 			"position": (positions[first_index] + positions[second_index]) * 0.5,
 			"velocity": _get_merge_result_velocity(first_index, second_index),
+			"special_type": BallSpecialType.FIRE if special_types[first_index] == BallSpecialType.FIRE or special_types[second_index] == BallSpecialType.FIRE else BallSpecialType.NORMAL,
 		})
 
 	for plan in _merge_plans:
@@ -439,7 +498,7 @@ func commit_merge_candidates() -> int:
 			black_hole_entity_ordinal = _black_hole_positions.size() + 1
 			_create_black_hole(result_position, plan["velocity"])
 		else:
-			spawn_ball(result_position, plan["velocity"], get_runtime_radius_for_level(result_level), result_level)
+			spawn_ball(result_position, plan["velocity"], get_runtime_radius_for_level(result_level), result_level, plan["special_type"])
 		ball_merged.emit(result_level, result_position)
 		_commit_first_contact_discovery(result_level, result_position, black_hole_entity_ordinal)
 		if result_level != _stage_top_global_level or not _stage_black_hole_enabled:
@@ -625,10 +684,14 @@ func reset_runtime() -> void:
 	active_flags.clear()
 	paddle_contact_locks.clear()
 	paddle_contact_lock_normals.clear()
+	special_types.clear()
 	active_indices.clear()
 	free_indices.clear()
+	_clear_magnet_force_command()
 	_last_candidate_count = 0
 	_last_grid_cell_count = 0
+	_last_magnet_candidate_count = 0
+	_last_magnet_force_application_count = 0
 	_last_merge_count = 0
 	_merge_candidate_pairs.clear()
 	_non_merge_contact_pairs.clear()
@@ -644,8 +707,49 @@ func reset_runtime() -> void:
 	_render_snapshot_positions.clear()
 	_render_snapshot_radii.clear()
 	_render_snapshot_global_levels.clear()
+	_render_snapshot_special_types.clear()
 	_update_simulation_metrics()
 	ball_count_changed.emit(0)
+
+
+func _apply_magnet_force(delta: float) -> void:
+	_last_magnet_candidate_count = 0
+	_last_magnet_force_application_count = 0
+	if not _magnet_active or _magnet_influence_radius <= 0.0 or _magnet_max_pair_acceleration <= 0.0 or _magnet_neighbor_limit < 1:
+		return
+
+	_spatial_grid.cell_size = spatial_grid_cell_size
+	_spatial_grid.rebuild(positions, radii, global_levels, active_indices)
+	_last_grid_cell_count = _spatial_grid.get_cell_count()
+	for index in active_indices:
+		var inspected := _spatial_grid.fill_same_level_magnet_neighbors(
+			positions,
+			index,
+			global_levels[index],
+			_magnet_influence_radius,
+			_magnet_neighbor_limit,
+			MAGNET_CANDIDATE_SAMPLE_LIMIT,
+			_magnet_neighbor_scratch
+		)
+		_last_magnet_candidate_count += inspected
+		var total_acceleration := Vector2.ZERO
+		for neighbor_index in _magnet_neighbor_scratch:
+			var offset := positions[neighbor_index] - positions[index]
+			var distance := offset.length()
+			if distance <= 0.0001 or distance >= _magnet_influence_radius:
+				continue
+			var falloff := 1.0 - distance / _magnet_influence_radius
+			total_acceleration += offset / distance * (_magnet_max_pair_acceleration * falloff)
+			_last_magnet_force_application_count += 1
+		velocities[index] = (velocities[index] + total_acceleration.limit_length(_magnet_max_pair_acceleration * _magnet_neighbor_limit) * delta).limit_length(maximum_ball_runtime_speed)
+
+
+func _clear_magnet_force_command() -> void:
+	_magnet_active = false
+	_magnet_influence_radius = 0.0
+	_magnet_max_pair_acceleration = 0.0
+	_magnet_neighbor_limit = 0
+	_magnet_neighbor_scratch.clear()
 
 
 func step_simulation(delta: float) -> void:
@@ -662,6 +766,7 @@ func step_simulation(delta: float) -> void:
 
 	for index in active_indices:
 		previous_positions[index] = positions[index]
+	_apply_magnet_force(delta)
 
 	for index in active_indices:
 		var velocity := velocities[index]
@@ -685,6 +790,8 @@ func step_simulation(delta: float) -> void:
 				if collision["collided"]:
 					paddle_contact_locks[index] = 1
 					paddle_contact_lock_normals[index] = collision["normal"]
+					if _paddle_collision_provider.has_method("is_fire_contact_active") and _paddle_collision_provider.is_fire_contact_active():
+						special_types[index] = BallSpecialType.FIRE
 			else:
 				position += velocity * delta
 		else:
@@ -725,10 +832,14 @@ func step_simulation(delta: float) -> void:
 
 	for cashout_index in range(_pending_cashout_indices.size()):
 		var ball_index := _pending_cashout_indices[cashout_index]
+		var was_fire := special_types[ball_index] == BallSpecialType.FIRE
 		if deactivate_ball(ball_index):
 			var global_level := global_levels[ball_index]
 			var definition = _ball_catalog.get_definition(global_level)
-			cashout_completed.emit(definition.score_value, global_level, _pending_cashout_positions[cashout_index])
+			var cashout_score: float = definition.score_value
+			if was_fire:
+				cashout_score *= FIRE_ACTIVE_CASHOUT_MULTIPLIER
+			cashout_completed.emit(cashout_score, global_level, _pending_cashout_positions[cashout_index])
 
 	_update_simulation_metrics()
 	simulation_metrics_updated.emit(_simulation_metrics)
@@ -739,16 +850,19 @@ func get_render_snapshot() -> Dictionary:
 	_render_snapshot_positions.resize(active_count)
 	_render_snapshot_radii.resize(active_count)
 	_render_snapshot_global_levels.resize(active_count)
+	_render_snapshot_special_types.resize(active_count)
 
 	for snapshot_index in range(active_count):
 		var ball_index := active_indices[snapshot_index]
 		_render_snapshot_positions[snapshot_index] = positions[ball_index]
 		_render_snapshot_radii[snapshot_index] = radii[ball_index]
 		_render_snapshot_global_levels[snapshot_index] = global_levels[ball_index]
+		_render_snapshot_special_types[snapshot_index] = special_types[ball_index]
 
 	_render_snapshot["positions"] = _render_snapshot_positions
 	_render_snapshot["radii"] = _render_snapshot_radii
 	_render_snapshot["global_levels"] = _render_snapshot_global_levels
+	_render_snapshot["special_types"] = _render_snapshot_special_types
 	_render_snapshot["count"] = active_count
 	return _render_snapshot
 
@@ -777,6 +891,8 @@ func _update_simulation_metrics() -> void:
 	_simulation_metrics["grid_cell_count"] = _last_grid_cell_count
 	_simulation_metrics["grid_bucket_capacity"] = _spatial_grid.get_allocated_bucket_count()
 	_simulation_metrics["grid_new_buckets"] = _spatial_grid.get_new_bucket_count()
+	_simulation_metrics["magnet_candidate_count"] = _last_magnet_candidate_count
+	_simulation_metrics["magnet_force_applications"] = _last_magnet_force_application_count
 	_simulation_metrics["merges"] = _last_merge_count
 	_simulation_metrics["black_holes"] = _black_hole_positions.size()
 

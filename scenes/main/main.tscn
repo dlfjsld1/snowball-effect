@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
@@ -20,6 +20,10 @@
 [ext_resource type="Script" path="res://scripts/gameplay/item_blizzard.gd" id="16_item_blizzard"]
 [ext_resource type="Resource" path="res://resources/items/item_blizzard.tres" id="17_item_blizzard_definition"]
 [ext_resource type="PackedScene" path="res://scenes/effects/item_blizzard_visual.tscn" id="18_item_blizzard_visual"]
+[ext_resource type="Script" path="res://scripts/gameplay/item_fire_core.gd" id="21_item_fire_core"]
+[ext_resource type="Resource" path="res://resources/items/item_fire_core.tres" id="22_item_fire_core_definition"]
+[ext_resource type="Script" path="res://scripts/gameplay/item_magnet.gd" id="23_item_magnet"]
+[ext_resource type="Resource" path="res://resources/items/item_magnet.tres" id="24_item_magnet_definition"]
 
 [node name="Main" type="Node2D"]
 
@@ -45,7 +49,11 @@ item_manager_path = NodePath("../ItemManager")
 item_effect_gateway_path = NodePath("../ItemEffectGateway")
 item_blizzard_path = NodePath("../ItemBlizzard")
 item_blizzard_visual_path = NodePath("../PlayField/ItemBlizzardVisual")
+item_fire_core_path = NodePath("../ItemFireCore")
+item_magnet_path = NodePath("../ItemMagnet")
 blizzard_definition = ExtResource("17_item_blizzard_definition")
+fire_core_definition = ExtResource("22_item_fire_core_definition")
+magnet_definition = ExtResource("24_item_magnet_definition")
 
 [node name="StageManager" type="Node" parent="."]
 script = ExtResource("2_stage_manager")
@@ -67,6 +75,12 @@ script = ExtResource("14_item_gateway")
 
 [node name="ItemBlizzard" type="Node" parent="."]
 script = ExtResource("16_item_blizzard")
+
+[node name="ItemFireCore" type="Node" parent="."]
+script = ExtResource("21_item_fire_core")
+
+[node name="ItemMagnet" type="Node" parent="."]
+script = ExtResource("23_item_magnet")
 
 [node name="StageWorld" type="Node2D" parent="."]
 

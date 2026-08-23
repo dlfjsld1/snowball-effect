@@ -37,21 +37,21 @@
 
 ### S7-G3 Fire Core
 
-- Owner: Content/Systems
-- Owned Files: `scripts/gameplay/item_fire_core.gd`, `resources/items/**`, `tests/content/**`
-- Integration Point: S7-G1의 Active Cashout score modifier만 사용.
+- Owner: Content/Systems (Fire window/data) + Core (Ball state consumer)
+- Owned Files: Content `scripts/gameplay/item_fire_core.gd`, `resources/items/**`, `tests/content/**`; Core `scripts/simulation/ball_simulation_manager.gd`, `scripts/gameplay/paddle.gd`, `tests/core/**`
+- Integration Point: S7-G1 activation cue가 Paddle Fire window를 켜고 끈다. Core는 commit된 Paddle contact의 Fire state, Merge 계승, Active Cashout amount만 제공한다.
 - Dependencies: S7-G1 API와 S3 Settlement 회귀 테스트.
-- Verification: Active Cashout ×10, Time Bonus 변화 없음, Settlement base score 유지.
-- Do Not Modify: Settlement service, score ledger, StageManager.
+- Verification: Fire window 중 Paddle contact 공만 Fire, Fire+Normal/Fire+Fire same-level Merge 결과 Fire, Active Cashout ×10, Time Bonus 변화 없음, Settlement base score 유지. Fire window 종료 뒤 기존 Fire 공은 유지하고 새 접촉은 Normal이다.
+- Do Not Modify: Settlement service, score ledger, StageManager, Main/CUT-IN activation wiring.
 
 ### S7-G4 Magnet
 
-- Owner: Content/Systems
-- Owned Files: `scripts/gameplay/item_magnet.gd`, `resources/items/**`, `tests/content/**`
-- Integration Point: S7-G1 gateway의 제한된 force command 사용.
+- Owner: Content/Systems (command/data) + Core (Spatial Grid force consumer)
+- Owned Files: Content `scripts/gameplay/item_magnet.gd`, `resources/items/**`, `tests/content/**`; Core `scripts/simulation/spatial_grid.gd`, `scripts/simulation/ball_simulation_manager.gd`, `tests/core/**`
+- Integration Point: S7-G1 gateway의 제한된 force command를 `BallSimulationManager.set_magnet_force_command(command)`으로 전달한다.
 - Dependencies: S7-G1과 S4 performance metric API.
-- Verification: 범위/세기 제한, 종료 복구, 1,000공 budget 회귀 없음.
-- Do Not Modify: simulation loop와 Spatial Grid.
+- Verification: 같은 level만 range/falloff 흡인, 공당 최대 2 이웃·8 후보, 합산 acceleration/runtime speed cap, neutral command·Retry 복구, 1,000공 budget 회귀 없음.
+- Do Not Modify: StageManager. Main/Gateway activation wiring is owned only by the separate S7-G1 Integration relay.
 
 ## Exit Gate
 

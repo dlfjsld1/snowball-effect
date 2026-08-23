@@ -484,7 +484,7 @@ Spawn:
 
 - 첫 Lv14 Black Hole Ball은 일반 Clear 대신 이동 Black Hole runtime entity로 전환된다.
 - Black Hole Phase에서 Play Field가 마지막으로 한 단계 확장되고 Galactic gameplay를 재개한다.
-- Black Hole은 주변 공의 궤도를 휘게 하며 사람 기준 3단계 이하 공을 흡수한다.
+- Black Hole은 주변 공의 궤도를 휘게 하며, 실제 contact한 모든 일반 Snowball을 level과 관계없이 흡수한다.
 - 흡수 공 Cashout 가치의 `12.5%`와 첫 Black Hole 등장 시점 Run Score의 `25%` 중 작은 값을 차감하며, run score가 0이면 즉시 Game Over한다.
 - Black Hole 자체는 하단 Cashout되지 않고 하단에서 반사하며, 성장하거나 일반 Merge하지 않는다.
 

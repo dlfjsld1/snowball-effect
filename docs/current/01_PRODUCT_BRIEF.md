@@ -143,7 +143,7 @@ Galaxy → Galaxy Cluster → Quasar → Event Horizon → Black Hole
 
 전역 Ball catalog는 `global_level 0~14`의 15종을 유지한다. 기본 Run의 Stage별 ordered chain은 Ground `[0, 1, 2, 3, 4]`, Planetary `[4, 5, 6, 8, 10]`, Galactic `[10, 11, 12, 13, 14]`이며, Lv7 `Red Giant`와 Lv9 `Nebula`는 visual catalog에는 남지만 기본 Stage chain에서는 사용하지 않는다.
 
-Lv14 최종 공의 이름은 `Black Hole`이다. Galactic에서 첫 Lv14를 만들면 일반 Top Ball Clear로 종료하지 않고, 그 공을 이동 Black Hole 기믹으로 전환하면서 최종 국면을 시작한다. Black Hole은 하단에서 반사하고 성장·Merge하지 않으며, 3단계 이하 공을 흡수할 때 해당 Cashout 가치의 `12.5%`와 첫 Black Hole 등장 시점 Run Score의 `25%` 중 작은 값을 차감한다. Run score가 0이 되면 즉시 Game Over다. 네 번째 Frame profile인 `Black Hole Phase`로 확장된 뒤 같은 Galactic gameplay가 계속되며, 두 번째 Lv14로 만든 Black Hole과 기존 Black Hole이 충돌하면 서로를 끌어당겨 회전·폭발한다. 이후 HUD/UI를 지우고 `SNOWBALL EFFECT`, `CLEAR SCORE`, `MAIN MENU`를 표시하며 Run을 끝낸다. Black Hole은 별도 Stage가 아니다.
+Lv14 최종 공의 이름은 `Black Hole`이다. Galactic에서 첫 Lv14를 만들면 일반 Top Ball Clear로 종료하지 않고, 그 공을 이동 Black Hole 기믹으로 전환하면서 최종 국면을 시작한다. Black Hole은 하단에서 반사하고 성장·Merge하지 않으며, 모든 일반 Snowball을 실제 contact에서 흡수할 때 해당 Cashout 가치의 `12.5%`와 첫 Black Hole 등장 시점 Run Score의 `25%` 중 작은 값을 차감한다. Run score가 0이 되면 즉시 Game Over다. 네 번째 Frame profile인 `Black Hole Phase`로 확장된 뒤 같은 Galactic gameplay가 계속되며, 두 번째 Lv14로 만든 Black Hole과 기존 Black Hole이 충돌하면 서로를 끌어당겨 회전·폭발한다. 이후 HUD/UI를 지우고 `SNOWBALL EFFECT`, `CLEAR SCORE`, `MAIN MENU`를 표시하며 Run을 끝낸다. Black Hole은 별도 Stage가 아니다.
 
 초기 Spawn 테스트 방향:
 

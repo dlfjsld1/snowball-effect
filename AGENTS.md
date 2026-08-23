@@ -225,7 +225,7 @@ Native 또는 MCP에서만 성공하고 Browser에서 확인하지 못한 Web �
 * 유효 gameplay 구간 안에서 local Lv4가 생성되어도 local Lv4 자체는 종료 사유가 아니다. Merge/discovery와 제한시간 전 Cashout을 commit한 뒤 남은 시간이 없으면 Time Up 경로를 사용한다.
 * Ground/Planetary의 local Lv4 Top Ball 생성은 즉시 Clear 조건이 아니다. non-final Stage는 유효 Cashout 반영 후 `stage_score >= clear_score`면 즉시 Score Clear하고, 그전에 Time Up이 잠기면 Final Settlement 후 `clear_score` 성공/실패를 판정한다.
 * 마지막 Galactic의 첫 Lv14 Black Hole은 Run 내 최초 CUT-IN 뒤 이동 Black Hole 기믹으로 전환하고 L3 국면을 활성화하며, 두 번째 Black Hole과 충돌할 때 최종 Run End를 잠근다.
-* 이동 Black Hole은 하단에서 반사하고 성장·일반 Merge하지 않는다. `local_level <= 2` 공 흡수 패널티는 해당 Cashout 가치의 `12.5%`와 첫 Black Hole 등장 시점 Run Score의 `25%` 중 작은 값이며, `run_score`가 0이 되면 즉시 Run End다.
+* 이동 Black Hole은 하단에서 반사하고 성장·일반 Merge하지 않는다. 모든 일반 Snowball은 실제 Black Hole contact에서 흡수되며, 흡수 패널티는 해당 공의 Cashout 가치 `12.5%`와 첫 Black Hole 등장 시점 Run Score의 `25%` 중 작은 값이다. 이를 Stage Score와 Run Score에서 각각 차감하고, `run_score`가 0이 되면 즉시 Run End다.
 * Final Settlement는 active ball snapshot의 base `score_value`만 한 번 반영하고 Time Bonus, Cashout 전용 modifier, 추가 Merge를 적용하지 않는다.
 * Settlement는 중복 호출에 안전해야 한다.
 * Core와 Optional Item Layer를 분리하며 Fire가 없어져도 코어 규칙이 바뀌지 않게 한다.

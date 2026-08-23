@@ -590,13 +590,18 @@ Two Black Holes Contact
 
 ### Fire Core
 패들이 일정 시간 Fire 상태가 되고,
-맞은 공이 Fire Snowball이 된다.
+Fire 상태인 Paddle과 실제 물리 접촉이 확정된 공이 Fire Snowball이 된다. 단순히
+Paddle 영역을 지나가거나 Fire 효과가 끝난 뒤의 새 접촉만으로는 Fire가 부여되지 않는다.
 
 Fire 공:
 
 - 같은 레벨 Normal과 머지 가능
-- 머지 후 Fire 유지
-- Cashout 점수 배수 가능
+- Fire + Normal, Fire + Fire 모두 결과가 Fire로 유지된다.
+- 효과 지속시간이 끝나도 이미 Fire인 공은 Fire를 유지하고, 이후 새 Paddle 접촉만 Normal이다.
+- Active Cashout 점수만 base `score_value ×10`을 적용한다. 이 amount는 일반 Cashout과
+  동일하게 Stage Score와 Run Score에 각각 한 번 반영된다.
+- Time Bonus의 local level 및 amount는 바꾸지 않는다.
+- Time Up 뒤 Final Settlement는 Fire 여부와 관계없이 base `score_value`만 사용한다.
 - 눈 + 불꽃 연출
 
 ---
