@@ -842,3 +842,41 @@ Owner: Integration
 - `GameManager`가 panel의 `settings_preview_requested(session_id, draft)`를 SettingsAdapter로 relay한다. Preview는 current audio/FX state만 바꾸며 persist하지 않는다.
 - matching Apply가 성공하면 adapter persist 뒤 같은 session을 close해 panel을 숨기고 Title/Pause의 original Settings trigger로 focus를 되돌린다. Close 경로는 adapter가 last applied snapshot을 먼저 restore하므로 preview cancel이 즉시 audio/FX에 반영된다.
 - Primary validate 6/6과 updated adapter/panel/Main fixture exit 0으로 preview rollback과 Apply-close를 확인했다. Main runtime probe는 preview 50→Close 100 restore, preview 60→Apply modal hidden/persisted를 확인했고 default Master 100으로 복구했다.
+
+## 2026-08-23 — S7-G1 Fire Core activation wiring
+
+Owner: Integration
+
+- Main에 Content-owned `ItemFireCore`와 `item_fire_core.tres`를 mount했다. Gateway의 authoritative activation request에서 `fire_core`만 Fire state를 시작하며, `fire_window_changed(active)`는 Paddle의 contact state를 직접 갱신한다.
+- Fire 전용 CUT-IN presentation producer는 아직 없으므로, Orb collection은 정상적으로 CUT-IN request를 먼저 발행한 뒤 deferred one-time `skip_item_cutin` fallback으로 활성화한다. matching cue가 먼저 오면 Gateway의 idempotent lock이 duplicate fallback을 거부한다.
+- GameManager item runtime advance와 Retry/Main reset에 Fire state를 넣어 만료·fresh run 모두 Paddle Fire state가 남지 않게 했다.
+- Godot 4.7.1 CLI Main fixture는 collect→CUT-IN request→fallback activation→8초 window→expiry/Retry reset을 통과했다. 기존 S7-G1 Gateway와 S7-G3 Core fixture도 통과했고, Primary `godot` validate는 GameManager/Main/new fixture 4/4와 background Main smoke error 0을 확인했다.
+- 제외: Fire 전용 visible CUT-IN/Fire renderer·FX와 Web/manual activation acceptance.
+
+## 2026-08-23 — S7-G1 Magnet activation wiring
+
+Owner: Integration
+
+- Main에 Content-owned `ItemMagnet`과 `item_magnet.tres`를 mount했다. Gateway activation request의 `magnet`만 timed Magnet state를 시작하며, `force_command_changed(command)`는 Core의 제한된 `BallSimulationManager.set_magnet_force_command(command)`로 직접 relay한다.
+- Magnet 전용 Presentation CUT-IN producer는 아직 없으므로, Orb collection은 CUT-IN request 뒤 deferred one-time `skip_item_cutin` fallback으로 활성화한다. matching cue가 먼저 오면 Gateway의 idempotent lock이 duplicate fallback을 거부한다.
+- GameManager item runtime advance와 Retry/Main reset에 Magnet state를 넣었다. 만료·fresh run은 active force command가 아닌 neutral command를 simulation에 전달한다.
+- Main fixture는 collect→CUT-IN request→fallback activation→range 96/acceleration 120/neighbour 2 command→7초 expiry/Retry neutral reset을 확인한다. visible CUT-IN/visual 및 Web/manual activation acceptance는 남긴다.
+
+## 2026-08-23 — S7 Fire/Magnet post-merge documentation sync
+
+Owner: Integration
+
+- Fire와 Magnet의 Main mount, Item Gateway activation, runtime advance, expiry 및 Retry/Main neutral reset이 모두 Integration-owned 경로에 연결됐음을 STATUS에 반영했다.
+- Fire fixture는 collect→CUT-IN request→fallback→8초 Paddle Fire window→expiry/Retry clean reset을, Magnet fixture는 collect→CUT-IN request→fallback→7초 bounded force command→expiry/Retry neutral reset을 각각 exit 0으로 확인했다.
+- Primary Godot MCP는 GameManager/Main 및 새 fixture를 valid로 판정했고 실제 Main background runtime의 error 목록은 비어 있었다.
+- 두 아이템의 visible CUT-IN/visual과 Q-S7 실제 Web acceptance는 아직 완료 증거가 아니므로 S7-G1/G3/G4를 `IMPLEMENTED`로 유지한다.
+
+## 2026-08-23 — S8-G4 zero-score Result gameplay cleanup
+
+Owner: Integration
+Owned Files: `scripts/core/game_manager.gd`, `tests/integration/s8_g4_score_depletion_result_cleanup_verification.*`
+
+- Black Hole 흡수 패널티로 Run Score가 0이 되면 StageManager는 Result snapshot을 정상 발행했지만, GameManager가 Simulation을 비우지 않아 Black Hole render snapshot이 Result 화면 뒤에 남았다.
+- `stage_run_ended(result_snapshot)` handoff에서 snapshot을 소비한 뒤 중앙 Simulation을 reset한다. Result의 terminal score·통계는 StageRuntime이 이미 복사한 snapshot을 사용하므로 보존하고, Black Hole을 포함한 gameplay entity만 제거한다.
+- 새 fixture는 수정 전 `simulation/render black_holes=1`로 실패했고, 수정 뒤 `result=true score=0 black_holes=0`으로 통과했다. S8-G4 finale/reset, S5-G6I failure Result, S3-G5 deadline/Time Up 회귀도 모두 exit 0이다.
+- Primary Godot validate 4/4와 background Main runtime probe에서 Result visible, Run Score 0, simulation/render Black Hole 0, runtime error 0을 확인했다.

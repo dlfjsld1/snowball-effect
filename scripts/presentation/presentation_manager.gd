@@ -73,6 +73,7 @@ func play_first_contact_cutin(payload: Dictionary) -> bool:
 	if _first_contact_cutin_controller == null:
 		return false
 	_first_contact_cutin_controller.set_reduced_effects(reduced_effects)
+	_first_contact_cutin_controller.configure_field_visual_rect(_frame.get_field_visual_rect())
 	var accepted := _first_contact_cutin_controller.play_first_contact_cutin(payload)
 	if accepted:
 		_frame.set_cashout_cue_active(false)

@@ -66,6 +66,15 @@ cashout multiplier: ×10
 - Final Settlement에는 적용하지 않음
 - Time Bonus에는 적용하지 않음
 
+Core consumer boundary:
+
+- Paddle Fire window가 활성일 때 실제 Paddle collision을 commit한 공만 `FIRE` 상태가 된다.
+- Fire 상태는 simulation slot에 저장되며, Fire 입력이 하나라도 있는 same-level Merge 결과는 Fire다.
+- Active Cashout이 Fire 상태를 읽어 base `score_value ×10`을 emit한다. Stage/Run ledger는
+  emit된 amount를 한 번씩만 반영한다.
+- window 종료는 새 접촉만 Normal로 남기며, 기존 Fire 공의 상태를 지우지 않는다.
+- Item activation/CUT-IN/Main signal wiring은 Core consumer 범위 밖의 Integration 작업이다.
+
 완료 조건:
 
 - 특수 타입 렌더
@@ -86,6 +95,7 @@ duration: 7s
 - Spatial Grid 후보 사용
 - 최대 힘 제한
 - 패들 조작을 무시할 정도로 강하지 않음
+- Core는 공당 최대 2개 이웃과 최대 8개 local candidate만 검사한다. 각 pair는 range 안에서 선형 falloff를 사용하며, 합산 acceleration과 기존 runtime speed cap을 모두 넘기지 않는다.
 
 완료 조건:
 

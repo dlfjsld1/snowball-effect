@@ -128,7 +128,7 @@ Stage 변화는 계절 변화가 아니라 **관측 스케일의 폭증**이다.
 
 - Play Field 안을 3단계 공 정도의 gameplay footprint로 이동
 - 실제 공 궤도를 약하게 끌어당김
-- 3단계 이하 공 흡수
+- 실제 contact한 모든 일반 Snowball 흡수
 - 하단에서 반사하며 성장·Merge하지 않음
 - 두 번째 Black Hole과 충돌하면 서로 회전·폭발하며 최종 타이틀 연출로 연결
 

@@ -82,10 +82,10 @@ Retry, Main Menu, terminal lock은 남은 BGM/loop를 정리한다. Web 첫 사�
 
 필수:
 
-- 현재 장면을 그대로 사용
-- 전체 16:9 freeze
-- 중앙 Play Field + 좌우 Stage World 함께 dim
-- 픽셀 기계 패널 진입/체류/퇴장
+- 현재 장면을 그대로 사용하고 gameplay만 pause
+- 현재 Stage의 active visual Play Field 내부만 약하게 dim하며, 좌우 Stage World·HUD·기계 UI는 덮거나 dim하지 않음
+- Play Field 가로폭을 채우는 pixel 기계 배너가 오른쪽에서 진입해 중앙에서 체류한 뒤 왼쪽으로 퇴장
+- 배너와 dim은 active visual Play Field rect에 clip되어 UI/배경 밖으로 새지 않음
 - 공 이름 / 공 이미지 / VALUE
 - 별도 화면 전환 금지
 - 공 CUT-IN의 이미지는 실제 Merge 결과 gameplay 공의 형태와 일치
@@ -94,13 +94,13 @@ Retry, Main Menu, terminal lock은 남은 BGM/loop를 정리한다. Web 첫 사�
 초기 타이밍:
 
 ```text
-enter 0.10~0.15s
-hold  0.20~0.30s
-exit  0.10~0.15s
-total 0.45~0.70s
+enter 0.20s
+hold  0.65s
+exit  0.25s
+total 1.10s
 ```
 
-기본적으로 1초 초과 금지.
+이는 첫 플레이테스트 tuning 값이다. reduced-effects는 이동 없이 같은 Play Field 내부에서 짧게 fade하며, identity와 completion semantics는 유지한다.
 
 ---
 
@@ -136,8 +136,8 @@ total 0.45~0.70s
 
 - 일반 머지가 계속 터져도 공 식별 가능
 - 고등급 이벤트가 명확히 더 강함
-- CUT-IN이 현재 게임 화면 위에서 동작
-- CUT-IN 길이가 목표 범위
+- CUT-IN이 현재 active Play Field 안에서만 동작하고 HUD/기계 UI를 가리지 않음
+- CUT-IN이 오른쪽 진입·중앙 hold·왼쪽 퇴장과 목표 길이를 만족
 - 연속 이벤트에서 CUT-IN 폭주 없음
 - CUT-IN 종료 후 입력/시뮬레이션 정상
 - Scale Shift와 충돌 시 Scale Shift 우선

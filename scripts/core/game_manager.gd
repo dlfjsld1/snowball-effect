@@ -42,7 +42,11 @@ signal settings_opened(session_id: int, snapshot: Dictionary, return_view: Strin
 @export var item_effect_gateway_path: NodePath
 @export var item_blizzard_path: NodePath
 @export var item_blizzard_visual_path: NodePath
+@export var item_fire_core_path: NodePath
+@export var item_magnet_path: NodePath
 @export var blizzard_definition: Resource
+@export var fire_core_definition: Resource
+@export var magnet_definition: Resource
 @export var spawn_rate := 6.0
 @export var lv1_ball_radius := 4.0
 @export var lv1_spawn_speed_world_units_per_second := 160.0
@@ -69,6 +73,8 @@ var _item_manager: Node
 var _item_effect_gateway: Node
 var _item_blizzard: Node
 var _item_blizzard_visual
+var _item_fire_core: Node
+var _item_magnet: Node
 var _spawn_accumulator := 0.0
 var _base_stage_spawn_rate := 6.0
 var _spawn_rate_multiplier := 1.0
@@ -107,6 +113,8 @@ func _ready() -> void:
 	_item_effect_gateway = get_node(item_effect_gateway_path)
 	_item_blizzard = get_node(item_blizzard_path)
 	_item_blizzard_visual = get_node(item_blizzard_visual_path)
+	_item_fire_core = get_node(item_fire_core_path)
+	_item_magnet = get_node(item_magnet_path)
 	_base_stage_spawn_rate = spawn_rate
 	call_deferred("_initialize_runtime")
 
@@ -143,6 +151,10 @@ func _initialize_runtime() -> void:
 	_item_blizzard.spawn_multiplier_changed.connect(_on_blizzard_spawn_multiplier_changed)
 	_item_blizzard.active_state_changed.connect(_item_blizzard_visual.set_blizzard_state)
 	_item_blizzard_visual.activation_cue_requested.connect(_on_blizzard_visual_activation_cue)
+	_item_fire_core.fire_window_changed.connect(_paddle.set_fire_contact_active)
+	_paddle.set_fire_contact_active(_item_fire_core.is_active())
+	_item_magnet.force_command_changed.connect(_simulation.set_magnet_force_command)
+	_simulation.set_magnet_force_command(_item_magnet.get_force_command())
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
 	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu, _title_screen)
 	_settings_adapter.settings_snapshot_changed.connect(_on_settings_snapshot_changed)
@@ -308,6 +320,8 @@ func _start_run() -> void:
 	_simulation.begin_first_contact_run(_first_contact_run_epoch)
 	_item_effect_gateway.reset_runtime()
 	_item_blizzard.reset_runtime()
+	_item_fire_core.reset_runtime()
+	_item_magnet.reset_runtime()
 	_item_blizzard_visual.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.start_run()
@@ -331,6 +345,8 @@ func _enter_title_screen() -> void:
 	_item_manager.reset_runtime()
 	_item_effect_gateway.reset_runtime()
 	_item_blizzard.reset_runtime()
+	_item_fire_core.reset_runtime()
+	_item_magnet.reset_runtime()
 	_item_blizzard_visual.reset_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.end_run_to_main_menu()
@@ -376,6 +392,7 @@ func _on_next_stage_requested(clear_id: int) -> void:
 
 func _on_stage_run_ended(result_snapshot: Dictionary) -> void:
 	_reset_first_contact_runtime(true)
+	_simulation.reset_runtime()
 	_paddle.set_physics_process(false)
 	_hud.visible = false
 	_pause_menu.visible = false
@@ -482,6 +499,8 @@ func _spawn_ball() -> void:
 func _process_item_runtime(delta: float) -> void:
 	_item_manager.advance(delta)
 	_item_blizzard.advance(delta)
+	_item_fire_core.advance(delta)
+	_item_magnet.advance(delta)
 	if not _item_manager.get_item_ball_snapshot().is_empty():
 		_item_manager.process_ball_snapshots(_simulation.get_active_item_collision_snapshots())
 	_try_collect_item_orb()
@@ -510,15 +529,28 @@ func _on_item_cutin_requested(event_id: int, item_type: StringName, world_positi
 	if item_type == &"blizzard":
 		_item_blizzard_visual.play_item_cutin(event_id, item_type, world_position)
 	item_cutin_requested.emit(event_id, item_type, world_position)
+	if item_type == &"fire_core" or item_type == &"magnet":
+		# Fire and Magnet have no Presentation-owned CUT-IN producer yet. Preserve
+		# the gateway's explicit safe fallback: defer one skip after observers have
+		# had this frame to consume the request, and keep matching cues idempotent.
+		call_deferred("_accept_item_cutin_fallback", event_id)
 
 
 func _on_blizzard_visual_activation_cue(event_id: int) -> void:
 	accept_item_cutin_activation_cue(event_id)
 
 
+func _accept_item_cutin_fallback(event_id: int) -> void:
+	skip_item_cutin(event_id)
+
+
 func _on_item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
 	if item_type == &"blizzard":
 		_item_blizzard.activate(blizzard_definition)
+	elif item_type == &"fire_core":
+		_item_fire_core.activate(fire_core_definition)
+	elif item_type == &"magnet":
+		_item_magnet.activate(magnet_definition)
 	item_effect_activation_requested.emit(event_id, item_type, world_position)
 
 

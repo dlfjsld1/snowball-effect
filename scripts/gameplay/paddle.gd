@@ -25,6 +25,7 @@ enum PositionControlSource {
 
 var linear_velocity := Vector2.ZERO
 var angular_velocity := 0.0
+var _fire_contact_active := false
 
 var _initial_position := Vector2.ZERO
 var _initial_rotation := 0.0
@@ -45,6 +46,14 @@ func _ready() -> void:
 	_initial_rotation = rotation
 	_reset_motion_history()
 	queue_redraw()
+
+
+func set_fire_contact_active(active: bool) -> void:
+	_fire_contact_active = active
+
+
+func is_fire_contact_active() -> bool:
+	return _fire_contact_active
 
 
 func _physics_process(delta: float) -> void:
@@ -175,6 +184,7 @@ func get_collision_state() -> Dictionary:
 func reset_runtime() -> void:
 	position = _initial_position
 	rotation = _initial_rotation
+	_fire_contact_active = false
 	_has_mouse_target = false
 	_mouse_target_x = _initial_position.x
 	_position_control_source = PositionControlSource.KEYBOARD

@@ -121,6 +121,70 @@ func fill_non_merge_contact_pairs(
 	pairs.sort()
 
 
+## Returns the number of bounded local candidates inspected. The caller supplies
+## a reusable output array so Magnet never allocates or performs an all-pairs
+## search. Results are the closest eligible entries among the sampled local
+## candidates and are stable by distance, then slot index.
+func fill_same_level_magnet_neighbors(
+		positions: PackedVector2Array,
+		first_index: int,
+		global_level: int,
+		influence_radius: float,
+		neighbor_limit: int,
+		candidate_sample_limit: int,
+		neighbors: Array[int]
+) -> int:
+	neighbors.clear()
+	if influence_radius <= 0.0 or neighbor_limit < 1 or candidate_sample_limit < 1:
+		return 0
+	var level_cells: Dictionary = _cells_by_level.get(global_level, {})
+	if level_cells.is_empty():
+		return 0
+
+	var center_cell := _position_to_cell(positions[first_index])
+	var cell_range := ceili(influence_radius / cell_size)
+	var closest_first := -1
+	var closest_second := -1
+	var closest_first_distance := INF
+	var closest_second_distance := INF
+	var influence_radius_squared := influence_radius * influence_radius
+	var inspected := 0
+
+	for ring in range(cell_range + 1):
+		for cell_y in range(center_cell.y - ring, center_cell.y + ring + 1):
+			for cell_x in range(center_cell.x - ring, center_cell.x + ring + 1):
+				if ring > 0 and cell_x != center_cell.x - ring and cell_x != center_cell.x + ring and cell_y != center_cell.y - ring and cell_y != center_cell.y + ring:
+					continue
+				var indices: Array = level_cells.get(Vector2i(cell_x, cell_y), [])
+				for second_index_value in indices:
+					var second_index: int = second_index_value
+					if second_index == first_index:
+						continue
+					inspected += 1
+					var distance_squared := positions[first_index].distance_squared_to(positions[second_index])
+					if distance_squared <= influence_radius_squared:
+						if _is_better_neighbor(distance_squared, second_index, closest_first_distance, closest_first):
+							closest_second = closest_first
+							closest_second_distance = closest_first_distance
+							closest_first = second_index
+							closest_first_distance = distance_squared
+						elif neighbor_limit > 1 and _is_better_neighbor(distance_squared, second_index, closest_second_distance, closest_second):
+							closest_second = second_index
+							closest_second_distance = distance_squared
+					if inspected >= candidate_sample_limit:
+						if closest_first >= 0:
+							neighbors.append(closest_first)
+						if neighbor_limit > 1 and closest_second >= 0:
+							neighbors.append(closest_second)
+						return inspected
+
+	if closest_first >= 0:
+		neighbors.append(closest_first)
+	if neighbor_limit > 1 and closest_second >= 0:
+		neighbors.append(closest_second)
+	return inspected
+
+
 func get_candidate_check_count() -> int:
 	return _candidate_check_count
 
@@ -139,3 +203,7 @@ func get_new_bucket_count() -> int:
 
 func _position_to_cell(position: Vector2) -> Vector2i:
 	return Vector2i(floori(position.x / cell_size), floori(position.y / cell_size))
+
+
+func _is_better_neighbor(distance_squared: float, index: int, best_distance_squared: float, best_index: int) -> bool:
+	return distance_squared < best_distance_squared or (is_equal_approx(distance_squared, best_distance_squared) and (best_index < 0 or index < best_index))

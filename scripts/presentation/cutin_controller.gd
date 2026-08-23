@@ -4,14 +4,14 @@ extends Control
 signal cutin_finished(event_id: int, run_epoch: int)
 
 const SCHEMA_VERSION := 1
-const ENTER_DURATION := 0.48
-const HOLD_DURATION := 1.04
-const EXIT_DURATION := 0.48
-const REDUCED_ENTER_DURATION := 0.40
-const REDUCED_HOLD_DURATION := 1.00
-const REDUCED_EXIT_DURATION := 0.40
-const DIM_ALPHA := 0.58
-const OFFSCREEN_X := 1600.0
+const ENTER_DURATION := 0.20
+const HOLD_DURATION := 0.65
+const EXIT_DURATION := 0.25
+const REDUCED_ENTER_DURATION := 0.12
+const REDUCED_HOLD_DURATION := 0.55
+const REDUCED_EXIT_DURATION := 0.18
+const DIM_ALPHA := 0.34
+const BANNER_HEIGHT_RATIO := 0.44
 const BACKGROUND_PATH := "res://assets/sprites/cutins/first_contact/first-contact-background-v1.png"
 const REQUIRED_FIELDS := [
 	"schema_version",
@@ -90,6 +90,7 @@ const ROSTER := {
 }
 
 @onready var dim_overlay: ColorRect = %DimOverlay
+@onready var field_clip: Control = %FieldClip
 @onready var card_root: Control = %CardRoot
 @onready var background_texture: TextureRect = %BackgroundTexture
 @onready var title_texture: TextureRect = %TitleTexture
@@ -103,11 +104,15 @@ var _last_started_event_id := -1
 var _reset_epoch_high_water := -1
 var _animation_generation := 0
 var _reduced_effects := false
+var _field_visual_rect := Rect2()
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if _field_visual_rect.size == Vector2.ZERO:
+		_field_visual_rect = Rect2(Vector2.ZERO, size)
+	_apply_field_layout()
 	_hide_visuals()
 
 
@@ -163,6 +168,14 @@ func is_reduced_effects() -> bool:
 	return _reduced_effects
 
 
+func configure_field_visual_rect(field_visual_rect: Rect2) -> void:
+	if field_visual_rect.size.x <= 0.0 or field_visual_rect.size.y <= 0.0:
+		return
+	_field_visual_rect = field_visual_rect
+	if is_node_ready():
+		_apply_field_layout()
+
+
 func is_cutin_active() -> bool:
 	return not _active_payload.is_empty()
 
@@ -199,6 +212,9 @@ func get_visual_metrics() -> Dictionary:
 		"title_path": title_texture.texture.resource_path if title_texture.texture != null else "",
 		"portrait_path": portrait_texture.texture.resource_path if portrait_texture.texture != null else "",
 		"dim_alpha": dim_overlay.color.a,
+		"field_visual_rect": _field_visual_rect,
+		"field_clip_rect": Rect2(field_clip.position, field_clip.size),
+		"banner_size": card_root.size,
 		"card_position": card_root.position,
 		"total_duration": get_total_duration(),
 		"completed_pair_count": _completed_pairs.size(),
@@ -208,10 +224,14 @@ func get_visual_metrics() -> Dictionary:
 
 func _start_animation(generation: int, event_id: int, run_epoch: int) -> void:
 	_cancel_animation()
+	_apply_field_layout()
 	visible = true
 	card_root.modulate = Color.WHITE
 	dim_overlay.color = Color(0.008, 0.012, 0.035, 0.0)
-	card_root.position = Vector2.ZERO if _reduced_effects else Vector2(-OFFSCREEN_X, 0.0)
+	var banner_y := card_root.position.y
+	card_root.position = Vector2.ZERO if _reduced_effects else Vector2(field_clip.size.x, banner_y)
+	if _reduced_effects:
+		card_root.position.y = banner_y
 
 	var enter_duration := REDUCED_ENTER_DURATION if _reduced_effects else ENTER_DURATION
 	var hold_duration := REDUCED_HOLD_DURATION if _reduced_effects else HOLD_DURATION
@@ -225,7 +245,7 @@ func _start_animation(generation: int, event_id: int, run_epoch: int) -> void:
 	if _reduced_effects:
 		_animation_tween.parallel().tween_property(card_root, "modulate:a", 0.0, exit_duration)
 	else:
-		_animation_tween.parallel().tween_property(card_root, "position:x", OFFSCREEN_X, exit_duration).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+		_animation_tween.parallel().tween_property(card_root, "position:x", -card_root.size.x, exit_duration).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
 	_animation_tween.tween_callback(_finish_normal_exit.bind(generation, event_id, run_epoch))
 
 
@@ -251,10 +271,23 @@ func _cancel_animation() -> void:
 func _hide_visuals() -> void:
 	visible = false
 	dim_overlay.color = Color(0.008, 0.012, 0.035, 0.0)
-	card_root.position = Vector2(-OFFSCREEN_X, 0.0)
+	card_root.position = Vector2(field_clip.size.x, card_root.position.y)
 	card_root.modulate = Color.WHITE
 	title_texture.texture = null
 	portrait_texture.texture = null
+
+
+func _apply_field_layout() -> void:
+	var viewport_size := size
+	if viewport_size == Vector2.ZERO:
+		viewport_size = get_viewport_rect().size
+	if _field_visual_rect.size == Vector2.ZERO:
+		_field_visual_rect = Rect2(Vector2.ZERO, viewport_size)
+	field_clip.position = _field_visual_rect.position
+	field_clip.size = _field_visual_rect.size
+	var banner_height := _field_visual_rect.size.y * BANNER_HEIGHT_RATIO
+	card_root.size = Vector2(_field_visual_rect.size.x, banner_height)
+	card_root.position = Vector2(field_clip.size.x, (field_clip.size.y - banner_height) * 0.5)
 
 
 func _is_valid_payload(payload: Dictionary) -> bool:

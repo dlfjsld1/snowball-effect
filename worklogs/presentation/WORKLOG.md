@@ -593,6 +593,15 @@ Owner: Presentation
 - 실제 Web/manual Tween·dim·입력 복귀 검증은 여전히 pending이므로 S6-G2는 `IMPLEMENTED`를 유지한다.
 - CUT-IN의 normal/reduced 총 노출 시간을 사용자 요청대로 `2.00s/1.80s`로 조정했다. enter/hold/exit의 기존 비율과 completion·pause handoff는 유지하며 전용 verifier의 timing contract도 함께 갱신했다.
 
+## 2026-08-22 — S6-G2 Play Field 횡단 CUT-IN
+
+Owner: Presentation (사용자 요청 handoff)
+
+- FIRST CONTACT CUT-IN의 gameplay pause, payload 검증, exact-once completion과 S8 Black Hole handoff는 그대로 두고 표시 범위만 active visual Play Field 내부로 변경했다. HUD·좌우 기계 UI·Stage World를 덮거나 dim하지 않으며 FieldClip이 banner와 dim을 실제 field rect에 한정한다.
+- 배너는 field 폭 전체와 높이 `44%`를 사용해 오른쪽에서 진입, 중앙 hold, 왼쪽으로 퇴장한다. normal `0.20/0.65/0.25s` 총 `1.10s`, reduced-effects는 이동 없이 `0.12/0.55/0.18s` 총 `0.85s` fade다. 공통 background와 6종 title/portrait 원화는 새로 만들거나 변경하지 않았다.
+- PresentationManager가 매 visible request 전에 `GameplayFrame.get_field_visual_rect()`를 controller에 전달한다. 따라서 Ground/Planetary/Galactic의 서로 다른 Stage field 폭에도 field-local clip과 banner 크기가 다시 계산된다.
+- Godot 4.7.1 CLI S6-G2 verification exit 0, Primary validate controller/manager/scene 3/3, Primary Main runtime screenshot에서 Planetary field 내부 배너·외부 HUD/기계 UI 비가림·runtime error 0을 확인했다. clean Web의 실제 수동 Tween·입력 복귀 확인이 남아 Goal은 `IMPLEMENTED`를 유지한다.
+
 ## 2026-08-21 — Planetary visual-chain correction
 
 Owner: Presentation
@@ -896,7 +905,7 @@ Owner: delegated Presentation/UI; S4-G4 boundary-adjacent maintenance through th
 
 Owner: Presentation
 
-- 최신 구현과 직접 충돌하던 문서만 동기화했다. S6-G2 CUT-IN hold는 승인된 normal `2.00s`/reduced `1.80s`로, S7-G2는 범용 identity-neutral Item Ball과 Blizzard 전용 Orb/CUT-IN/active FX의 분리로 정정했다.
+- 최신 구현과 직접 충돌하던 문서만 동기화했다. 당시 S6-G2 CUT-IN hold는 normal `2.00s`/reduced `1.80s`로 정리했으나, 이후 병합한 `8b349cd`의 Play Field-clipped 횡단 배너 계약이 normal `1.10s`/reduced `0.85s`로 이를 supersede한다. S7-G2는 범용 identity-neutral Item Ball과 Blizzard 전용 Orb/CUT-IN/active FX의 분리로 정정했다.
 - S5-G4 개선 백로그는 10초 Cashout chevron cue와 정적 CRT phosphor/scanline의 실제 구현 상태를 반영했다. CRT 주요 정보 text의 현재 `14px`는 좁은 승인 mask의 잘림을 피하는 임시 예외이며, 18px 기준 회복은 font 또는 mask/layout 재설계 후속으로 남겼다.
 - S2-G5 Status는 제거된 name/value popup 대신 `INWARD→CORE→RESOLVE` no-text Merge FX와 최신 CLI evidence를 기록했다. 기각된 일반 박스와 미채택 Item Ball 후보 문서·목업, `tmp/` 검증 산출물은 ship 대상에서 제외한다.
 
@@ -909,3 +918,11 @@ Owner: Content/Systems-owned S7-G2 visual exception, implemented from the Presen
 - 현재 권위 규칙대로 producer가 같은 break commit에서 `item_planet_broken` 뒤 `item_orb_spawned`를 즉시 발행하므로 fragments와 별도 Orb가 잠시 겹칠 수 있다. Presentation은 Orb의 이동·획득·miss를 지연시키지 않으며, 별도 handoff 없이 지연 동작을 발명하지 않았다.
 - Godot 4.7.1 CLI에서 `S7_G1C_VERIFIED item_ball=once hits=5 orb=collect_or_miss`, `S7_G2_BLIZZARD_VISUAL_IMPLEMENTED item_ball_h0_h4=true break_frames=4 planet=true orb=true cue=true snow=48 cleanup=true`가 exit 0이었다. 관련 Merge/Cashout/cue/CRT/CUT-IN 전용 검증과 Main 120-frame headless smoke도 통과했다.
 - 변경 범위에는 Content-owned 예외 파일 `scripts/presentation/item_blizzard_visual.gd`, `tests/content/s7_g1c_item_producer_verification.gd`, `tests/content/s7_g2_blizzard_visual_verification.gd`가 포함되므로 PR에서 Content/Systems owner review를 요청한다. Integration-owned Main/GameManager/StageManager는 수정하지 않았다.
+
+## 2026-08-23 — Latest Main integration before Presentation ship
+
+Owner: Integration merge support / Presentation conflict resolution
+
+- `origin/main cd504b9`를 `fx-design`에 병합했다. 최신 Main의 Play Field-clipped FIRST CONTACT banner, S4-G4 textured clip fix, Paddle/Black Hole contact tuning, Fire Core/Magnet consumers와 terminal cleanup을 보존했다.
+- 충돌은 `docs/goals/STATUS.md`, `docs/goals/slices/S6_GAME_FEEL.md`, `scripts/presentation/presentation_manager.gd` 세 파일이었다. S6-G2는 최신 `1.10s/0.85s` banner 계약과 `IMPLEMENTED` 상태를 선택하고, `PresentationManager`에는 최신 field rect configuration과 기존 Cashout cue suppression/resume을 함께 유지했다.
+- Godot 4.7.1 CLI에서 Presentation 7개(Merge, Cashout, cue, CRT, FIRST CONTACT, Item producer/visual)와 새 Main의 Core/Integration 5개(Fire, Magnet, wiring, terminal cleanup)가 모두 exit 0이었다. Main 120-frame headless smoke도 exit 0이며 기존 shutdown-only ObjectDB/resource warning만 남았다.
