@@ -12,7 +12,11 @@ const FirstContactCutInScene := preload("res://scenes/effects/first_contact_cuti
 @export_range(0.05, 3.0, 0.05) var shift_duration := 0.9
 @export_range(0.05, 3.0, 0.05) var black_hole_phase_duration := 0.9
 @export_range(0.05, 5.0, 0.05) var black_hole_finale_duration := 1.35
-@export var reduced_effects := false
+@export var reduced_effects := false:
+	set(value):
+		reduced_effects = value
+		if _frame != null:
+			_frame.set_cashout_cue_reduced_effects(value)
 
 @onready var shift_flash: ColorRect = %ShiftFlash
 @onready var shift_label: Label = %ShiftLabel
@@ -47,10 +51,13 @@ var _first_contact_cutin_controller: CutInController
 
 func _ready() -> void:
 	_frame = get_parent() as GameplayFrame
+	_frame.set_cashout_cue_active(false)
+	_frame.set_cashout_cue_reduced_effects(reduced_effects)
 	_reset_overlay()
 	_first_contact_cutin_controller = FirstContactCutInScene.instantiate() as CutInController
 	add_child(_first_contact_cutin_controller)
 	_first_contact_cutin_controller.cutin_finished.connect(_on_first_contact_cutin_finished)
+	call_deferred("_bind_main_cashout_cue_mount")
 	call_deferred("_bind_main_black_hole_source")
 
 
@@ -58,18 +65,24 @@ func configure(background_manager: BackgroundManager, hud: Hud, pause_menu: Paus
 	_background_manager = background_manager
 	_hud = hud
 	_pause_menu = pause_menu
+	_frame.configure_cashout_cue_lifecycle(hud, pause_menu)
+	_frame.set_cashout_cue_active(true)
 
 
 func play_first_contact_cutin(payload: Dictionary) -> bool:
 	if _first_contact_cutin_controller == null:
 		return false
 	_first_contact_cutin_controller.set_reduced_effects(reduced_effects)
-	return _first_contact_cutin_controller.play_first_contact_cutin(payload)
+	var accepted := _first_contact_cutin_controller.play_first_contact_cutin(payload)
+	if accepted:
+		_frame.set_cashout_cue_active(false)
+	return accepted
 
 
 func reset_first_contact_cutin(run_epoch: int) -> void:
 	if _first_contact_cutin_controller != null:
 		_first_contact_cutin_controller.reset_first_contact_cutin(run_epoch)
+	_frame.set_cashout_cue_active(true)
 
 
 func get_first_contact_cutin_metrics() -> Dictionary:
@@ -79,6 +92,7 @@ func get_first_contact_cutin_metrics() -> Dictionary:
 
 
 func _on_first_contact_cutin_finished(event_id: int, run_epoch: int) -> void:
+	_frame.set_cashout_cue_active(true)
 	first_contact_cutin_finished.emit(event_id, run_epoch)
 
 
@@ -87,6 +101,16 @@ func configure_black_hole_sources(_event_source: Node, simulation_source: Node) 
 	# authoritative GameManager calls and does not route gameplay through here.
 	_black_hole_simulation_source = simulation_source
 	black_hole_overlay.set_simulation_source(simulation_source)
+
+
+func _bind_main_cashout_cue_mount() -> void:
+	var play_field := _frame.get_node_or_null("../../PlayField")
+	if play_field == null:
+		return
+	var cue := _frame.get_cashout_cue_node()
+	if cue.get_parent() != play_field:
+		cue.reparent(play_field, true)
+	play_field.move_child(cue, mini(1, play_field.get_child_count() - 1))
 
 
 func _bind_main_black_hole_source() -> void:
@@ -110,6 +134,7 @@ func apply_stage(definition: StageDefinition) -> void:
 	_apply_dependent_layout()
 	if _background_manager != null:
 		_background_manager.set_background(definition.background_id)
+	_frame.set_cashout_cue_active(true)
 
 
 func play_stage_shift(next_definition: StageDefinition, shift_id: int) -> void:
@@ -117,6 +142,7 @@ func play_stage_shift(next_definition: StageDefinition, shift_id: int) -> void:
 		return
 
 	_active_shift_id = shift_id
+	_frame.set_cashout_cue_active(false)
 	_target_profile = clampi(next_definition.stage_index, 0, 2)
 	_target_background_id = next_definition.background_id
 	shift_label.text = "SCALE SHIFT"
@@ -155,6 +181,7 @@ func play_black_hole_phase(phase_id: int, from_rect: Rect2, to_rect: Rect2) -> b
 		return false
 
 	_cancel_black_hole_phase()
+	_frame.set_cashout_cue_active(false)
 	_active_black_hole_phase_id = phase_id
 	_active_black_hole_phase_generation = _black_hole_run_generation
 	_black_hole_from_profile = _find_profile_for_field_width(from_rect.size.x)
@@ -195,6 +222,7 @@ func play_black_hole_finale(result_snapshot: Dictionary, phase_id := -1) -> bool
 
 	_cancel_black_hole_phase()
 	_black_hole_finale_active = true
+	_frame.set_cashout_cue_active(false)
 	_black_hole_finale_generation = _black_hole_run_generation
 	_black_hole_finale_snapshot = result_snapshot.duplicate(true)
 	if _hud != null:
@@ -237,6 +265,8 @@ func reset_black_hole_presentation() -> void:
 	if _pause_menu != null:
 		_pause_menu.visible = true
 		_pause_menu.modulate = Color.WHITE
+	_frame.reset_cashout_cue_for_new_run()
+	_frame.set_cashout_cue_active(true)
 
 
 func is_black_hole_phase_active() -> bool:
@@ -276,6 +306,7 @@ func _finish_shift(shift_id: int) -> void:
 	_active_shift_id = -1
 	_shift_tween = null
 	_reset_overlay()
+	_frame.set_cashout_cue_active(true)
 	stage_shift_presentation_finished.emit(shift_id)
 
 
@@ -302,6 +333,7 @@ func _finish_black_hole_phase(generation: int, phase_id: int) -> void:
 	_active_black_hole_phase_generation = -1
 	_black_hole_phase_tween = null
 	_reset_overlay()
+	_frame.set_cashout_cue_active(true)
 	black_hole_phase_presentation_finished.emit(phase_id)
 
 
@@ -339,6 +371,7 @@ func _cancel_active_shift() -> void:
 	_shift_tween = null
 	_active_shift_id = -1
 	_reset_overlay()
+	_frame.set_cashout_cue_active(true)
 
 
 func _cancel_black_hole_phase() -> void:
