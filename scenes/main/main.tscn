@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/game_manager.gd" id="1_game_manager"]
 [ext_resource type="Script" path="res://scripts/core/stage_manager.gd" id="2_stage_manager"]
@@ -13,6 +13,8 @@
 [ext_resource type="PackedScene" path="res://scenes/backgrounds/gameplay_frame.tscn" id="10_frame"]
 [ext_resource type="PackedScene" path="res://scenes/backgrounds/stage_world.tscn" id="11_stage_world"]
 [ext_resource type="Script" path="res://scripts/presentation/audio_manager.gd" id="12_audio_manager"]
+[ext_resource type="Script" path="res://scripts/core/settings_adapter.gd" id="19_settings_adapter"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="20_settings_panel"]
 [ext_resource type="Script" path="res://scripts/gameplay/item_manager.gd" id="13_item_manager"]
 [ext_resource type="Script" path="res://scripts/core/item_effect_gateway.gd" id="14_item_gateway"]
 [ext_resource type="Script" path="res://scripts/gameplay/item_blizzard.gd" id="16_item_blizzard"]
@@ -37,6 +39,8 @@ play_field_backdrop_path = NodePath("../PlayField/Backdrop")
 background_manager_path = NodePath("../StageWorld/BackgroundManager")
 presentation_manager_path = NodePath("../UI/GameplayFrame/PresentationManager")
 audio_manager_path = NodePath("../AudioManager")
+settings_adapter_path = NodePath("../SettingsAdapter")
+settings_panel_path = NodePath("../UI/SettingsPanel")
 item_manager_path = NodePath("../ItemManager")
 item_effect_gateway_path = NodePath("../ItemEffectGateway")
 item_blizzard_path = NodePath("../ItemBlizzard")
@@ -50,6 +54,10 @@ simulation_path = NodePath("../PlayField/SimulationMount/BallSimulationManager")
 [node name="AudioManager" type="Node" parent="."]
 process_mode = 3
 script = ExtResource("12_audio_manager")
+
+[node name="SettingsAdapter" type="Node" parent="."]
+process_mode = 3
+script = ExtResource("19_settings_adapter")
 
 [node name="ItemManager" type="Node" parent="."]
 script = ExtResource("13_item_manager")
@@ -105,6 +113,8 @@ layout_mode = 1
 [node name="PauseMenu" parent="UI" instance=ExtResource("7_pause")]
 
 [node name="TitleScreen" parent="UI" instance=ExtResource("8_title")]
+
+[node name="SettingsPanel" parent="UI" instance=ExtResource("20_settings_panel")]
 
 [node name="ResultPanel" parent="UI" instance=ExtResource("9_result")]
 

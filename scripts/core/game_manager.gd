@@ -11,12 +11,17 @@ const ResultPanelScript = preload("res://scripts/ui/result_panel.gd")
 const StageClearPanelScript = preload("res://scripts/ui/stage_clear_panel.gd")
 const GameplayFrameScript = preload("res://scripts/presentation/gameplay_frame.gd")
 const AudioManagerScript = preload("res://scripts/presentation/audio_manager.gd")
+const SettingsAdapterScript = preload("res://scripts/core/settings_adapter.gd")
+const SettingsPanelScript = preload("res://scripts/ui/settings_panel.gd")
 
 signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
 signal terminal_result_available(result_snapshot: Dictionary)
 signal item_cutin_requested(event_id: int, item_type: StringName, world_position: Vector2)
 signal item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2)
 signal first_contact_cutin_requested(payload: Dictionary)
+signal settings_snapshot_changed(snapshot: Dictionary)
+signal settings_closed(session_id: int, return_view: StringName)
+signal settings_opened(session_id: int, snapshot: Dictionary, return_view: StringName)
 
 @export var simulation_path: NodePath
 @export var paddle_path: NodePath
@@ -31,6 +36,8 @@ signal first_contact_cutin_requested(payload: Dictionary)
 @export var background_manager_path: NodePath
 @export var presentation_manager_path: NodePath
 @export var audio_manager_path: NodePath
+@export var settings_adapter_path: NodePath
+@export var settings_panel_path: NodePath
 @export var item_manager_path: NodePath
 @export var item_effect_gateway_path: NodePath
 @export var item_blizzard_path: NodePath
@@ -56,6 +63,8 @@ var _play_field_backdrop: Polygon2D
 var _background_manager: BackgroundManager
 var _presentation_manager: PresentationManager
 var _audio_manager: AudioManagerScript
+var _settings_adapter
+var _settings_panel: SettingsPanelScript
 var _item_manager: Node
 var _item_effect_gateway: Node
 var _item_blizzard: Node
@@ -92,6 +101,8 @@ func _ready() -> void:
 	_background_manager = get_node(background_manager_path) as BackgroundManager
 	_presentation_manager = get_node(presentation_manager_path) as PresentationManager
 	_audio_manager = get_node(audio_manager_path) as AudioManagerScript
+	_settings_adapter = get_node(settings_adapter_path)
+	_settings_panel = get_node(settings_panel_path) as SettingsPanelScript
 	_item_manager = get_node(item_manager_path)
 	_item_effect_gateway = get_node(item_effect_gateway_path)
 	_item_blizzard = get_node(item_blizzard_path)
@@ -134,12 +145,20 @@ func _initialize_runtime() -> void:
 	_item_blizzard_visual.activation_cue_requested.connect(_on_blizzard_visual_activation_cue)
 	_presentation_manager.configure(_background_manager, _hud, _pause_menu)
 	_audio_manager.configure_sources(_simulation, _stage_manager, _pause_menu, _title_screen)
+	_settings_adapter.settings_snapshot_changed.connect(_on_settings_snapshot_changed)
+	_settings_adapter.settings_closed.connect(_on_settings_closed)
+	_apply_settings_audio_snapshot(_settings_adapter.get_snapshot())
+	_settings_panel.settings_apply_requested.connect(_on_settings_apply_requested)
+	_settings_panel.settings_close_requested.connect(_on_settings_close_requested)
+	_settings_panel.settings_preview_requested.connect(_on_settings_preview_requested)
 	_hud.bind_sources(_stage_manager.get_score_ledger(), _simulation, _stage_manager)
 	_pause_menu.pause_requested.connect(_on_pause_requested)
 	_pause_menu.retry_requested.connect(_on_retry_requested)
 	_pause_menu.resume_requested.connect(_on_resume_requested)
 	_pause_menu.main_menu_requested.connect(_on_main_menu_requested)
+	_pause_menu.settings_requested.connect(_on_pause_settings_requested)
 	_title_screen.start_requested.connect(_on_start_requested)
+	_title_screen.settings_requested.connect(_on_title_settings_requested)
 	_result_panel.retry_requested.connect(_on_retry_requested)
 	_result_panel.main_menu_requested.connect(_on_main_menu_requested)
 	_stage_clear_panel.next_stage_requested.connect(_on_next_stage_requested)
@@ -194,6 +213,26 @@ func get_runtime_snapshot() -> Dictionary:
 
 func get_terminal_result_snapshot() -> Dictionary:
 	return _terminal_result_snapshot.duplicate(true)
+
+
+func open_settings(return_view: StringName, user_gesture := false) -> int:
+	return _settings_adapter.open_settings(return_view, user_gesture)
+
+
+func apply_settings(session_id: int, draft: Dictionary, user_gesture := false) -> bool:
+	return _settings_adapter.apply_settings(session_id, draft, user_gesture)
+
+
+func preview_settings(session_id: int, draft: Dictionary) -> bool:
+	return _settings_adapter.preview_settings(session_id, draft)
+
+
+func close_settings(session_id: int) -> bool:
+	return _settings_adapter.close_settings(session_id)
+
+
+func get_settings_snapshot() -> Dictionary:
+	return _settings_adapter.get_snapshot()
 
 
 func accept_item_cutin_activation_cue(event_id: int) -> bool:
@@ -514,6 +553,61 @@ func _on_start_requested() -> void:
 
 func _on_main_menu_requested() -> void:
 	_enter_title_screen()
+
+
+func _on_title_settings_requested() -> void:
+	_open_settings_panel(SettingsAdapterScript.RETURN_VIEW_TITLE)
+
+
+func _on_pause_settings_requested() -> void:
+	_open_settings_panel(SettingsAdapterScript.RETURN_VIEW_PAUSE)
+
+
+func _open_settings_panel(return_view: StringName) -> void:
+	var session_id := open_settings(return_view, true)
+	if session_id < 0:
+		return
+	var snapshot := get_settings_snapshot()
+	if not _settings_panel.show_for_session(session_id, snapshot, return_view):
+		close_settings(session_id)
+		return
+	settings_opened.emit(session_id, snapshot, return_view)
+
+
+func _on_settings_apply_requested(session_id: int, draft: Dictionary) -> void:
+	if apply_settings(session_id, draft, true):
+		close_settings(session_id)
+
+
+func _on_settings_preview_requested(session_id: int, draft: Dictionary) -> void:
+	preview_settings(session_id, draft)
+
+
+func _on_settings_close_requested(session_id: int) -> void:
+	close_settings(session_id)
+
+
+func _on_settings_snapshot_changed(snapshot: Dictionary) -> void:
+	_apply_settings_audio_snapshot(snapshot)
+	if _settings_panel.get_active_session_id() == _settings_adapter.get_active_session_id():
+		_settings_panel.apply_snapshot(snapshot)
+	settings_snapshot_changed.emit(snapshot.duplicate(true))
+
+
+func _apply_settings_audio_snapshot(snapshot: Dictionary) -> void:
+	if snapshot.get("bgm_volume", null) is int and snapshot.get("sfx_volume", null) is int:
+		_audio_manager.apply_volume_settings(int(snapshot["bgm_volume"]), int(snapshot["sfx_volume"]))
+	if snapshot.get("value_popups_enabled", null) is bool:
+		_hud.set_value_popups_enabled(bool(snapshot["value_popups_enabled"]))
+
+
+func _on_settings_closed(session_id: int, return_view: StringName) -> void:
+	_settings_panel.accept_closed(session_id, return_view)
+	if return_view == SettingsAdapterScript.RETURN_VIEW_TITLE:
+		_title_screen.settings_button.grab_focus()
+	elif return_view == SettingsAdapterScript.RETURN_VIEW_PAUSE:
+		_pause_menu.settings_button.grab_focus()
+	settings_closed.emit(session_id, return_view)
 
 
 func _on_first_contact_discovered(payload: Dictionary) -> void:

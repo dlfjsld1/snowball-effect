@@ -11,3 +11,8 @@ extends Resource
 @export_range(1, 99, 1) var required_break_hits := 5
 @export_range(1.0, 512.0, 1.0, "or_greater") var planet_radius := 24.0
 @export_range(1.0, 2000.0, 1.0, "or_greater") var orb_speed := 160.0
+## Magnet-only tuning. Other item types leave these neutral and consumers must
+## reject them rather than infer an unbounded force from a generic magnitude.
+@export_range(0.0, 2048.0, 1.0, "or_greater") var magnet_influence_radius := 0.0
+@export_range(0.0, 5000.0, 1.0, "or_greater") var magnet_max_pair_acceleration := 0.0
+@export_range(1, 2, 1) var magnet_neighbor_limit := 1

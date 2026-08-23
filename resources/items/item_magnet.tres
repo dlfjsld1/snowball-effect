@@ -11,3 +11,6 @@ magnitude = 1.0
 required_break_hits = 5
 planet_radius = 24.0
 orb_speed = 160.0
+magnet_influence_radius = 96.0
+magnet_max_pair_acceleration = 120.0
+magnet_neighbor_limit = 2

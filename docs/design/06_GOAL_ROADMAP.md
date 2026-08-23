@@ -253,14 +253,16 @@ Result는 typed immutable `ResultViewState(run_id, run_epoch, terminal_reason, r
 
 ### Pause/Settings UI Goal — required
 
+2026-08-23 확정: Pause 모달 자체는 이미 구현 완료다. 이 초안의 Settings 범위는 실행 계획의 `S10_SETTINGS`(`S10-G1`~`S10-G4`)으로 분리하며, Pause를 재구현하지 않는다.
+
 현재 S1-G5의 항상 보이는 Pause/Retry toolbar는 v1 최종 UI가 아니다. 별도 Content/Systems Goal을 추가한다.
 
 - Owned Files: `scripts/ui/pause*.gd`, `scenes/ui/pause*.tscn`, 새 `scripts/ui/settings*.gd`, `scenes/ui/settings*.tscn`, `tests/content/**`.
 - Output requests: `resume_requested`, `restart_stage_requested`, `settings_requested`, `main_screen_requested`.
 - Pause modal: Resume/Restart Stage/Settings/Main, focus trap, 두 destructive confirmation.
-- Settings: Master Volume, Mute, Fullscreen, local persistence와 safe fallback.
+- Settings: Master Volume, BGM Volume, SFX Volume, Value Popups, local persistence와 safe fallback.
 - focus loss: auto Pause request only; focus return does not auto Resume.
-- UI는 SceneTree, score, snapshot, AudioServer, fullscreen을 직접 바꾸지 않고 system adapter/Integration request를 사용한다.
+- UI는 SceneTree, score, snapshot, AudioServer를 직접 바꾸지 않고 system adapter/Integration request를 사용한다.
 
 ### Stage Restart Snapshot Goal — required
 
@@ -275,7 +277,7 @@ Owner는 Core이고 Integration이 wiring한다.
 
 ### Integration Goal and lock — required
 
-Main/Pause/Settings/Stage Restart/Result를 한 state flow로 묶는 Goal을 두고 `game_manager.gd`, `stage_manager.gd`, `main.tscn`, 필요 시 `project.godot`을 `STATUS.md`에서 잠근다. Settings의 storage/audio/fullscreen adapter 소유 경로도 Goal에서 먼저 정한다.
+Main/Pause/Settings/Stage Restart/Result를 한 state flow로 묶는 Goal을 두고 `game_manager.gd`, `stage_manager.gd`, `main.tscn`, 필요 시 `project.godot`을 `STATUS.md`에서 잠근다. Settings의 storage/audio adapter 소유 경로도 Goal에서 먼저 정한다.
 
 Presentation contribution:
 

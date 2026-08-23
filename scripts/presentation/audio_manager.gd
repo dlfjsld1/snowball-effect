@@ -58,6 +58,8 @@ const EVENT_POLICIES := {
 
 var catalog: AudioCatalog = AudioCatalogResource
 var audio_unlocked := false
+var _settings_bgm_volume := 5
+var _settings_sfx_volume := 5
 
 var _ball_catalog := BallCatalog.new()
 var _players: Array[AudioStreamPlayer] = []
@@ -110,6 +112,19 @@ func configure_sources(
 	_request_music(BGM_TITLE)
 
 
+func apply_volume_settings(bgm_volume: int, sfx_volume: int) -> bool:
+	if bgm_volume < 0 or bgm_volume > 10 or sfx_volume < 0 or sfx_volume > 10:
+		return false
+	_settings_bgm_volume = bgm_volume
+	_settings_sfx_volume = sfx_volume
+	for player in _players:
+		if player.playing:
+			player.volume_db = _get_event_volume_db(StringName(player.get_meta(&"audio_event_key", &"")))
+	if _music_player != null and is_instance_valid(_music_player):
+		_music_player.volume_db = _get_music_volume_db()
+	return true
+
+
 func play_event(event_key: StringName) -> bool:
 	if not audio_unlocked or catalog == null:
 		return false
@@ -142,7 +157,7 @@ func play_event(event_key: StringName) -> bool:
 		return false
 	player.stream = definition.stream
 	player.bus = audio_bus
-	player.volume_db = float(policy["volume_db"]) + sfx_volume_offset_db
+	player.volume_db = _get_event_volume_db(event_key)
 	player.set_meta(&"audio_event_key", event_key)
 	player.set_meta(&"audio_event_loop", definition.loop)
 	player.set_meta(&"audio_event_group", group)
@@ -201,6 +216,8 @@ func get_debug_snapshot() -> Dictionary:
 		"current_music_key": _current_music_key,
 		"sfx_volume_offset_db": sfx_volume_offset_db,
 		"music_volume_db": music_volume_db,
+		"settings_bgm_volume": _settings_bgm_volume,
+		"settings_sfx_volume": _settings_sfx_volume,
 		"music_player_volume_db": _music_player.volume_db if _music_player != null and is_instance_valid(_music_player) else 0.0,
 		"paused_stage_music_key": _paused_stage_music_key,
 		"paused_stage_music_position": _paused_stage_music_position,
@@ -463,7 +480,7 @@ func _play_current_music(playback_position := 0.0) -> void:
 	_ensure_music_player()
 	_music_player.stream = definition.stream
 	_music_player.bus = audio_bus
-	_music_player.volume_db = music_volume_db
+	_music_player.volume_db = _get_music_volume_db()
 	_music_player.play(maxf(playback_position, 0.0))
 
 
@@ -541,3 +558,17 @@ func _is_user_activation(event: InputEvent) -> bool:
 
 func _is_group_playing(group: StringName) -> bool:
 	return _count_playing_in_group(group) > 0
+
+
+func _get_event_volume_db(event_key: StringName) -> float:
+	var policy := get_event_policy(event_key)
+	return float(policy.get("volume_db", 0.0)) + sfx_volume_offset_db + _percent_to_db(_settings_sfx_volume)
+
+
+func _get_music_volume_db() -> float:
+	return music_volume_db + _percent_to_db(_settings_bgm_volume)
+
+
+func _percent_to_db(volume: int) -> float:
+	# Level 5 maps to the authored channel mix (0 dB adjustment).
+	return linear_to_db(maxf(float(volume) / 5.0, 0.0001))
