@@ -23,7 +23,7 @@
 - Owned Files: `scripts/presentation/presentation_manager.gd`, `scripts/presentation/cutin_controller.gd`, `scenes/effects/**`, `tests/presentation/s6_g2_**`
 - Integration Point: Integration이 pause lock을 수락한 뒤에만 `play_first_contact_cutin(payload: Dictionary) -> bool`를 호출한다. Presentation은 `first_contact_cutin_finished(event_id: int, run_epoch: int)`를 정확히 한 번 반환하고 `reset_first_contact_cutin(run_epoch: int)`로 stale visual/callback을 정리한다.
 - Dependencies: S6-G1 `VERIFIED`; S3-G9와 S6-G2I가 실제 검증 Evidence와 함께 `VERIFIED`. 두 선행 Goal이 계약 문서만 가진 `PENDING` 상태에서는 controller·scene·Main wiring 구현을 시작하지 않는다.
-- Verification: active roster는 Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`의 정확히 6종; v1 payload의 `first_contact_id`로 공통 `1600×900` 배경 하나와 공별 투명 title/portrait 레이어 조립; 0.45~0.70초, 기본 1초 미만; Integration 호출 전 visible panel 없음; active/completed `(run_epoch, event_id)` 중복·stale 방어; matching 완료 signal 한 번; reset 즉시 hide/cancel; reduced-effects에서도 identity와 완료 semantics 유지; Core/Stage/gameplay 불변.
+- Verification: active roster는 Ground `Giant Snowball`·`Moon`, Planetary `Supernova`·`Galaxy`, Galactic `Event Horizon`·`Black Hole`의 정확히 6종; v1 payload의 `first_contact_id`로 공통 `1600×900` 배경 하나와 공별 투명 title/portrait 레이어 조립; normal `2.00초`, reduced-effects `1.80초`; Integration 호출 전 visible panel 없음; active/completed `(run_epoch, event_id)` 중복·stale 방어; matching 완료 signal 한 번; reset 즉시 hide/cancel; reduced-effects에서도 identity와 완료 semantics 유지; Core/Stage/gameplay 불변.
 - Do Not Modify: GameManager/StageManager와 Merge logic.
 
 #### Presentation producer 경계
@@ -88,6 +88,15 @@ S6-G2I는 기존 `S8-G4 VERIFIED` 증거를 폐기하지 않는다. 그 증거�
 - Dependencies: S6-G6, 활성 S8-G4 Integration lock 해제.
 - Verification: `TIME_UP_LOCKED → SETTLING`에서 presentation 완료 전 상태·Shift가 진행되지 않고, matching 완료 뒤 기존 score 판정이 exactly once 실행됨.
 - Do Not Modify: Settlement 점수 계산, Presentation 내부 모션, Black Hole terminal flow.
+
+### S6-G6J Final Settlement UI reveal handoff
+
+- Owner: Integration
+- Owned Files: `scripts/core/game_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s6_g6j_final_settlement_ui_reveal_**`
+- Integration Point: `StageManager.final_settlement_started(amount)`, `stage_clear_ready(clear_snapshot, clear_id)`, `stage_run_ended(result_snapshot)`와 Presentation `EffectManager.final_settlement_presentation_finished()`를 read-only로 중재한다.
+- Dependencies: S6-G6 Presentation producer와 S5-G6I Clear/Next Stage wiring.
+- Verification: authoritative Settlement와 `CLEARED`/`FAILED` state는 즉시 확정하되, active Settlement visual과 pending terminal/clear outcome이 모두 준비되기 전에는 Stage Clear Panel 또는 Result Panel을 열지 않는다. matching finish 뒤 Ground/Planetary Clear는 copied snapshot과 `clear_id`로 Panel을 한 번 열고, Time Up failure는 Result를 한 번 연다. Retry/Main/fresh Run은 pending reveal과 stale completion을 버리며, gameplay score/state·Clear 판정·Stage Shift·Black Hole finale을 변경하지 않는다. Desktop과 Web에서 0.5초 수렴/count-up이 실제로 보인 뒤 UI가 열린다.
+- Do Not Modify: Settlement 계산과 Stage state transition, EffectManager dissolve/count-up 구현, S5-G6 Panel의 request-once semantics, Black Hole finale UI handoff.
 
 ## Exit Gate
 

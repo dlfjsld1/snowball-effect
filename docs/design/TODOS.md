@@ -36,7 +36,7 @@ S6-G1에서 실제 tier와 cap을 정하기 전에는 구체 수치나 runtime �
 
 ## Cashout Direction Readability
 
-Status: DEFERRED — preserve S5-G4 progress
+Status: IMPLEMENTED — option 3 selected; 10-second CRT-phosphor chevron cue
 Candidate owner: Presentation
 Depends on: completed S5 Stage World/Shift baseline and gameplay observation
 
@@ -59,13 +59,13 @@ Depends on: completed S5 Stage World/Shift baseline and gameplay observation
 - 공과 Paddle silhouette을 가리지 않는다.
 - 500-ball Web gate에서 장식 효과를 줄이거나 끌 수 있다.
 
-### Not now
+### Implemented scope
 
-S5-G4의 Stage 배경과 Shift를 먼저 완료한다. 이번 작업에서는 하단 프레임 제거, 흡입 FX, 화살표를 구현하지 않는다.
+후보 3을 선택했다. 실제 Cashout line 바로 위에 CRT phosphor `#60ae7b` 아래 방향 chevron row를 두고 Run의 active gameplay 첫 10초 동안만 반복 이동한다. reduced-effects에서는 같은 방향과 색을 유지한 정적 row를 사용한다. 하단 프레임 제거와 흡입 FX는 여전히 후속 후보이며 이번 구현에 포함하지 않는다.
 
 ## CRT Emission and Static
 
-Status: DEFERRED — visual polish after S5-G4
+Status: PARTIALLY IMPLEMENTED — static phosphor/scanline treatment complete; motion deferred
 Candidate owner: Presentation
 Depends on: final HUD information density and S6 visual FX budget
 
@@ -87,6 +87,6 @@ Depends on: final HUD information density and S6 visual FX budget
 - reduced-effects에서는 bloom과 jitter를 줄이고 정보는 그대로 남긴다.
 - Web에서 CRT별 개별 고비용 shader를 남발하지 않는다.
 
-### Not now
+### Implemented scope and exception
 
-S5-G4 배경과 Shift 완료 전에는 CRT shader 또는 noise animation을 추가하지 않는다.
+현재 구현은 CRT glass 내부로 제한된 정적 phosphor backing/halo와 `1px / 4px pitch` scanline만 사용한다. brightness breathing, flicker, sync jitter, rolling bar, random noise와 개별 CRT shader는 후속 검토로 남긴다. 좁은 승인 CRT mask 안의 Stage/Time/Stage Score는 잘림을 피하기 위해 현재 `14px` 정수 크기를 쓰는 명시적 임시 예외이며, `12_PIXEL_DESIGN_GUIDELINES.md`의 `18px` 시작 기준을 충족하려면 전용 bitmap font 또는 CRT mask/layout 재설계가 필요하다.
