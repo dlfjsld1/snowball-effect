@@ -1,15 +1,25 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/effects/cashout_effect.gd" id="1_cashout_effect"]
 
+[sub_resource type="SystemFont" id="PixelScoreFont"]
+font_names = PackedStringArray("Consolas", "Courier New", "monospace")
+font_weight = 700
+antialiasing = 0
+hinting = 0
+subpixel_positioning = 0
+
 [node name="CashoutEffect" type="Node2D"]
+texture_filter = 1
 script = ExtResource("1_cashout_effect")
 
 [node name="ValueLabel" type="Label" parent="."]
-offset_left = 12.0
-offset_top = 4.0
-offset_right = 280.0
-offset_bottom = 28.0
-theme_override_colors/font_outline_color = Color(0.035, 0.047, 0.071, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 14
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.956863, 0.960784, 0.909804, 1)
+theme_override_colors/font_outline_color = Color(0.121569, 0.141176, 0.294118, 1)
+theme_override_colors/font_shadow_color = Color(0.121569, 0.141176, 0.294118, 1)
+theme_override_constants/outline_size = 3
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_fonts/font = SubResource("PixelScoreFont")
+theme_override_font_sizes/font_size = 18
