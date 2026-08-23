@@ -132,6 +132,7 @@ Approach B를 사용한다. 구조적 계약을 먼저 고정하되 아트 주�
 | [11_FX_CATALOG.md](11_FX_CATALOG.md) | 전체 FX 제작 목록, Tier·계약·우선순위와 구현 선택성 |
 | [12_PIXEL_DESIGN_GUIDELINES.md](12_PIXEL_DESIGN_GUIDELINES.md) | logical pixel, Ball LOD, FX·Background·HUD 밀도와 AI 생성물 production 규칙 |
 | [14_FRAME_PAPER8_LAB_ASSET_SPEC.md](14_FRAME_PAPER8_LAB_ASSET_SPEC.md) | 승인된 Paper-8 Lab 프레임의 8색 정규화, 세부 분할, Godot import 계약 |
+| [17_ORBITAL_CARGO_ITEM_BALL_ASSET_HANDOFF.md](17_ORBITAL_CARGO_ITEM_BALL_ASSET_HANDOFF.md) | Orbital Cargo Item Ball의 승인 raster, collision 관계, reveal 및 runtime handoff 계약 |
 | [TODOS.md](TODOS.md) | v1 밖 후속 디자인/접근성 작업 |
 | [WIREFRAME_DYNAMIC_PLAYFIELD.png](WIREFRAME_DYNAMIC_PLAYFIELD.png) | 승인된 동적 폭 구조의 1차 비교판 |
 | [mockups/approved-v5/README.md](mockups/approved-v5/README.md) | 팀 공유용 V5 Main/HUD/Black Hole Phase/Pause/FX PNG export |
