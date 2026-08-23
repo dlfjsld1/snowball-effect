@@ -153,7 +153,7 @@ Stage World 배경과 기계 프레임은 논리 충돌 범위를 넓히지 않�
 
 ```text
 PresentationManager
- ├─ global dim
+ ├─ active visual Play Field-local dim/clip
  ├─ Integration pause 수락 뒤 CUT-IN visual lifecycle
  ├─ event priority
  ├─ CUT-IN cooldown
@@ -665,12 +665,15 @@ Merge result 또는 첫 Black Hole entity commit
 - 입력 눌림 상태가 pause/resume 후 꼬이지 않는지 검증
 - Tween/AnimationPlayer는 Web Export에서 검증
 
-시간 목표:
+canonical timing:
 
 ```text
-normal cut-in: 0.45~0.70s
+normal:  enter 0.36s + hold 1.18s + exit 0.46s = 2.00s
+reduced: fade-in 0.28s + hold 1.30s + fade-out 0.42s = 2.00s
 scale shift: up to about 0.8~1.0s
 ```
+
+두 CUT-IN profile의 구성 상수 합은 정확히 `2.00s`다. 자동/실제 Browser에서는 visible 시작부터 hide와 matching completion까지 `2.00s ±0.05s`를 허용한다. dim과 배너는 `GameplayFrame.get_field_visual_rect()`가 제공한 active visual Play Field에만 clip하며 HUD·기계 프레임·Stage World는 포함하지 않는다.
 
 
 ## 12. 아이템 기술

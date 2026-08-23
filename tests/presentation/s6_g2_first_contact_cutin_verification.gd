@@ -3,6 +3,7 @@ extends Node
 const CutInScene := preload("res://scenes/effects/first_contact_cutin.tscn")
 const MainScene := preload("res://scenes/main/main.tscn")
 const BACKGROUND_PATH := "res://assets/sprites/cutins/first_contact/first-contact-background-v1.png"
+const DURATION_TOLERANCE_SECONDS := 0.05
 const ACTIVE_ROSTER := [
 	{
 		"first_contact_id": &"ground_giant_snowball",
@@ -50,7 +51,10 @@ const ACTIVE_ROSTER := [
 
 var _failures := 0
 var _controller_completions: Array[Vector2i] = []
+var _controller_completion_usec_by_pair := {}
 var _main_completions: Array[Vector2i] = []
+var _observed_normal_duration_seconds := -1.0
+var _observed_reduced_duration_seconds := -1.0
 
 
 func _ready() -> void:
@@ -67,7 +71,7 @@ func _ready() -> void:
 	await _verify_actual_main_handoff()
 
 	if _failures == 0:
-		print("S6_G2_VERIFIED mappings=6 field_clipped=true duration=1.10 reduced_duration=0.85 same_epoch_stage_reset=true duplicate_stale=true reset_no_emit=true exact_once=true main_handoff=true core_readonly=true")
+		print("S6_G2_VERIFIED mappings=6 field_clipped=true duration=2.00 reduced_duration=2.00 normal_observed=%.3f reduced_observed=%.3f tolerance=0.05 same_epoch_stage_reset=true duplicate_stale=true reset_no_emit=true exact_once=true main_handoff=true core_readonly=true" % [_observed_normal_duration_seconds, _observed_reduced_duration_seconds])
 	get_tree().quit(_failures)
 
 
@@ -119,12 +123,15 @@ func _verify_six_mappings_and_composition(controller: CutInController) -> void:
 
 func _verify_timing_validation_and_lifecycle(controller: CutInController) -> void:
 	controller.set_reduced_effects(false)
-	_expect(is_equal_approx(CutInController.ENTER_DURATION, 0.20), "Enter duration must use the field-local banner contract.")
-	_expect(is_equal_approx(CutInController.HOLD_DURATION, 0.65), "Hold duration must use the field-local banner contract.")
-	_expect(is_equal_approx(CutInController.EXIT_DURATION, 0.25), "Exit duration must use the field-local banner contract.")
-	_expect(is_equal_approx(controller.get_total_duration(), 1.10), "Normal total duration must remain 1.10s.")
+	_expect(is_equal_approx(CutInController.ENTER_DURATION, 0.36), "Normal enter duration must preserve the field-local slide ratio at 0.36s.")
+	_expect(is_equal_approx(CutInController.HOLD_DURATION, 1.18), "Normal hold duration must preserve the field-local hold ratio at 1.18s.")
+	_expect(is_equal_approx(CutInController.EXIT_DURATION, 0.46), "Normal exit duration must preserve the field-local slide ratio at 0.46s.")
+	_expect(absf(controller.get_total_duration() - 2.00) <= DURATION_TOLERANCE_SECONDS, "Normal total duration must be 2.00s within +/-0.05s.")
 	controller.set_reduced_effects(true)
-	_expect(is_equal_approx(controller.get_total_duration(), 0.85), "Reduced-effects duration must remain 0.85s.")
+	_expect(is_equal_approx(CutInController.REDUCED_ENTER_DURATION, 0.28), "Reduced fade-in duration must preserve its profile ratio at 0.28s.")
+	_expect(is_equal_approx(CutInController.REDUCED_HOLD_DURATION, 1.30), "Reduced hold duration must preserve its profile ratio at 1.30s.")
+	_expect(is_equal_approx(CutInController.REDUCED_EXIT_DURATION, 0.42), "Reduced fade-out duration must preserve its profile ratio at 0.42s.")
+	_expect(absf(controller.get_total_duration() - 2.00) <= DURATION_TOLERANCE_SECONDS, "Reduced-effects total duration must be 2.00s within +/-0.05s.")
 
 	var base_entry: Dictionary = ACTIVE_ROSTER[0]
 	var valid := _payload_from_entry(base_entry, 2, 100)
@@ -149,12 +156,15 @@ func _verify_timing_validation_and_lifecycle(controller: CutInController) -> voi
 
 	var completions_before_lifecycle := _controller_completions.size()
 	_expect(controller.play_first_contact_cutin(valid), "A fresh Ground payload must start.")
+	var normal_started_usec := Time.get_ticks_usec()
 	_expect(not controller.play_first_contact_cutin(valid), "An active duplicate pair must be rejected.")
 	var queued_while_active := _payload_from_entry(ACTIVE_ROSTER[2], 2, 101)
 	_expect(not controller.play_first_contact_cutin(queued_while_active), "Presentation must not build its own queue while a CUT-IN is active.")
 	await get_tree().create_timer(controller.get_total_duration() + 0.08).timeout
 	_expect(_controller_completions.size() == completions_before_lifecycle + 1, "The Ground event must complete exactly once before Stage transition cleanup.")
 	_expect(_controller_completions.count(Vector2i(100, 2)) == 1, "The completed Ground pair must be recorded exactly once.")
+	_observed_normal_duration_seconds = _observed_duration_seconds(normal_started_usec, 2, 100)
+	_expect(absf(_observed_normal_duration_seconds - 2.00) <= DURATION_TOLERANCE_SECONDS, "Observed normal completion must be 2.00s within +/-0.05s.")
 	_expect(not controller.play_first_contact_cutin(valid), "A completed pair must be rejected.")
 	_expect(not controller.play_first_contact_cutin(_payload_from_entry(ACTIVE_ROSTER[1], 2, 99)), "A non-monotonic old event ID must be rejected.")
 
@@ -186,11 +196,14 @@ func _verify_timing_validation_and_lifecycle(controller: CutInController) -> voi
 	var reduced_before := reduced_payload.duplicate(true)
 	controller.set_reduced_effects(true)
 	_expect(controller.play_first_contact_cutin(reduced_payload), "A newer epoch must play after active reset cancellation.")
+	var reduced_started_usec := Time.get_ticks_usec()
 	(reduced_payload["debug_probe"] as Dictionary)["writes"] = 9
 	_expect((controller.get_active_payload()["debug_probe"] as Dictionary)["writes"] == 0, "Controller must retain its own deep payload copy.")
 	_expect(reduced_before["first_contact_id"] == controller.get_active_payload()["first_contact_id"], "Reduced effects must preserve identity.")
 	await get_tree().create_timer(controller.get_total_duration() + 0.08).timeout
 	_expect(_controller_completions.size() == completions_before_lifecycle + 3, "Reduced effects must preserve normal exact-once completion.")
+	_observed_reduced_duration_seconds = _observed_duration_seconds(reduced_started_usec, 4, 103)
+	_expect(absf(_observed_reduced_duration_seconds - 2.00) <= DURATION_TOLERANCE_SECONDS, "Observed reduced completion must be 2.00s within +/-0.05s.")
 	_expect(not controller.play_first_contact_cutin(reduced_before), "A completed pair must be rejected.")
 	controller.reset_first_contact_cutin(4)
 	_expect(_controller_completions.size() == completions_before_lifecycle + 3, "Reset after completion must not emit again.")
@@ -267,10 +280,22 @@ func _payload_from_entry(entry: Dictionary, run_epoch: int, event_id: int) -> Di
 
 func _on_controller_finished(event_id: int, run_epoch: int) -> void:
 	_controller_completions.append(Vector2i(event_id, run_epoch))
+	_controller_completion_usec_by_pair[_completion_key(run_epoch, event_id)] = Time.get_ticks_usec()
 
 
 func _on_main_finished(event_id: int, run_epoch: int) -> void:
 	_main_completions.append(Vector2i(event_id, run_epoch))
+
+
+func _observed_duration_seconds(started_usec: int, run_epoch: int, event_id: int) -> float:
+	var pair_key := _completion_key(run_epoch, event_id)
+	if not _controller_completion_usec_by_pair.has(pair_key):
+		return -1.0
+	return float(int(_controller_completion_usec_by_pair[pair_key]) - started_usec) / 1000000.0
+
+
+func _completion_key(run_epoch: int, event_id: int) -> String:
+	return "%d:%d" % [run_epoch, event_id]
 
 
 func _expect(condition: bool, message: String) -> void:

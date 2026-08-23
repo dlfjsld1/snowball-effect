@@ -191,10 +191,10 @@ Lv14 최종 공의 이름은 `Black Hole`이다. Galactic에서 첫 Lv14를 만�
 
 고등급 이벤트:
 
-- 현재 플레이 화면 freeze
-- 전체 dim
+- gameplay timer/spawn/simulation/Paddle input 잠금
+- active visual Play Field만 dim; HUD·기계 프레임·Stage World는 제외
 - Pixel Machine CUT-IN
-- 약 0.45~0.70초
+- normal/reduced 모두 정확히 2.00초
 - 이름 / 공 이미지 / 가치 또는 효과
 
 Stage 최고 공:

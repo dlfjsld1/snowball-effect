@@ -46,7 +46,7 @@ Purpose: 분산된 gameplay feedback 요구사항을 하나의 디자인·제작
 | MG-02 | 고등급 Merge | T2 | REQUIRED | 같은 event + result level | 더 큰 ring, 파편, 짧은 압력파 | Ball silhouette 보존 |
 | MG-03 | 중요 공 생성 | T3 | REQUIRED | high-tier result | 짧은 hit-stop 후보, Corona 강화 | cooldown/priority 적용 |
 | MG-04 | local Lv3/Lv4 최초 발견 | T3 | REQUIRED | S3-G9 `first_contact_discovered(payload v1)` | FIRST CONTACT 뒤 공에 시선 집중 | 승인 6 identity만 Run당 1회; 생성만으로 Clear/Shift를 요청하지 않음 |
-| MG-05 | Stage 고등급 공 최초 생성 CUT-IN | T3 | CONDITIONAL | S6-G2I가 pause 수락 뒤 전달한 payload v1 | 현재 16:9 화면 위 공통 배경, `FIRST CONTACT` 문구, 공 초상 | Stage별 local Lv3·Lv4만 1회, 0.45~0.70초, Black Hole은 matching 완료 뒤 S8 Phase |
+| MG-05 | Stage 고등급 공 최초 생성 CUT-IN | T3 | CONDITIONAL | S6-G2I가 pause 수락 뒤 전달한 payload v1 | active visual Play Field 안 공통 배경, `FIRST CONTACT` 문구, 공 초상 | Stage별 local Lv3·Lv4만 1회, normal/reduced 모두 2.00초(관찰 허용오차 ±0.05초), Black Hole은 matching 완료 뒤 S8 Phase |
 
 MG-05 대상은 Stage마다 두 종으로 고정한다.
 

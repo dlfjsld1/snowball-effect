@@ -621,8 +621,8 @@ Fire 공:
 
 - 현재 physics tick의 Merge/Cashout/종료 판정을 먼저 확정
 - Integration이 current Run과 `PLAYING`을 다시 확인하고 pause lock 수락
-- pause 수락 뒤에만 현재 장면 전체 freeze와 visible CUT-IN
-- Play Field와 Stage World 전체 dim
+- pause 수락 뒤에만 gameplay timer/spawn/simulation/Paddle input 잠금과 visible CUT-IN
+- 현재 active visual Play Field만 dim하고 같은 rect에서 배너를 clip; HUD·기계 프레임·Stage World는 dim/overlay 대상에서 제외
 - Pixel Machine 패널 진입
 - 공 이름 / 이미지 / VALUE 또는 효과
 - 빠르게 퇴장
@@ -631,11 +631,14 @@ Fire 공:
 
 pause lock은 SceneTree 전체 pause가 아니다. CUT-IN Tween과 Retry/Main cleanup은 계속 동작하되 timer, spawn, simulation commit, Paddle physics와 gameplay input을 잠근다. 같은 tick의 중재 결과가 `CLEAR_LOCKED`, `TIME_UP_LOCKED`, `FAILED`, `RUN_ENDED`, Result 또는 Shift면 해당 discovery를 화면에 열지 않고 authoritative 결과를 우선한다. wrong/stale/duplicate 완료는 gameplay resume이나 Black Hole Phase를 만들지 않는다. Retry/Main/fresh Run은 열린 Panel과 queue를 숨기고 이전 callback을 무효화한다.
 
-초기 총 길이:
+canonical 총 노출 시간:
 
 ```text
-0.45 ~ 0.70초
+normal  enter 0.36s + hold 1.18s + exit 0.46s = 2.00s
+reduced fade-in 0.28s + hold 1.30s + fade-out 0.42s = 2.00s
 ```
+
+두 profile의 설정 합계는 정확히 `2.00s`다. 자동/실제 Browser의 visible 시작부터 hide·matching completion까지 관찰값은 frame scheduling을 고려해 `2.00s ±0.05s`를 통과 범위로 사용한다. reduced-effects는 slide motion만 제거하고 identity, field-local dim, pause와 completion semantics는 유지한다.
 
 Giant Snowball, Moon, Supernova, Galaxy, Event Horizon의 CUT-IN 종료 뒤에는 gameplay를 재개한다. 첫 Black Hole은 matching CUT-IN 종료 뒤에만 같은 Galactic 안의 Black Hole Phase 전환을 이어서 실행한다. Presentation은 resume이나 Phase를 직접 실행하지 않고 `(event_id, run_epoch)` 완료만 반환한다.
 

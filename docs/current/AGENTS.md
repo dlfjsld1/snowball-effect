@@ -65,8 +65,8 @@ These are product constraints, not optional polish.
 - Keep gameplay balls visually clearer than decorative particles.
 - General merges use fast, saturation-style effects.
 - High-grade events may use a short CUT-IN.
-- A normal CUT-IN freezes/dims the current full scene; it does not open a separate screen.
-- Normal CUT-IN target duration is about 0.45–0.70 seconds and should normally remain under 1 second.
+- A normal CUT-IN locks gameplay and dims/clips only the active visual Play Field; it does not cover the HUD, machine frame, or Stage World.
+- Normal and reduced-effects CUT-IN profiles each target exactly 2.00 seconds, with a browser observation tolerance of ±0.05 seconds.
 - `SCALE SHIFT` is a different, higher-priority presentation event from a normal CUT-IN.
 - Do not copy the specific UI/art assets of reference games.
 
