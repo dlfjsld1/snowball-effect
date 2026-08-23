@@ -17,12 +17,12 @@
 | Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration, Content AudioManager | Clear 표시·상태 잠금·audio event 선택 |
 | Core Settlement → Integration StageManager | `final_settlement_started(amount: float)`, `final_settlement_finished(amount: float)` | Integration GameManager, Content AudioManager | SettlementService의 내부 신호를 StageManager가 한 번 전달한다. GameManager는 각각 `settlement_start`/`settlement_finish` audio event로만 매핑하며 점수·상태는 변경하지 않는다. |
-| Presentation EffectManager | `final_settlement_presentation_finished()` | Presentation HUD·verification | 최대 0.5초의 batch dissolve·Stage Score count-up 완료 알림. Core `Final Settlement → CLEARED`를 지연시키거나 gameplay state를 변경하지 않는 read-only presentation completion이다. S5-G6의 확인 대기는 Settlement logic이 아니라 `CLEARED→SHIFTING` 경계에만 적용한다. |
+| Presentation EffectManager | `final_settlement_presentation_finished()` | Presentation HUD·verification, Integration S6-G6J | 최대 0.5초의 batch dissolve·Stage Score count-up 완료 알림. Core `Final Settlement → CLEARED`를 지연시키거나 gameplay state를 변경하지 않는 read-only presentation completion이다. S6-G6J는 이 signal로 pending Clear/Result UI의 **표시 시점만** 열 수 있으며, S5-G6의 Next Stage 확인은 계속 `CLEARED→SHIFTING` 경계에만 적용한다. |
 | Integration StageManager | `stage_changed(stage_definition)` | Core, Presentation, Content Music | data 적용, Stage World와 BGM 변경 |
 | Content screens | `start_requested`, `retry_requested`, `pause_requested`, `resume_requested`, `settings_requested`, `main_menu_requested` | Integration GameManager, Content Music | 시작, Pause modal 행동·화면 전환 요청과 BGM 상태 전환 |
 | Content S10 Settings panel | `settings_open_requested(return_view)`, `settings_preview_requested(session_id, draft)`, `settings_apply_requested(session_id, draft)`, `settings_close_requested(session_id)` | Integration Settings adapter | Title/Pause의 진입점은 같은 panel을 연다. preview는 즉시 출력만 갱신하고 저장하지 않으며, Apply는 저장·종료, Close는 마지막 Apply snapshot 복원·종료를 요청한다. Content는 AudioServer·browser storage를 직접 변경하지 않는다. |
 | Integration S10 Settings adapter | `settings_snapshot_changed(snapshot)`, `settings_closed(session_id, return_view)` | Content S10 panel, Presentation S10-G3 | Master/BGM/SFX Volume과 Value Popups를 validate한다. preview는 AudioManager/EffectManager relay에 즉시 반영하고, Apply에서만 persist한다. Close는 uncommitted preview를 last applied snapshot으로 되돌린 뒤 matching return view를 닫는다. 저장/로드 실패는 default snapshot으로 fallback하며 stale/duplicate session은 무시한다. |
-| Content ItemManager | `item_planet_spawned(item_type: StringName, world_position, radius)` | Content S7-G2 Blizzard visual | Blizzard Item Ball의 최초 표시용 read-only 신호. spawn/score/simulation을 변경하지 않는다. |
+| Content ItemManager | `item_planet_spawned(item_type: StringName, world_position, radius)` | Content S7-G2 optional-item visual | 모든 item type이 공유하는 identity-neutral Item Ball의 최초 표시용 read-only 신호. spawn/score/simulation을 변경하지 않는다. |
 | Content ItemManager | `item_planet_damaged(item_type: StringName, current_hits, required_hits, world_position)` | Presentation, Content S7-G2 Blizzard visual | hit별 균열·픽셀 파편 단계 표현 |
 | Content ItemManager | `item_planet_broken(item_type: StringName, world_position)` | Presentation, Content S7-G2 Blizzard visual | 최종 파괴 FX. 이 신호 자체는 획득·CUT-IN·activation을 의미하지 않음 |
 | Content ItemManager | `item_orb_spawned(item_type: StringName, world_position)` | Presentation, Content S7-G2 Blizzard visual | 아이템별로 구분되는 획득용 Orb 표시 |
@@ -32,6 +32,8 @@
 | Integration ItemEffectGateway | `item_cutin_requested(event_id: int, item_type: StringName, world_position)` | Presentation S6-G2 | Orb 획득 뒤에만 CUT-IN을 요청한다. Item Ball 파괴는 이 요청을 만들지 않는다. |
 | Presentation S6-G2 | `GameManager.accept_item_cutin_activation_cue(event_id)` 또는 `skip_item_cutin(event_id)` | Integration ItemEffectGateway | matching event만 1회 activation request로 commit한다. cue/skip 중복과 Retry 이전 stale event는 거부한다. |
 | Integration ItemEffectGateway | `item_effect_activation_requested(event_id: int, item_type: StringName, world_position)` | Content S7-G2~G4 | 실제 Blizzard/Fire Core/Magnet 효과의 유일한 activation request다. Gateway는 점수·Settlement·simulation을 직접 변경하지 않는다. |
+
+현재 S7-G1C producer는 마지막 유효 hit commit에서 `item_planet_broken`을 먼저, `item_orb_spawned`를 바로 다음에 발행한다. Presentation의 neutral break fragment는 별도 Orb와 잠시 겹칠 수 있으며 Orb의 이동·획득·miss를 지연시키지 않는다. 파괴 전 Item Ball만 identity-neutral이면 되고 Orb는 파괴 확정 뒤 첫 item-specific visual이다.
 | Content S7-G2 Blizzard | `activate(item_blizzard.tres)`, `advance(delta)`, `reset_runtime()`; `spawn_multiplier_changed(multiplier)` | Integration spawn controller | matching Blizzard activation만 수락한다. Integration은 base Stage spawn rate에 multiplier를 한 번 적용하고 `1.0`에서 정확히 복구한다. 재획득은 남은 시간을 갱신할 뿐 multiplier를 누적하지 않는다. |
 | Content S7-G2 Blizzard | `active_state_changed(snapshot)` | Content-owned Blizzard visual, Integration Main wiring | Blizzard 전용 `BLIZZARD!` cue와 장식 눈은 active snapshot만 read-only로 소비한다. Item Ball/Orb의 Blizzard styling은 producer events만 표시하며 activation, score, timer, spawn multiplier를 변경하지 않는다. |
 | Content S7-G3 Fire Core | `activate(item_fire_core.tres)`, `advance(delta)`, `reset_runtime()`; `fire_window_changed(active)`, `active_state_changed(snapshot)` | future Integration/Core Fire consumer | Fire Core는 8초·×10의 read-only timed window만 소유한다. consumer는 Paddle 접촉으로 Fire flag를 부여하고 Merge에 OR 계승하며 Fire ball의 Active Cashout에만 ×10을 적용해야 한다. Time Bonus와 Final Settlement는 이 신호·snapshot을 소비하지 않는다. |
@@ -135,6 +137,15 @@ pause lock은 SceneTree 전체 pause가 아니다. CUT-IN Tween/CanvasLayer와 R
 - Scale Shift 시작 시 matching `hide_stage_clear(clear_id)`를 호출한다. Retry/Main Screen/fresh Run은 pending Clear를 무효화하고 `reset_for_new_run()`을 호출한다. numeric clear ID sequence는 process lifetime에서 재사용하지 않는다.
 - Galactic, `FAILED`, Time Up Result, Black Hole finale와 Result UI에는 Panel을 열지 않는다. reduced-effects는 motion/pulse만 제거하고 snapshot 내용, focus와 1회 request를 유지한다.
 - 2026-08-20 automatic `Final Settlement → CLEARED → SHIFTING` wiring evidence는 당시 계약의 역사로 남지만 최신 완료 근거가 아니다. S5-G6I는 이 계약에 맞는 Integration 구현과 회귀가 끝날 때까지 `PENDING`이다.
+
+### S6-G6J Final Settlement UI reveal 계약
+
+- `StageManager`는 Settlement 점수 계산과 `CLEARED`/`FAILED` 결정을 기존 순서대로 즉시 확정한다. S6-G6J는 이 state transition, `clear_id`, `shift_id`, score, timer, simulation을 지연하거나 변경하지 않는다.
+- `GameManager`는 `final_settlement_started` 뒤 같은 outcome의 `stage_clear_ready(clear_snapshot, clear_id)` 또는 `stage_run_ended(result_snapshot)`를 deep-copy로 보관한다. EffectManager completion과 pending outcome의 순서는 어느 쪽이 먼저여도 된다.
+- 두 조건이 모두 충족될 때만 non-final Clear는 `StageClearPanel.show_stage_clear(snapshot, clear_id)`를 한 번 호출한다. failure/Time Up Result는 `ResultPanel.show_result(result_snapshot)`를 한 번 호출하며 Clear Panel은 열지 않는다.
+- completion 전 `CLEARED`는 UI 없는 gameplay lock 상태다. Panel이 아직 없으므로 Next Stage request를 받을 수 없고, matching `clear_id` request-once 규칙은 Panel을 연 뒤 그대로 적용된다.
+- Retry, Main, fresh Run, invalidated pending Clear, terminal Black Hole finale는 pending snapshot/visual-ready latch를 모두 폐기한다. 그 뒤의 no-argument completion은 무시하며 새 Run의 UI를 열 수 없다.
+- Verification은 Score Clear와 Time Up failure 각각에서 Settlement pixels/Stage Score count-up이 실제로 보인 뒤 Panel/Result가 나타남, wrong/stale reset이 무표시임, Core score/state가 기존 fixture와 동일함, Desktop/Web console error 0을 포함한다.
 
 ### S8-G4 Integration 연결 계약
 

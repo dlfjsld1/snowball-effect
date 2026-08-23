@@ -2,6 +2,8 @@
 extends Control
 class_name GameplayFrame
 
+const CashoutDirectionCueScript := preload("res://scripts/presentation/cashout_direction_cue.gd")
+const CrtSurfaceTreatmentScript := preload("res://scripts/presentation/crt_surface_treatment.gd")
 const PROFILE_IDS := ["L0", "L1", "L2", "L3"]
 const FIELD_WIDTHS: Array[float] = [560.0, 720.0, 880.0, 1040.0]
 const VIEWPORT_SIZE := Vector2(1600.0, 900.0)
@@ -10,6 +12,9 @@ const FIELD_HEIGHT := VIEWPORT_SIZE.y - FRAME_INSET * 2.0
 const LOGICAL_FIELD_BOTTOM_INSET := 32.0
 const WING_WIDTH := 200.0
 const FIELD_GAP := 12.0
+const CASHOUT_CUE_HORIZONTAL_INSET := 24.0
+const CASHOUT_CUE_BOTTOM_INSET := 6.0
+const CASHOUT_CUE_HEIGHT := 20.0
 
 @export_range(0, 3, 1) var profile_index := 0:
 	set(value):
@@ -22,6 +27,8 @@ const FIELD_GAP := 12.0
 @onready var right_bottom_housing: Control = %RightBottomHousing
 @onready var right_empty_waist: Control = %RightEmptyWaist
 @onready var field_bezel: NinePatchRect = %FieldBezel
+@onready var cashout_direction_cue: CashoutDirectionCueScript = %CashoutDirectionCue
+@onready var crt_surface_treatment: CrtSurfaceTreatmentScript = %CrtSurfaceTreatment
 @onready var left_crt_group: Control = %LeftCrtGroup
 @onready var right_crt_group: Control = %RightCrtGroup
 
@@ -148,6 +155,7 @@ func apply_visual_profile_lerp(from_profile: int, to_profile: int, weight: float
 	var to_right := _get_right_wing_rect(to_profile)
 	var right_wing := Rect2(from_right.position.lerp(to_right.position, clamped_weight), from_right.size)
 	_apply_visual_rects(bezel, left_wing, right_wing)
+	_apply_cashout_cue_rect(get_field_visual_rect_lerp(from_profile, to_profile, clamped_weight))
 
 
 func get_spawn_safe_y(radius: float, clearance := 12.0) -> float:
@@ -158,10 +166,45 @@ func get_cashout_line_y() -> float:
 	return get_field_rect().end.y
 
 
+func set_cashout_cue_active(active: bool) -> void:
+	_get_cashout_direction_cue().set_gameplay_active(active)
+
+
+func set_cashout_cue_reduced_effects(enabled: bool) -> void:
+	_get_cashout_direction_cue().set_reduced_effects(enabled)
+
+
+func configure_cashout_cue_lifecycle(hud_source: CanvasItem, pause_source: CanvasItem) -> void:
+	_get_cashout_direction_cue().configure_lifecycle(hud_source, pause_source)
+
+
+func reset_cashout_cue_for_new_run() -> void:
+	_get_cashout_direction_cue().reset_for_new_run()
+
+
+func get_cashout_cue_metrics() -> Dictionary:
+	return _get_cashout_direction_cue().get_visual_metrics()
+
+
+func get_cashout_cue_node() -> Control:
+	return _get_cashout_direction_cue()
+
+
+func get_crt_surface_treatment() -> CrtSurfaceTreatmentScript:
+	if crt_surface_treatment == null:
+		crt_surface_treatment = get_node("CrtSurfaceTreatment") as CrtSurfaceTreatmentScript
+	return crt_surface_treatment
+
+
+func get_crt_surface_metrics() -> Dictionary:
+	return get_crt_surface_treatment().get_visual_metrics()
+
+
 func _apply_profile() -> void:
 	var left_wing := get_left_wing_rect()
 	var right_wing := get_right_wing_rect()
 	_apply_visual_rects(get_field_bezel_rect(), left_wing, right_wing)
+	_apply_cashout_cue_rect(get_field_visual_rect())
 
 
 func _apply_visual_rects(bezel: Rect2, left_wing: Rect2, right_wing: Rect2) -> void:
@@ -175,6 +218,28 @@ func _apply_visual_rects(bezel: Rect2, left_wing: Rect2, right_wing: Rect2) -> v
 
 	left_crt_group.position = left_wing.position
 	right_crt_group.position = right_wing.position
+	get_crt_surface_treatment().set_frame_layout(left_wing, right_wing)
+
+
+func _apply_cashout_cue_rect(visual_field_rect: Rect2) -> void:
+	var cashout_line_y := visual_field_rect.end.y - LOGICAL_FIELD_BOTTOM_INSET
+	var cue_rect := Rect2(
+		Vector2(
+			visual_field_rect.position.x + CASHOUT_CUE_HORIZONTAL_INSET,
+			cashout_line_y - CASHOUT_CUE_BOTTOM_INSET - CASHOUT_CUE_HEIGHT
+		),
+		Vector2(
+			visual_field_rect.size.x - CASHOUT_CUE_HORIZONTAL_INSET * 2.0,
+			CASHOUT_CUE_HEIGHT
+		)
+	)
+	_get_cashout_direction_cue().set_cue_rect(cue_rect)
+
+
+func _get_cashout_direction_cue() -> CashoutDirectionCueScript:
+	if cashout_direction_cue == null:
+		cashout_direction_cue = get_node("CashoutDirectionCue") as CashoutDirectionCueScript
+	return cashout_direction_cue
 
 
 func _set_rect(node: Control, rect: Rect2) -> void:

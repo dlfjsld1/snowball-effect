@@ -57,6 +57,8 @@ var _effect_sequence := 0
 var _last_priority_event: StringName = &""
 var _reserved_priority := -1
 var _last_stage_index := -1
+var _stage_local_ball_levels := PackedInt32Array()
+var _reduced_effects := false
 var _settlement_target: Control
 var _active_settlement_effect: Node2D
 
@@ -79,6 +81,7 @@ func set_simulation_source(simulation_source: Node) -> void:
 		_simulation_source.ball_merged.connect(_on_ball_merged)
 	if _simulation_source.has_signal("cashout_completed"):
 		_simulation_source.cashout_completed.connect(_on_cashout_completed)
+	_refresh_stage_levels_from_simulation()
 
 
 func set_stage_source(stage_source: Node) -> void:
@@ -93,6 +96,8 @@ func set_stage_source(stage_source: Node) -> void:
 		_stage_source.stage_changed.connect(_on_stage_changed)
 	if _stage_source.has_signal("final_settlement_started"):
 		_stage_source.final_settlement_started.connect(_on_final_settlement_started)
+	if _stage_source.has_method("get_current_stage"):
+		_apply_stage_definition(_stage_source.get_current_stage())
 	if _stage_source.has_method("get_runtime_snapshot"):
 		var snapshot: Dictionary = _stage_source.get_runtime_snapshot()
 		_last_stage_index = int(snapshot.get("stage_index", -1))
@@ -101,6 +106,14 @@ func set_stage_source(stage_source: Node) -> void:
 
 func set_settlement_target(target: Control) -> void:
 	_settlement_target = target
+
+
+func set_reduced_effects(enabled: bool) -> void:
+	_reduced_effects = enabled
+	for child in get_children():
+		var event_key := StringName(child.get_meta("s6_event_key", &""))
+		if _is_active_effect(child) and (event_key == &"MERGE" or event_key == &"CASHOUT") and child.has_method("set_reduced_effects"):
+			child.set_reduced_effects(enabled)
 
 
 func notify_priority_event(event_key: StringName) -> bool:
@@ -200,9 +213,8 @@ func _on_ball_merged(result_level: int, world_position: Vector2) -> void:
 	var effect = MergeEffectScene.instantiate()
 	_register_effect(effect, &"MERGE", tier)
 	add_child(effect)
-	effect.setup(world_position, definition.display_name, _get_effect_color(definition.base_color, tier), tier)
-	if tier == 0 or not value_popups_enabled:
-		effect.value_label.visible = false
+	var local_level := _resolve_local_level(result_level, tier)
+	effect.setup(world_position, _get_effect_color(definition.base_color, tier), local_level, _reduced_effects)
 	merge_effect_count += 1
 	merge_effect_spawned.emit(result_level, world_position)
 
@@ -217,11 +229,25 @@ func _on_cashout_completed(score_amount: float, global_level: int, world_positio
 	var effect = CashoutEffectScene.instantiate()
 	_register_effect(effect, &"CASHOUT", tier)
 	add_child(effect)
+	var local_level := _resolve_local_level(global_level, 0)
 	var visual_position := Vector2(
 		world_position.x,
 		minf(world_position.y, get_viewport_rect().end.y - CASHOUT_EFFECT_BOTTOM_MARGIN)
 	)
-	effect.setup(visual_position, definition.display_name, score_amount, _get_effect_color(definition.base_color, tier), tier)
+	var popup_bounds := get_viewport_rect()
+	if is_instance_valid(_simulation_source) and _simulation_source.has_method("get_active_play_field_rect"):
+		var active_play_field_rect = _simulation_source.call("get_active_play_field_rect")
+		if active_play_field_rect is Rect2 and active_play_field_rect.has_area():
+			popup_bounds = active_play_field_rect
+	effect.setup(
+		visual_position,
+		definition.display_name,
+		score_amount,
+		definition.base_color,
+		local_level,
+		popup_bounds,
+		_reduced_effects
+	)
 	if not value_popups_enabled:
 		effect.value_label.visible = false
 	cashout_effect_count += 1
@@ -388,6 +414,7 @@ func _on_stage_state_changed(state: StringName) -> void:
 func _on_stage_changed(definition) -> void:
 	if definition == null:
 		return
+	_apply_stage_definition(definition)
 	var stage_index := int(definition.stage_index)
 	if _last_stage_index >= 0 and stage_index <= _last_stage_index:
 		reset_runtime_fx(true)
@@ -400,6 +427,30 @@ func _bind_main_stage_source() -> void:
 	var stage_source := get_tree().current_scene.get_node_or_null("StageManager")
 	if stage_source != null:
 		set_stage_source(stage_source)
+
+
+func _apply_stage_definition(definition) -> void:
+	if definition is StageDefinition:
+		_stage_local_ball_levels = definition.local_ball_levels.duplicate()
+
+
+func _refresh_stage_levels_from_simulation() -> void:
+	if not is_instance_valid(_simulation_source) or not _simulation_source.has_method("get_stage_snapshot"):
+		return
+	var snapshot: Dictionary = _simulation_source.get_stage_snapshot()
+	var levels = snapshot.get("local_ball_levels", PackedInt32Array())
+	if levels is PackedInt32Array:
+		_stage_local_ball_levels = levels.duplicate()
+	elif levels is Array:
+		_stage_local_ball_levels = PackedInt32Array(levels)
+
+
+func _resolve_local_level(result_level: int, fallback_tier: int) -> int:
+	var local_level := _stage_local_ball_levels.find(result_level)
+	if local_level < 0:
+		_refresh_stage_levels_from_simulation()
+		local_level = _stage_local_ball_levels.find(result_level)
+	return clampi(local_level if local_level >= 0 else fallback_tier, 0, 4)
 
 
 func _disconnect_simulation_source() -> void:

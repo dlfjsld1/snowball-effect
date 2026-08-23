@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/presentation/s5_g4_cashout_direction_cue_verification.gd" id="1_verification"]
+
+[node name="S5G4CashoutDirectionCueVerification" type="Node"]
+script = ExtResource("1_verification")

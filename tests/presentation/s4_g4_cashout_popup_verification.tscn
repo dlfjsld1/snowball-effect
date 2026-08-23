@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/presentation/s4_g4_cashout_popup_verification.gd" id="1_test"]
+
+[node name="S4G4CashoutPopupVerification" type="Node"]
+script = ExtResource("1_test")

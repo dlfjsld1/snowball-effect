@@ -804,3 +804,125 @@ Owner: Presentation/UI
 
 - 10-cell bank만 움직였던 이전 정렬은 원본 11-pitch meter의 마지막 dark chamber 일부를 남겼다. source-meter 전 폭을 지운 뒤, 10개 chamber를 반 pitch 우측 이동해 좌우에 각각 반 칸 gutter가 남도록 보정했다.
 - Godot CLI validation 및 native `[10, 5, 0]` runtime을 확인했다. 최신 Web release에서도 Master 10, console error 0건을 확인하고 CLOSE로 test preview를 되돌렸다. release ZIP을 갱신했다.
+## 2026-08-22 — S5-G6 Stage Clear confirmation Web verification
+
+Owner: Presentation
+
+- current Main의 기존 S5-G6 producer와 S5-G6I integration을 변경하지 않고, Godot 4.7.1 CLI 전용 panel verifier와 integration confirmation fixture를 재실행했다. 각각 `S5_G6_VERIFIED open=true scores=true focus=true request_once=true duplicate_hidden_stale=true reset=true exclusions=true reduced=true core_readonly=true`, `S5_G6I_VERIFIED confirmation_gate=true stale_rejected=true failure_result=true`로 exit 0이었다.
+- Web release에서는 의도적으로 `OS.is_debug_build()` guard를 둔 F7 test trigger가 비활성임을 확인했다. 동일 Web runtime의 Debug export를 localhost Chrome/Playwright에서 실행해 Canvas 표시·focus→실제 Ground Score Clear panel(`STAGE CLEAR!`, Stage/Run score, `NEXT STAGE`)→Enter 입력→Planetary PLAYING/배경 전환을 screenshot으로 검증했다. browser console error는 0건이었다.
+- gstack `browse` Windows launcher는 companion server bundle 경로와 daemon start 문제로 project interaction 전에 실패했다. 이에 게임 코드를 변경하지 않고 direct Chromium/Playwright로 대체했으며, Godot export·Canvas·keyboard 경로는 정상임을 분리 확인했다.
+
+## 2026-08-22 — S6-G6 Final Settlement final validation
+
+Owner: Presentation
+
+- Final Settlement producer fixture는 Godot 4.7.1 CLI에서 `S6_G6_VERIFIED samples=64 duration=0.5 score_countup=true completion=1 ready_main_stale_safe=true core_readonly=true`로 통과했다. Core Settlement(`S3_G4_VERIFIED base_only=true top_included=true idempotent=true`)와 FX budget(`S6_G1_VERIFIED ...`) 회귀도 exit 0이었다.
+- 그러나 latest Main Debug Web export에서 Ground Run을 시작한 뒤 F7 Score Clear로 실제 Settlement를 발생시켜 50ms·250ms frame을 캡처한 결과, Stage Clear Panel이 같은 frame에 전면 표시됐다. 0.5초 Settlement draw와 HUD Stage Score count-up은 panel/dim 아래에 가려 player-visible로 읽히지 않았다. browser console error는 0건이었다.
+- 이에 따라 S6-G6은 `IMPLEMENTED`를 유지한다. 다음 작업은 Final Settlement visual을 먼저 독립적으로 노출한 뒤 완료 signal 또는 명시적 presentation delay를 통해 Stage Clear Panel을 열도록 Integration 계약을 재정의·구현하는 것이다. 이번 검증은 Core score/state/Settlement 계산이나 retired S6-G6I를 변경하지 않았다.
+
+## 2026-08-22 — Integration S6-G6J handoff and Presentation regression cleanup
+
+Owner: Presentation documentation / S2-G5 test maintenance
+
+- Final Settlement visual이 실제 Main에서 가려지는 결과를 Integration이 바로 처리할 수 있도록 새 `S6-G6J Final Settlement UI reveal handoff`를 S6 slice, Status, Integration contracts에 추가했다. Core의 Settlement와 `CLEARED`/`FAILED`는 즉시 확정하고, GameManager가 copied clear/result outcome과 visual-finished latch가 모두 준비된 뒤에만 Clear/Result UI를 열도록 한다. Retry/Main/fresh Run stale completion 폐기와 Core state 불변도 계약에 포함했다.
+- S2-G5 Presentation fixture는 stale direct `configure_stage_ball_levels([0,1,2,3,4])` 대신 Ground `StageDefinition`을 `apply_stage_definition()`으로 적용하게 고쳤다. Godot 4.7.1 CLI에서 `S2_G5_VERIFIED merge_fx_once=true catalog_name=true presentation_readonly=true` 및 S2-G3 `pairs=deterministic one_consume_per_tick=true top_event=true`가 모두 exit 0이었다.
+- S4-G4 clean Web evidence는 ignored `tmp/`를 제외한 detached worktree `11b5b40` Release export로 보강했다. localhost Chrome에서 Ground 시작 뒤 16-frame 자연 Cashout sequence와 score `0→7`, Canvas/focus, console error 0을 확인했다. 다만 low-level 자연 낙하만으로 high-radius bottom boundary를 증명할 수 없었고, texture batch에서 `material=null`인 renderer 경로는 clip shader uniform을 받지 않는다. Core-owned boundary fixture/texture-material correction 전에는 누수 부재를 확정하지 않아 S4-G4를 `IMPLEMENTED`로 유지한다.
+
+## 2026-08-22 — S6-G2 FIRST CONTACT CUT-IN Web quality gate
+
+Owner: Presentation
+
+- 현재 `f2bc3fc`에서 전용 CLI verifier를 재실행해 `S6_G2_VERIFIED mappings=6 common_background=true duration=2.00 reduced_duration=1.80 same_epoch_stage_reset=true duplicate_stale=true reset_no_emit=true exact_once=true main_handoff=true core_readonly=true`와 S6-G2I pause/handoff 회귀가 통과한 상태를 확인했다.
+- 원본 브랜치를 바꾸지 않는 `tmp/s6-g2-web-verify` 임시 worktree에서 Main을 마운트하는 기존 runtime fixture를 Debug Web으로 export하고 localhost Chromium/Playwright로 실행했다. 실제 Canvas click 뒤 `1600×900` canvas, dimmed `FIRST CONTACT / GIANT SNOWBALL` hold, A key 입력 뒤에도 유지되는 CUT-IN, matching completion 1회와 pause release를 확인했다. `S6_G2_CAPTURE ... size=1600x900 frames=8 avg_fps=71.2 max_frame_ms=16.80 completion=1`; 실행 중 page error `0`이었다. capture는 `tmp/s6_g2_web_cutin_playwright.png`다.
+- gstack `browse` Windows launcher의 `server-node.mjs` 누락과 Node-repl path 오류는 게임 코드와 분리했고, local Playwright/Chromium 결과로 실제 Web Gate를 닫았다. 검증 후 임시 worktree와 Playwright tool cache는 제거했으며 원본 runtime source·Integration-owned 파일은 수정하지 않았다.
+
+## 2026-08-22 — S7 Item Ball presentation design review
+
+Owner: Presentation / design-only
+
+- 최신 S7 Item Ball·Orb producer/Integration 계약, 기존 Item Box 탐색안, 현재 Blizzard visual과 Paper-8/pixel guideline을 대조했다. canonical body는 `48px` Item Ball, `32px` Orb, 공통 5-hit이며 rarity·3/6/10 durability·hidden identity는 현 계약에 없는 오래된 제안으로 분리했다.
+- `docs/design/16_ITEM_BALL_PRESENTATION_DESIGN_REVIEW.md`에 Orbital Cage, Cracked Geode Planet, Stepped Signal Mine 3안을 비교하고 **Cracked Geode Planet**을 추천했다. 0~4 hit mask와 5번째 break handoff, Blizzard/Fire/Magnet glyph, palette, native LOD, event별 effect 경계와 optional 목록을 명시했다.
+- `docs/design/mockups/item-ball-candidate-board-v1.png`는 approved Paper-8 frame/current Blizzard crystal/Item CRT를 reference로 만든 ImageGen concept board다. production sprite로 crop/import하지 않고 native grid에서 다시 그리는 정책을 문서에 기록했다.
+- 현재 `1254×1254px` Blizzard AI source의 `64px` 축소 표시, gameplay `48px` body와의 footprint 차이, 11px hit label과 shell 밖 crack을 production handoff 전 해결점으로 남겼다.
+- Runtime Scene/Script/Resource/import, Core/Integration, Goal status와 lock은 변경하지 않았으며 실행 검증은 design-only 범위라 수행하지 않았다.
+
+## 2026-08-22 — Cashout Direction Readability backlog implementation
+
+Owner: Presentation / S5-G4 frame-owned maintenance (exact Goal ID 없음)
+
+- `docs/design/TODOS.md`의 첫 Presentation 개선 항목을 사용자 승인에 따라 구현했다. 기존 세 후보 중 하단 내부의 아래 방향 chevron row를 선택했고, 하단 bezel 제거·suction flow·text label은 추가하지 않았다. `STATUS.md`에는 이 backlog와 정확히 일치하는 Goal이 없어 상태와 lock을 변경하지 않았다.
+- `CashoutDirectionCue`는 현재 HUD CRT 게이지의 승인 원본 `StageScoreGauge.CELL_COLOR = Color("60ae7b")`를 직접 재사용하고, 2×2 hard pixel 7개로 V-chevron 하나를 만들어 profile 폭에 따라 10~20개를 48px 간격으로 배치한다. normal은 `0.84s` top-to-bottom repeat, reduced-effects는 같은 색·방향 identity의 static row다. solid fill, antialias, blur, gradient, collision/input surface는 없다.
+- cue rect는 Ground/Planetary/Galactic/Black Hole L3의 authoritative visual width를 따라가며 actual logical Cashout line `y=818` 바로 위 `y=792..812`에 유지된다. Scale Shift/L2→L3 lerp 중에도 폭과 x를 보간한다. Main에서는 기존 `PlayField`의 Backdrop 다음·Simulation/Paddle 이전 child로 Presentation node를 mount해 회전 Paddle이나 공과 겹칠 때 gameplay가 위에 그려진다.
+- cue lifetime은 Run당 active gameplay 누적 `10.0s`다. 기존 HUD/Pause visibility와 SceneTree pause, Presentation의 Shift/FIRST CONTACT/Black Hole phase/finale lifecycle을 사용하므로 Title·Pause·CUT-IN·Clear/Result·transition/finale 동안 숨고 시간이 멈춘다. Stage 변경은 누적 시간을 유지하고, Main이 Start/Retry에 공통 호출하는 기존 Presentation Run reset에서만 초기화한다. reduced-effects도 static 표시만 다르고 같은 10초 계약을 따른다. 새 Core signal, Cashout 계산, collision/bounds, Stage state는 추가하거나 변경하지 않았다.
+- 전용 CLI verifier는 `S5_G4_CASHOUT_CUE_VERIFIED profiles=4 aligned=true open=true color=60ae7b lifetime=10.0 pause_freeze=true stage_no_reset=true retry_new_run_reset=true reduced_static=true`; 기존 frame kit, S5-G4 Shift, S6-G2 CUT-IN, S8-G5 Black Hole phase/finale 회귀와 Main headless smoke도 모두 exit 0이었다.
+- Godot 4.7.1 editor/headless project load는 exit 0이었다. Windows root certificate store와 editor settings 저장 접근 오류, Main 종료 시 기존 ObjectDB 3/resource 1 warning은 tooling/shutdown issue로 분리했고 새 GDScript/runtime error는 없었다.
+- Native OpenGL Compatibility / Intel Arc 130V의 actual Main Ground mount에서 CRT 녹색 cue가 보이는 `tmp/s5_g4_cashout_direction_cue_ground.png`를 다시 저장했다. static frame 120-frame 비교는 cue off `31.7 FPS`/max `33.14ms`, cue on `31.7 FPS`/max `38.79ms`, average frame delta `+0.048ms`였다. 동일 실행 환경의 근사 비교이며 Web/browser 검증은 exact Goal 계약이 아니어서 실행하지 않았다.
+
+## 2026-08-22 — Static CRT phosphor surface and text readability
+
+Owner: Presentation / S5-G4 frame-owned maintenance (exact Goal ID 없음)
+
+- `docs/design/TODOS.md`의 CRT Emission and Static 후속 항목을 사용자 승인 범위로 구현했다. 최신 지시에 따라 brightness breathing, flicker, sync jitter, rolling bar, random static과 motion은 전부 제외하고 정적 surface treatment만 사용했다. `STATUS.md`와 Integration lock은 변경하지 않았다.
+- 새 `CrtSurfaceTreatment` 단일 draw node가 Stage, Time, Genealogy, Stage Score, item/status gauge, Pause, Retry의 7개 실제 glass mask를 정수 stepped polygon으로 그린다. backing은 Paper-8 최암색 `#1f244b`, bounded 2px halo/dither는 기존 `StageScoreGauge.CELL_COLOR #60ae7b`와 `CELL_HIGHLIGHT #b6cf8e`, edge는 `#3c6b64`를 사용한다. scanline은 고정 `4px` pitch의 `1px` hard row, alpha `0.24`이며 mask 밖에는 그리지 않는다.
+- surface node는 frame CRT shell 위, Main의 HUD/Pause UI 아래에 고정했다. 따라서 Stage/Time/Stage Score/Genealogy Godot Label에는 scanline이 덮이지 않는다. baked Pause/Retry glyph는 surface로 덮은 뒤 `2x2` hard-pixel `PAUSE`/`RETRY`를 scanline 다음에 다시 그려 조작 의미를 유지한다. `_process`, Tween, shader, noise와 random source는 없다.
+- HUD root는 nearest filtering을 명시하고 Stage/Time/Stage Score와 genealogy title/slot을 모두 정수 `14px`로 올렸다. label 내용, score/gauge 계산, genealogy reveal과 lifecycle은 변경하지 않았다. Paper-8 밝은 text 대비는 `#f6e79c` on `#1f244b` `11.92:1`, `#b6cf8e` `8.71:1`, `#60ae7b` `5.55:1`로 계산됐다. StageScoreGauge의 유일한 off-palette shadow `#2c6d61`은 승인 `#3c6b64`로 정규화했다.
+- 전용 CLI verifier는 `S5_G4_CRT_SURFACE_VERIFIED static=true masks=7 scanlines=1px palette=paper8 text_above=true integer=true labels_unchanged=true`, exit 0. S1-G4 HUD, S3-G6 Stage HUD, S3-G8 gauge, S5-G4 frame/Shift, S1-G5 Pause, Cashout cue, S6-G2 CUT-IN, S8-G5 Black Hole phase/finale 회귀도 모두 exit 0이었다. Main 120-frame headless smoke는 exit 0이며 기존 shutdown-only ObjectDB 3/resource 1 warning만 남았다.
+- Godot 4.7.1 editor/headless project load는 exit 0이었다. 첫 direct CLI test는 기존 `user://logs` 접근 실패 뒤 signal 11이었지만 workspace `--log-file` 지정 시 같은 test가 exit 0이어서 tooling path issue로 분리했다. root certificate store와 editor settings 저장 오류도 기존 Windows sandbox tooling issue이며 새 parse/runtime error는 없었다.
+- Native OpenGL Compatibility / Intel Arc 130V에서 actual Main 기반 `1600x900` Ground `tmp/s5_g4_crt_surface_ground_1600x900.png`와 wider Galactic L2 `tmp/s5_g4_crt_surface_galactic_l2_1600x900.png`를 저장하고 clipping/readability를 직접 확인했다. 같은 static fixture의 120-frame 비교는 treatment off `31.6 FPS`/max `36.44ms`, on `31.5 FPS`/max `32.85ms`, average frame delta `+0.047ms`였다. 순차 측정 노이즈 범위라 max-frame 개선으로 해석하지 않으며, 이 실행에서는 측정 가능한 평균 추가 frame cost가 드러나지 않았다. exact Goal의 Web Gate가 없어 browser 검증은 실행하지 않았다.
+
+## 2026-08-23 — S2-G5 production Merge FX replacement
+
+Owner: Presentation / S2-G5 maintenance
+
+- 임시 merged-ball name Label과 위로 떠오르는 generic debris를 제거했다. authoritative `ball_merged(result_level, world_position)` 2인자와 S6-G1 admission/budget은 유지하고, 현재 `StageDefinition.local_ball_levels` 또는 simulation의 read-only stage snapshot으로 result local level만 찾는다. score/value/name을 추측하거나 표시하지 않는다.
+- 단일 procedural `MergeEffect`가 `INWARD(0.00~0.10s) → CORE(0.10~0.17s) → RESOLVE(0.17~0.32s)`를 그린다. 두 개의 짧은 2px stepped trail은 접점으로 수렴하고, Paper-8 `paper_050 #F4F5E8` core 뒤 승인 `ice #C9F3F5`/`merge_pink #FF5B9F`와 결과 Ball base color를 섞은 계단형 ring 1개·안쪽으로 정리되는 2~6 pixel만 남긴다. camera shake, blur, shader, per-particle child Node는 없다.
+- local Lv0~4는 normal lifetime `0.32s`를 공유한다. ring은 결과 공 외곽을 조금 넘는 최대 반경 `14/20/30/48/82px`, resolve pixel은 `2/3/4/5/6`, trail은 항상 2개·각 최대 4 pixel로 제한한다. Reduced Effects는 `0.18s` core flash+ring만 사용하고 trail/secondary pixel/camera shake를 모두 생략한다.
+- 기존 S2-G5 fixture 안에 no-text, phase order와 inward distance, current Stage local-level lookup, intensity monotonic/cap, reduced fallback, queued cleanup 뒤 registered Merge child 0개, signal argument 2개와 simulation read-only 검증을 추가했다. 기존 dirty fixture의 Ground `StageDefinition.apply_stage_definition()` 보정은 보존했다.
+- Godot 4.7.1 CLI 결과: `S2_G5_VERIFIED merge_fx_once=true no_text=true phases=inward/core/resolve local_intensity=0..4_bounded reduced=core_ring cleanup=true contract_args=2 presentation_readonly=true`; S2-G3, S6-G1 budget, S6-G2 visible CUT-IN, S6-G2I handoff, S1-G4 HUD, S3-G6 Stage HUD, S6-G6 Settlement 회귀가 모두 exit 0이었다. editor/headless project load와 Main 120-frame smoke도 exit 0이었다.
+- S6-G1 fixture의 실제 count는 Tier 0 same-frame 20회 중 active `4`/drop `16`, shared active cap `24`, cap 상태의 Tier 3 admission `1`/oldest lower-tier eviction `1`, Tier 4 active slot `1`이다. 이번 Native capture는 동시에 Merge FX `2`개를 사용했다. 기존 fixture가 frame timing을 노출하지 않아 새 FPS 수치는 만들지 않았다.
+- Native OpenGL Compatibility / Intel Arc 130V에서 `1600×900` normal local Lv2와 high local Lv3를 같은 field에 둔 3-frame sequence를 저장했다: `tmp/presentation-captures/s2_g5_merge_fx_01_inward.png`, `s2_g5_merge_fx_02_core.png`, `s2_g5_merge_fx_03_resolve.png`; 세 파일 모두 save error 0이다. 직접 확인 결과 hard pixel edge, 새 공 silhouette/outline 유지, compact core, 외곽을 짧게 넘는 single ring, text/occlusion 없음으로 읽혔다.
+- `project.godot`, Main, GameManager, StageManager와 Core simulation/scoring/velocity/event order는 수정하지 않았다. FIRST CONTACT CUT-IN asset/controller/timing도 수정하지 않았다. Integration lock과 `STATUS.md`는 건드리지 않았고 기존 S2-G5 `VERIFIED` 상태를 유지한다. exact Goal 상태 변경이 없는 maintenance라 Web/browser를 재실행하지 않았다.
+- 알려진 환경 출력은 Windows root certificate store 접근 오류, editor settings 저장 거부, Main 종료 시 기존 ObjectDB 3/resource 1 warning이다. 모두 전용 scene/project load exit 0과 분리됐고 새 parse/runtime error는 없다. commit/push는 수행하지 않았다.
+
+## 2026-08-23 — Active Cashout numeric popup readability maintenance
+
+Owner: delegated Presentation/UI; S4-G4 boundary-adjacent maintenance through the existing S6-G1 FX budget path
+
+- Follow-up 2026-08-23 (supersedes this section's original single-style `18px/#F6E79C/3px/2px` popup spec): ordinary Active Cashout remains decimal digits only, but its Presentation style now resolves the event `global_level` through the current `StageDefinition.local_ball_levels` ordering. Ground, Planetary, and Galactic therefore reuse identical local Lv0..4 styles with fonts `18/19/20/21/22px`, colors `#F4F5E8/#C9F3F5/#F6E79C/#48DDEC/#FFC857`, outlines `3/3/3/4/4px`, and hard shadow offsets `2/2/2/2/3px`. A catalog-valid level missing from the current Stage mapping falls back to local Lv0; the S6-G1 admission tier remains unchanged.
+- The follow-up verifier passed exact five-style monotonic sizing/emphasis, all 15 Ground/Planetary/Galactic mappings, identical style reuse, fallback/invalid handling, decimal-only formatting, realistic `1e43` Galactic local Lv3 and local Lv4 edge clamps, Reduced Effects, deterministic cleanup, and the unchanged three-argument event/value. Required project load, S1-G3, S4-G4 renderer, S6-G1, S3-G4, S6-G6, frame/Cashout cue, S3-G5, and Main 120-frame smoke all exited 0. Native OpenGL Compatibility / Intel Arc 130V captures are `tmp/presentation-captures/s4_g4_cashout_popup_local_levels.png` and `s4_g4_cashout_popup_local_lv4_edge.png`, both 1600x900 with save error 0.
+- Web verification addendum (supersedes the final bullet's earlier "not run" note): Godot 4.7.1 Web debug export completed and produced `tmp/s4-g4-cashout-web/index.html`, `.js`, `.wasm`, and `.pck`. An actual browser run was not completed because the required gstack browse executable is not installed in this workspace and its setup path is outside the sandbox write boundary. The separate Core S4-G4 browser clipping gate therefore remains unchanged/open.
+- 문서상 정확한 `S4-G4`는 Core 소유의 일반 Snowball MultiMesh renderer이며 `IMPLEMENTED`, Integration lock은 released 상태다. 이번 변경은 `cashout_completed(score_amount, global_level, world_position)`를 소비하는 기존 normal Active Cashout Presentation popup만 다뤘고 Goal 상태는 변경하지 않았다.
+- 기존 `<BALL NAME> CASHOUT +<compact score>`를 제거하고 숫자만 출력한다. 값은 기존 `ScoreFormatter.format_score_full(score_amount)`의 정수 표현을 그대로 사용하되 표시 구분 쉼표만 제거해 decimal digits만 남긴다. score 계산, 이벤트 값·3인자 signature·발행 순서, Time Bonus와 Stage/Run ledger는 변경하지 않았다.
+- 팝업 글자는 pixel guide의 1차 Score 시작값 중 가장 작은 개선값인 정수 `18px`로 올렸다. `Consolas/Courier New/monospace` SystemFont의 antialiasing·hinting·subpixel positioning을 끄고 nearest filtering을 사용한다. 승인 Paper-8 `#F6E79C` 숫자, `#1F244B` 3px outline과 같은 색 2px integer shadow를 사용한다.
+- 기존 lifetime `0.38s`와 하강 속도 `18px/s`는 유지하되 루트와 debris를 정수 좌표로 snap한다. 숫자 크기를 실제 측정해 simulation의 기존 read-only `get_active_play_field_rect()` 안쪽 8px에 좌·우·하단 clamp하며, 원본 event world position은 `cashout_effect_spawned` telemetry에 그대로 전달한다. Reduced Effects는 숫자·lifetime·cleanup을 유지하고 장식 debris만 생략한다.
+- 새 전용 verifier는 `S4_G4_CASHOUT_PRESENTATION_VERIFIED digits_only=true font=18 color=f6e79c outline=1f244b/3px shadow=2px integer=true edge_clamp=true lifetime=0.38 cleanup=true reduced=true event_args=3 value_unchanged=true active_cashout=1 cleanup_active=0`, exit 0이다. 44자리 `1e43` source도 과학 표기 없이 decimal digits로 확장해 Ground active field의 좌·우 edge 안에 유지됨을 확인했다.
+- Godot 4.7.1 CLI/editor project load, S4-G4 renderer, S6-G1 FX budget, S5-G4 frame/Cashout cue, S1-G3 Active Cashout, S3-G4 Settlement, S6-G6 Settlement presentation, S3-G5 Stage flow, S5-G6 Panel/S5-G6I confirmation 회귀가 모두 exit 0이었다. Main 120-frame headless smoke도 exit 0이며 기존 shutdown-only ObjectDB 3/resource 1 warning만 남았다.
+- S6-G1 budget은 기존 전체 active cap `24`를 유지하며 전용 event 경로는 Cashout popup `1`개 active 후 cleanup/reset `0`개를 확인했다. 새 frame-time benchmark는 만들지 않았다.
+- Native OpenGL Compatibility / Intel Arc 130V에서 `1600x900` 중앙과 긴 우측-edge 숫자를 각각 `tmp/presentation-captures/s4_g4_cashout_popup_center.png`, `s4_g4_cashout_popup_right_edge.png`로 저장했고 save error는 둘 다 `0`이다. 직접 확인 결과 digits-only, hard edge/outline, field 내부 clamp가 유지됐다.
+- `project.godot`, `scenes/main/main.tscn`, `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`와 Core simulation/scoring, Final Settlement, Stage Clear 파일은 수정하지 않았다. exact Presentation Goal 상태 변경이 없는 maintenance이며 별도 Core S4-G4 Web clip gate를 닫지 않으므로 Web/browser는 실행하지 않았다. commit/push도 수행하지 않았다.
+
+## 2026-08-23 — Presentation ship documentation synchronization
+
+Owner: Presentation
+
+- 최신 구현과 직접 충돌하던 문서만 동기화했다. 당시 S6-G2 CUT-IN hold는 normal `2.00s`/reduced `1.80s`로 정리했으나, 이후 병합한 `8b349cd`의 Play Field-clipped 횡단 배너 계약이 normal `1.10s`/reduced `0.85s`로 이를 supersede한다. S7-G2는 범용 identity-neutral Item Ball과 Blizzard 전용 Orb/CUT-IN/active FX의 분리로 정정했다.
+- S5-G4 개선 백로그는 10초 Cashout chevron cue와 정적 CRT phosphor/scanline의 실제 구현 상태를 반영했다. CRT 주요 정보 text의 현재 `14px`는 좁은 승인 mask의 잘림을 피하는 임시 예외이며, 18px 기준 회복은 font 또는 mask/layout 재설계 후속으로 남겼다.
+- S2-G5 Status는 제거된 name/value popup 대신 `INWARD→CORE→RESOLVE` no-text Merge FX와 최신 CLI evidence를 기록했다. 기각된 일반 박스와 미채택 Item Ball 후보 문서·목업, `tmp/` 검증 산출물은 ship 대상에서 제외한다.
+
+## 2026-08-23 — Orbital Cargo Item Ball runtime presentation handoff
+
+Owner: Content/Systems-owned S7-G2 visual exception, implemented from the Presentation design branch for owner review
+
+- 승인 reference `docs/design/mockups/item-ball-orbital-cargo-satellite-v3.png`를 기준으로 native `64px` grid의 `item_ball_orbital_cargo_h0_h4.png`와 4-frame `item_ball_neutral_break_fragments_4f.png`를 제작했다. 두 sheet는 binary alpha, hard edge, identity-neutral 외형을 사용한다.
+- `scripts/presentation/item_blizzard_visual.gd`는 모든 item type의 Item Ball에 공통 H0~H4를 적용하고 `item_planet_broken` 뒤 neutral fragments를 재생한다. Blizzard Orb/CUT-IN/active snow는 기존 item-specific 표현을 유지한다. collision radius, hit 계산, 이동, pickup, item effect는 변경하지 않았다.
+- 현재 권위 규칙대로 producer가 같은 break commit에서 `item_planet_broken` 뒤 `item_orb_spawned`를 즉시 발행하므로 fragments와 별도 Orb가 잠시 겹칠 수 있다. Presentation은 Orb의 이동·획득·miss를 지연시키지 않으며, 별도 handoff 없이 지연 동작을 발명하지 않았다.
+- Godot 4.7.1 CLI에서 `S7_G1C_VERIFIED item_ball=once hits=5 orb=collect_or_miss`, `S7_G2_BLIZZARD_VISUAL_IMPLEMENTED item_ball_h0_h4=true break_frames=4 planet=true orb=true cue=true snow=48 cleanup=true`가 exit 0이었다. 관련 Merge/Cashout/cue/CRT/CUT-IN 전용 검증과 Main 120-frame headless smoke도 통과했다.
+- 변경 범위에는 Content-owned 예외 파일 `scripts/presentation/item_blizzard_visual.gd`, `tests/content/s7_g1c_item_producer_verification.gd`, `tests/content/s7_g2_blizzard_visual_verification.gd`가 포함되므로 PR에서 Content/Systems owner review를 요청한다. Integration-owned Main/GameManager/StageManager는 수정하지 않았다.
+
+## 2026-08-23 — Latest Main integration before Presentation ship
+
+Owner: Integration merge support / Presentation conflict resolution
+
+- `origin/main cd504b9`를 `fx-design`에 병합했다. 최신 Main의 Play Field-clipped FIRST CONTACT banner, S4-G4 textured clip fix, Paddle/Black Hole contact tuning, Fire Core/Magnet consumers와 terminal cleanup을 보존했다.
+- 충돌은 `docs/goals/STATUS.md`, `docs/goals/slices/S6_GAME_FEEL.md`, `scripts/presentation/presentation_manager.gd` 세 파일이었다. S6-G2는 최신 `1.10s/0.85s` banner 계약과 `IMPLEMENTED` 상태를 선택하고, `PresentationManager`에는 최신 field rect configuration과 기존 Cashout cue suppression/resume을 함께 유지했다.
+- Godot 4.7.1 CLI에서 Presentation 7개(Merge, Cashout, cue, CRT, FIRST CONTACT, Item producer/visual)와 새 Main의 Core/Integration 5개(Fire, Magnet, wiring, terminal cleanup)가 모두 exit 0이었다. Main 120-frame headless smoke도 exit 0이며 기존 shutdown-only ObjectDB/resource warning만 남았다.

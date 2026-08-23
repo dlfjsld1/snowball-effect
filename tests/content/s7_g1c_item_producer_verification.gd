@@ -28,6 +28,7 @@ func _ready() -> void:
 	manager.advance(0.01)
 	var planet := manager.get_item_ball_snapshot()
 	_expect(not planet.is_empty() and _planet_spawned_count == 1, "Stage must spawn exactly one Item Ball and one matching display signal after its scheduled delay.")
+	_expect(is_equal_approx(float(planet.get("radius", 0.0)), 24.0), "Item Ball gameplay collision radius must remain 24px.")
 
 	manager.process_ball_snapshots([_snapshot(1, 1, planet.position, 16.0)])
 	_expect(_damage_count == 0, "Local level below 2 must not damage an Item Ball.")

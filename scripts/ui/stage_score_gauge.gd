@@ -8,7 +8,7 @@ const CELL_GAP := 2.0
 const EMPTY_COLOR := Color(0.0, 0.0, 0.0, 0.0)
 const CELL_COLOR := Color("60ae7b")
 const CELL_HIGHLIGHT := Color("b6cf8e")
-const CELL_SHADOW := Color("2c6d61")
+const CELL_SHADOW := Color("3c6b64")
 
 var _progress := 0.0
 var _filled_cell_count := 0
