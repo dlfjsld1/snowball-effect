@@ -91,16 +91,14 @@ Retry, Main Menu, terminal lock은 남은 BGM/loop를 정리한다. Web 첫 사�
 - 공 CUT-IN의 이미지는 실제 Merge 결과 gameplay 공의 형태와 일치
 - 아이템 CUT-IN은 Item Ball 파괴가 아니라 Paddle의 Item Orb 획득 뒤 시작
 
-초기 타이밍:
+canonical 타이밍:
 
 ```text
-enter 0.20s
-hold  0.65s
-exit  0.25s
-total 1.10s
+normal  enter 0.36s + hold 1.18s + exit 0.46s = 2.00s
+reduced fade-in 0.28s + hold 1.30s + fade-out 0.42s = 2.00s
 ```
 
-이는 첫 플레이테스트 tuning 값이다. reduced-effects는 이동 없이 같은 Play Field 내부에서 짧게 fade하며, identity와 completion semantics는 유지한다.
+기존 profile의 단계 비율을 유지해 확대한 값이며 두 합계는 설정상 정확히 `2.00s`다. 자동/실제 Browser의 visible 시작부터 hide·matching completion까지는 frame scheduling을 고려해 `2.00s ±0.05s`를 통과 범위로 사용한다. reduced-effects는 이동 없이 같은 Play Field 내부에서 fade하며 identity와 completion semantics는 유지한다.
 
 ---
 

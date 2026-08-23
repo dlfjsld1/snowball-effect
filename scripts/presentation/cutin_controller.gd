@@ -4,12 +4,12 @@ extends Control
 signal cutin_finished(event_id: int, run_epoch: int)
 
 const SCHEMA_VERSION := 1
-const ENTER_DURATION := 0.20
-const HOLD_DURATION := 0.65
-const EXIT_DURATION := 0.25
-const REDUCED_ENTER_DURATION := 0.12
-const REDUCED_HOLD_DURATION := 0.55
-const REDUCED_EXIT_DURATION := 0.18
+const ENTER_DURATION := 0.36
+const HOLD_DURATION := 1.18
+const EXIT_DURATION := 0.46
+const REDUCED_ENTER_DURATION := 0.28
+const REDUCED_HOLD_DURATION := 1.30
+const REDUCED_EXIT_DURATION := 0.42
 const DIM_ALPHA := 0.34
 const BANNER_HEIGHT_RATIO := 0.44
 const BACKGROUND_PATH := "res://assets/sprites/cutins/first_contact/first-contact-background-v1.png"
@@ -105,6 +105,7 @@ var _reset_epoch_high_water := -1
 var _animation_generation := 0
 var _reduced_effects := false
 var _field_visual_rect := Rect2()
+var _completion_deadline_usec := -1
 
 
 func _ready() -> void:
@@ -226,12 +227,18 @@ func _start_animation(generation: int, event_id: int, run_epoch: int) -> void:
 	_cancel_animation()
 	_apply_field_layout()
 	visible = true
+	_completion_deadline_usec = Time.get_ticks_usec() + roundi(get_total_duration() * 1_000_000.0)
 	card_root.modulate = Color.WHITE
-	dim_overlay.color = Color(0.008, 0.012, 0.035, 0.0)
+	dim_overlay.color = Color(0.008, 0.012, 0.035, 0.0001)
 	var banner_y := card_root.position.y
 	card_root.position = Vector2.ZERO if _reduced_effects else Vector2(field_clip.size.x, banner_y)
 	if _reduced_effects:
 		card_root.position.y = banner_y
+	await get_tree().process_frame
+	if generation != _animation_generation or _active_payload.is_empty():
+		return
+	if event_id != int(_active_payload["event_id"]) or run_epoch != int(_active_payload["run_epoch"]):
+		return
 
 	var enter_duration := REDUCED_ENTER_DURATION if _reduced_effects else ENTER_DURATION
 	var hold_duration := REDUCED_HOLD_DURATION if _reduced_effects else HOLD_DURATION
@@ -250,6 +257,10 @@ func _start_animation(generation: int, event_id: int, run_epoch: int) -> void:
 
 
 func _finish_normal_exit(generation: int, event_id: int, run_epoch: int) -> void:
+	while Time.get_ticks_usec() < _completion_deadline_usec:
+		await get_tree().process_frame
+		if generation != _animation_generation or _active_payload.is_empty():
+			return
 	if generation != _animation_generation or _active_payload.is_empty():
 		return
 	if event_id != int(_active_payload["event_id"]) or run_epoch != int(_active_payload["run_epoch"]):
@@ -257,6 +268,7 @@ func _finish_normal_exit(generation: int, event_id: int, run_epoch: int) -> void
 
 	_completed_pairs[_pair_key(run_epoch, event_id)] = true
 	_animation_tween = null
+	_completion_deadline_usec = -1
 	_active_payload.clear()
 	_hide_visuals()
 	cutin_finished.emit(event_id, run_epoch)
@@ -266,6 +278,7 @@ func _cancel_animation() -> void:
 	if _animation_tween != null and _animation_tween.is_valid():
 		_animation_tween.kill()
 	_animation_tween = null
+	_completion_deadline_usec = -1
 
 
 func _hide_visuals() -> void:

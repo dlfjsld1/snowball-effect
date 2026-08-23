@@ -21,9 +21,9 @@ CUT-IN의 주인공은 캐릭터가 아니라 **공 또는 특수 효과 자체*
 
 1. 머지 판정 완료
 2. 새 공 생성 완료
-3. 게임 시뮬레이션 매우 짧게 freeze
-4. 현재 Play Field + 좌우 Stage World 전체를 함께 dim
-5. CUT-IN 패널이 화면 바깥에서 빠르게 진입
+3. gameplay timer/spawn/simulation/Paddle input 잠금
+4. active visual Play Field만 약하게 dim하고 같은 rect에서 clip
+5. CUT-IN 패널이 active visual Play Field 오른쪽에서 빠르게 진입
 6. 중앙을 가로지르며 짧게 체류
 7. 공 이름 / 공 이미지 / 가치 표시
 8. 반대쪽으로 빠르게 퇴장
@@ -37,17 +37,14 @@ CUT-IN 중 게임 상태를 되돌리거나 머지를 지연시키지 않는다.
 
 ## 3. 시간
 
-초기 테스트:
+canonical timing:
 
 ```text
-enter   0.10 ~ 0.15 s
-hold    0.20 ~ 0.30 s
-exit    0.10 ~ 0.15 s
-----------------------
-total   0.45 ~ 0.70 s
+normal  enter 0.36s + hold 1.18s + exit 0.46s = 2.00s
+reduced fade-in 0.28s + hold 1.30s + fade-out 0.42s = 2.00s
 ```
 
-일반 CUT-IN은 기본적으로 1초를 넘기지 않는다.
+두 profile의 구성 합계는 정확히 `2.00s`다. 자동/실제 Browser에서 visible 시작부터 hide·matching completion까지는 `2.00s ±0.05s`를 허용한다. reduced-effects는 slide를 제거하지만 field-local dim과 identity/completion은 보존한다.
 
 원칙:
 
@@ -178,7 +175,7 @@ pending_priority_event
 ### 일반 CUT-IN
 
 - 현재 Stage 유지
-- 0.45~0.7초
+- normal/reduced 모두 정확히 2.00초
 - 공/아이템 강조
 - 플레이 즉시 재개
 
@@ -230,7 +227,7 @@ pending_priority_event
 ## 10. 검증
 
 - CUT-IN 중 실제 시뮬레이션이 움직이지 않음
-- 현재 화면 전체가 같이 어두워짐
+- active visual Play Field만 어두워지고 HUD·기계 프레임·Stage World는 영향 없음
 - 별도 화면으로 전환되지 않음
 - 총 길이가 목표 범위
 - 연속 이벤트에서 CUT-IN 폭주 없음

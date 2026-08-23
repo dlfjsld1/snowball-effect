@@ -623,9 +623,9 @@ Vampire Survivors처럼 화면 곳곳에서 계속 보상이 터지는 느낌.
 ```text
 중요 이벤트 확정
 ↓
-현재 게임 화면 freeze
+gameplay timer/spawn/simulation/Paddle input 잠금
 ↓
-Play Field + Stage World 전체 dim
+active visual Play Field만 dim; HUD·기계 프레임·Stage World는 제외
 ↓
 픽셀 기계 패널 진입
 ↓
@@ -639,10 +639,11 @@ Play Field + Stage World 전체 dim
 초기 시간:
 
 ```text
-0.45 ~ 0.70초
+normal  enter 0.36s + hold 1.18s + exit 0.46s = 2.00s
+reduced fade-in 0.28s + hold 1.30s + fade-out 0.42s = 2.00s
 ```
 
-1초 이상은 기본적으로 피한다.
+설정값의 합은 두 profile 모두 정확히 `2.00s`다. 자동/브라우저 관찰값은 frame scheduling을 고려해 `2.00s ±0.05s`를 통과 범위로 사용한다.
 
 ---
 

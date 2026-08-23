@@ -63,7 +63,7 @@
 - 화면은 중앙의 세로 Play Field + 좌우 Stage World/기계 프레임 구조
 - 전체 아트 방향은 Retro Pixel Arcade Machine × Cosmic Escalation
 - 일반 머지는 뱀서식 포화 연출, 고등급 이벤트는 짧은 Pixel CUT-IN
-- CUT-IN은 현재 장면 전체를 freeze/dim하고 약 0.45~0.7초 안에 지나감
+- CUT-IN은 gameplay만 잠그고 active visual Play Field 안에서만 배너/dim을 표시하며, normal/reduced 모두 설정상 정확히 2.00초 동안 노출됨
 - SCALE SHIFT는 일반 CUT-IN과 별도이며 더 높은 우선순위
 - Track 1 제출물은 브라우저에서 별도 설치 없이 실행되는 공개 Web Build여야 함
 - 제출 소개는 200자 제한, 썸네일은 16:9 JPG/PNG 권장

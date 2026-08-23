@@ -933,3 +933,137 @@ Owner: Presentation/UI (user-directed visual correction)
 - Stage Clear Panel의 별도 초록 CRTGlass·scanline 레이어를 제거하고, 파이프 프레임의 내부 챔버가 Pause 모달과 같은 짙은 남청색(`0.018, 0.035, 0.06`)으로 바로 이어지게 했다.
 - 기존 팔각 chamber polygon은 유지해 황동 파이프 모서리를 침범하지 않으며, 프레임과 모달 화면 사이에 보이던 초록색 inset 여백을 없앴다.
 - Godot 4.7.1 CLI `S5_G6_VERIFIED open=true scores=true focus=true request_once=true duplicate_hidden_stale=true reset=true exclusions=true reduced=true core_readonly=true`, 최신 Web release export `[ DONE ] savepack`을 확인했다.
+
+## 2026-08-23 — S6-G2 canonical 2.00s timing alignment
+
+Owner: Presentation
+Branch: `presentation/s6-g2-cutin-2s-web-acceptance` (후속 작업자가 `main` HEAD `3101dd7`의 미커밋 변경을 보존해 생성)
+
+### 작업
+
+- 기존 Play Field-clipped 횡단 배너의 단계 비율을 보존해 normal을 `enter 0.36s / hold 1.18s / exit 0.46s`, reduced-effects를 `fade-in 0.28s / hold 1.30s / fade-out 0.42s`로 조정했다. 두 profile의 설정 합계는 정확히 `2.00s`다.
+- 자동/실제 Browser의 visible 시작부터 hide·matching completion까지 허용오차를 `2.00s ±0.05s`로 고정했다.
+- fixture를 먼저 새 상수·합계·observed completion 계약으로 변경한 뒤 controller를 맞췄다. active visual Play Field clip, field-only dim, 승인 6종 layer, reduced no-slide, same-Run Stage reset, duplicate/stale/reset과 exact-once completion은 변경하지 않았다.
+- GAME_RULES, TECHNICAL_DESIGN, S6 Slice/task, Quality Gate와 직접 결합된 current/design 문서만 같은 timing/dim 계약으로 정합화했다. 전달용 `ALL_IN_ONE`, 역사적 `INITIAL_PROMPT`와 과거 Worklog 기록은 수정하지 않았다.
+- Integration/Core-owned runtime 파일과 Integration test는 수정하지 않았고 Integration lock은 released 상태다.
+
+### 검증
+
+- 정적 timing/canonical scan: `S6_G2_STATIC_TIMING_VERIFIED normal=2.00 reduced=2.00 normal_phases=0.36/1.18/0.46 reduced_phases=0.28/1.30/0.42 tolerance=0.05 canonical_files=10 stale=0`, exit 0.
+- `git diff --check`: exit 0.
+- Godot baseline은 실행 불가다. PATH, 표준 설치 경로, 사용자 프로필과 `where /R C:\ Godot*.exe` 검색에 executable이 없었고, 직전 Worklog의 `C:\Users\gktjd\AppData\Local\Programs\Godot\Godot_v4.7.1-stable_win64_console.exe --version`도 `CommandNotFoundException`, exit 1이었다.
+- 따라서 project parse/load, `s6_g2_first_contact_cutin_verification.tscn`, `s6_g2i_first_contact_handoff_verification.tscn`, Main 120-frame smoke와 fresh Web export는 모두 `UNVERIFIED — Godot CLI tooling unavailable`이다.
+- project-local gstack `browse.exe status`는 `server-node.mjs not found`, exit 1로 Chromium daemon 시작 전에 실패했다. 시스템 Chrome `151.0.7922.169`와 Edge `151.0.4129.101`은 존재하지만 fresh export가 없어 direct-browser 우회는 실행하지 않았다.
+- Web acceptance a~i는 모두 `UNVERIFIED`이며 S6-G2는 `IMPLEMENTED`를 유지한다. 기존 export와 기존 untracked `tmp/` 증거물은 사용·수정하지 않았고 새 `build/s6-g2-cutin-2s-web-acceptance`도 생성하지 않았다.
+
+### 다음 작업 / blocker 해제 조건
+
+- Godot 4.7.1 executable을 복구한 뒤 CLI baseline 4종을 먼저 실행한다.
+- fresh ignored build 경로로 Web Debug/Release를 export하고 local HTTP + actual Chrome/Chromium에서 clip/dim, `2.00s ±0.05s`, gameplay lock/resume, Black Hole direct handoff, Retry/Main stale cleanup, Canvas focus/resize, console error 0을 항목별로 다시 검증한다.
+- 위 Gate를 모두 충족하기 전에는 S6-G2를 `VERIFIED`로 올리지 않는다.
+
+## 2026-08-23 — S6-G2 2.00s CLI/Web acceptance follow-up
+
+Owner: Presentation / S6-G2
+Branch: `presentation/s6-g2-cutin-2s-web-acceptance`
+Base HEAD: `3101dd79207b53a505c6a18aae95394ab05e15c5`
+Integration Point: 기존 S6-G2I pause/S8 handoff API를 read-only 검증했으며 Integration lock은 없음
+
+### 변경 검토와 보정
+
+- 이전 작업의 tracked diff 14개 파일은 보고와 일치했다. normal `0.36/1.18/0.46s`, reduced `0.28/1.30/0.42s`, 각 합계 `2.00s`, 관찰 허용오차 `±0.05s`, active visual Play Field-only clip/dim이 current rules, technical design, Slice/task, Quality Gate, Presentation controller와 fixture에 정합하게 반영돼 있었다.
+- 추가 runtime 확장이나 Core/Integration-owned 파일 변경은 하지 않았다. 자동 fixture의 실제 측정 근거를 남기기 위해 `tests/presentation/s6_g2_first_contact_cutin_verification.gd`의 성공 marker에 `normal_observed`와 `reduced_observed`만 추가했다.
+- 기존 untracked 디자인 문서·mockup과 `tmp/`는 수정·삭제·추적하지 않았다. 검증 산출물은 `.gitignore`의 `build/` 아래 새 전용 경로 `build/s6-g2-cutin-2s-web-acceptance-20260823-followup/`에만 생성했다. export preset의 `all_resources`가 이전 build를 다시 pack하지 않도록 ignored `build/.gdignore`를 사용했다.
+
+### Godot CLI/headless baseline
+
+- 환경: `C:\Users\gktjd\AppData\Local\Programs\Godot\Godot_v4.7.1-stable_win64_console.exe`, `4.7.1.stable.official.a13da4feb`.
+- Project parse/load: `--headless --editor --path . --quit`, exit 0 (`01_project_load.log`).
+- Presentation: `--headless --path . res://tests/presentation/s6_g2_first_contact_cutin_verification.tscn`, exit 0. Marker: `S6_G2_VERIFIED ... duration=2.00 reduced_duration=2.00 normal_observed=2.000 reduced_observed=2.000 tolerance=0.05 ...` (`06_s6_g2_presentation_measured.log`).
+- Integration handoff: `--headless --path . res://tests/integration/s6_g2i_first_contact_handoff_verification.tscn`, exit 0. Marker: `S6_G2I_VERIFIED fifo=true pause=true stale_rejected=true black_hole_gate=true reset=true` (`03_s6_g2i_integration.log`).
+- Main smoke: `--headless --path . --quit-after 120`, exit 0 (`04_main_smoke.log`). 종료 시 기존 shutdown-only ObjectDB 3/resource 1 warning만 있었고 parse/runtime error는 없었다.
+
+### Fresh Web export와 실제 Browser
+
+- Release: `--headless --path . --export-release Web build/s6-g2-cutin-2s-web-acceptance-20260823-followup/web-final/index.html`, exit 0 (`07_web_export_final.log`). Final PCK SHA-256는 `1C28B91C5DABFFB6AE369C5F3800B23330FE77A90872B72ABFCF2A7AD294C61E`다.
+- Debug: 같은 fresh source에서 `--export-debug Web .../web-debug-final/index.html`, exit 0 (`17_web_export_debug.log`). Release/Debug export log 모두 `res://build` pack 항목이 없음을 확인했다.
+- `python -m http.server`로 Release `127.0.0.1:8765`, Debug `127.0.0.1:8766`을 제공하고 설치된 Google Chrome `151.0.7922.169`을 별도 fresh profile과 DevTools Protocol 1.3으로 실행했다. Web 환경은 Godot 4.7.1 single-threaded Emscripten 4.0.20, WebGL 2.0, ANGLE D3D11 Intel Arc 130V다.
+- actual Main release에서 HTML/JS/WASM/PCK와 이미지가 모두 HTTP 200이었다. Canvas는 `1600×900`과 resize 후 `1024×768`에서 DOM rect와 backing size가 일치하고 focus를 유지했다. console error, runtime exception, error log, failed network request는 모두 0이다 (`13_browser_acceptance_main.json`, `09_main_1600x900.png`, `10_main_playing_1600x900.png`, `11_main_resized_1024x768.png`).
+- actual Main debug를 정상 플레이해 Giant Snowball FIRST CONTACT를 자연 발생시켰다. 전 frame `natural-frames/frame_0096_13272ms.png`, 표시 중 `frame_0101_14226ms.png`, 후 frame `frame_0107_15390ms.png`에서 banner와 dim이 active Play Field 안에만 있고 Stage World/HUD/기계 frame은 영향을 받지 않음을 확인했다. CUT-IN 동안 HUD timer, ball simulation과 Paddle이 정지하고 계속 보낸 A/D 입력도 적용되지 않았으며, 종료 뒤 timer·ball·Paddle gameplay가 정상 재개됐다. 248-frame run의 console/runtime error는 0이다 (`18_natural_browser_capture.json`).
+- 정밀 PNG 경계 관찰에서 표시 직전/최초 frame은 `17140.922/17257.401ms`, 최종/표시 직후 frame은 `19128.123/19272.372ms`였다. 두 경계 midpoint 차이는 `2.001s`지만 캡처 간격을 포함한 가능한 실제 범위는 `1.871–2.131s`다 (`19_natural_precision_capture.json`). point estimate는 목표와 일치하지만 `±0.05s`를 엄밀히 증명하지 못하므로 Browser duration은 UNVERIFIED다. 이는 새 FPS benchmark가 아니라 Browser visible-duration 관찰이다.
+
+### Web acceptance 결과
+
+- a active Play Field 내부 clip: PASS — 실제 Main frame에서 banner가 field 내부에만 표시됨.
+- b dim 범위 canonical 일치: PASS — dim은 active Play Field-only이고 Stage World/HUD/frame은 비감광.
+- c 실제 총 `2.00s ±0.05s`: UNVERIFIED — Chrome midpoint는 `2.001s`이나 sampling bracket이 `1.871–2.131s`; CLI normal/reduced 각 `2.000s`는 PASS.
+- d timer/spawn/simulation/Paddle 입력 잠금: PASS — 실제 Web frame sequence와 A/D 입력에서 lock, CLI Presentation/S6-G2I fixture에서 각 subsystem 계약 확인.
+- e 일반 종료 뒤 gameplay 정상 복귀: PASS — 실제 Web에서 timer·ball·Paddle 진행 재개.
+- f 첫 Black Hole이 중간 gameplay frame 없이 S8 Phase로 handoff: UNVERIFIED — S6-G2I CLI `black_hole_gate=true`는 PASS지만 실제 Web Galactic handoff를 직접 캡처하지 못함.
+- g Retry/Main stale tween/completion 제거: UNVERIFIED — CLI Presentation reset/stale와 S6-G2I reset은 PASS지만 실제 Web Retry/Main 경로를 직접 캡처하지 못함.
+- h Canvas focus/resize: PASS — `1600×900→1024×768`, Canvas focus 유지.
+- i console error 0: PASS — Release Main과 자연 발생 CUT-IN 두 실제 Chrome run 모두 console/runtime/network error 0.
+- Web fixture HTML wrapper는 scene argument로 Presentation fixture를 직접 실행한 뒤 `SceneTree.quit()` 이후 generated page에서 `null function`으로 종료돼 marker 수집에 실패했다. 같은 방식의 보정을 3회까지만 시도하고 중단했다. CLI fixture와 actual Main Web은 정상이라 게임 오류가 아니라 fixture-wrapper/tooling 문제로 분리했다. project-local gstack browser도 `server-node.mjs not found`라 수리하지 않고 설치된 Chrome의 DevTools 경로를 사용했다.
+
+### 최종 판정
+
+- c/f/g의 direct Web evidence가 충분하지 않아 S6-G2 Quality Gate 전체는 미충족이다. `docs/goals/STATUS.md`는 `IMPLEMENTED`를 유지하고 a/b/d/e/h/i PASS, c/f/g UNVERIFIED를 기록했다.
+- 검증 후 두 HTTP server와 검증용 Chrome process를 종료하고 ports `8765/8766/9223~9229` listener 및 해당 fresh-profile Chrome 잔존이 0임을 확인했다.
+- commit, push, PR은 수행하지 않았다. 실제 성능 FPS 수치는 이 acceptance 범위에서 새로 측정하지 않았다.
+
+## 2026-08-23 — S6-G2 MCP timeout recovery audit
+
+Owner: Presentation / S6-G2 recovery audit
+Branch: `presentation/s6-g2-cutin-2s-web-acceptance`
+Base HEAD: `3101dd79207b53a505c6a18aae95394ab05e15c5`
+
+- 직전 Codex 후속 세션이 1800초 MCP timeout으로 최종 응답 없이 종료된 뒤 별도 작업자로 중간 상태를 read-only 감사했다. 요청 브랜치는 이미 현재 worktree에 checkout되어 있었고 tracked 14개 파일의 미커밋 변경과 기존 untracked 디자인 문서·mockup·`tmp/`가 보존돼 있었다. reset/restore/clean, commit/push/PR은 수행하지 않았다.
+- `build/s6-g2-cutin-2s-web-acceptance-20260823-followup/`의 CLI log, Release/Debug export, PCK SHA-256, Chrome JSON/PNG를 대조했다. `--version`은 120초 제한에서 exit 0(`4.7.1.stable.official.a13da4feb`)이었고, 기존 project load, Presentation fixture, S6-G2I handoff fixture, Main 120-frame smoke log는 모두 신뢰 가능한 exit 0 Evidence로 확인했다. export 두 건은 `savepack` 완료, `res://build` pack 0건, final PCK SHA-256 `1C28B91C5DABFFB6AE369C5F3800B23330FE77A90872B72ABFCF2A7AD294C61E`다.
+- 실제 Chrome Evidence는 a/b/d/e/h/i PASS를 지지한다. c는 midpoint `2.001s`지만 sampling bracket `1.871–2.131s`라 `±0.05s`를 직접 증명하지 못했고, f/g도 CLI fixture만 PASS이며 직접 Web 경로가 없어 UNVERIFIED다. S6-G2는 `IMPLEMENTED`를 유지한다.
+- 이전 후속 세션의 전용 HTTP `8765/8766`, DevTools `9223~9229`, fresh-profile Chrome 잔존은 0이었다. 현재 보이는 다른 Godot/MCP/HTTP 프로세스는 생성 시각·명령이 이번 S6-G2 후속 검증과 일치하지 않아 종료하지 않았다. 사용자의 일반 Chrome 창도 종료하지 않았다.
+
+## 2026-08-23 — S6-G2 deterministic Web acceptance final
+
+Owner: Presentation / S6-G2
+Branch: `presentation/s6-g2-cutin-2s-web-acceptance`
+Base HEAD: `3101dd79207b53a505c6a18aae95394ab05e15c5`
+Owned Files: `scripts/presentation/cutin_controller.gd`, `tests/presentation/s6_g2_web_acceptance.gd`, `tests/presentation/s6_g2_web_acceptance.tscn`
+Integration Point: 기존 S6-G2I authoritative FIRST CONTACT completion/S8 handoff API를 실제 Main instance에서 read-only 검증했으며 Integration-owned production file 수정과 lock은 없다.
+
+### 구현과 원인
+
+- Web에서 `SceneTree.quit()`에 의존하지 않는 test-only acceptance scene을 추가했다. 40초 watchdog과 화면/console의 `S6_G2_WEB_ACCEPTANCE_PASS|FAIL` JSON marker로 무한 대기를 막고 browser automation이 결과를 안정적으로 수집한다.
+- c는 visible start부터 matching completion까지 `Time.get_ticks_usec()`로 normal/reduced를 각각 3회 측정한다. f는 실제 Main의 authoritative `galactic_black_hole` FIRST CONTACT payload를 주입해 completion과 S8 phase start의 `Engine.get_process_frames()`, event ID, run epoch, 중간 resumed gameplay frame 수를 기록한다. g는 CUT-IN 진행 중 Retry/Main reset 각각에서 stale completion과 다음 epoch의 새 completion을 기록한다.
+- 첫 실제 Web run에서 c가 normal `[1.9185, 1.9365, 1.8491]s`, reduced `[1.9023, 1.9217, 1.9351]s`로 실패해 실제 Presentation 결함을 발견했다. Web frame delta로 진행되는 Tween이 monotonic Godot time보다 일찍 완료될 수 있었다. `CutInController`는 visible 시점에 monotonic 2.00초 completion deadline을 잡고 Tween 종료가 이보다 빠르면 process frame을 기다린 뒤에만 matching completion을 emit하도록 최소 수정했다. 시작 frame의 누적 delta도 소비하지 않도록 다음 process frame에서 Tween을 시작하며, reset generation guard와 tween kill은 그대로 유지한다.
+- Core/Integration-owned production file은 수정하지 않았다. 기존 untracked 디자인 문서·mockup·`tmp/`도 수정·삭제·추적하지 않았다.
+
+### CLI/headless 결과
+
+- Godot `4.7.1.stable.official.a13da4feb`; project editor load exit 0.
+- 기존 Presentation fixture exit 0: `S6_G2_VERIFIED ... normal_observed=2.045 reduced_observed=2.050 tolerance=0.05 ...`.
+- 새 acceptance fixture native smoke exit 0: normal `[2.002751, 2.002953, 2.002594]s`, reduced `[2.002303, 2.004680, 2.002546]s`, f same-frame/0 gameplay frame, Retry/Main stale `0`, next completion `1`.
+- S6-G2I exit 0: `fifo=true pause=true stale_rejected=true black_hole_gate=true reset=true`.
+- Main 120-frame smoke exit 0. 기존 shutdown-only ObjectDB 3/resource 1 warning만 유지되며 parse/runtime error는 없다.
+- fresh isolated fixture-project Debug Web export exit 0. 검증 산출물은 gitignored `build/s6-g2-cutin-2s-web-acceptance-20260823-final/`에만 저장했다.
+
+### 실제 Web c/f/g 및 최종 판정
+
+- 환경: Chrome `151.0.7922.169`, DevTools Protocol 1.3, Godot 4.7.1 single-threaded Web, Emscripten 4.0.20, WebGL2/ANGLE D3D11 Intel Arc 130V, Canvas `1600×900` focused.
+- c PASS: warmup `2.0063s`; normal `[2.0033, 2.0028, 2.0030]s`, reduced `[2.0019, 2.0043, 2.0066]s`; 6/6이 `[1.95, 2.05]s` 안이다.
+- f PASS: `event_id=3001`, `run_epoch=1`, matching completion frame `977`, S8 phase start frame `977`, `gameplay_resumed_frames_between=0`, `BLACK_HOLE_PHASE_LOCKED`, phase start에서 CUT-IN hidden.
+- g PASS: Retry old `[4001,2]` stale `0`, new `[4002,3]` completion `1`; Main old `[4003,3]` stale `0`, epoch invalidated, new `[4004,4]` completion `1`; 두 reset 모두 즉시 hidden.
+- 최종 marker `S6_G2_WEB_ACCEPTANCE_PASS`, console error `0`, exception `0`, failed network `0`. 기존 actual Main Web의 a/b/d/e/h/i evidence를 유지하므로 a~i 모두 PASS이며 `docs/goals/STATUS.md`를 `VERIFIED`로 갱신했다.
+- 검증용 HTTP `8877`, DevTools `9337`, isolated Chrome/profile은 runner `finally`에서 종료·삭제했다. 사용자의 일반 Chrome과 기존 Godot Project Manager는 건드리지 않았다. commit/push/PR은 수행하지 않았다.
+
+## 2026-08-23 — S6-G2 post-merge ship gate refresh
+
+Owner: Presentation / S6-G2
+Branch: `presentation/s6-g2-cutin-2s-web-acceptance`
+Base/HEAD after fetch and merge: `origin/main` `3a611e5c0548ddcfe8d3bfb8cf89acd5af07ced6` (fast-forward, no merge commit)
+Integration Point: 기존 S6-G2I API와 Integration-owned production 파일은 read-only 검증했으며 lock은 없다.
+
+- `origin/main` 합류로 GameManager와 audio/UI base 코드가 바뀌어 이전 Web fixture의 전체 코드 hash가 더 이상 같지 않았다. 현재 tracked worktree와 의도된 Web acceptance 파일 3개만 복사한 fresh fixture-project를 만들고 CLI/Web gate를 다시 실행했다. 보호 대상 untracked 디자인 문서 2개, mockup 2개, `tmp/`는 복사·수정·삭제·stage하지 않았다.
+- 첫 post-merge Presentation 실행은 테스트가 `play_first_contact_cutin()` 호출 준비 시간까지 관찰 구간에 포함해 reduced profile을 잘못 실패시켰다. production 코드는 바꾸지 않고 normal/reduced 측정 시작점을 호출 수락 직후 visible-start 경계로 옮겼다. 재실행 결과 `normal_observed=2.003s`, `reduced_observed=2.002s`, 허용오차 `±0.05s`로 exit 0이다.
+- Godot 4.7.1에서 project editor load `4.835s`, Presentation `26.154s`, S6-G2I `0.957s`, headless Web acceptance `26.255s`, Main 120-frame smoke `1.713s`로 모두 exit 0이었다. Integration marker는 `fifo=true pause=true stale_rejected=true black_hole_gate=true reset=true`다.
+- fresh Debug Web export는 exit 0이고 PCK SHA-256은 `697D3E76C26EBF5897677413D36817C8906B63A8A8EC39C514F99D0A33C2AE4A`다. 격리 Chrome `151.0.7922.169`, WebGL2, focused `1600×900` Canvas에서 normal `[2.0028, 2.0078, 2.0008]s`, reduced `[2.0011, 2.0078, 2.0065]s`, f same-frame `980`/gameplay gap `0`, Retry/Main stale completion `0`과 새 completion `1`을 확인했다. 최종 marker는 `S6_G2_WEB_ACCEPTANCE_PASS`, browser console/exception/log/network error 합계는 `0`이다.
+- Evidence는 `build/s6-g2-ship-gate-20260823-fresh-rerun/`에 저장했다. 검증 뒤 HTTP/DevTools listener, fresh-profile process, profile directory가 모두 `0/0/false`임을 확인했다. commit, push, PR, VERSION, CHANGELOG, TODOS 변경은 수행하지 않았다.
