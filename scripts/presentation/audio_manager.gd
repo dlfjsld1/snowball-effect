@@ -43,6 +43,8 @@ const EVENT_POLICIES := {
 	&"run_end": {"group": &"terminal", "priority": 95, "polyphony": 1, "cooldown": 0.0, "volume_db": 0.0, "terminal": true},
 	&"black_hole_finale": {"group": &"terminal", "priority": 100, "polyphony": 1, "cooldown": 0.0, "volume_db": 0.0, "terminal": true},
 	&"black_hole_absorb": {"group": &"black_hole_absorb", "priority": 55, "polyphony": 2, "cooldown": 0.10, "volume_db": -6.0, "gameplay": true},
+	&"item_collect": {"group": &"item_collect", "priority": 50, "polyphony": 1, "cooldown": 0.10, "volume_db": 0.0, "gameplay": true},
+	&"item_cutin": {"group": &"item_cutin", "priority": 65, "polyphony": 1, "cooldown": 0.10, "volume_db": 0.0, "gameplay": true},
 	&"ui_click": {"group": &"ui", "priority": 40, "polyphony": 1, "cooldown": 0.08, "volume_db": -8.0},
 	&"ui_pause": {"group": &"ui", "priority": 40, "polyphony": 1, "cooldown": 0.08, "volume_db": -8.0},
 	&"ui_resume": {"group": &"ui", "priority": 40, "polyphony": 1, "cooldown": 0.08, "volume_db": -8.0},

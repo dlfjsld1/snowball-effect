@@ -42,6 +42,32 @@
 | Q-S8 | 첫 Lv14→이동 Black Hole 전환, matching FIRST_CONTACT 완료 전 Phase/`phase_id` 0회·완료 뒤 기존 S8 Phase 1회, L2→L3 Frame/Play Field 동기 확장 후 gameplay 재개, 모든 일반 Snowball 흡수의 Cashout `12.5%`/phase-entry Run Score `25%` 상한 패널티·단일 흡수 즉사 방지·반복 손실의 run score 0 Game Over·다중 pull vector 합산/cap·Black Hole 상호 척력·하단 반사·비성장 안정성, 충분한 상대속도의 두 번째 Black Hole 접촉 시 1회 finale→UI 제거→타이틀/Clear Score/Main Menu, Retry 완전 초기화 |
 | Q-S9 | 공개 URL incognito 완주, Chrome/Edge, console, resize, 오디오 활성화 확인 |
 
+## Q-S7 Fire·Magnet Web 수락 체크리스트
+
+수락은 최신 Web Export를 새 세션(캐시 없는 새 탭 또는 시크릿 창)에서 열고, 게임 Canvas에 포커스를 둔 상태에서 진행한다. 각 항목은 실제 관찰 결과와 브라우저 Console을 함께 기록한다.
+
+### 공통
+
+- [ ] 해당 Stage에서 Item Ball은 한 Run에 한 번만 생성된다.
+- [ ] local Lv2 이상 공의 유효 충돌 5회로만 Item Ball이 파괴되고, 해당 아이템 Orb가 생성된다.
+- [ ] Orb를 Paddle로 획득하면 matching CUT-IN 뒤 효과가 한 번만 시작한다. Orb를 하단으로 놓치면 효과가 시작되지 않고 소멸한다.
+- [ ] Orb 획득 시 `item_collect`, CUT-IN 요청 시 `item_cutin` 효과음이 각각 한 번씩 재생되며 Retry/Main 뒤 남지 않는다.
+- [ ] 효과 중 Retry와 Main Menu 복귀 뒤 새 Run에서 이전 아이템 상태·힘·타이머·CUT-IN이 남지 않는다.
+- [ ] Console에 uncaught error 또는 resource-load 오류가 없고, 아이템 비활성 Run의 Core 플레이 결과가 바뀌지 않는다.
+
+### Fire
+
+- [ ] 획득 후 8초 동안 Paddle에 실제로 맞은 공만 Fire가 된다.
+- [ ] Fire+Normal 및 Fire+Fire의 같은 레벨 Merge 결과가 Fire를 유지한다.
+- [ ] Fire 공의 Active Cashout만 base score의 ×10이며, Time Bonus와 Final Settlement base score에는 ×10이 침투하지 않는다.
+- [ ] 8초 만료 뒤 새 Paddle 접촉 공은 Normal이며, 이미 Fire인 공은 Fire 상태를 유지한다.
+
+### Magnet
+
+- [ ] 획득 후 7초 동안 같은 레벨의 가까운 공이 서로 끌리며, 서로 다른 레벨 공에는 Magnet 힘이 적용되지 않는다.
+- [ ] 많은 공이 있는 상황에서도 과도한 급가속·멈춤·프레임 저하 없이 동작한다.
+- [ ] 7초 만료, Retry, Main Menu 복귀 뒤에는 당김 효과와 관련 force command가 중립 상태로 복구된다.
+
 ## S3 필수 회귀 시나리오
 
 1. `stage_time=0.03`, `delta=0.1`에서 0.03초 안에 하단을 통과한 Cashout `+1.0` → Score/Time Bonus 반영 후 `PLAYING` 유지. 0.03초 이후에만 통과할 공 → Active Cashout/Time Bonus 없이 `TIME_UP_LOCKED` 후 Settlement.

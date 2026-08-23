@@ -1427,3 +1427,20 @@ Owner: Content/Systems/Release
 
 - 새 PNG/UI 변경이 import 또는 preload 순서 검증 없이 병합됐다는 경고를 방지하기 위해 `tools/verification/verify_ui_asset_gate.ps1`을 추가했다. 새 Godot editor import scan 뒤 asset source MD5와 `.godot/imported` source MD5를 대조하고, 별도 headless Main process를 실행한다.
 - `verify_ui_asset_gate.ps1 -GodotPath <Godot executable>`을 실행해 Settings pipe PNG와 Value Popups ON/OFF PNG 3개의 import MD5, fresh Main runtime smoke를 통과했다. 관련 Settings script 3개와 scene validate도 모두 valid였다.
+
+## 2026-08-23 — S7 Item Orb pickup audio
+
+Owner: Content/Systems/Release
+
+- 사용자 제공 `soundreality-arcade-arped-145549.mp3`의 첫 음만 무음 경계 `0.000–0.801초`로 분리하고 앞·뒤 무음을 제거했다.
+- 60% source gain으로 Ogg Vorbis `assets/audio/item_collect.ogg`를 만들고, AudioCatalog 및 AudioManager 정책(우선순위 50, 단일 재생, 0.10초 cooldown)에 등록했다.
+- 출처 파일명과 가공 내역을 `assets/audio/ATTRIBUTION.md`에 기록했다. 원본 URL/라이선스는 다음 공개 업로드 전에 확인해야 한다.
+- Godot 4.7.1 CLI: S6-G3 catalog verification `audio_events=29`, S6-G4 AudioManager verification 모두 exit 0. 최신 Web release export도 exit 0으로 `item_collect.ogg` import와 pack 포함을 확인했다.
+
+## 2026-08-23 — S7 Item CUT-IN audio asset and policy
+
+Owner: Content/Systems/Release
+
+- Pixabay `Power up type 1` 원본에서 앞 공백은 없음을 확인하고, `0.955034s` 뒤의 끝 공백을 제거한 뒤 80% source gain으로 `assets/audio/item_cutin.ogg`를 렌더링했다.
+- `audio_catalog.tres`에 non-looping `item_cutin` event를 등록하고, AudioManager에 gameplay priority `65`, polyphony `1`, cooldown `0.10s` 정책을 추가했다. 라이선스와 원본 URL은 `assets/audio/ATTRIBUTION.md`에 Pixabay Content License로 기록했다.
+- Godot 4.7.1 CLI: S6-G3 catalog `audio_events=30`, S6-G4 AudioManager foundation `player_pool=8`이 각각 exit 0으로 통과했다. Web release export에 새 OGG의 imported stream이 포함됐다.

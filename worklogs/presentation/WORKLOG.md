@@ -926,3 +926,10 @@ Owner: Integration merge support / Presentation conflict resolution
 - `origin/main cd504b9`를 `fx-design`에 병합했다. 최신 Main의 Play Field-clipped FIRST CONTACT banner, S4-G4 textured clip fix, Paddle/Black Hole contact tuning, Fire Core/Magnet consumers와 terminal cleanup을 보존했다.
 - 충돌은 `docs/goals/STATUS.md`, `docs/goals/slices/S6_GAME_FEEL.md`, `scripts/presentation/presentation_manager.gd` 세 파일이었다. S6-G2는 최신 `1.10s/0.85s` banner 계약과 `IMPLEMENTED` 상태를 선택하고, `PresentationManager`에는 최신 field rect configuration과 기존 Cashout cue suppression/resume을 함께 유지했다.
 - Godot 4.7.1 CLI에서 Presentation 7개(Merge, Cashout, cue, CRT, FIRST CONTACT, Item producer/visual)와 새 Main의 Core/Integration 5개(Fire, Magnet, wiring, terminal cleanup)가 모두 exit 0이었다. Main 120-frame headless smoke도 exit 0이며 기존 shutdown-only ObjectDB/resource warning만 남았다.
+## 2026-08-23 — Stage Clear chamber surface alignment
+
+Owner: Presentation/UI (user-directed visual correction)
+
+- Stage Clear Panel의 별도 초록 CRTGlass·scanline 레이어를 제거하고, 파이프 프레임의 내부 챔버가 Pause 모달과 같은 짙은 남청색(`0.018, 0.035, 0.06`)으로 바로 이어지게 했다.
+- 기존 팔각 chamber polygon은 유지해 황동 파이프 모서리를 침범하지 않으며, 프레임과 모달 화면 사이에 보이던 초록색 inset 여백을 없앴다.
+- Godot 4.7.1 CLI `S5_G6_VERIFIED open=true scores=true focus=true request_once=true duplicate_hidden_stale=true reset=true exclusions=true reduced=true core_readonly=true`, 최신 Web release export `[ DONE ] savepack`을 확인했다.

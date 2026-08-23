@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="AudioCatalog" load_steps=59 format=3]
+[gd_resource type="Resource" script_class="AudioCatalog" load_steps=63 format=3]
 
 [ext_resource type="Script" path="res://resources/audio/audio_catalog.gd" id="1_catalog"]
 [ext_resource type="Script" path="res://resources/audio/audio_event_definition.gd" id="2_definition"]
@@ -30,6 +30,8 @@
 [ext_resource type="AudioStream" path="res://assets/audio/bgm_galactic.ogg" id="28_bgm_galactic"]
 [ext_resource type="AudioStream" path="res://assets/audio/bgm_pause.ogg" id="29_bgm_pause"]
 [ext_resource type="AudioStream" path="res://assets/audio/bgm_result.ogg" id="30_bgm_result"]
+[ext_resource type="AudioStream" path="res://assets/audio/item_collect.ogg" id="31_item_collect"]
+[ext_resource type="AudioStream" path="res://assets/audio/item_cutin.ogg" id="32_item_cutin"]
 
 [sub_resource type="Resource" id="AudioEvent_merge_t0"]
 script = ExtResource("2_definition")
@@ -178,6 +180,16 @@ event_key = &"bgm_result"
 stream = ExtResource("30_bgm_result")
 loop = true
 
+[sub_resource type="Resource" id="AudioEvent_item_collect"]
+script = ExtResource("2_definition")
+event_key = &"item_collect"
+stream = ExtResource("31_item_collect")
+
+[sub_resource type="Resource" id="AudioEvent_item_cutin"]
+script = ExtResource("2_definition")
+event_key = &"item_cutin"
+stream = ExtResource("32_item_cutin")
+
 [resource]
 script = ExtResource("1_catalog")
-events = [SubResource("AudioEvent_merge_t0"), SubResource("AudioEvent_merge_t1"), SubResource("AudioEvent_merge_t2"), SubResource("AudioEvent_merge_t3"), SubResource("AudioEvent_cashout_t0"), SubResource("AudioEvent_cashout_high"), SubResource("AudioEvent_settlement_start"), SubResource("AudioEvent_settlement_finish"), SubResource("AudioEvent_stage_clear"), SubResource("AudioEvent_stage_fail"), SubResource("AudioEvent_scale_shift"), SubResource("AudioEvent_ui_click"), SubResource("AudioEvent_ui_pause"), SubResource("AudioEvent_ui_resume"), SubResource("AudioEvent_ui_retry"), SubResource("AudioEvent_ui_start"), SubResource("AudioEvent_ui_menu"), SubResource("AudioEvent_black_hole_phase"), SubResource("AudioEvent_black_hole_loop"), SubResource("AudioEvent_black_hole_absorb"), SubResource("AudioEvent_black_hole_finale"), SubResource("AudioEvent_run_end"), SubResource("AudioEvent_bgm_title"), SubResource("AudioEvent_bgm_ground"), SubResource("AudioEvent_bgm_planetary"), SubResource("AudioEvent_bgm_galactic"), SubResource("AudioEvent_bgm_pause"), SubResource("AudioEvent_bgm_result")]
+events = [SubResource("AudioEvent_merge_t0"), SubResource("AudioEvent_merge_t1"), SubResource("AudioEvent_merge_t2"), SubResource("AudioEvent_merge_t3"), SubResource("AudioEvent_cashout_t0"), SubResource("AudioEvent_cashout_high"), SubResource("AudioEvent_settlement_start"), SubResource("AudioEvent_settlement_finish"), SubResource("AudioEvent_stage_clear"), SubResource("AudioEvent_stage_fail"), SubResource("AudioEvent_scale_shift"), SubResource("AudioEvent_ui_click"), SubResource("AudioEvent_ui_pause"), SubResource("AudioEvent_ui_resume"), SubResource("AudioEvent_ui_retry"), SubResource("AudioEvent_ui_start"), SubResource("AudioEvent_ui_menu"), SubResource("AudioEvent_black_hole_phase"), SubResource("AudioEvent_black_hole_loop"), SubResource("AudioEvent_black_hole_absorb"), SubResource("AudioEvent_black_hole_finale"), SubResource("AudioEvent_run_end"), SubResource("AudioEvent_bgm_title"), SubResource("AudioEvent_bgm_ground"), SubResource("AudioEvent_bgm_planetary"), SubResource("AudioEvent_bgm_galactic"), SubResource("AudioEvent_bgm_pause"), SubResource("AudioEvent_bgm_result"), SubResource("AudioEvent_item_collect"), SubResource("AudioEvent_item_cutin")]

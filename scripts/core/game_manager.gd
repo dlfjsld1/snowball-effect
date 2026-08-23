@@ -522,10 +522,12 @@ func _try_collect_item_orb() -> void:
 
 
 func _on_item_collected(item_type: StringName, world_position: Vector2) -> void:
+	_audio_manager.play_event(&"item_collect")
 	_item_effect_gateway.queue_item_collected(item_type, world_position)
 
 
 func _on_item_cutin_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
+	_audio_manager.play_event(&"item_cutin")
 	if item_type == &"blizzard":
 		_item_blizzard_visual.play_item_cutin(event_id, item_type, world_position)
 	item_cutin_requested.emit(event_id, item_type, world_position)
