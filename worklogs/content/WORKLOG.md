@@ -1413,3 +1413,10 @@ Owner: Content/Systems/Release
 - 원인은 Godot Button의 default release activation이었다. 마우스를 버튼 안에서 누른 뒤 바깥에서 놓으면 press가 취소되므로, drag-end 상황에서 클릭이 무시된 것처럼 보였다.
 - Apply/Close를 `ACTION_MODE_BUTTON_PRESS`로 전환하고 pointer cursor를 추가했다. 첫 mouse press에서 한 번 수락하므로 drag-out 뒤에도 확정되며, double-click의 두 번째 press는 이미 닫힌 modal에 전달되지 않아 의도적으로 무시된다.
 - Primary validate 3/3 및 panel fixture exit 0. clean Web export를 새로 만들고 browser에서 slider drag, Apply press-drag-out, Close double-click을 확인했으며 console error 0이었다. export 전 development `McpBridge` autoload를 일시 제외하고 원본 project setting은 복구했다.
+
+## 2026-08-23 — S10 fullscreen scope correction and release ZIP
+
+Owner: Content/Systems/Release
+
+- 사용자 결정에 따라 Fullscreen은 Settings v1 범위에서 제외한다고 S10 Exit Gate와 관련 설계 문서에 반영했다. Settings는 Master/BGM/SFX Volume과 Value Popups만 제공한다.
+- 사용자가 다회 플레이로 Settings 정상 동작을 확인했다. 최신 `main` 기준 Web release export를 재생성하고, 호스팅 루트 파일 구조의 `dist/snowball-effect-web-2026-08-23.zip`을 만들었다.

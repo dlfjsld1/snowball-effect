@@ -209,7 +209,7 @@ ResultViewState
 4. Settings Main-entry/Pause-entry return states.
 5. Clear → Settlement → Shift storyboard.
 6. Failure/Run Result와 Final Result.
-7. Web audio-locked/focus-lost/fullscreen-denied states.
+7. Web audio-locked/focus-lost states.
 
 ## 12. Intentional Exclusions
 

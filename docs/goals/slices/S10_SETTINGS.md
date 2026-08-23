@@ -51,7 +51,7 @@ Title과 이미 구현된 Pause 모달의 Settings 버튼이 같은 Settings v1 
 - Integration Point: S10-G2 panel의 read-only state와 focus hooks를 소비한다.
 - Dependencies: S10-G2 panel hierarchy/API.
 - Verification: Title/Pause의 현행 시각 언어와 일치하고, 1280×720 및 720p에서 잘리지 않는다. keyboard/controller focus가 panel 안에 머물고 close 뒤 original trigger로 돌아간다.
-- Do Not Modify: setting persistence, audio/fullscreen system calls, gameplay state.
+- Do Not Modify: setting persistence, audio system calls, gameplay state.
 
 ### S10-G4 Settings Web acceptance·update
 
@@ -64,4 +64,4 @@ Title과 이미 구현된 Pause 모달의 Settings 버튼이 같은 Settings v1 
 
 ## Exit Gate
 
-Q-S10: 실제 Web browser에서 새 세션 저장·복원, Pause 복귀 시 gameplay freeze 유지, user-gesture fullscreen fallback, Console error 0을 확인한다.
+Q-S10: 실제 Web browser에서 새 세션 저장·복원, Pause 복귀 시 gameplay freeze 유지, Console error 0을 확인한다. Fullscreen은 Settings v1 범위에서 제외한다.

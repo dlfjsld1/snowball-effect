@@ -124,7 +124,7 @@ Stage name은 persistent HUD 필수다. Ball Count와 highest Ball은 persistent
 - focus loss는 자동 Pause하지만 focus return은 자동 Resume하지 않는다.
 - Stage Restart 뒤 Stage Score 0, Run Score/통계/effect가 entry snapshot과 일치하고 stale Box/FX/event가 없다.
 - Result의 Retry Run은 전체 state를 초기화하고 Pause의 Restart Stage와 signal/API가 다르다.
-- local settings를 새 session에서 복원하고 storage/fullscreen 실패 시 safe fallback을 확인한다.
+- local settings를 새 session에서 복원하고 storage 실패 시 safe fallback을 확인한다.
 
 ## 10. Performance Evidence Plan
 

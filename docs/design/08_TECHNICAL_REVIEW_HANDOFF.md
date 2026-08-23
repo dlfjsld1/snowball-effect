@@ -128,7 +128,7 @@ Pause/Result                                  Pause → Settings → Pause
 ├─ request exactly once                       ├─ focus trap/restore
 ├─ Restart vs Retry signal                    ├─ destructive confirmations
 ├─ Result fail/final/duplicate                └─ focus loss without auto-resume
-└─ storage/fullscreen fallback
+└─ storage fallback
 
 StageWorldPresenter                           Scale Shift
 ├─ child-track barrier                        ├─ L1/L2 control return

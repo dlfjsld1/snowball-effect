@@ -759,3 +759,39 @@ Owner: Presentation/UI
 
 - Value Popups toggle의 커스텀 focus rectangle을 제거했다. APPLY/CLOSE에는 hover 강조색만 남기고, 클릭 후 focus state가 hover의 노란 2px border를 재사용하지 않도록 별도 무테 focus style을 적용했다.
 - Godot CLI import, Primary validate 2/2, Main runtime에서 Toggle과 APPLY focus 상태를 각각 확인했다. Web release export와 `127.0.0.1:8080` Chrome toggle-click 상태에서도 노란 외곽선이 없고 console error 0을 확인했다.
+
+## 2026-08-23 — S10-G3 Full-range pipe gauge correction
+
+Owner: Presentation/UI
+
+- 선택 원본의 7칸 점등 예시를 그대로 남기고 빈 칸만 가리던 방식을 제거했다. 이제 황동 pipe shell 위의 10개 chamber를 매번 모두 다시 그리므로 0~2에서의 잔광과 8~10에서의 점등 상한이 없다.
+- Godot CLI import, Primary script validation, Main runtime에서 `[0, 2, 10]`과 `[7, 8, 9]` 조합을 각각 표시해 0의 잔광 제거와 8~10의 추가 점등을 확인했다. runtime error는 0건이었다.
+- 최신 Web release export를 실제 브라우저에서 열어 Master Volume을 10까지 올렸고, 10개 chamber가 모두 점등되는 것과 browser console error 0건을 확인했다. CLOSE로 테스트 preview는 저장하지 않고 되돌렸다.
+
+## 2026-08-23 — S10-G3 Pipe gauge source-coordinate correction
+
+Owner: Presentation/UI
+
+- 사용자 재현 화면을 검토해 이전 보정의 chamber 시작 좌표가 선택 원본보다 오른쪽으로 어긋났음을 확인했다. 원본 194px texture의 관측창 시작 x=36에 맞춰 첫 칸의 x 비율과 폭을 보정했다.
+- Native runtime에서 `[0, 7, 10]`으로 0칸, 7칸, 10칸을 같은 화면에 검증했다. Web release를 재export한 뒤 실제 브라우저에서 Master를 0까지 낮춰 잔광이 없음을, 10까지 올려 10칸 전체가 점등됨을 확인했다. console error는 0건이며 CLOSE로 preview를 저장하지 않았다.
+
+## 2026-08-23 — S10-G3 Exact ten-chamber pipe gauge
+
+Owner: Presentation/UI
+
+- source texture의 sample divider가 개별 redraw cell 사이로 비쳐 11칸처럼 보이던 문제를 수정했다. 관측창의 sample meter 전체를 먼저 소등한 뒤, 서로 겹치지 않는 폭의 chamber 10개만 렌더한다.
+- Godot CLI script validation과 native `[0, 5, 10]` runtime screenshot을 확인했다. 최신 Web release에서 Master를 10으로 올려 분리된 정확히 10개 chamber와 console error 0건을 확인했으며, CLOSE로 preview를 되돌렸다.
+
+## 2026-08-23 — S10-G3 Centred ten-cell bank
+
+Owner: Presentation/UI
+
+- 10칸 meter가 11칸 폭의 관측창 왼쪽에 치우쳐 최대치에서도 우측 공백이 더 커 보이던 문제를 수정했다. cell bank를 반 칸만큼 우측으로 옮겨 좌우 gutter가 각각 반 칸이 되도록 중앙 정렬했다.
+- Godot CLI validation과 native runtime에서 `[10, 4, 0]` 상태를 확인했다. 최신 Web export와 release ZIP을 갱신했다.
+
+## 2026-08-23 — S10-G3 Half-cell gutters around the ten-level meter
+
+Owner: Presentation/UI
+
+- 10-cell bank만 움직였던 이전 정렬은 원본 11-pitch meter의 마지막 dark chamber 일부를 남겼다. source-meter 전 폭을 지운 뒤, 10개 chamber를 반 pitch 우측 이동해 좌우에 각각 반 칸 gutter가 남도록 보정했다.
+- Godot CLI validation 및 native `[10, 5, 0]` runtime을 확인했다. 최신 Web release에서도 Master 10, console error 0건을 확인하고 CLOSE로 test preview를 되돌렸다. release ZIP을 갱신했다.

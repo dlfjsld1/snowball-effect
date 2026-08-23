@@ -18,7 +18,7 @@ flash, shake, glow, particle가 불편한 사용자와 저사양 Web 환경에 �
 
 ### Context
 
-- 현재 v1 Settings는 Master Volume, Mute, Fullscreen만 포함한다.
+- 현재 v1 Settings는 Master Volume, BGM Volume, SFX Volume, Value Popups를 포함한다.
 - 설계 검증은 glow/flash를 끈 reference capture를 요구하지만 runtime toggle, 저장, owner/API는 없다.
 - T3/T4의 의미 전달을 삭제해서는 안 되며 outline, text, silhouette 같은 비동작 표현으로 대체해야 한다.
 
