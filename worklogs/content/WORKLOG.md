@@ -1420,3 +1420,10 @@ Owner: Content/Systems/Release
 
 - 사용자 결정에 따라 Fullscreen은 Settings v1 범위에서 제외한다고 S10 Exit Gate와 관련 설계 문서에 반영했다. Settings는 Master/BGM/SFX Volume과 Value Popups만 제공한다.
 - 사용자가 다회 플레이로 Settings 정상 동작을 확인했다. 최신 `main` 기준 Web release export를 재생성하고, 호스팅 루트 파일 구조의 `dist/snowball-effect-web-2026-08-23.zip`을 만들었다.
+
+## 2026-08-23 — UI asset merge gate
+
+Owner: Content/Systems/Release
+
+- 새 PNG/UI 변경이 import 또는 preload 순서 검증 없이 병합됐다는 경고를 방지하기 위해 `tools/verification/verify_ui_asset_gate.ps1`을 추가했다. 새 Godot editor import scan 뒤 asset source MD5와 `.godot/imported` source MD5를 대조하고, 별도 headless Main process를 실행한다.
+- `verify_ui_asset_gate.ps1 -GodotPath <Godot executable>`을 실행해 Settings pipe PNG와 Value Popups ON/OFF PNG 3개의 import MD5, fresh Main runtime smoke를 통과했다. 관련 Settings script 3개와 scene validate도 모두 valid였다.
