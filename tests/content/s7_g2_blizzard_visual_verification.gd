@@ -1,6 +1,8 @@
 extends Node
 
 const BlizzardVisualScript = preload("res://scripts/presentation/item_blizzard_visual.gd")
+const ITEM_BALL_TEXTURE: Texture2D = preload("res://assets/sprites/items/item_ball_orbital_cargo_h0_h4.png")
+const BREAK_FRAGMENTS_TEXTURE: Texture2D = preload("res://assets/sprites/items/item_ball_neutral_break_fragments_4f.png")
 
 var _failures := 0
 
@@ -8,8 +10,41 @@ var _failures := 0
 func _ready() -> void:
 	var visual = BlizzardVisualScript.new()
 	add_child(visual)
+	_expect(visual.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST, "Item Ball and fragment sheets must render with nearest-neighbor filtering.")
+	_expect(ITEM_BALL_TEXTURE.get_width() == 320 and ITEM_BALL_TEXTURE.get_height() == 64, "Item Ball sheet must contain five contiguous 64x64 frames.")
+	_expect(BREAK_FRAGMENTS_TEXTURE.get_width() == 256 and BREAK_FRAGMENTS_TEXTURE.get_height() == 64, "Neutral break sheet must contain four contiguous 64x64 frames.")
+
+	visual.show_item_planet_spawned(&"fire_core", Vector2(800.0, 270.0), 24.0)
+	var snapshot: Dictionary = visual.get_visual_snapshot()
+	_expect(snapshot.get("planet_visible", false), "The intact Item Ball must use the universal visual for every hidden item type.")
+	_expect(is_equal_approx(float(snapshot.get("item_ball_radius", 0.0)), 24.0), "The universal visual must preserve the 24px gameplay radius passed by ItemManager.")
+	_expect(int(snapshot.get("item_ball_remaining_hits", -1)) == 5, "H0 must represent the intact five-hits-remaining state.")
+	_expect(int(snapshot.get("item_ball_frame_index", -1)) == 0, "Five remaining hits must select H0.")
+	_expect(snapshot.get("item_ball_source_region", Rect2()) == Rect2(0.0, 0.0, 64.0, 64.0), "H0 must use the first exact 64x64 sheet region.")
+	for current_hits in range(1, 5):
+		visual.show_item_planet_damaged(&"fire_core", current_hits, 5, Vector2(800.0, 270.0))
+		snapshot = visual.get_visual_snapshot()
+		var remaining_hits := 5 - current_hits
+		_expect(int(snapshot.get("item_ball_remaining_hits", -1)) == remaining_hits, "Damage state must retain the authoritative remaining-hit count.")
+		_expect(int(snapshot.get("item_ball_frame_index", -1)) == current_hits, "Remaining-hit state must map H1 through H4 without an off-by-one.")
+		_expect(snapshot.get("item_ball_source_region", Rect2()) == Rect2(float(current_hits * 64), 0.0, 64.0, 64.0), "Each damage state must use its exact 64x64 sheet region.")
+	visual.show_item_planet_broken(&"fire_core", Vector2(800.0, 270.0))
+	snapshot = visual.get_visual_snapshot()
+	_expect(not snapshot.get("planet_visible", true), "The fifth hit must remove the H4 pre-break Item Ball visual.")
+	_expect(snapshot.get("break_fragments_visible", false), "The existing break hook must start the neutral fragment visual.")
+	_expect(snapshot.get("break_fragment_source_region", Rect2()) == Rect2(0.0, 0.0, 64.0, 64.0), "Neutral break animation must begin at its first exact 64x64 region.")
+	for break_frame in range(1, 4):
+		visual._physics_process(0.08)
+		snapshot = visual.get_visual_snapshot()
+		_expect(int(snapshot.get("break_fragment_frame_index", -1)) == break_frame, "Neutral break animation must advance through all four frames in order.")
+		_expect(snapshot.get("break_fragment_source_region", Rect2()) == Rect2(float(break_frame * 64), 0.0, 64.0, 64.0), "Each neutral break frame must use its exact 64x64 sheet region.")
+	visual._physics_process(0.08)
+	_expect(not visual.get_visual_snapshot().get("break_fragments_visible", true), "Neutral break fragments must clean up after the fourth frame.")
+
+	visual.reset_runtime()
 	visual.show_item_planet_spawned(&"blizzard", Vector2(800.0, 270.0), 24.0)
 	_expect(visual.get_visual_snapshot()["planet_visible"], "Blizzard Item Ball must be visible on spawn.")
+	_expect(visual.get_visual_snapshot()["item_ball_source_region"] == Rect2(0.0, 0.0, 64.0, 64.0), "Blizzard must use the same identity-neutral intact Item Ball frame.")
 	visual.show_item_planet_damaged(&"blizzard", 3, 5, Vector2(800.0, 270.0))
 	visual.show_item_orb_spawned(&"blizzard", Vector2(800.0, 300.0))
 	_expect(visual.get_visual_snapshot()["orb_visible"], "Blizzard Orb must be visible after the Item Ball breaks.")
@@ -21,7 +56,7 @@ func _ready() -> void:
 	visual.show_item_planet_broken(&"blizzard", Vector2.ZERO)
 	_expect(not visual.get_visual_snapshot()["planet_visible"] and not visual.get_visual_snapshot()["orb_visible"], "Break and resolve events must remove Item Ball and Orb visuals.")
 	if _failures == 0:
-		print("S7_G2_BLIZZARD_VISUAL_IMPLEMENTED planet=true orb=true cue=true snow=48 cleanup=true")
+		print("S7_G2_BLIZZARD_VISUAL_IMPLEMENTED item_ball_h0_h4=true break_frames=4 planet=true orb=true cue=true snow=48 cleanup=true")
 	get_tree().quit(_failures)
 
 
