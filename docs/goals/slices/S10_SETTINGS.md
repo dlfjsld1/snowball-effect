@@ -50,7 +50,7 @@ Title과 이미 구현된 Pause 모달의 Settings 버튼이 같은 Settings v1 
 - Owned Files: `assets/sprites/ui/settings/**`, `docs/design/**`, `tests/presentation/s10_g3_**`.
 - Integration Point: S10-G2 panel의 read-only state와 focus hooks를 소비한다.
 - Dependencies: S10-G2 panel hierarchy/API.
-- Verification: Title/Pause의 현행 시각 언어와 일치하고, 1280×720 및 720p에서 잘리지 않는다. keyboard/controller focus가 panel 안에 머물고 close 뒤 original trigger로 돌아간다.
+- Verification: Title/Pause의 현행 시각 언어와 일치하고, 1280×720 및 720p에서 잘리지 않는다. keyboard/controller focus가 panel 안에 머물고 close 뒤 original trigger로 돌아간다. 새 Settings PNG/UI script 변경은 merge 전 `tools/verification/verify_ui_asset_gate.ps1`의 import MD5·fresh Main runtime evidence를 남긴다.
 - Do Not Modify: setting persistence, audio system calls, gameplay state.
 
 ### S10-G4 Settings Web acceptance·update

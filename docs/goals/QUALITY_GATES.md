@@ -10,6 +10,7 @@
 - G0-F: 교차 영역 연결은 선언된 `Integration Point`만 사용한다.
 - G0-G: Goal 완료/commit/push 전 해당 lane Worklog를 append한다.
 - G0-H: Verification은 특정 MCP 제품명이 아니라 관찰된 동작과 결과를 기준으로 한다. 특정 실행 환경 자체가 계약인 Web Goal 등은 실제 해당 환경에서 검증한다.
+- G0-I: 새 PNG/scene/UI script가 포함된 변경은 merge 전 `tools/verification/verify_ui_asset_gate.ps1`을 실행한다. Godot import scan, PNG source/imported MD5 일치, 별도 headless Main runtime smoke의 세 증거가 모두 있어야 한다.
 
 ## Integration Gate
 
