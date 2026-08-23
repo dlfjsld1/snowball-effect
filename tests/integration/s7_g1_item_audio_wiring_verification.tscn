@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/integration/s7_g1_item_audio_wiring_verification.gd" id="1_runner"]
+
+[node name="S7G1ItemAudioWiringVerification" type="Node"]
+script = ExtResource("1_runner")

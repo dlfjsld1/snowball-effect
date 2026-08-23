@@ -880,3 +880,20 @@ Owned Files: `scripts/core/game_manager.gd`, `tests/integration/s8_g4_score_depl
 - `stage_run_ended(result_snapshot)` handoff에서 snapshot을 소비한 뒤 중앙 Simulation을 reset한다. Result의 terminal score·통계는 StageRuntime이 이미 복사한 snapshot을 사용하므로 보존하고, Black Hole을 포함한 gameplay entity만 제거한다.
 - 새 fixture는 수정 전 `simulation/render black_holes=1`로 실패했고, 수정 뒤 `result=true score=0 black_holes=0`으로 통과했다. S8-G4 finale/reset, S5-G6I failure Result, S3-G5 deadline/Time Up 회귀도 모두 exit 0이다.
 - Primary Godot validate 4/4와 background Main runtime probe에서 Result visible, Run Score 0, simulation/render Black Hole 0, runtime error 0을 확인했다.
+
+## 2026-08-23 — S7 Item pickup audio handoff
+
+Owner: Integration + Content/Systems/Release
+
+- `GameManager._on_item_collected()`가 Item Gateway의 CUT-IN request 직전에 AudioManager의 `item_collect` event를 호출하도록 연결했다. Item Ball 파괴와 Orb miss는 재생하지 않는다.
+- 독립 Main fixture가 audio unlock 뒤 Item Orb collect 시 `item_collect`가 active event가 되고 CUT-IN 요청 전에 시작되는 것을 확인했다: `S7_G1_ITEM_AUDIO_WIRING_VERIFIED item_collect_before_cutin=true`, Godot 4.7.1 CLI exit 0.
+- Item별 visible CUT-IN 효과음은 Presentation의 producer/visual 완료 뒤 별도 event와 수동 Web 청감 검증으로 추가한다.
+
+## 2026-08-23 — S7 Item CUT-IN audio relay
+
+Owner: Integration
+Owned Files: `scripts/core/game_manager.gd`, `tests/integration/s7_g1_item_audio_wiring_verification.*`
+
+- `GameManager._on_item_cutin_requested()`가 Gateway의 authoritative CUT-IN request를 받을 때 AudioManager `item_cutin`을 정확히 한 번 요청하도록 연결했다. Orb pickup의 `item_collect`는 그대로 request 직전에 재생되고, Item Ball 파괴/Orb miss는 두 event 모두 재생하지 않는다.
+- 새 Main fixture는 Blizzard·Fire Core·Magnet 세 item type을 개별 reset 후 수집해 각 경우 `item_collect`와 `item_cutin`이 모두 active AudioManager event가 되는 것을 확인했다: `S7_G1_ITEM_AUDIO_WIRING_VERIFIED item_collect_and_cutin=true item_types=3`, Godot 4.7.1 CLI exit 0.
+- 최신 Web release를 localhost에서 새 query tab으로 기동하고 Start Run 입력을 확인했다. 기존 `item_blizzard_visual.tscn` UID fallback warning은 관찰됐지만, 새 audio resource load/uncaught error는 없었다.

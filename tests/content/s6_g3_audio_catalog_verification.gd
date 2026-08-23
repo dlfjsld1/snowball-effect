@@ -8,6 +8,7 @@ const EXPECTED_EVENT_KEYS := [
 	&"settlement_start", &"settlement_finish", &"stage_clear", &"stage_fail", &"scale_shift",
 	&"ui_click", &"ui_pause", &"ui_resume", &"ui_retry", &"ui_start", &"ui_menu",
 	&"black_hole_phase", &"black_hole_loop", &"black_hole_absorb", &"black_hole_finale", &"run_end",
+	&"item_collect", &"item_cutin",
 	&"bgm_title", &"bgm_ground", &"bgm_planetary", &"bgm_galactic", &"bgm_pause", &"bgm_result",
 ]
 

@@ -74,6 +74,8 @@ implemented or verified.
 | `black_hole_absorb.ogg` | Black Hole absorption of an eligible low-level ball | [Game over arcade](https://pixabay.com/sound-effects/film-special-effects-game-over-arcade-6435/) |
 | `black_hole_finale.ogg` | Two-Black-Hole contact: terminal finale entry | [Victory bell success fanfare](https://pixabay.com/sound-effects/musical-victory-bell-success-fanfare-576275/) |
 | `run_end.ogg` | Immediate Run End, such as Black Hole absorption reducing run score to zero | [Game over arcade](https://pixabay.com/sound-effects/film-special-effects-game-over-arcade-6435/) |
+| `item_collect.ogg` | Item Orb pickup before its CUT-IN request | [Arcade arped](https://pixabay.com/ko/sound-effects/%EC%98%81%ED%99%94-%EB%B0%8F-%ED%8A%B9%EC%88%98-%ED%9A%A8%EA%B3%BC-arcade-arped-145549/) (Pixabay); first sound segment only, leading/trailing silence removed, rendered at 60% source gain. Pixabay Content License applies. |
+| `item_cutin.ogg` | Item CUT-IN request | [Power up type 1](https://pixabay.com/ko/sound-effects/%EC%98%81%ED%99%94-%EB%B0%8F-%ED%8A%B9%EC%88%98-%ED%9A%A8%EA%B3%BC-power-up-type-1-230548/) (Pixabay); leading/trailing silence removed, rendered at 80% source gain. Pixabay Content License applies. |
 
 ## Implementation status
 
