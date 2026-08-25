@@ -50,7 +50,7 @@ assets/shaders/**
 tests/presentation/**
 ```
 
-예외: S6-G1은 Content/Systems가 `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/content/s6_g1_**`를 소유해 시각 FX event tier와 budget을 확정한다. S7-G2 Blizzard는 사용자 지정에 따라 Content/Systems/Release 담당이 `scripts/presentation/item_blizzard_visual.gd`, `scenes/effects/item_blizzard_visual.tscn`, `assets/particles/items/blizzard/**`, `tests/content/s7_g2_**`를 소유한다. 단, 사용자 지시 S7-G1V 동안 Integration이 `scripts/presentation/item_blizzard_visual.gd`와 지정된 세-Orb 검증 파일만 잠가 Blizzard/Fire/Magnet 공통 표시 연결을 복구한다. `scripts/presentation/audio_manager.gd`는 S6-G4/G5에 한해 Content/Systems-owned다. S6-G2의 `cutin_controller.gd`, FIRST_CONTACT layer 조립, visual reset과 `tests/presentation/s6_g2_**` 소유권은 Presentation에 유지한다. S6-G2는 Core discovery나 gameplay pause/resume, S8 Phase를 구현하지 않는다.
+예외: S6-G1은 Content/Systems가 `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/content/s6_g1_**`를 소유해 시각 FX event tier와 budget을 확정한다. S7-G2 Blizzard는 사용자 지정에 따라 Content/Systems/Release 담당이 `scripts/presentation/item_blizzard_visual.gd`, `scenes/effects/item_blizzard_visual.tscn`, `assets/particles/items/blizzard/**`, `assets/sprites/items/item_ball_rescue_beacon_*`, `tests/content/s7_g2_**`를 소유한다. 단, 사용자 지시 S7-G1V 동안 Integration이 `scripts/presentation/item_blizzard_visual.gd`와 지정된 세-Orb 검증 파일만 잠가 Blizzard/Fire/Magnet 공통 표시 연결을 복구한다. `scripts/presentation/audio_manager.gd`는 S6-G4/G5에 한해 Content/Systems-owned다. S6-G2의 `cutin_controller.gd`, FIRST_CONTACT layer 조립, visual reset과 `tests/presentation/s6_g2_**` 소유권은 Presentation에 유지한다. S6-G2는 Core discovery나 gameplay pause/resume, S8 Phase를 구현하지 않는다.
 
 ### 사용자 지정 Paddle visual binding
 

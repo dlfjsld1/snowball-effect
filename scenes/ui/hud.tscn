@@ -1,8 +1,11 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Script" path="res://scripts/presentation/effect_manager.gd" id="2_effect_manager"]
 [ext_resource type="Script" path="res://scripts/ui/stage_score_gauge.gd" id="1_gauge"]
+[ext_resource type="FontFile" path="res://assets/fonts/crt/crt_terminal_5x7.fnt" id="4_crt_font"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/stage_sign_v1_84x24.png" id="5_stage_sign"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/score_sign_v1_84x24.png" id="6_score_sign"]
 
 [node name="HUD" type="Control"]
 texture_filter = 1
@@ -32,13 +35,14 @@ mouse_filter = 2
 [node name="StageNameLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
 layout_mode = 0
-text = "STAGE GROUND"
-offset_right = 112.0
-offset_bottom = 54.0
+text = "GROUND"
+offset_right = 132.0
+offset_bottom = 20.0
 horizontal_alignment = 1
 vertical_alignment = 1
 theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 20
 
 [node name="TimeLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
@@ -49,19 +53,21 @@ offset_bottom = 52.0
 horizontal_alignment = 1
 vertical_alignment = 1
 theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 10
 
 [node name="StageScoreLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
 layout_mode = 0
-text = "STAGE SCORE 0"
-offset_right = 112.0
-offset_bottom = 42.0
+text = "0"
+offset_right = 106.0
+offset_bottom = 20.0
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 20
 
 [node name="RunScoreLabel" type="Label" parent="Readout"]
 unique_name_in_owner = true
@@ -80,6 +86,64 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 0
 text = "BALLS 0"
+
+[node name="StageSign" type="Control" parent="."]
+texture_filter = 1
+layout_mode = 0
+offset_left = 316.0
+offset_top = 26.0
+offset_right = 400.0
+offset_bottom = 50.0
+mouse_filter = 2
+
+[node name="Plate" type="TextureRect" parent="StageSign"]
+texture_filter = 1
+layout_mode = 0
+offset_right = 84.0
+offset_bottom = 24.0
+mouse_filter = 2
+texture = ExtResource("5_stage_sign")
+
+[node name="Label" type="Label" parent="StageSign"]
+layout_mode = 0
+offset_right = 84.0
+offset_bottom = 24.0
+mouse_filter = 2
+text = "STAGE"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 10
+
+[node name="ScoreSign" type="Control" parent="."]
+texture_filter = 1
+layout_mode = 0
+offset_left = 1197.0
+offset_top = 26.0
+offset_right = 1281.0
+offset_bottom = 50.0
+mouse_filter = 2
+
+[node name="Plate" type="TextureRect" parent="ScoreSign"]
+texture_filter = 1
+layout_mode = 0
+offset_right = 84.0
+offset_bottom = 24.0
+mouse_filter = 2
+texture = ExtResource("6_score_sign")
+
+[node name="Label" type="Label" parent="ScoreSign"]
+layout_mode = 0
+offset_right = 84.0
+offset_bottom = 24.0
+mouse_filter = 2
+text = "SCORE"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 10
 
 [node name="StageScoreGauge" type="Control" parent="."]
 unique_name_in_owner = true
@@ -110,7 +174,8 @@ text = "BALLS"
 horizontal_alignment = 1
 vertical_alignment = 1
 theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 10
 
 [node name="Slots" type="Control" parent="Genealogy/Content"]
 layout_mode = 0
@@ -188,7 +253,8 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 10
 
 [node name="Slot1" type="Label" parent="Genealogy/Content/Slots"]
 layout_mode = 0
@@ -201,7 +267,8 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 10
 
 [node name="Slot2" type="Label" parent="Genealogy/Content/Slots"]
 layout_mode = 0
@@ -214,7 +281,8 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 10
 
 [node name="Slot3" type="Label" parent="Genealogy/Content/Slots"]
 layout_mode = 0
@@ -227,7 +295,8 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 theme_override_colors/font_color = Color(0.7137, 0.8118, 0.5569, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 10
 
 [node name="Slot4" type="Label" parent="Genealogy/Content/Slots"]
 layout_mode = 0
@@ -240,4 +309,5 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_fonts/font = ExtResource("4_crt_font")
+theme_override_font_sizes/font_size = 10

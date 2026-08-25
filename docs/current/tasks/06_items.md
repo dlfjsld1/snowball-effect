@@ -12,9 +12,9 @@
 - Item Ball은 일반 Snowball Merge 대상이 아님
 - 현재 Stage의 3단계 이상 공만 파괴 damage를 줄 수 있음
 - 데이터 기준으로 `local_level >= 2`; 그보다 높은 local level도 모두 유효
-- 유효 Snowball 충돌마다 damage 1회와 균열/픽셀 파편 단계 갱신
+- 유효 Snowball 충돌마다 damage 1회와 공용 Rescue Beacon Capsule H0~H4 damage 단계 갱신
 - 동일 contact가 여러 physics frame에 걸쳐도 분리 전에는 중복 damage 없음
-- 유효 hit 5회에 Item Ball 파괴 lock을 한 번만 확정
+- 유효 hit 5회에 Item Ball 파괴 lock을 한 번만 확정하고 승인된 Rescue Beacon Capsule rupture break를 한 번만 재생
 - 파괴 시 아이템 종류별로 구분되는 Item Orb를 하나 생성하며 즉시 획득·발동하지 않음
 - Item Orb의 visual/collision radius와 초기 speed는 현재 Stage의 3단계 공(`local_level = 2`)과 같고 초기 velocity는 수직 아래 방향
 - Paddle이 Item Orb를 받으면 획득 lock과 CUT-IN을 요청하고 activation cue 뒤 효과 시작

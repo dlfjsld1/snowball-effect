@@ -596,7 +596,7 @@ Two Black Holes Contact
 - 사람 기준 3단계 이상은 데이터의 0-based 표기로 `local_level >= 2`다.
 - Stage의 local 5종 중 3단계, 4단계, 5단계 공은 모두 유효 damage를 줄 수 있다.
 - 유효 충돌 한 번당 파괴 hit를 한 번만 반영하고, 같은 접촉의 frame 중복 damage를 막는다.
-- hit가 누적될수록 균열·픽셀 파편 등 단계적인 damage 표현을 보여준다.
+- hit가 누적될수록 공용 Rescue Beacon Capsule H0~H4와 rupture로 이어지는 단계적인 damage 표현을 보여준다.
 - Item Ball은 유효 hit 5회에 파괴된다.
 - 마지막 hit에서는 Item Ball 파괴를 한 번만 확정하고, 품고 있던 아이템 종류에 대응하는 `Item Orb`를 하나 생성한다. 이 시점에는 아직 아이템을 획득하거나 발동하지 않는다.
 - Item Orb는 아이템별로 외형과 식별 정보를 구분한다.

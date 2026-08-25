@@ -1583,6 +1583,17 @@ Owner: Content/Systems/Release + Integration
 - Start/Retry/Main 및 Run End 중 CUT-IN reset도 lock을 해제하도록 연결했으며, First Contact와 Item CUT-IN이 서로의 pause lock을 잘못 해제하지 않도록 release guard를 추가했다.
 - Godot 4.7.1 CLI project scan과 Primary runtime 검증에서 Fire item CUT-IN 중 `item_cutin_pause_locked=true`, Stage lock=true, Paddle physics/input=false를 확인했고 2.6초 뒤 CUT-IN 종료와 함께 모두 false/true 상태로 정상 복귀했다.
 
+## 2026-08-25 — S7-G2 Rescue Beacon Capsule Item Ball runtime follow-up
+
+Owner: Content/Systems/Release
+
+- 사용자 승인 A `Rescue Beacon Capsule` break sequence를 기존 5-hit Item Ball presentation contract에 맞춰 런타임 atlas 2장으로 적용했다. `assets/sprites/items/item_ball_rescue_beacon_h0_h4.png`는 H0~H4 5프레임 `320x64`, `assets/sprites/items/item_ball_rescue_beacon_rupture_4f.png`는 H4→rupture 보간 4프레임 `256x64`이며 둘 다 edge alpha `0`과 Godot import `.ctex` 생성까지 확인했다.
+- `ItemBlizzardVisual`은 새 atlas만 사용하도록 바꾸고 `remaining_hits -> H0..H4`, fifth-hit break hook, Orb fall/freeze, Blizzard snow behavior는 그대로 유지했다. focused content verification은 atlas path/dimensions/transparent edges, monotonic frame mapping, rupture 4-frame cleanup, runtime reset leak-free를 추가로 고정했다.
+- authoritative docs의 직접 충돌 문구만 최소 수정했다. S7 slice/task/game-rule/technical-design/integration-contract는 기존 `identity-neutral`/`neutral break` wording을 승인된 공용 Rescue Beacon Capsule H0~H4·rupture wording으로 갱신했고, ownership exception에 `assets/sprites/items/item_ball_rescue_beacon_*`를 추가했다.
+- Godot 4.7.1 CLI baseline: editor import scan exit `0`, `S7_G2_BLIZZARD_VISUAL_IMPLEMENTED rescue_beacon_h0_h4=true rupture_frames=4 orb_types=3 falling=true snow=48 cleanup=true`, `S7_G2_IMPLEMENTED duration=5 spawn_multiplier=3 refresh=non_stacking restore=once`, `S7_G1C_VERIFIED item_ball=once hits=5 orb=collect_or_miss`, `S7_G1_THREE_ITEM_ORBS_LIVE_VERIFIED ... hits=5 visible=true ...`와 Main `--quit-after 20` smoke exit `0`를 확인했다. root certificate store/editor settings warning과 headless 종료 시 `3 ObjectDB / 1 resource`는 기존 환경/종료 경고로 분리했다.
+- Native runtime capture는 repo-local `Godot_v4.7.1-stable_win64_console.exe` OpenGL Compatibility에서 exit `0`으로 저장했다: `artifacts/verification/item-ball-rescue-beacon-runtime-20260825/07_runtime_damage_sheet.png`, marker `fps_avg=5.20 fps_min=1.00 max_delta_ms=45.51`. Stretch 때문에 본문이 좌상단에 모여 보여 crop/4x inspection copy도 같은 verification 폴더에 남겼다.
+- Web preset이 있어 `build/item-ball-rescue-beacon-runtime-20260825/index.html` release export를 다시 실행했고 exit `0`과 `index.html/js/wasm/pck` 생성을 확인했다. 이 세션에는 local browser canvas/console을 읽는 QA surface가 없어서 Browser 단계는 수행하지 못했다.
+- `docs/goals/STATUS.md`는 건드리지 않았다. 현재 Content lane은 `S8-G3B Result 최고 Stage·Snowball summary`가 `IN PROGRESS`이고, `docs/goals/STATUS.md` 자체에도 unrelated user WIP가 있어 새 Goal/lock mutation 없이 worklog와 evidence만 기록했다.
 ## 2026-08-25 — Stage transition item-effect cleanup
 
 Owner: Content/Systems/Release + Integration

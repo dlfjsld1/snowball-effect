@@ -3,8 +3,9 @@ extends Node2D
 
 ## Content-owned, read-only optional-item visual. Integration mounts this node
 ## under Main and connects ItemManager/ItemBlizzard signals; it never changes
-## gameplay. The pre-break Item Ball is universal, the falling Orb visual is
-## selected by item_type, and the active snow FX remains Blizzard-specific.
+## gameplay. The pre-break Item Ball uses the shared Rescue Beacon Capsule
+## damage sequence, the falling Orb visual is selected by item_type, and the
+## active snow FX remains Blizzard-specific.
 
 const ITEM_TYPE := &"blizzard"
 const FIRE_ITEM_TYPE := &"fire_core"
@@ -24,8 +25,8 @@ const ICE_DARK := Color("244466")
 const ICE_MID := Color("5caed0")
 const ICE_LIGHT := Color("d8fbff")
 const AURORA := Color("78f4ee")
-const ITEM_BALL_TEXTURE: Texture2D = preload("res://assets/sprites/items/item_ball_orbital_cargo_h0_h4.png")
-const BREAK_FRAGMENTS_TEXTURE: Texture2D = preload("res://assets/sprites/items/item_ball_neutral_break_fragments_4f.png")
+const ITEM_BALL_TEXTURE: Texture2D = preload("res://assets/sprites/items/item_ball_rescue_beacon_h0_h4.png")
+const BREAK_FRAGMENTS_TEXTURE: Texture2D = preload("res://assets/sprites/items/item_ball_rescue_beacon_rupture_4f.png")
 const FIRE_ORB_TEXTURE: Texture2D = preload("res://assets/particles/items/fire/fire_orb.png")
 const MagnetOrbPortraitScript = preload("res://scripts/presentation/magnet_orb_portrait.gd")
 

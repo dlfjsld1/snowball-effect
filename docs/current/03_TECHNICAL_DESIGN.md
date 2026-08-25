@@ -559,7 +559,7 @@ func format_score(value: float) -> String
 - 일반 Snowball의 후광·Merge burst·Cashout debris 같은 일시적 효과는 공 본체 batch에 합치지 않고 기존 FX/pool 계층에서 처리한다.
 - 모든 일반 Snowball batch는 현재 활성 logical `play_field_rect`를 공통 clip 경계로 사용한다. 하단 Cashout 판정 전후에 공 본체가 Stage World나 기계 배경 위에 그려지지 않아야 한다. clip 구현은 shader, Canvas clipping 또는 동등한 batch-safe 방식 중 선택할 수 있으나 공별 Node를 만들거나 simulation radius를 시각용으로 축소하지 않는다.
 
-적용 대상은 Item Ball과 Lv14 Black Hole Ball/전환된 Black Hole runtime entity를 제외한 일반 Snowball이다. Item Ball은 균열·파괴 상태를, Black Hole은 고유 ring/왜곡/흡수 표현을 가지므로 전용 렌더러를 유지한다. Galactic에서는 일반 Lv10~13 batch와 Black Hole 전용 렌더러가 함께 존재한다.
+적용 대상은 Item Ball과 Lv14 Black Hole Ball/전환된 Black Hole runtime entity를 제외한 일반 Snowball이다. Item Ball은 승인된 Rescue Beacon Capsule H0~H4·rupture 상태를, Black Hole은 고유 ring/왜곡/흡수 표현을 가지므로 전용 렌더러를 유지한다. Galactic에서는 일반 Lv10~13 batch와 Black Hole 전용 렌더러가 함께 존재한다.
 
 Black Hole runtime entity는 일반 Ball slot/render snapshot 밖에 있으므로, 전용 renderer는 `get_black_hole_snapshot()`의 read-only position/radius를 별도로 읽는다. player-visible 방어 fallback이 필요하면 승인된 `Void Cathedral C`를 사용하고 generic dark circle/ring을 노출하지 않는다. 이는 gameplay state를 변경하지 않는 가시성 fallback이며 active S8 Presentation overlay가 이를 덮거나 확장할 수 있다. 최종 max-two 계약에서는 일반/global Lv14 Ball fallback 자체가 도달 불가능하다.
 
@@ -722,7 +722,7 @@ scale shift: up to about 0.8~1.0s
 - `local_level = current_stage.local_ball_levels.find(ball.global_level)`로 계산하며 `-1`은 Stage data/runtime 오류로 처리
 - `local_level >= 2`인 접촉만 유효 damage; 더 높은 단계도 같은 규칙으로 damage 가능
 - 한 contact pair는 분리되기 전까지 damage 한 번만 commit
-- 유효 hit마다 damage count를 올리고 Presentation에 균열 단계 이벤트 전달
+- 유효 hit마다 damage count를 올리고 Presentation에 승인된 Rescue Beacon Capsule H0~H4 단계 이벤트 전달
 - `required_break_hits = 5`에 도달하면 broken lock을 한 번만 확정하고 Item Ball을 제거한 뒤 해당 `item_type`의 Item Orb를 하나 생성
 - 파괴와 획득을 별도 상태로 관리하며, Item Ball 파괴 시에는 pending activation을 만들지 않음
 - Item Orb의 visual/collision radius와 초기 speed는 현재 Stage `local_level = 2` 공의 runtime 기준값을 사용하고, 초기 velocity는 수직 아래 방향으로 설정

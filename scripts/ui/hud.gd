@@ -6,6 +6,16 @@ const BallTextureLodCatalog = preload("res://scripts/presentation/ball_texture_l
 const ScoreFormatter = preload("res://scripts/utils/score_formatter.gd")
 const StageCatalog = preload("res://scripts/data/stage_catalog.gd")
 
+const STAGE_SIGN_LOCAL_RECT := Rect2(58.0, 26.0, 84.0, 24.0)
+const SCORE_SIGN_LOCAL_RECT := Rect2(55.0, 26.0, 84.0, 24.0)
+# The 136x56 Stage mask has a 2px treatment inset. At the BMFont's crisp 2x
+# scale, its 14px ink starts 2px into this 20px line box, yielding 19px above
+# and below the glyphs inside the resulting 132x52 safe region.
+const STAGE_NAME_LABEL_LOCAL_RECT := Rect2(34.0, 73.0, 132.0, 20.0)
+# The 110x52 Score mask has the same 2px treatment inset. At the approved
+# 20px crisp scale, score ink is 14px high, so this rect places it with exact
+# 17px top and bottom margins inside the resulting 106x48 safe region.
+const STAGE_SCORE_LABEL_LOCAL_RECT := Rect2(44.0, 71.0, 106.0, 20.0)
 const GENEALOGY_DISPLAY_LOCAL_RECT := Rect2(48.0, 262.0, 106.0, 317.0)
 const GENEALOGY_DISPLAY_INSET := 2.0
 const GENEALOGY_ICON_SIZE := Vector2(24.0, 24.0)
@@ -24,6 +34,10 @@ const GENEALOGY_REVEALED_FILL := Color("654053")
 @onready var run_score_label: Label = $Readout/RunScoreLabel
 @onready var clear_target_label: Label = $Readout/ClearTargetLabel
 @onready var ball_count_label: Label = $Readout/BallCountLabel
+@onready var stage_sign: Control = $StageSign
+@onready var stage_sign_label: Label = $StageSign/Label
+@onready var score_sign: Control = $ScoreSign
+@onready var score_sign_label: Label = $ScoreSign/Label
 @onready var stage_score_gauge: StageScoreGauge = $StageScoreGauge
 @onready var effect_manager: EffectManager = $EffectManager
 @onready var genealogy_title: Label = $Genealogy/Content/Title
@@ -116,7 +130,7 @@ func _process(delta: float) -> void:
 		_settlement_elapsed = minf(_settlement_elapsed + delta, _settlement_duration)
 		var progress := _settlement_elapsed / maxf(_settlement_duration, 0.001)
 		var displayed_score := lerpf(_settlement_score_start, _authoritative_stage_score, progress)
-		stage_score_label.text = "STAGE SCORE %s" % ScoreFormatter.format_score(displayed_score)
+		stage_score_label.text = ScoreFormatter.format_score(displayed_score).to_upper()
 		_update_stage_score_gauge(displayed_score)
 
 
@@ -129,11 +143,15 @@ func reset_view() -> void:
 
 
 func apply_frame_layout(left_wing: Rect2, right_wing: Rect2) -> void:
-	stage_name_label.position = left_wing.position + Vector2(44.0, 48.0)
+	stage_sign.position = left_wing.position + STAGE_SIGN_LOCAL_RECT.position
+	score_sign.position = right_wing.position + SCORE_SIGN_LOCAL_RECT.position
+	stage_name_label.position = left_wing.position + STAGE_NAME_LABEL_LOCAL_RECT.position
+	stage_name_label.size = STAGE_NAME_LABEL_LOCAL_RECT.size
 	time_label.position = left_wing.position + Vector2(24.0, 154.0)
 	$Genealogy.position = left_wing.position + GENEALOGY_DISPLAY_LOCAL_RECT.position
 	$Genealogy.size = GENEALOGY_DISPLAY_LOCAL_RECT.size
-	stage_score_label.position = right_wing.position + Vector2(44.0, 48.0)
+	stage_score_label.position = right_wing.position + STAGE_SCORE_LABEL_LOCAL_RECT.position
+	stage_score_label.size = STAGE_SCORE_LABEL_LOCAL_RECT.size
 	stage_score_gauge.position = right_wing.position + Vector2(48.0, 194.0)
 	queue_redraw()
 
@@ -146,7 +164,7 @@ func _on_score_changed(stage_score: float, run_score: float) -> void:
 	_authoritative_stage_score = stage_score
 	_authoritative_run_score = run_score
 	if not _settlement_counting:
-		stage_score_label.text = "STAGE SCORE %s" % ScoreFormatter.format_score(stage_score)
+		stage_score_label.text = ScoreFormatter.format_score(stage_score).to_upper()
 		_update_stage_score_gauge(stage_score)
 	run_score_label.text = "RUN SCORE %s" % ScoreFormatter.format_score(run_score)
 
@@ -161,7 +179,7 @@ func _on_final_settlement_visual_started(duration: float) -> void:
 
 func _on_final_settlement_presentation_finished() -> void:
 	_settlement_counting = false
-	stage_score_label.text = "STAGE SCORE %s" % ScoreFormatter.format_score(_authoritative_stage_score)
+	stage_score_label.text = ScoreFormatter.format_score(_authoritative_stage_score).to_upper()
 	_update_stage_score_gauge(_authoritative_stage_score)
 
 
@@ -172,7 +190,7 @@ func _on_ball_count_changed(active_count: int) -> void:
 func _on_stage_changed(definition: StageDefinition) -> void:
 	if definition == null:
 		return
-	stage_name_label.text = "STAGE %s" % definition.display_name.to_upper()
+	stage_name_label.text = definition.display_name.to_upper()
 	_current_clear_score = definition.clear_score
 	clear_target_label.text = "TARGET %s" % ScoreFormatter.format_score(definition.clear_score)
 	_update_stage_score_gauge(_authoritative_stage_score)
@@ -213,7 +231,7 @@ func _update_genealogy() -> void:
 		icon.texture = runtime_texture
 		icon.texture_filter = (runtime_texture as CanvasTexture).texture_filter if runtime_texture is CanvasTexture else CanvasItem.TEXTURE_FILTER_NEAREST
 		icon.visible = icon.texture != null
-		slot.text = definition.display_name if definition != null else ""
+		slot.text = definition.display_name.to_upper() if definition != null else ""
 	queue_redraw()
 
 
