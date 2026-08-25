@@ -24,12 +24,12 @@ func _ready() -> void:
 	_expect(ledger.stage_score == stage_before and ledger.run_score == run_before, "Ball count display must not mutate score.")
 
 	ledger.apply_score_event(1.0)
-	_expect(hud.stage_score_label.text == "STAGE SCORE 1", "HUD must display stage score once.")
+	_expect(hud.stage_score_label.text == "1", "HUD must display the numeric stage score once.")
 	_expect(hud.run_score_label.text == "RUN SCORE 1", "HUD must display run score once.")
 	_expect(ledger.stage_score == 1.0 and ledger.run_score == 1.0, "HUD subscription must not duplicate gameplay score.")
 
 	hud.reset_view()
-	_expect(hud.stage_score_label.text == "STAGE SCORE 0" and hud.ball_count_label.text == "BALLS 0", "HUD reset must clear display state.")
+	_expect(hud.stage_score_label.text == "0" and hud.ball_count_label.text == "BALLS 0", "HUD reset must clear display state.")
 	_expect(ledger.stage_score == 1.0 and simulation.get_active_count() == 1, "HUD reset must not mutate gameplay state.")
 
 	if _failures == 0:

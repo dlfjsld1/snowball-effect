@@ -13,6 +13,11 @@ const GALAXY_CLUSTER_GAMEPLAY_PATH := "res://assets/sprites/balls/galactic/runti
 const GALAXY_CLUSTER_CRT_PATH := "res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv01_galaxy_cluster_tri_spiral_core_crt_24.png"
 const GALAXY_CLUSTER_GAMEPLAY_SHA256 := "b56ed4b3a55c94be2f7e1b54821261691cc0948f02d3bdfbb5f766e902c13947"
 const GALAXY_CLUSTER_CRT_SHA256 := "0018b474579832cf0d8a29c3b154acf148f33744ace3cdb83cbcc9dac198af6c"
+const CRT_FONT_NATIVE_SIZE := 10.0
+const CRT_FONT_LINE_HEIGHT := 10.0
+const CRT_FONT_GLYPH_HEIGHT := 7.0
+const CRT_FONT_GLYPH_Y_OFFSET := 1.0
+const CRT_FONT_X_ADVANCE := 6.0
 
 var _failures := 0
 
@@ -33,10 +38,10 @@ func _ready() -> void:
 	stage_manager.start_run()
 	hud.bind_sources(stage_manager.get_score_ledger(), simulation, stage_manager)
 
-	_expect(hud.stage_name_label.text == "STAGE GROUND", "HUD must display the entered Stage name.")
+	_expect(hud.stage_name_label.text == "GROUND", "The Stage CRT must display only the entered uppercase Stage name.")
 	var expected_target := "TARGET %s" % ScoreFormatter.format_score(stage_manager.get_current_stage().clear_score)
 	_expect(hud.clear_target_label.text == expected_target, "HUD must display the authoritative current Stage clear target.")
-	_expect(hud.genealogy_slots[0].text == "Snowflake", "Stage entry must reveal only the local base ball.")
+	_expect(hud.genealogy_slots[0].text == "SNOWFLAKE", "Stage entry must reveal only the uppercase local base ball.")
 	_expect(hud.genealogy_slots[1].text == "", "Undiscovered genealogy slots must hide their names.")
 	_verify_genealogy_structure(hud, frame)
 	_verify_reveal_state(hud, 1)
@@ -44,13 +49,14 @@ func _ready() -> void:
 	stage_manager._stage_runtime.stage_time_left = 12.5
 	hud._process(0.0)
 	_expect(hud.time_label.text == "TIME 12.5", "HUD must display the current Stage time.")
+	_verify_time_crt_layout(hud, frame)
 
 	var stage_score_before := stage_manager.get_score_ledger().stage_score
 	var run_score_before := stage_manager.get_score_ledger().run_score
 	simulation.spawn_ball(Vector2(100.0, 100.0), Vector2.ZERO, 4.0, 0)
 	simulation.spawn_ball(Vector2(106.0, 100.0), Vector2.ZERO, 4.0, 0)
 	simulation.commit_merge_candidates()
-	_expect(hud.genealogy_slots[1].text == "Snowball", "A newly created local Lv1 must reveal its genealogy slot once.")
+	_expect(hud.genealogy_slots[1].text == "SNOWBALL", "A newly created local Lv1 must reveal its uppercase genealogy slot once.")
 	_expect(hud.genealogy_slots[2].text == "", "Later genealogy slots must remain hidden until created.")
 	_verify_reveal_state(hud, 2)
 	_expect(stage_manager.get_score_ledger().stage_score == stage_score_before and stage_manager.get_score_ledger().run_score == run_score_before, "HUD genealogy display must not mutate score.")
@@ -63,10 +69,10 @@ func _ready() -> void:
 	_verify_reveal_state(hud, 5)
 	stage_manager.start_run()
 	_verify_reveal_state(hud, 1)
-	_expect(hud.genealogy_slots[0].text == "Snowflake", "Retry/fresh Run stage entry must restore only the Ground base ball.")
+	_expect(hud.genealogy_slots[0].text == "SNOWFLAKE", "Retry/fresh Run stage entry must restore only the uppercase Ground base ball.")
 
 	if _failures == 0:
-		print("S3_G6_VERIFIED stage_time=true score_readonly=true title=BALLS genealogy_nodes=5 connectors=4 flow=bottom_to_top textures=15 carryover=planetary_moon:ground_moon,galactic_galaxy:planetary_galaxy galaxy_cluster=tri_spiral_core gameplay=16x16 crt=24x24 display=24x24 node_diameter=38 crt_bounds=106x317 margin=2px bounds=true sampling=runtime snowflake_linear=true locked_hidden=true stage_retry_reset=true")
+		print("S3_G6_VERIFIED stage_time=true time_font=10 time_position=24x154 time_clip=false score_readonly=true title=BALLS genealogy_nodes=5 connectors=4 flow=bottom_to_top textures=15 carryover=planetary_moon:ground_moon,galactic_galaxy:planetary_galaxy galaxy_cluster=tri_spiral_core gameplay=16x16 crt=24x24 display=24x24 node_diameter=38 crt_bounds=106x317 margin=2px bounds=true sampling=runtime snowflake_linear=true locked_hidden=true stage_retry_reset=true")
 	get_tree().quit(_failures)
 
 
@@ -103,7 +109,7 @@ func _verify_genealogy_structure(hud: HudScript, frame: GameplayFrame) -> void:
 		_expect(icon.size == HudScript.GENEALOGY_ICON_SIZE, "Genealogy icon %d must render at the testable 24x24 display size." % slot_index)
 		_expect(icon.size.length() * 0.5 < float(metrics["node_radius"]), "Genealogy icon %d must fit completely inside its circular node." % slot_index)
 		_expect(hud.genealogy_slots[slot_index].autowrap_mode != TextServer.AUTOWRAP_OFF, "Genealogy names must wrap inside their fixed CRT label bounds.")
-		_expect(hud.genealogy_slots[slot_index].get_theme_font_size("font_size") == 12, "Genealogy labels must retain a readable 12px font in the narrow CRT.")
+		_expect(hud.genealogy_slots[slot_index].get_theme_font_size("font_size") == 10, "Genealogy labels must use the bitmap font's native 10px size for crisp bold strokes.")
 		var center_y: float = metrics["node_centers"][slot_index].y
 		if slot_index > 0:
 			_expect(center_y < previous_y, "Higher local levels must be placed above lower local levels.")
@@ -116,6 +122,31 @@ func _get_crt_mask_bounds(frame: GameplayFrame, mask_id: StringName) -> Rect2:
 			return mask["mask_bounds"]
 	_expect(false, "The GameplayFrame must expose the genealogy CRT mask geometry.")
 	return Rect2()
+
+
+func _verify_time_crt_layout(hud: HudScript, frame: GameplayFrame) -> void:
+	var time_mask := _get_crt_mask_bounds(frame, &"time")
+	var time_inner := time_mask.grow(-2.0)
+	var font_size := hud.time_label.get_theme_font_size("font_size")
+	_expect(font_size == 10, "TIME CRT must retain the approved native 10px bitmap font size.")
+	_expect(hud.time_label.position == frame.get_left_wing_rect().position + Vector2(24.0, 154.0), "TIME CRT must retain the approved wing-local position at X24/Y154.")
+	var glyph_bounds := _predict_bitmap_glyph_bounds(hud.time_label, font_size)
+	_expect(time_inner.encloses(glyph_bounds), "TIME glyphs must stay fully inside the visible CRT interior without clipping.")
+	var left_spacing := int(round(glyph_bounds.position.x - time_inner.position.x))
+	var right_spacing := int(round(time_inner.end.x - glyph_bounds.end.x))
+	_expect(abs(left_spacing - right_spacing) <= 1, "TIME CRT horizontal centering must remain unchanged.")
+
+
+func _predict_bitmap_glyph_bounds(label: Label, font_size: int) -> Rect2:
+	var scale := float(font_size) / CRT_FONT_NATIVE_SIZE
+	var line_height := roundf(CRT_FONT_LINE_HEIGHT * scale)
+	var glyph_height := roundf(CRT_FONT_GLYPH_HEIGHT * scale)
+	var y_offset := roundf(CRT_FONT_GLYPH_Y_OFFSET * scale)
+	var glyph_width := roundf(float(label.text.length()) * CRT_FONT_X_ADVANCE * scale - scale)
+	var line_top := label.global_position.y + floorf((label.size.y - line_height) * 0.5)
+	var glyph_top := line_top + y_offset
+	var glyph_left := label.global_position.x + floorf((label.size.x - glyph_width) * 0.5)
+	return Rect2(Vector2(glyph_left, glyph_top), Vector2(glyph_width, glyph_height))
 
 
 func _verify_bounds_inside(container: Rect2, bounds_list: Array, kind: String) -> void:
@@ -190,7 +221,8 @@ func _verify_all_stage_texture_mappings(hud: HudScript) -> void:
 			var expected_filter := (expected_runtime_texture as CanvasTexture).texture_filter if expected_runtime_texture is CanvasTexture else CanvasItem.TEXTURE_FILTER_NEAREST
 			_expect(icon.texture_filter == expected_filter, "Stage %d local Lv%d must preserve the in-game texture sampling mode." % [stage_index, local_level])
 			_expect(icon.size == HudScript.GENEALOGY_ICON_SIZE, "Every approved in-game texture must use the same 24x24 genealogy display size.")
-			_expect(hud.genealogy_slots[local_level].text == definition.display_name, "Genealogy names must remain BallCatalog-authored and aligned with their texture.")
+			_expect(hud.genealogy_slots[local_level].text == definition.display_name.to_upper(), "Genealogy names must uppercase BallCatalog-authored text without changing its texture mapping.")
+			_expect(hud.genealogy_slots[local_level].text == hud.genealogy_slots[local_level].text.to_upper(), "Every visible genealogy name must be uppercase.")
 			_expect(hud.genealogy_slots[local_level].get_line_count() <= 2, "Stage %d local Lv%d name must fit its fixed label in at most two wrapped lines." % [stage_index, local_level])
 			if stage_index == 0 and local_level == 4:
 				ground_moon_texture = icon.texture

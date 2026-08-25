@@ -109,7 +109,7 @@ func _ready() -> void:
 	assert(frame.profile_index == 3)
 	assert(_phase_completions == [41])
 	assert(hud.visible, "Gameplay HUD must remain active after the non-terminal phase transition.")
-	assert(hud.stage_name_label.text == "STAGE GALACTIC")
+	assert(hud.stage_name_label.text == "GALACTIC")
 	var completed_metrics := presenter.get_black_hole_presentation_metrics()
 	var completed_field_rect: Rect2 = completed_metrics["field_rect"]
 	assert(is_equal_approx(completed_field_rect.size.x, 1040.0))

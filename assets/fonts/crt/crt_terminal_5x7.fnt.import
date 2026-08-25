@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://56bwcdhtifr2"
+path="res://.godot/imported/crt_terminal_5x7.fnt-96900c65d974be6af4e8d701542b1df1.fontdata"
+
+[deps]
+
+source_file="res://assets/fonts/crt/crt_terminal_5x7.fnt"
+dest_files=["res://.godot/imported/crt_terminal_5x7.fnt-96900c65d974be6af4e8d701542b1df1.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

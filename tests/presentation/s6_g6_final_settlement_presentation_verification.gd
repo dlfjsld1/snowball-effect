@@ -37,13 +37,13 @@ func _ready() -> void:
 	_expect(stage_manager.get_score_ledger().stage_score == 100.0, "Presentation must not change the authoritative Settlement score.")
 
 	hud._process(0.25)
-	_expect(hud.stage_score_label.text != "STAGE SCORE 0", "HUD must begin count-up during the visual.")
-	_expect(hud.stage_score_label.text != "STAGE SCORE 100", "HUD must not jump directly to the final score during count-up.")
+	_expect(hud.stage_score_label.text != "0", "HUD must begin numeric-only count-up during the visual.")
+	_expect(hud.stage_score_label.text != "100", "HUD must not jump directly to the final score during count-up.")
 
 	effect._process(0.25)
 	effect._process(0.25)
 	_expect(_finished_count == 1, "Settlement presentation must finish exactly once.")
-	_expect(hud.stage_score_label.text == "STAGE SCORE 100", "HUD must show the authoritative final score after the visual.")
+	_expect(hud.stage_score_label.text == "100", "HUD must show only the authoritative final score after the visual.")
 	_expect(stage_manager.get_score_ledger().stage_score == 100.0, "Visual completion must not duplicate score.")
 
 	hud.effect_manager._on_final_settlement_started(0.0)
