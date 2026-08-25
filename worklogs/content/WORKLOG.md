@@ -1630,3 +1630,16 @@ Owner: Content/Systems/Release
 - Title, Pause, Stage Clear, Settings, Result의 전용 `Style…Pressed` StyleBox 리소스를 모두 제거했다.
 - 각 pressed 슬롯은 동일 버튼의 normal StyleBox를 사용한다. Settings의 단계 버튼도 normal step style을 pressed로 명시해 Godot 기본 pressed box가 나타나지 않게 했다. hover StyleBox는 변경하지 않았다.
 - Godot 4.7.1 headless Pause fixture와 `git diff --check`를 통과했다.
+
+## 2026-08-25 — UI interaction outline 제거
+
+Owner: Content/Systems/Release
+
+- Pause의 다섯 modal Button 모두에 `focus = normal`을 명시해 Settings close 뒤 복원되는 keyboard focus가 Godot 기본 흰 사각선으로 보이지 않게 했다.
+- Settings step button의 hover StyleBox에서만 추가로 그려지던 밝은 2px border를 제거했다. hover 색 채움은 유지한다.
+- Pause fixture는 각 button의 focus·pressed StyleBox가 normal StyleBox와 동일함을 검사하도록 확장했고 Godot 4.7.1 headless에서 통과했다.
+
+### 후속 수정
+
+- 첫 적용에서 반복 패치가 `ResumeButton`의 focus 항목만 중복 추가하고 `Retry`·`Settings`·`How To Play`·`Main Menu`에는 적용하지 못한 것을 확인했다. 특히 Settings close는 `SettingsButton.grab_focus()`를 호출하므로 기본 흰 focus outline이 계속 보였다.
+- 중복 항목을 하나로 정리하고, 다섯 modal Button 각각에 `focus = StyleButtonNormal`을 명시했다. fixture의 모든 버튼 focus/pressed equality 검사가 이제 실제 대상별로 통과한다.

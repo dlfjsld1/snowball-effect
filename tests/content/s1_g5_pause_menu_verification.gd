@@ -31,6 +31,9 @@ func _ready() -> void:
 	_expect(menu.pause_modal.visible and not menu.pause_button.visible, "Paused view must show the modal instead of the quick controls.")
 	_expect(menu.settings_button.get_index() + 1 == menu.how_to_play_button.get_index(), "How to Play must follow Settings.")
 	_expect(menu.how_to_play_button.get_index() + 1 == menu.main_menu_button.get_index(), "How to Play must precede Main Menu.")
+	for button: Button in [menu.resume_button, menu.modal_retry_button, menu.settings_button, menu.how_to_play_button, menu.main_menu_button]:
+		_expect(button.get_theme_stylebox(&"focus") == button.get_theme_stylebox(&"normal"), "Pause focus must not add an outline.")
+		_expect(button.get_theme_stylebox(&"pressed") == button.get_theme_stylebox(&"normal"), "Pause press must not add an outline.")
 	menu.how_to_play_button.pressed.emit()
 	_expect(menu.how_to_play_modal.visible, "How to Play must open the shared controls guide.")
 	menu.how_to_play_dismiss_button.pressed.emit()

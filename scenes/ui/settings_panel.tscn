@@ -38,11 +38,6 @@ border_color = Color(0.63, 0.36, 0.16, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleStepButtonHover"]
 bg_color = Color(0.42, 0.22, 0.08, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.98, 0.75, 0.34, 1)
 
 [node name="SettingsPanel" type="Control"]
 visible = false
