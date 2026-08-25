@@ -52,6 +52,8 @@ S6-G2의 CUT-IN과 화면 연출은 Presentation이 담당한다. S6-G1의 시�
 - Web Export, 브라우저 QA, 성능 기록, 공개 빌드 검증
 - Core 안정화 뒤 Optional Item 구현
 
+예외: S8-G3B Result 최고 Stage·Snowball summary는 Content/Systems/Release 단독 Goal이다. 해당 Goal의 제한된 `highest_ball_global_level` 기록·terminal snapshot value-copy·Result 표시 변경에 필요한 Core/Integration 경로와 전용 tests는 Goal 계약 및 `OWNERSHIP.md`의 일시적 소유권 예외를 따른다.
+
 Content는 데이터 값을 소유하고 Core는 그 데이터를 소비한다. Retry가 실제 게임 상태를 초기화하는 연결은 Integration Point다.
 
 ## 4. Integration — 팀 리드

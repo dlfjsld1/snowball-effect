@@ -882,3 +882,92 @@ Branch: `codex/s8-g6-black-hole-capacity`
 - Added `tests/simulation/s8_g6_black_hole_capacity_verification.tscn`: `0 existing + 3 pairs`, `1 existing + 2 pairs`, full-capacity overflow의 entity/event count, retained Lv13 source, physical separation, normal render snapshot Lv14 0, absorption 0을 검증한다.
 - Godot 4.7.1 CLI: focused fixture `S8_G6_VERIFIED`; S2-G3 deterministic merge, S3-G9 FIRST_CONTACT, S8-G2 terminal fixture no-error pass. Primary `godot` MCP validation confirmed simulation, fixture script and scene `3/3 valid`.
 - Excluded: S8-G7 cue/visual work, S8-G8 Main/Retry/Web acceptance, Black Hole force/score tuning and all Integration-owned files.
+## 2026-08-25 — Paddle code-drawing removal
+
+Owner: Core maintenance — user-directed correction
+
+- `scripts/gameplay/paddle.gd`에서 코드 기반 패들 렌더링을 담당하던 `_draw()` 전체와 불필요한 `queue_redraw()` 호출을 제거했다. 패들 이동, 회전, OBB 충돌, 반사, Fire contact 상태는 변경하지 않았다.
+- `git diff --check`는 공백 오류 없이 통과했다. 이 환경에서는 Godot CLI 실행 파일이 PATH에서 발견되지 않아 headless parse/runtime 검증은 수행하지 못했으며, 이는 게임 코드 오류가 아닌 로컬 tooling 제약으로 기록한다.
+
+## 2026-08-25 — User-selected Paddle sprite binding
+
+Owner: Core — user-directed visual binding exception
+
+- 사용자 선택 `paddle_pneumatic_ram_70.png`(168×16, 투명 경계의 흰색 외곽 픽셀 제거)을 `assets/sprites/paddle/`에 추가하고 `scenes/gameplay/paddle.tscn`의 `Paddle/Visual` Sprite2D로 연결했다.
+- `docs/current/03_TECHNICAL_DESIGN.md`에 본체 asset path, 70% 폭, 코드 렌더링 금지, 물리 OBB와 시각 폭의 독립 계약을 기록했다. `docs/team/OWNERSHIP.md`에는 이 정확한 이미지·Sprite2D binding만 Core가 직접 유지하는 사용자 지정 예외를 기록했다.
+- Paddle 입력·충돌·반사와 Integration-owned 파일은 변경하지 않았다. Godot CLI executable은 이 환경에서 발견되지 않아 headless runtime 검증은 수행하지 못했다.
+
+### Verification update
+
+- Desktop의 `Godot_v4.7.1-stable_win64.exe/Godot_v4.7.1-stable_win64.exe`를 확인해 `--headless --path . --editor --quit`로 프로젝트 스캔과 `paddle_pneumatic_ram_70.png` import를 실행했다. 새 PNG import와 editor project load는 exit `0`으로 완료됐다.
+- `tests/core/paddle_mouse_test.tscn` 실행은 기본 `user://logs` 파일을 열지 못한 뒤 Godot process가 signal 11을 기록했다. workspace `--user-data-dir` 재시도도 같은 실패였으며, 테스트 본문/패들 코드 오류가 출력되기 전의 local logging/tooling issue로 분리한다. 따라서 패들 physics runtime 회귀는 `UNVERIFIED — Godot logging/tooling issue`다.
+
+### Web build update
+
+- Desktop Godot 4.7.1으로 `--headless --path . --export-release Web build/web/index.html`을 실행해 Web Release export를 exit `0`으로 완료했다. 새 `paddle_pneumatic_ram_70.png`가 export asset scan/import와 savepack에 포함됐다.
+- `build/web`을 `127.0.0.1:8080`의 local HTTP server로 제공했고 `GET /`는 `200 text/html`, 5,447 bytes를 반환했다. Godot의 Windows root certificate/editor settings 저장 경고는 export 결과를 막지 않았으며, 패들 실제 Browser render 검증은 별도로 남는다.
+
+## 2026-08-25 — S1-G2A Paddle vertical dash
+
+Owner: Core
+Owned Files: `scripts/gameplay/paddle.gd`, `scripts/gameplay/paddle_dash_gauge.gd`, `scenes/gameplay/paddle.tscn`, `tests/core/paddle_dash_test.*`; user-authorized `project.godot` Input Map addition.
+
+- Space `paddle_dash`는 ready 상태에서만 수락한다. 대쉬는 rotation과 무관하게 world Y를 `120` units 위로 `1200 units/s`로 이동하고, 동일 속도로 시작 Y로 돌아온다. dash 동안 X/rotation과 OBB 규격은 바꾸지 않아 기존 previous/current transform collision provider를 그대로 사용한다.
+- cooldown은 5초이며 dash 시작 순간부터 감소한다. `Paddle/DashGauge`는 cooldown 중에만 오른쪽에 작은 arc를 표시하고 ready에서는 숨긴다. 기존 Paddle PNG 본체는 Sprite2D로 유지하며 대쉬 동안에만 squash/stretch·밝기 animation을 준다.
+- Godot 4.7.1 Web Release export는 exit 0, savepack complete로 script/scene parse를 통과했다. automated fixture는 `user://logs` 파일 접근 실패 후 test body 전 signal 11로 종료했으며, in-app Browser는 Canvas unsupported 상태라 actual Space Web input을 관찰하지 못했다. 따라서 Goal은 `IMPLEMENTED`이며 Desktop fixture와 Canvas Browser 수동 수락이 남았다.
+
+### User acceptance and gauge refinement
+
+- 사용자가 실제 실행에서 Space 수직 대쉬, 동일 speed return, 5초 cooldown과 gauge 동작을 정상으로 확인해 S1-G2A를 `VERIFIED`로 수락했다.
+- 후속 사용자 요청대로 `DashGauge`를 radius `12→8`, stroke `3→2`로 축소하고, cooldown progress를 흰색 arc(빈 track은 20% 흰색)로 변경했다. 패들과의 간격도 `102→96`으로 줄였다.
+- Godot 4.7.1 Web Release export를 다시 실행해 exit `0`, `savepack` complete를 확인했다. certificate/editor-settings 저장 오류는 기존 local environment warning으로 유지된다.
+
+### Gauge scale/opacity refinement
+
+- 후속 사용자 요청대로 gauge의 stroke `2px`는 유지하고 radius를 `8→6px`로 축소했다. cooldown 진행 arc는 흰색 alpha `0.72`, 빈 track은 alpha `0.14`로 낮춰 cooldown 활성 중에도 약하게 표시한다.
+
+### Cooldown gauge removal
+
+- 다른 팀원의 의견을 반영해 `Paddle/DashGauge` scene node와 `paddle_dash_gauge.gd`를 삭제했다. 대쉬 이동·복귀·5초 cooldown과 Paddle PNG animation은 유지하며, cooldown은 재사용 입력 거부로만 표현한다.
+
+### Center-bar cooldown gauge
+
+- 사용자 요청으로 패들 중앙 초록색 바를 cooldown gauge로 전환했다. `DashGaugeBackdrop`가 원본 바를 가리고 `DashGaugeFill` Polygon2D가 dash 직후 0폭에서 5초 동안 좌→우 25px 폭으로 채워진다. 별도 패들 주변 gauge는 다시 추가하지 않았다.
+
+### Rich dash animation
+
+- 사용자 요청으로 기존 squash/stretch·밝기 변화에 2단계 초록색 afterimage를 추가했다. 상승 시 잔상은 패들 아래, 복귀 시 위에 남으며 dash 종료와 동시에 숨긴다. PNG 본체와 collision/physics는 변경하지 않았다.
+
+### Dash animation visibility reinforcement
+
+- 사용자 피드백에 따라 faint afterimage만으로는 dash 변화가 보이지 않는 문제를 보강했다. 넓은 2단계 green wedge speed trail과 `0.3s` post-dash fade-out을 추가하고 Sprite afterimage alpha도 높였다. 대쉬 방향 반대편으로 trail이 남으므로 상승·복귀 모두 이동 감각이 분명하다.
+
+### Afterimage-only dash refinement
+
+- 사용자 시각 피드백에 따라 넓은 green wedge speed trail을 제거했다. 대쉬 연출은 패들 형태를 그대로 따르는 두 단계의 희미한 초록색 afterimage와 `0.3s` fade-out만 사용한다.
+# 2026-08-25 — S1-G2A dash afterimage visibility correction
+
+- Changed the paddle dash visual from two nearly overlapping 7/15-unit ghosts to three same-sprite, faint-green ghosts at 28/56/84 units opposite travel; the fade now lasts 0.55 seconds.
+- Kept the paddle PNG body, center-bar cooldown, collision, dash distance/speed, and no-wedge constraint unchanged.
+- Verification: Godot headless editor import/parse and Godot 4.7.1 Web release export both succeed. Certificate-store/editor-settings messages are local environment warnings.
+
+### Follow-up opacity tuning
+
+- User confirmed the three afterimages are visible; raised their alpha slightly from `0.46/0.28/0.15` to `0.56/0.36/0.20` without changing spacing, duration, or the no-wedge design.
+
+- Follow-up request: raised the three green afterimage alphas to `0.72/0.48/0.30` so the close duplicate is crisp while the far copies remain a fading trail.
+
+### Dash motion easing
+
+- Replaced constant-speed dash legs with cubic ease-out ascent, 0.045-second peak hold, and sine ease-in-out return. The 120-unit travel, 1200 units/s leg-time baseline, collision transform, cooldown, and afterimage design remain unchanged.
+
+- Removed the visible peak hold after play feedback and softened the ascent to sine ease-out. Return stays sine ease-in-out, making the turnaround continuous instead of pausing at the top.
+
+### Scale Shift dash readiness
+
+- Added `Paddle.reset_dash_cooldown()` to restore the cooldown and center-bar fill without changing Paddle transform or dash motion.
+- GameManager calls it only after the authoritative StageManager accepts the matching Scale Shift presentation completion and enters the next Stage; rejected or duplicate IDs do not reset the dash.
+
+### Paddle visual/collision width alignment
+
+- Changed the default Paddle physics OBB width from `240` to `168` so its collision, end contacts, and play-field clamp match the current 168×16 PNG exactly.

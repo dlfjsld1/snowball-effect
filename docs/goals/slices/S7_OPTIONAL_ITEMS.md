@@ -30,10 +30,19 @@
 
 - Owner: Content/Systems
 - Owned Files: `scripts/gameplay/item_manager.gd` (Blizzard visual spawn signal만), `scripts/gameplay/item_blizzard.gd`, `scripts/presentation/item_blizzard_visual.gd`, `scenes/effects/item_blizzard_visual.tscn`, `assets/particles/items/blizzard/**`, `resources/items/**`, `tests/content/s7_g2_**`
-- Integration Point: S7-G1 gateway의 제한된 spawn/movement command와 ItemManager의 read-only planet/orb 이벤트, `ItemBlizzard.active_state_changed(snapshot)`을 사용한다. Content/Systems/Release 담당이 모든 item type이 공유하는 identity-neutral Item Ball styling과 Blizzard 전용 Orb styling·`BLIZZARD!` cue·장식 눈을 직접 소유하며, Main mount/신호 연결은 Integration에 요청한다.
+- Integration Point: S7-G1 gateway의 제한된 spawn/movement command와 ItemManager의 read-only planet/orb 이벤트, `ItemBlizzard.active_state_changed(snapshot)`을 사용한다. Content/Systems/Release 담당이 모든 item type이 공유하는 identity-neutral Item Ball styling과 Blizzard 전용 Orb styling·장식 눈을 직접 소유하며, Main mount/신호 연결은 Integration에 요청한다. 활성 중 남은 시간 상태창은 표시하지 않는다.
 - Dependencies: S7-G1 API.
-- Verification: 정의된 범위/시간에만 효과, 종료 후 완전 복구, 범용 identity-neutral Item Ball H0~H4·neutral break와 Blizzard 전용 Orb styling·`BLIZZARD!` cue·장식 눈이 계약된 이벤트와 active state에 맞춰 시작/정리, Core 파일 직접 변경 없음.
+- Verification: 정의된 범위/시간에만 효과, 종료 후 완전 복구, 범용 identity-neutral Item Ball H0~H4·neutral break와 Blizzard 전용 Orb styling·장식 눈이 계약된 이벤트와 active state에 맞춰 시작/정리, 중앙 남은 시간 상태창 없음, Core 파일 직접 변경 없음.
 - Do Not Modify: Ball simulation 내부와 StageManager.
+
+### S7-G1V Three Item Orb visual repair
+
+- Owner: Integration — 2026-08-25 사용자 지시로 세 Item의 공통 Main 표시 경로를 복구하는 한시적 visual integration 예외.
+- Owned Files: `scripts/presentation/item_blizzard_visual.gd`, `tests/content/s7_g2_blizzard_visual_verification.gd`, `tests/integration/s7_g1_three_item_orb_live_verification.*`
+- Integration Point: 기존 `ItemManager.item_orb_spawned(item_type, world_position)`와 collect/miss signal만 소비하며 gameplay state를 변경하지 않는다.
+- Dependencies: S7-G1C producer, S7-G2 Blizzard visual mount, 승인된 Fire/Magnet Orb 자산.
+- Verification: Blizzard/Fire/Magnet 각각 실제 Main에서 Item Ball 5-hit 뒤 matching Orb가 보이고 아래로 이동하며, collect/miss 뒤 사라지고 matching effect만 한 번 활성화된다.
+- Do Not Modify: ItemManager producer 규칙, StageManager, Simulation, score/settlement, ItemDefinition tuning.
 
 ### S7-G3 Fire Core
 

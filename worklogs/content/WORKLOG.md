@@ -1444,3 +1444,131 @@ Owner: Content/Systems/Release
 - Pixabay `Power up type 1` 원본에서 앞 공백은 없음을 확인하고, `0.955034s` 뒤의 끝 공백을 제거한 뒤 80% source gain으로 `assets/audio/item_cutin.ogg`를 렌더링했다.
 - `audio_catalog.tres`에 non-looping `item_cutin` event를 등록하고, AudioManager에 gameplay priority `65`, polyphony `1`, cooldown `0.10s` 정책을 추가했다. 라이선스와 원본 URL은 `assets/audio/ATTRIBUTION.md`에 Pixabay Content License로 기록했다.
 - Godot 4.7.1 CLI: S6-G3 catalog `audio_events=30`, S6-G4 AudioManager foundation `player_pool=8`이 각각 exit 0으로 통과했다. Web release export에 새 OGG의 imported stream이 포함됐다.
+
+## 2026-08-25 — S7-G2 Blizzard CUT-IN removal
+
+Owner: Content/Systems/Release
+
+- 사용자 지시에 따라 Blizzard의 visible CUT-IN panel, crystal texture preload와 visual activation cue를 제거했다.
+- Blizzard Orb 및 active `BLIZZARD!` indicator/48 snow는 유지한다. 실제 activation은 Fire/Magnet과 같은 Gateway deferred skip fallback으로 넘긴다.
+- Godot 4.7.1 CLI project load와 Primary validate 3/3을 통과했다. Main runtime에서 5-hit→Orb collect 직후 inactive, 다음 두 frame 뒤 active·spawn `6→18`·48 snow, visual CUT-IN producer 부재를 확인했다.
+- 최신 Web release export는 localhost Browser에서 Title Canvas와 `START RUN` 입력을 확인했고 console warning/error는 0이었다.
+
+## 2026-08-25 — S7-G2 `Blizzard Orb` cosmetic CUT-IN
+
+Owner: Content/Systems/Release
+
+- 사용자 지시에 따라 새 Blizzard cosmetic CUT-IN의 유일한 문구를 `Blizzard Orb`로 정했다. 이전 crystal 및 `SPAWN RATE x3` 패널은 복구하지 않았다.
+- 264×40 pixel strip을 0.65초 표시하며 gameplay activation을 gate하지 않는다. Native Main screenshot에서 문구와 배치를 확인했다.
+- Godot 4.7.1 CLI project load, Primary validate 3/3, 실제 5-hit→Orb collect runtime에서 즉시 CUT-IN visible·effect inactive, 다음 frame CUT-IN visible·effect active·spawn `6→18`, runtime error 0을 확인했다.
+- 검증 도구가 남긴 임시 `McpBridge` autoload와 untracked bridge script를 제거한 뒤 Web release를 다시 export했다. localhost의 새 Browser tab에서 Title Canvas→`START RUN`→플레이 화면을 확인했고 console warning/error는 0이었다.
+
+## 2026-08-25 — S7-G2 shared Blizzard item CUT-IN correction
+
+Owner: Content/Systems/Release + Presentation
+
+- 사용자 정정에 따라 앞선 0.65초 Blizzard 전용 strip 구현을 폐기했다. Blizzard는 Fire/Magnet과 동일한 S6-G2 공용 Pixel Machine banner, active Play Field clip, 2.00초 enter/hold/exit lifecycle을 사용한다.
+- 공용 banner에는 정확히 `Blizzard Orb`, Blizzard 결정 portrait, `SPAWN RATE ×3`을 표시한다. Content 전용 `ItemBlizzardVisual`에는 CUT-IN state/draw가 남지 않는다.
+- Godot 4.7.1 CLI project load, Primary validate 7/7, Presentation runtime fixture `shared_banner=true title=Blizzard_Orb duration=2 cue=once`를 통과했다. Primary Main screenshot에서 실제 공용 banner 배치를 확인했고 runtime error는 0이었다.
+- 최신 Web release export는 exit 0이었고 localhost의 새 Browser tab에서 Title→`START RUN`→플레이 진입과 console warning/error 0을 확인했다.
+
+## 2026-08-25 — S7-G2 active timer panel removal
+
+Owner: Content/Systems/Release
+
+- 사용자 지시에 따라 Blizzard 활성 중 화면 중앙에 표시되던 `BLIZZARD! n.ns` 남은 시간 상태창을 제거했다.
+- Blizzard 5초 효과, spawn multiplier, 공용 획득 CUT-IN과 활성 중 48개 장식 눈은 변경하지 않았다.
+- Godot 4.7.1 CLI project load exit 0, Primary validate 4/4를 통과했다. Primary Main에서 active 5초·multiplier 3·장식 눈 48개와 중앙 panel 부재를 screenshot으로 확인했고 runtime error는 0이었다.
+- 최신 Web release export exit 0, 새 Browser tab의 Title→Start Run smoke와 console warning/error 0을 확인했다.
+
+## 2026-08-25 — S8-G3B Result 최고 Stage·Snowball summary (진행 중)
+
+Owner: Content/Systems/Release
+
+- 사용자 확정 아트를 Result `HIGHEST STAGE` strip으로 추가했다: Ground 설원 능선, Planetary 우주에서 본 지구 대기권. 두 strip은 카드의 label 아래 허용 영역 `305×49` logical px만 덮도록 AtlasTexture로 배치했다.
+- Simulation의 committed Ball 생성과 Black Hole entity 전환을 `ball_committed(global_level)`로 공개하고, StageRuntime이 Run-scoped `highest_ball_global_level`을 monotonic 기록·Retry/Main reset한다. failure 및 Black Hole finale terminal snapshot에 value-copy한다.
+- ResultPanel은 live Core를 조회하지 않고 copied snapshot의 `stage_index`/`highest_ball_global_level`로 Stage/Ball catalog display name과 strip/ball texture를 선택한다.
+- Primary Godot validate에서 변경 Script/Scene 및 새 fixture 7개가 모두 valid였다. Main runtime probe에서 Ground `GROUND/MOON` strip 및 Planetary `PLANETARY/GALAXY`, Galactic `GALACTIC/BLACK HOLE` mapping과 Ground terminal snapshot `highest_ball_global_level=4`를 확인했다.
+- `godot` CLI는 PATH와 알려진 설치 경로에서 발견되지 않아 CLI baseline은 tooling issue로 남는다. Primary test scene은 즉시 exit하는 fixture 특성상 MCP bridge 초기화 전에 종료됐고 exit code 0이었다. Web export/browser 검증은 아직 수행하지 않았다.
+- Planetary timeout Result에서 발견된 두 시각 회귀를 보정했다. Supernova catalog resource가 Earth placeholder를 참조하던 binding을 승인된 Supernova 64px asset으로 교체했고, Planetary Atlas strip 폭을 640px로 제한해 생성 원본의 우측 흰 canvas 경계가 카드에 새지 않게 했다. Primary runtime screenshot에서 `PLANETARY / SUPERNOVA`, Supernova artwork, 경계선 없는 Earth-orbit strip을 확인했다.
+- BallCatalog Lv0~14의 direct `BallDefinition.texture`를 전수 완결했다. Earth/Mercury와 Sun/Mars의 잘못된 binding을 교체하고, 빠져 있던 Red Giant/Nebula에는 새 pixel-art PNG를 추가했으며 Galaxy Cluster/Quasar/Event Horizon/Black Hole에는 기존 Galactic runtime artwork를 연결했다. Primary runtime catalog probe는 texture missing `[]`를 반환했고, Primary validate 3/3과 native headless test scene exit 0을 확인했다.
+- Stage Clear `NEXT STAGE`의 남은 노란 사각선은 hover가 아니라 자동 keyboard focus StyleBox의 2px border였다. Focus border도 제거하고 Presentation verification에 hover/focus 양쪽 border `0` assertion을 추가했다. Primary runtime에서 focused button의 border `[0, 0, 0, 0]`와 실제 modal capture를 확인했다.
+- Result base plate에 baked되어 있던 Galactic galaxy와 Black Hole preview를 각각 Atlas crop으로 분리했다. 두 preview 영역은 항상 neutral mask로 가리고, `stage_index == 2`에서만 Galactic strip, `highest_ball_global_level == 14`에서만 Black Hole crop을 켠다. Planetary/Supernova Main screenshot에서 두 기본 그래픽이 남지 않음을, Galactic/Black Hole runtime probe에서 두 추출 artwork만 다시 표시됨을 확인했다.
+- 사용자 요청에 따라 Result baked crop 분리 방식은 철회했다. Galactic/Black Hole은 base plate의 원래 이미지를 그대로 사용하고, Ground/Planetary 및 Black Hole 이외 Ball은 좌·우·위로 확장한 opaque preview 영역(Stage `345×79`, Ball `330×79` logical px)으로 원본 기본 graphics를 덮는다. preview label은 z-index를 올려 확장 이미지 위에서 읽히게 했다. Primary screenshot의 Planetary/Supernova와 runtime Galactic/Black Hole mask-off 상태를 확인했다.
+- 최신 변경을 Godot 4.7.1 Web release로 `build/web/`에 export하고, `http://127.0.0.1:8080/` local server에서 제공했다. In-app Browser의 fresh Web build에서 Title canvas와 `SNOWBALL EFFECT`/`START RUN`을 확인했으며 console warning/error는 0개였다.
+- Black Hole finale terminal lock 동안 Item Orb가 계속 아래로 보이는 원인은 `ItemBlizzardVisual`의 독립 visual fall `_physics_process`였다. GameManager의 finale lock에서 Orb motion freeze를 호출하고, Visual은 위치는 남기되 motion만 멈추게 했다. 모든 Blizzard/Fire/Magnet Orb의 freeze/unfreeze 회귀 assertion을 추가했으며 Primary runtime의 actual GameManager finale callback에서 Fire Orb position before/after 동일·`frozen=true`를 확인했다.
+
+## 2026-08-25 — S7-G3R Fire Snowball visual regression
+
+Owner: Content/Systems/Release + Core
+
+- 왕관처럼 솟고 직선 바닥선이 보이던 기존 Fire 표현을 폐기하고, 공의 상단 구면을 따라가는 얇은 transparent flame mantle 자산 `fire_snowball_mantle_v2.png`로 교체했다. 불꽃은 위를 향하며 굵은 검은 외곽선이나 공 본체를 가리는 채움이 없다.
+- `BallRenderer`는 snapshot의 `special_types`에서 Fire만 선별해 하나의 reusable MultiMesh overlay batch로 렌더한다. 각 공 반지름에 비례해 mantle을 배치하고 본체와 같은 active Play Field clip을 적용한다.
+- renderer fixture는 Fire batch 재사용·reset·transform과 기존 standard/fallback/Black Hole 경로를 통과했다. production Main 기반 native capture에서 Ground 5개 크기의 Fire overlay 5/5를 확인했다.
+- clean Web release export 후 localhost:8080 실제 Browser에서 Title→Start Run을 확인했고 console warning/error는 0이었다. 제공 중인 PCK와 local release PCK의 SHA-256은 `5EEE6AC8F4B7C37FE4C5CF1227CC71CBADC8907B0D6C9A583ADEC20F56CF3548`로 일치했다.
+
+## 2026-08-25 — S7-G3R2 Fire Snowball full-outline visual
+
+Owner: Content/Systems/Release + Core
+
+- 사용자 피드백에 따라 상단 hemisphere에만 놓인 mantle을 폐기하고, Snowball의 원형 외곽 360°를 감싸는 얇은 transparent pixel-fire ring `fire_snowball_ring_v3.png`로 교체했다. 중앙은 비워 본체 texture를 유지하고 작은 공에서 crown처럼 보이는 문제를 제거했다.
+- `BallRenderer`의 shared Fire MultiMesh는 공 중심에 overlay를 정렬하고 X/Y 모두 runtime radius `×1.18`로 비례 배치한다. special type, reuse, reset, active Play Field clip 계약은 변경하지 않았다.
+- Godot 4.7.1 CLI import/project scan exit 0, renderer fixture `S4_G4_MULTIMESH_VERIFIED` exit 0, Primary validate 4/4를 통과했다. production Main 기반 native capture에서 Ground 5개 크기의 Fire ring 5/5를 확인했다.
+- clean Web release를 localhost:8080에서 실제 Browser로 Title→Start Run까지 실행했고 console warning/error는 0이었다. 제공 중인 PCK와 local release PCK SHA-256은 `29381DAD7F20F8E791F9F1ACE5980D2841ABF2BE6367DB70C08CC5BDE90C3BC5`로 일치했다.
+- Primary runtime이 남긴 `McpBridge` autoload/file은 clean export 전에 제거하고 editor rescan으로 cache를 갱신했다. CLI의 root certificate/editor settings 경고는 workspace 밖 접근 제한에 따른 환경 경고이며 game runtime 오류가 아니다.
+
+## 2026-08-25 — S7-G3R3 Fire Snowball asymmetric shell
+
+Owner: Content/Systems/Release + Core
+
+- 사용자의 실루엣 스케치를 authoritative composition reference로 삼아 균일한 ring을 폐기했다. 새 `fire_snowball_shell_v4.png`는 좌우·하단의 짧은 불꽃이 Snowball 윤곽에 밀착하고, 상단의 3~5개 불규칙 봉우리만 길게 솟는 transparent pixel-fire shell이다.
+- sprite 내부의 실제 원 중심을 측정해 shared MultiMesh overlay를 ball position에서 `-0.44 × radius`만큼 Y 보정하고 X/Y `1.64 × radius`로 배치했다. QuadMesh UV 방향을 고려해 Y axis를 음수로 반전했으며 fixture가 방향까지 검사한다.
+- Godot 4.7.1 CLI import/project scan과 renderer fixture `S4_G4_MULTIMESH_VERIFIED`가 exit 0이었다. production Main native capture에서 Ground 5개 크기의 shell 5/5, 본체 보존, 하단 밀착과 상단 flame 방향을 확인했다.
+- clean Web release를 localhost:8080 실제 Browser에서 Title→Start Run까지 실행했고 console warning/error는 0이었다. served/local PCK SHA-256은 `1F4557CFEB541A76893C87A699874559B343A1FBF61573E4D3D507C66BA48EDF`로 일치했다.
+
+## 2026-08-25 — S7-G3R4 Fire Snowball flowing crown repair
+
+Owner: Content/Systems/Release + Core
+
+- 사용자 피드백에 따라 상단의 긴 수직 쌍뿔과 깊은 U자 골을 제거했다. 새 `fire_snowball_shell_v5.png`는 하단·좌우 외피를 유지하면서 상단을 5~7개의 짧고 넓은 불꽃 혀가 얕은 골로 이어지는 하나의 flowing flame mass로 구성한다.
+
+## 2026-08-25 — S7-G3R5 Fire Snowball checker artifact cleanup
+
+Owner: Content/Systems/Release + Core
+
+- `fire_snowball_shell_v5.png`의 투명 외곽에서 체크 무늬 분리 흔적으로 보이는 불투명 near-white/near-neutral 픽셀 11개를 식별해 해당 픽셀만 투명화한 `fire_snowball_shell_v6.png`로 교체했다. 포화된 노랑·주황·빨강 불꽃 픽셀과 shell geometry/transform은 변경하지 않았다.
+- 후속 pixel audit에서 같은 조건의 잔여 픽셀은 0개다. Godot 4.7.1 renderer fixture와 production Main 기반 Ground 5개 크기 native capture에서 Fire shell 5/5, UV 방향·중심·비례 스케일, 외곽 흰 점 제거를 확인했다.
+- Web release export는 exit 0이었다. localhost:8080 실제 Browser에서 Title→Start Run을 실행했고 console warning/error 0, served/local PCK SHA-256 `DAFD9D5AD879D4E0A7AA8B4AC1A20B66BB9B06F21AB44C499DC528B0278D281B` 일치를 확인했다.
+- sprite의 실제 원 중심을 다시 측정해 shared MultiMesh overlay를 ball position에서 `-0.28 × radius` Y 보정하고 X/Y `1.49 × radius`로 배치했다. UV Y 반전, reusable batch, reset, special-type filtering과 active Play Field clip 계약은 유지했다.
+- Godot 4.7.1 CLI import/project scan과 renderer fixture `S4_G4_MULTIMESH_VERIFIED`가 exit 0이었다. production Main native capture에서 Ground 5개 크기의 Fire shell 5/5, 본체 보존과 horn-free 상단 실루엣을 확인했다.
+- 검증 중 외부 Primary session이 다시 주입한 `McpBridge` autoload/file은 clean export 전에 제거하고 editor rescan으로 cache를 갱신했다. clean Web release의 Title→Start Run과 console warning/error 0을 확인했으며 served/local PCK SHA-256은 `6B57C84403AD4A03362B43B5125A6C7F0E4728620F2E0D7BD4B0F4C874ACAF9C`로 일치했다.
+
+## 2026-08-25 — S7-G3R6 Fire Snowball lower fringe cleanup
+
+Owner: Content/Systems/Release + Core
+
+- 사용자 캡처에서 큰 Fire Snowball 하단에 남은 회백색 도트를 재현했다. 기존 중성 흰색 검사로는 노란 기와 분홍 기가 섞인 밝은 외곽 픽셀을 놓쳤고, 투명화에 사용한 `Color.Transparent`가 alpha 0/white RGB를 남겨 texture filtering halo를 만들 수 있음을 확인했다.
+- 투명 외곽 2픽셀 이내의 저채도 밝은 잔여 픽셀 74개를 제거하고 모든 alpha 0 픽셀의 RGB를 `0,0,0`으로 정규화한 `fire_snowball_shell_v10.png`로 교체했다. 불꽃의 포화된 노랑·주황·빨강과 기존 transform은 유지했다.
+- Godot 4.7.1 import, MultiMesh renderer fixture, production Main Ground 5개 Fire capture가 모두 exit 0이었다. 큰 공 확대 캡처에서 하단 외곽 흰 점 제거를 확인했다. Web release export와 localhost:8080 Title→Start Run이 정상이고 console warning/error 0, served/local PCK SHA-256 `89380393A6C62975BD5FD4FBD6839FCC2D886F5B67426EA663655FC90BBEA715` 일치를 확인했다.
+
+## 2026-08-25 — S7-G3R7 Fire Snowball lower-edge alignment
+
+Owner: Content/Systems/Release + Core
+
+- 반복 캡처에서 남은 밝은 원호를 120px 이동, Fire overlay-only, background-only로 분리했다. 밝은 픽셀은 Fire PNG나 배경이 아니라 shell보다 아래로 돌출된 Snowball 본체 하단이었다.
+- `fire_snowball_shell_v13.png`은 작은 내부 투명 구멍을 제거하고 중앙 inner rim을 2픽셀 보강한다. renderer는 Fire batch를 `z_index=1`로 고정하고 Y 보정을 `-0.28×radius`에서 `-0.12×radius`로 내려 X/Y `1.49×radius` 크기를 유지하면서 본체 하단을 완전히 감싼다.
+- Godot 4.7.1 production Main Ground 5개 capture에서 Fire 5/5와 큰 공 하단 돌출 0을 확인했다. MultiMesh renderer fixture와 Web release export는 exit 0이었다. localhost:8080 Title→Start Run의 console warning/error는 0이고 served/local PCK SHA-256 `0F5B9717EF036428C8016774E58F8BBEE2B95A06D60B0F0BD48CD17CEE51A953`가 일치했다.
+
+## 2026-08-25 — S7-G4 Magnet manual acceptance
+
+Owner: Content/Systems/Release + Core + Integration
+
+- 사용자가 실제 플레이에서 Magnet 효과의 적용을 확인했다. 기존 Core/Integration fixture와 Main runtime Evidence에 이 수동 수락을 더해 S7-G4를 `VERIFIED`로 갱신했다.
+
+## 2026-08-25 — Item CUT-IN gameplay pause
+
+Owner: Content/Systems/Release + Integration
+
+- Item CUT-IN이 시작되면 기존 First Contact pause lock을 획득해 Simulation·Stage timer·spawn·Paddle 물리/입력을 잠그고, activation cue로 아이템 효과만 적용한다. CUT-IN 종료 signal에서 같은 lock을 해제해 gameplay를 재개한다.
+- Start/Retry/Main 및 Run End 중 CUT-IN reset도 lock을 해제하도록 연결했으며, First Contact와 Item CUT-IN이 서로의 pause lock을 잘못 해제하지 않도록 release guard를 추가했다.
+- Godot 4.7.1 CLI project scan과 Primary runtime 검증에서 Fire item CUT-IN 중 `item_cutin_pause_locked=true`, Stage lock=true, Paddle physics/input=false를 확인했고 2.6초 뒤 CUT-IN 종료와 함께 모두 false/true 상태로 정상 복귀했다.

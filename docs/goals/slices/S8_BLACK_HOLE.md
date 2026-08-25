@@ -35,6 +35,15 @@
 - Verification: finale에서 gameplay HUD/UI가 사라지고 `SNOWBALL EFFECT` 타이틀, `CLEAR SCORE` 최종 run score, Run 누적 `TOTAL MERGES`, `RUN TIME`, 실제 `RETRY RUN`·`MAIN` 버튼 표시; Result 전체가 아래에서 위로 진입하고 좌우 실험관 기포와 독립 최대치 게이지 motion이 동작; 통계 값이 없는 fixture에서는 통계 영역을 숨김; Start/Retry/Pause modal 행동 요청 한 번; Pause modal에 재개·다시 시작·설정·메인 화면이 표시됨; UI가 runtime state를 직접 초기화하지 않음.
 - Do Not Modify: GameManager, StageManager, Core result 계산.
 
+### S8-G3B Result 최고 Stage·Snowball summary
+
+- Owner: Content/Systems/Release
+- Owned Files: `scripts/core/stage_runtime.gd`, `scripts/simulation/ball_simulation_manager.gd`, `scripts/core/stage_manager.gd`, `scripts/core/game_manager.gd`, `scripts/ui/result_panel.gd`, `scenes/ui/result_panel.tscn`, `tests/core/**`, `tests/simulation/**`, `tests/integration/**`, `tests/content/**`. 이 Goal에 한해 Content/Systems/Release가 Core/Integration 경계의 열거 경로를 직접 변경·검증한다.
+- Integration Point: 기존 terminal result snapshot의 `stage_index`는 최고 도달 Stage의 source로 유지하고, Content/Systems/Release가 Run 단위 `highest_ball_global_level` 기록과 Ground/Planetary failure·Black Hole finale terminal snapshot value-copy를 한 Goal 안에서 완결한다. Result UI는 이를 한 번의 copied snapshot으로만 소비한다.
+- Dependencies: S2-G1 Ball catalog, S3 stage chain, S8-G2 terminal snapshot, S8-G3 Result panel, S8-G4 terminal handoff/reset 계약.
+- Verification: Content/Systems/Release는 새 Run부터 Retry/Main까지 committed 일반 Snowball 생성과 committed Merge 결과, 그리고 첫 Black Hole entity 전환을 기준으로 Run 최고 global level을 갱신한다. live Core를 조회하지 않고 copied snapshot의 `stage_index`와 `highest_ball_global_level`을 기존 Stage/Ball catalog의 표시명·이미지로 해석한다. Ground·Planetary의 실패 Result와 Galactic Black Hole finale Result에서 `HIGHEST STAGE`/`HIGHEST BALL`이 각각 실제 값으로 표시되고, Retry·Main·fresh Run 뒤 이전 Run의 텍스트·이미지가 남지 않음을 Desktop/Web에서 확인한다.
+- Do Not Modify: Score/Settlement 계산, 실패·Clear 판정, Black Hole phase/finale 규칙, Stage Shift 순서, Result reveal timing(S6-G6J).
+
 ### S8-G4 Black Hole Finale와 Retry 통합
 
 - Owner: Integration

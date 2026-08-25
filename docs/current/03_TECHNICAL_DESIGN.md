@@ -382,6 +382,22 @@ Paddle 중심 선형속도는 `(current_position - previous_position) / physics_
 
 Mouse Wheel은 tuning 가능한 `mouse_wheel_step_degrees`만큼 기존 Paddle angle state를 변경한다. `←/→`도 같은 angle state를 변경하며 angle min/max clamp는 두지 않는다. 구현은 표현상 동일한 범위로 angle을 정규화할 수 있지만 연속 회전 입력을 멈추지 않는다. `A/D`와 `←/→` 키보드 조작은 A/B 비교용 fallback으로 유지한다. 별도의 마우스 반사 경로나 별도의 rotation state를 만들지 않는다.
 
+### 패들 시각 자산 계약
+
+- 인게임 패들 본체는 `res://assets/sprites/paddle/paddle_pneumatic_ram_70.png`를 `scenes/gameplay/paddle.tscn`의 `Paddle/Visual` `Sprite2D`에 연결해 표시한다.
+- 이 PNG는 원본 폭 `240px`를 가로 `70%`인 `168px`로 축소하고, 높이 `16px`는 유지한 픽셀 아트 자산이다. 투명 배경에 맞닿은 흰색 외곽 픽셀은 제거되어 있다.
+- 패들 본체는 `_draw()` 또는 다른 코드 기반 도형 렌더링으로 대체하지 않는다. `Paddle` Node2D의 물리 OBB는 `paddle_width = 168`, `paddle_thickness = 16`으로 Sprite2D PNG의 168×16 시각 경계와 일치한다. 이동 clamp, swept collision과 끝점 반사는 이 OBB를 단일 source of truth로 사용한다.
+- Fire 등 선택 아이템 효과는 별도 자식 visual로 추가할 수 있으나 본체 PNG, 물리 크기, 충돌·반사 규칙을 변경하지 않는다.
+
+### 패들 수직 대쉬
+
+- `paddle_dash`는 Space 키 Input Map이다. 준비 상태에서만 수락하며, 대쉬는 Paddle 회전·기울기와 무관하게 화면/world의 위 방향(`Vector2.UP`)으로 이동한다.
+- 초기 tuning은 상향 거리 `120 logical units`, 기준 leg speed `1200 world units/s`, cooldown `5.0s`다. 각 leg의 기준 시간은 실제 이동 거리/기준 speed이며, 상승은 sine ease-out, 복귀는 sine ease-in-out으로 보간한다. 정점에는 별도 정지 구간을 두지 않아 이동이 연속적으로 반전된다. X position·rotation 입력과 물리 OBB 크기는 대쉬가 바꾸지 않는다.
+- 기존 previous/current transform 및 continuous collision provider는 대쉬 중에도 실제 위치 변화를 그대로 소비한다. 별도의 dash collision 또는 기울기 방향 impulse를 만들지 않는다.
+- `Paddle/Visual` Sprite2D는 대쉬 상승/복귀 동안 squash·stretch와 밝기 펄스를 적용한다. `DashGhostNear`·`DashGhostMid`·`DashGhostFar` Sprite2D는 이동 방향 반대편 28·56·84 logical units에 패들 형태의 희미한 초록색 잔상을 세 단계로 남긴다. 잔상은 대쉬 종료 뒤 최대 `0.55s` 동안 fade-out해 순간 돌진을 명확히 보인다. 쐐기형 speed trail은 사용하지 않는다. 본체와 Sprite 잔상은 같은 PNG를 사용하며, 본체 `_draw()` 렌더링은 추가하지 않는다.
+- 패들 본체 PNG 중앙의 초록색 바는 `Paddle/DashGaugeBackdrop`·`Paddle/DashGaugeFill` overlay로 dash cooldown을 표현한다. dash 직후 Fill은 비어 있고, 남은 cooldown 비율의 역수에 따라 5초 동안 왼쪽에서 오른쪽으로 채워진다. HUD나 패들 주변의 별도 gauge는 만들지 않는다. cooldown 상태는 input 수락 여부만 바꾸며 gameplay state와 패들 본체 PNG를 변경하지 않는다.
+- matching `shift_id`의 Scale Shift presentation 완료가 `StageManager`에 수락되어 새 Stage에 진입하면 `GameManager`는 `Paddle.reset_dash_cooldown()`을 한 번 호출한다. 이 호출은 cooldown만 준비 상태와 중앙 바 full로 되돌리며, 잘못됐거나 중복된 Shift 완료 ID에는 발생하지 않는다.
+
 공이 수천 개일 수 있으므로 모든 공에 Node/PhysicsBody를 만들지 않고 중앙 `BallSimulationManager` 배열에서 Paddle 하나와 각 활성 공의 후보를 검사한다. Paddle 대 공 검사는 O(N)이며 공 쌍 O(N²) 구조를 만들지 않는다.
 
 ### Broad Phase

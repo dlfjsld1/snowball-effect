@@ -3,10 +3,17 @@ extends Node2D
 
 ## Content-owned, read-only optional-item visual. Integration mounts this node
 ## under Main and connects ItemManager/ItemBlizzard signals; it never changes
-## gameplay. The pre-break Item Ball is universal while Orb/CUT-IN/active FX
-## remain Blizzard-specific.
+## gameplay. The pre-break Item Ball is universal, the falling Orb visual is
+## selected by item_type, and the active snow FX remains Blizzard-specific.
 
 const ITEM_TYPE := &"blizzard"
+const FIRE_ITEM_TYPE := &"fire_core"
+const MAGNET_ITEM_TYPE := &"magnet"
+const SUPPORTED_ORB_TYPES := {
+	ITEM_TYPE: true,
+	FIRE_ITEM_TYPE: true,
+	MAGNET_ITEM_TYPE: true,
+}
 const ITEM_BALL_FRAME_SIZE := Vector2(64.0, 64.0)
 const ITEM_BALL_FRAME_COUNT := 5
 const BREAK_FRAGMENT_FRAME_COUNT := 4
@@ -19,9 +26,8 @@ const ICE_LIGHT := Color("d8fbff")
 const AURORA := Color("78f4ee")
 const ITEM_BALL_TEXTURE: Texture2D = preload("res://assets/sprites/items/item_ball_orbital_cargo_h0_h4.png")
 const BREAK_FRAGMENTS_TEXTURE: Texture2D = preload("res://assets/sprites/items/item_ball_neutral_break_fragments_4f.png")
-const BLIZZARD_CRYSTAL_TEXTURE: Texture2D = preload("res://assets/particles/items/blizzard/blizzard_crystal.png")
-
-signal activation_cue_requested(event_id: int)
+const FIRE_ORB_TEXTURE: Texture2D = preload("res://assets/particles/items/fire/fire_orb.png")
+const MagnetOrbPortraitScript = preload("res://scripts/presentation/magnet_orb_portrait.gd")
 
 var _planet := {}
 var _break_fragments := {}
@@ -29,8 +35,7 @@ var _orb := {}
 var _blizzard_active := false
 var _blizzard_remaining := 0.0
 var _elapsed := 0.0
-var _cutin_event_id := -1
-var _cutin_seconds := 0.0
+var _orb_motion_frozen := false
 
 
 func _ready() -> void:
@@ -74,14 +79,14 @@ func show_item_planet_broken(item_type: StringName, world_position: Vector2) -> 
 
 
 func show_item_orb_spawned(item_type: StringName, world_position: Vector2) -> void:
-	if item_type != ITEM_TYPE:
+	if not SUPPORTED_ORB_TYPES.has(item_type):
 		return
-	_orb = {"position": world_position, "radius": 16.0}
+	_orb = {"item_type": item_type, "position": world_position, "radius": 16.0}
 	queue_redraw()
 
 
 func hide_item_orb(item_type: StringName, _world_position: Vector2) -> void:
-	if item_type == ITEM_TYPE:
+	if not _orb.is_empty() and StringName(_orb.get("item_type", &"")) == item_type:
 		_orb.clear()
 		queue_redraw()
 
@@ -94,13 +99,9 @@ func set_blizzard_state(snapshot: Dictionary) -> void:
 	queue_redraw()
 
 
-func play_item_cutin(event_id: int, item_type: StringName, _world_position: Vector2) -> bool:
-	if item_type != ITEM_TYPE or event_id < 0 or _cutin_event_id >= 0:
-		return false
-	_cutin_event_id = event_id
-	_cutin_seconds = 0.65
+func set_orb_motion_frozen(frozen: bool) -> void:
+	_orb_motion_frozen = frozen
 	queue_redraw()
-	return true
 
 
 func reset_runtime() -> void:
@@ -110,8 +111,7 @@ func reset_runtime() -> void:
 	_blizzard_active = false
 	_blizzard_remaining = 0.0
 	_elapsed = 0.0
-	_cutin_event_id = -1
-	_cutin_seconds = 0.0
+	_orb_motion_frozen = false
 	queue_redraw()
 
 
@@ -124,13 +124,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			_break_fragments["elapsed"] = break_elapsed
 			_break_fragments["frame_index"] = mini(int(break_elapsed / BREAK_FRAGMENT_FRAME_SECONDS), BREAK_FRAGMENT_FRAME_COUNT - 1)
-	if _cutin_event_id >= 0:
-		_cutin_seconds = maxf(0.0, _cutin_seconds - delta)
-		if is_zero_approx(_cutin_seconds):
-			var event_id := _cutin_event_id
-			_cutin_event_id = -1
-			activation_cue_requested.emit(event_id)
-	if not _orb.is_empty():
+	if not _orb.is_empty() and not _orb_motion_frozen:
 		_orb["position"] = (_orb["position"] as Vector2) + Vector2.DOWN * 160.0 * delta
 	queue_redraw()
 
@@ -144,8 +138,6 @@ func _draw() -> void:
 		_draw_break_fragments()
 	if not _orb.is_empty():
 		_draw_orb()
-	if _cutin_event_id >= 0:
-		_draw_item_cutin()
 
 
 func _draw_blizzard() -> void:
@@ -155,20 +147,6 @@ func _draw_blizzard() -> void:
 		var x := PLAY_FIELD.position.x + 4.0 + lane * (PLAY_FIELD.size.x - 8.0)
 		var size := 2.0 + float(index % 3)
 		draw_rect(Rect2(Vector2(x, PLAY_FIELD.position.y + phase - 16.0), Vector2(size, size)), ICE_LIGHT * Color(1.0, 1.0, 1.0, 0.72))
-	var banner := Rect2(PLAY_FIELD.get_center() - Vector2(94.0, 33.0), Vector2(188.0, 24.0))
-	draw_rect(banner.grow(3.0), ICE_DARK * Color(1.0, 1.0, 1.0, 0.9))
-	draw_rect(banner, AURORA * Color(1.0, 1.0, 1.0, 0.92), false, 2.0)
-	draw_string(ThemeDB.fallback_font, banner.position + Vector2(27.0, 17.0), "BLIZZARD!  %.1fs" % _blizzard_remaining, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, ICE_LIGHT)
-
-
-func _draw_item_cutin() -> void:
-	var panel := Rect2(PLAY_FIELD.get_center() - Vector2(132.0, 67.0), Vector2(264.0, 134.0))
-	draw_rect(PLAY_FIELD, Color(0.02, 0.10, 0.19, 0.58))
-	draw_rect(panel.grow(4.0), ICE_DARK)
-	draw_rect(panel, AURORA, false, 2.0)
-	draw_texture_rect(BLIZZARD_CRYSTAL_TEXTURE, Rect2(panel.position + Vector2(16.0, 19.0), Vector2(96.0, 96.0)), false)
-	draw_string(ThemeDB.fallback_font, panel.position + Vector2(126.0, 51.0), "BLIZZARD", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, ICE_LIGHT)
-	draw_string(ThemeDB.fallback_font, panel.position + Vector2(126.0, 79.0), "SPAWN RATE x3", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, Color.WHITE)
 
 
 func _draw_item_ball() -> void:
@@ -202,12 +180,45 @@ func _break_fragment_source_region() -> Rect2:
 
 
 func _draw_orb() -> void:
+	var item_type: StringName = _orb.get("item_type", &"")
+	if item_type == FIRE_ITEM_TYPE:
+		_draw_fire_orb()
+	elif item_type == MAGNET_ITEM_TYPE:
+		_draw_magnet_orb()
+	else:
+		_draw_blizzard_orb()
+
+
+func _draw_blizzard_orb() -> void:
 	var center: Vector2 = _orb["position"]
 	var radius: float = _orb["radius"]
 	draw_circle(center, radius + 3.0, ICE_DARK)
 	draw_circle(center, radius, AURORA)
 	draw_rect(Rect2(center - Vector2(4.0, 8.0), Vector2(8.0, 16.0)), ICE_LIGHT)
 	draw_rect(Rect2(center - Vector2(8.0, 4.0), Vector2(16.0, 8.0)), ICE_LIGHT)
+
+
+func _draw_fire_orb() -> void:
+	var center: Vector2 = _orb["position"]
+	var radius: float = _orb["radius"]
+	var texture_size := FIRE_ORB_TEXTURE.get_size()
+	var max_size := Vector2(radius * 2.0, radius * 2.0)
+	var scale_factor := minf(max_size.x / texture_size.x, max_size.y / texture_size.y)
+	var draw_size := texture_size * scale_factor
+	draw_texture_rect(FIRE_ORB_TEXTURE, Rect2(center - draw_size * 0.5, draw_size), false)
+
+
+func _draw_magnet_orb() -> void:
+	var center: Vector2 = _orb["position"]
+	var radius: float = _orb["radius"]
+	var scale_factor := radius * 2.0 / 64.0
+	var origin := center - Vector2(32.0, 32.0) * scale_factor
+	for pixel: Array in MagnetOrbPortraitScript.PIXELS:
+		var rect := Rect2(
+			origin + Vector2(float(pixel[0]), float(pixel[1])) * scale_factor,
+			Vector2(float(pixel[2]), float(pixel[3])) * scale_factor
+		)
+		draw_rect(rect, Color(String(pixel[4])))
 
 
 func get_visual_snapshot() -> Dictionary:
@@ -221,8 +232,10 @@ func get_visual_snapshot() -> Dictionary:
 		"break_fragment_frame_index": int(_break_fragments.get("frame_index", -1)),
 		"break_fragment_source_region": _break_fragment_source_region() if not _break_fragments.is_empty() else Rect2(),
 		"orb_visible": not _orb.is_empty(),
+		"orb_type": StringName(_orb.get("item_type", &"")),
+		"orb_position": _orb.get("position", Vector2.ZERO),
+		"orb_motion_frozen": _orb_motion_frozen,
 		"blizzard_active": _blizzard_active,
 		"snow_particle_count": SNOW_PARTICLE_COUNT if _blizzard_active else 0,
 		"remaining_seconds": _blizzard_remaining,
-		"cutin_active": _cutin_event_id >= 0,
 	}

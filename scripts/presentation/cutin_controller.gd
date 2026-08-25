@@ -2,6 +2,8 @@ class_name CutInController
 extends Control
 
 signal cutin_finished(event_id: int, run_epoch: int)
+signal item_cutin_activation_cue(event_id: int)
+signal item_cutin_finished(event_id: int)
 
 const SCHEMA_VERSION := 1
 const ENTER_DURATION := 0.36
@@ -13,6 +15,23 @@ const REDUCED_EXIT_DURATION := 0.42
 const DIM_ALPHA := 0.34
 const BANNER_HEIGHT_RATIO := 0.44
 const BACKGROUND_PATH := "res://assets/sprites/cutins/first_contact/first-contact-background-v1.png"
+const BLIZZARD_ITEM_TYPE := &"blizzard"
+const FIRE_ITEM_TYPE := &"fire_core"
+const MAGNET_ITEM_TYPE := &"magnet"
+const ITEM_TITLE_BY_TYPE := {
+	BLIZZARD_ITEM_TYPE: "Blizzard Orb",
+	FIRE_ITEM_TYPE: "FIRE ORB",
+	MAGNET_ITEM_TYPE: "MAGNET ORB",
+}
+const ITEM_EFFECT_BY_TYPE := {
+	BLIZZARD_ITEM_TYPE: "SPAWN RATE ×3",
+	FIRE_ITEM_TYPE: "CASHOUT ×10",
+	MAGNET_ITEM_TYPE: "SAME-LEVEL PULL",
+}
+const ITEM_PORTRAIT_BY_TYPE := {
+	BLIZZARD_ITEM_TYPE: preload("res://assets/particles/items/blizzard/blizzard_crystal.png"),
+	FIRE_ITEM_TYPE: preload("res://assets/particles/items/fire/fire_orb.png"),
+}
 const REQUIRED_FIELDS := [
 	"schema_version",
 	"event_id",
@@ -95,6 +114,11 @@ const ROSTER := {
 @onready var background_texture: TextureRect = %BackgroundTexture
 @onready var title_texture: TextureRect = %TitleTexture
 @onready var portrait_texture: TextureRect = %PortraitTexture
+@onready var item_title_label: Label = %ItemTitleLabel
+@onready var item_effect_label: Label = %ItemEffectLabel
+@onready var fire_portrait: Control = %FirePortrait
+@onready var magnet_portrait: Control = %MagnetPortrait
+@onready var blizzard_portrait: TextureRect = %BlizzardPortrait
 
 var _animation_tween: Tween
 var _active_payload: Dictionary = {}
@@ -106,6 +130,10 @@ var _animation_generation := 0
 var _reduced_effects := false
 var _field_visual_rect := Rect2()
 var _completion_deadline_usec := -1
+var _active_item_event_id := -1
+var _active_item_type: StringName = &""
+var _completed_item_event_ids: Dictionary = {}
+var _item_activation_cue_emitted := false
 
 
 func _ready() -> void:
@@ -118,7 +146,7 @@ func _ready() -> void:
 
 
 func play_first_contact_cutin(payload: Dictionary) -> bool:
-	if not _is_valid_payload(payload) or not _active_payload.is_empty():
+	if not _is_valid_payload(payload) or not _active_payload.is_empty() or _active_item_event_id >= 0:
 		return false
 
 	var event_id := int(payload["event_id"])
@@ -144,6 +172,46 @@ func play_first_contact_cutin(payload: Dictionary) -> bool:
 	portrait_texture.texture = next_portrait
 	_start_animation(_animation_generation, event_id, run_epoch)
 	return true
+
+
+func play_item_cutin(event_id: int, item_type: StringName, _world_position: Vector2) -> bool:
+	if not ITEM_TITLE_BY_TYPE.has(item_type) or event_id <= 0:
+		return false
+	if not _active_payload.is_empty() or _active_item_event_id >= 0 or _completed_item_event_ids.has(event_id):
+		return false
+	if background_texture.texture == null:
+		return false
+
+	_active_item_event_id = event_id
+	_active_item_type = item_type
+	_item_activation_cue_emitted = false
+	_animation_generation += 1
+	title_texture.visible = false
+	portrait_texture.visible = false
+	item_title_label.visible = true
+	item_effect_label.visible = true
+	fire_portrait.visible = item_type == FIRE_ITEM_TYPE
+	magnet_portrait.visible = item_type == MAGNET_ITEM_TYPE
+	blizzard_portrait.visible = item_type == BLIZZARD_ITEM_TYPE
+	item_title_label.text = String(ITEM_TITLE_BY_TYPE[item_type])
+	item_effect_label.text = String(ITEM_EFFECT_BY_TYPE[item_type])
+	if item_type == BLIZZARD_ITEM_TYPE:
+		blizzard_portrait.texture = ITEM_PORTRAIT_BY_TYPE[item_type]
+	elif item_type == FIRE_ITEM_TYPE:
+		(fire_portrait.get_node("Orb") as TextureRect).texture = ITEM_PORTRAIT_BY_TYPE[item_type]
+	_start_animation(_animation_generation, event_id, -1, true)
+	return true
+
+
+func reset_item_cutin() -> void:
+	if _active_item_event_id < 0:
+		return
+	_animation_generation += 1
+	_cancel_animation()
+	_active_item_event_id = -1
+	_active_item_type = &""
+	_item_activation_cue_emitted = false
+	_hide_visuals()
 
 
 func reset_first_contact_cutin(run_epoch: int) -> void:
@@ -178,7 +246,7 @@ func configure_field_visual_rect(field_visual_rect: Rect2) -> void:
 
 
 func is_cutin_active() -> bool:
-	return not _active_payload.is_empty()
+	return not _active_payload.is_empty() or _active_item_event_id >= 0
 
 
 func get_total_duration() -> float:
@@ -209,6 +277,9 @@ func get_visual_metrics() -> Dictionary:
 		"event_id": int(_active_payload.get("event_id", -1)),
 		"run_epoch": int(_active_payload.get("run_epoch", -1)),
 		"first_contact_id": _active_payload.get("first_contact_id", &""),
+		"item_type": _active_item_type if _active_item_event_id >= 0 else &"",
+		"item_event_id": _active_item_event_id,
+		"item_activation_cue_emitted": _item_activation_cue_emitted,
 		"background_path": background_texture.texture.resource_path if background_texture.texture != null else "",
 		"title_path": title_texture.texture.resource_path if title_texture.texture != null else "",
 		"portrait_path": portrait_texture.texture.resource_path if portrait_texture.texture != null else "",
@@ -223,7 +294,7 @@ func get_visual_metrics() -> Dictionary:
 	}
 
 
-func _start_animation(generation: int, event_id: int, run_epoch: int) -> void:
+func _start_animation(generation: int, event_id: int, run_epoch: int, is_item := false) -> void:
 	_cancel_animation()
 	_apply_field_layout()
 	visible = true
@@ -235,9 +306,7 @@ func _start_animation(generation: int, event_id: int, run_epoch: int) -> void:
 	if _reduced_effects:
 		card_root.position.y = banner_y
 	await get_tree().process_frame
-	if generation != _animation_generation or _active_payload.is_empty():
-		return
-	if event_id != int(_active_payload["event_id"]) or run_epoch != int(_active_payload["run_epoch"]):
+	if generation != _animation_generation or not _matches_active_event(event_id, run_epoch, is_item):
 		return
 
 	var enter_duration := REDUCED_ENTER_DURATION if _reduced_effects else ENTER_DURATION
@@ -247,31 +316,47 @@ func _start_animation(generation: int, event_id: int, run_epoch: int) -> void:
 	_animation_tween.tween_property(dim_overlay, "color:a", DIM_ALPHA, enter_duration)
 	if not _reduced_effects:
 		_animation_tween.parallel().tween_property(card_root, "position:x", 0.0, enter_duration).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	if is_item:
+		_animation_tween.tween_callback(_emit_item_activation_cue.bind(generation, event_id))
 	_animation_tween.tween_interval(hold_duration)
 	_animation_tween.tween_property(dim_overlay, "color:a", 0.0, exit_duration)
 	if _reduced_effects:
 		_animation_tween.parallel().tween_property(card_root, "modulate:a", 0.0, exit_duration)
 	else:
 		_animation_tween.parallel().tween_property(card_root, "position:x", -card_root.size.x, exit_duration).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
-	_animation_tween.tween_callback(_finish_normal_exit.bind(generation, event_id, run_epoch))
+	_animation_tween.tween_callback(_finish_normal_exit.bind(generation, event_id, run_epoch, is_item))
 
 
-func _finish_normal_exit(generation: int, event_id: int, run_epoch: int) -> void:
+func _emit_item_activation_cue(generation: int, event_id: int) -> void:
+	if generation != _animation_generation or event_id != _active_item_event_id or _item_activation_cue_emitted:
+		return
+	_item_activation_cue_emitted = true
+	item_cutin_activation_cue.emit(event_id)
+
+
+func _finish_normal_exit(generation: int, event_id: int, run_epoch: int, is_item := false) -> void:
 	while Time.get_ticks_usec() < _completion_deadline_usec:
 		await get_tree().process_frame
-		if generation != _animation_generation or _active_payload.is_empty():
+		if generation != _animation_generation or not _matches_active_event(event_id, run_epoch, is_item):
 			return
-	if generation != _animation_generation or _active_payload.is_empty():
-		return
-	if event_id != int(_active_payload["event_id"]) or run_epoch != int(_active_payload["run_epoch"]):
+	if generation != _animation_generation or not _matches_active_event(event_id, run_epoch, is_item):
 		return
 
-	_completed_pairs[_pair_key(run_epoch, event_id)] = true
 	_animation_tween = null
 	_completion_deadline_usec = -1
-	_active_payload.clear()
+	if is_item:
+		_completed_item_event_ids[event_id] = true
+		_active_item_event_id = -1
+		_active_item_type = &""
+		_item_activation_cue_emitted = false
+	else:
+		_completed_pairs[_pair_key(run_epoch, event_id)] = true
+		_active_payload.clear()
 	_hide_visuals()
-	cutin_finished.emit(event_id, run_epoch)
+	if is_item:
+		item_cutin_finished.emit(event_id)
+	else:
+		cutin_finished.emit(event_id, run_epoch)
 
 
 func _cancel_animation() -> void:
@@ -288,6 +373,24 @@ func _hide_visuals() -> void:
 	card_root.modulate = Color.WHITE
 	title_texture.texture = null
 	portrait_texture.texture = null
+	title_texture.visible = true
+	portrait_texture.visible = true
+	item_title_label.visible = false
+	item_effect_label.visible = false
+	fire_portrait.visible = false
+	magnet_portrait.visible = false
+	blizzard_portrait.visible = false
+	_active_item_type = &""
+
+
+func _matches_active_event(event_id: int, run_epoch: int, is_item: bool) -> bool:
+	if is_item:
+		return event_id == _active_item_event_id
+	return (
+		not _active_payload.is_empty()
+		and event_id == int(_active_payload["event_id"])
+		and run_epoch == int(_active_payload["run_epoch"])
+	)
 
 
 func _apply_field_layout() -> void:

@@ -4,6 +4,8 @@ extends Control
 ## Displays a copied terminal snapshot. The Core snapshot remains read-only.
 
 const ScoreFormatter = preload("res://scripts/utils/score_formatter.gd")
+const BallCatalogScript = preload("res://scripts/data/ball_catalog.gd")
+const StageCatalogScript = preload("res://scripts/data/stage_catalog.gd")
 
 const SCORE_MAX_FONT_SIZE := 86
 const SCORE_MIN_FONT_SIZE := 16
@@ -18,6 +20,13 @@ signal main_menu_requested
 @onready var slide_panel: Control = %SlidePanel
 @onready var mechanical_motion: Control = %MechanicalMotion
 @onready var score_label: Label = %ScoreLabel
+@onready var highest_stage_label: Label = %HighestStageValue
+@onready var highest_ball_label: Label = %HighestBallValue
+@onready var ground_stage_art: TextureRect = %GroundStageArt
+@onready var planetary_stage_art: TextureRect = %PlanetaryStageArt
+@onready var stage_preview_mask: ColorRect = $SlidePanel/StagePreviewMask
+@onready var ball_preview_backdrop: ColorRect = $SlidePanel/BallPreviewBackdrop
+@onready var ball_preview: TextureRect = %BallPreview
 @onready var stats_row: Control = %StatsRow
 @onready var merge_count_label: Label = $SlidePanel/StatsRow/MergeCount
 @onready var run_time_label: Label = $SlidePanel/StatsRow/RunTime
@@ -26,6 +35,8 @@ signal main_menu_requested
 
 var _result_snapshot: Dictionary = {}
 var _entrance_tween: Tween
+var _ball_catalog = BallCatalogScript.new()
+var _stage_catalog = StageCatalogScript.new()
 
 
 func _ready() -> void:
@@ -38,6 +49,7 @@ func show_result(result_snapshot: Dictionary) -> void:
 	_result_snapshot = result_snapshot.duplicate(true)
 	var run_score := float(_result_snapshot.get("run_score", 0.0))
 	_fit_full_score(ScoreFormatter.format_score_full(run_score))
+	_update_summary()
 	_update_optional_stats()
 	visible = true
 	mechanical_motion.set_process(true)
@@ -89,6 +101,39 @@ func _update_optional_stats() -> void:
 		merge_count_label.text = "%d" % maxi(int(optional_stats["merge_count"]), 0)
 	if has_run_time:
 		run_time_label.text = format_run_time(float(optional_stats["run_time_seconds"]))
+
+
+func _update_summary() -> void:
+	ground_stage_art.visible = false
+	planetary_stage_art.visible = false
+	stage_preview_mask.visible = false
+	ball_preview_backdrop.visible = false
+	ball_preview.visible = false
+	ball_preview.texture = null
+	var stage_index := int(_result_snapshot.get("stage_index", -1))
+	var stage = _stage_catalog.get_stage(stage_index)
+	if stage == null:
+		highest_stage_label.text = "--"
+	else:
+		highest_stage_label.text = String(stage.display_name).to_upper()
+		if stage_index == 0:
+			stage_preview_mask.visible = true
+			ground_stage_art.visible = true
+		elif stage_index == 1:
+			stage_preview_mask.visible = true
+			planetary_stage_art.visible = true
+
+	var highest_ball_global_level := int(_result_snapshot.get("highest_ball_global_level", -1))
+	var ball = _ball_catalog.get_definition(highest_ball_global_level)
+	if ball == null:
+		highest_ball_label.text = "--"
+		return
+	highest_ball_label.text = String(ball.display_name).to_upper()
+	if highest_ball_global_level == 14:
+		return
+	ball_preview_backdrop.visible = true
+	ball_preview.texture = ball.texture
+	ball_preview.visible = ball_preview.texture != null
 
 
 func _fit_full_score(formatted_score: String) -> void:

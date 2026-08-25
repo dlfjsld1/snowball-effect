@@ -26,6 +26,15 @@
 - Verification: 실제 Main runtime에서 A/D 이동과 ←/→ 회전을 각각 및 동시에 입력했을 때 서로 차단되지 않음; Mouse X는 Play Field logical X에 직접 반영되어 target-follow latency가 없음; Mouse 이동과 Wheel 360° 이상 연속 회전을 동시에 사용 가능; previous/current Paddle transform과 ball trajectory의 continuous query가 빠른 translation/rotation에서도 Lv1 공을 놓치지 않음; Paddle 양면이 TOI의 contact normal 및 상대속도를 기준으로 반사; center linear velocity와 angular contact contribution을 합산한 뒤 impact cap 적용; Paddle 중심/끝 및 회전 방향에 따른 반사 차이; ball runtime speed cap, penetration correction, contact separation lock 정상.
 - Do Not Modify: `project.godot`, Main scene, Presentation assets.
 
+### S1-G2A 패들 수직 대쉬
+
+- Owner: Core
+- Owned Files: `scripts/gameplay/paddle.gd`, `scenes/gameplay/paddle.tscn`, `tests/core/paddle_dash_test.*`
+- Integration Point: `project.godot`의 `paddle_dash` Space Input Map만 사용한다. Main, simulation, score와 새 Signal/API 연결은 없다.
+- Dependencies: S1-G2의 previous/current Paddle transform과 physical clamp 계약.
+- Verification: Space 입력이 화면 기준 위쪽으로만 120 logical units를 기준 leg speed `1200 units/s` 시간 안에 sine ease-out으로 이동하고, 정지 없이 sine ease-in-out으로 원점에 복귀한다. 대쉬 중에도 물리 OBB와 continuous collision provider는 실제 transform을 사용한다. 재사용 대기시간은 5초이며 cooldown 중 activation은 거부된다. 패들 중앙의 기존 초록색 바는 dash 직후 비어 있고 5초 동안 좌→우로 채워진다. matching Scale Shift 완료가 다음 Stage 진입으로 수락되면 cooldown은 즉시 초기화되며 wrong/duplicate 완료 ID에는 유지된다.
+- Do Not Modify: Main scene, simulation/score/Stage state, Paddle 본체 PNG. 물리 OBB 폭은 승인된 본체 PNG 폭 `168`과 일치한다.
+
 ### S1-G3 Active Cashout 논리
 
 - Owner: Core

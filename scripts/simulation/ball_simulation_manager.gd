@@ -5,6 +5,7 @@ const BallCatalogScript = preload("res://scripts/data/ball_catalog.gd")
 const SpatialGridScript = preload("res://scripts/simulation/spatial_grid.gd")
 
 signal ball_count_changed(active_count: int)
+signal ball_committed(global_level: int)
 signal cashout_completed(score_amount: float, global_level: int, world_position: Vector2)
 signal ball_merged(result_level: int, world_position: Vector2)
 signal first_contact_discovered(payload: Dictionary)
@@ -212,6 +213,7 @@ func spawn_ball(position: Vector2, velocity := Vector2.ZERO, radius := 6.0, glob
 
 	active_indices.append(index)
 	ball_count_changed.emit(active_indices.size())
+	ball_committed.emit(global_level)
 	return index
 
 
@@ -510,6 +512,7 @@ func commit_merge_candidates(delta := 0.0) -> int:
 		if plan["creates_black_hole"]:
 			black_hole_entity_ordinal = _black_hole_positions.size() + 1
 			_create_black_hole(result_position, plan["velocity"])
+			ball_committed.emit(result_level)
 		else:
 			spawn_ball(result_position, plan["velocity"], get_runtime_radius_for_level(result_level), result_level, plan["special_type"])
 		ball_merged.emit(result_level, result_position)

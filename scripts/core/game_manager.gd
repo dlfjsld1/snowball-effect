@@ -87,6 +87,7 @@ var _first_contact_run_epoch := -1
 var _first_contact_queue: Array[Dictionary] = []
 var _active_first_contact_payload: Dictionary = {}
 var _first_contact_pause_locked := false
+var _item_cutin_pause_locked := false
 var _first_contact_arbitration_queued := false
 var _black_hole_phase_ready := false
 var _first_contact_cutin_consumer: Node
@@ -137,6 +138,10 @@ func _initialize_runtime() -> void:
 	_presentation_manager.black_hole_finale_presentation_finished.connect(_on_black_hole_finale_presentation_finished)
 	if _presentation_manager.has_signal(&"first_contact_cutin_finished"):
 		_presentation_manager.connect(&"first_contact_cutin_finished", _on_first_contact_cutin_finished)
+	if _presentation_manager.has_signal(&"item_cutin_activation_cue"):
+		_presentation_manager.connect(&"item_cutin_activation_cue", _on_item_cutin_activation_cue)
+	if _presentation_manager.has_signal(&"item_cutin_finished"):
+		_presentation_manager.connect(&"item_cutin_finished", _on_item_cutin_finished)
 	_simulation.first_contact_discovered.connect(_on_first_contact_discovered)
 	_simulation.black_hole_phase_requested.connect(_on_black_hole_phase_requested)
 	_item_manager.item_collected.connect(_on_item_collected)
@@ -150,7 +155,6 @@ func _initialize_runtime() -> void:
 	_item_effect_gateway.item_effect_activation_requested.connect(_on_item_effect_activation_requested)
 	_item_blizzard.spawn_multiplier_changed.connect(_on_blizzard_spawn_multiplier_changed)
 	_item_blizzard.active_state_changed.connect(_item_blizzard_visual.set_blizzard_state)
-	_item_blizzard_visual.activation_cue_requested.connect(_on_blizzard_visual_activation_cue)
 	_item_fire_core.fire_window_changed.connect(_paddle.set_fire_contact_active)
 	_paddle.set_fire_contact_active(_item_fire_core.is_active())
 	_item_magnet.force_command_changed.connect(_simulation.set_magnet_force_command)
@@ -179,7 +183,7 @@ func _initialize_runtime() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not _initialized or get_tree().paused or _first_contact_pause_locked or not _stage_manager.is_playing() or spawn_rate <= 0.0:
+	if not _initialized or get_tree().paused or _first_contact_pause_locked or _item_cutin_pause_locked or not _stage_manager.is_playing() or spawn_rate <= 0.0:
 		return
 
 	_spawn_accumulator += delta * spawn_rate
@@ -193,11 +197,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not OS.is_debug_build() or not event is InputEventKey:
 		return
 	var key_event := event as InputEventKey
-	if not key_event.pressed or key_event.echo or get_tree().paused or _first_contact_pause_locked:
+	if not key_event.pressed or key_event.echo or get_tree().paused or _first_contact_pause_locked or _item_cutin_pause_locked:
 		return
 	match key_event.physical_keycode:
 		KEY_F7:
 			_stage_manager.debug_force_score_clear()
+		KEY_F8:
+			_debug_force_fire_item_pickup()
 
 
 func get_runtime_snapshot() -> Dictionary:
@@ -323,6 +329,7 @@ func _start_run() -> void:
 	_item_fire_core.reset_runtime()
 	_item_magnet.reset_runtime()
 	_item_blizzard_visual.reset_runtime()
+	_reset_item_cutin_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.start_run()
 	_paddle.reset_runtime()
@@ -348,6 +355,7 @@ func _enter_title_screen() -> void:
 	_item_fire_core.reset_runtime()
 	_item_magnet.reset_runtime()
 	_item_blizzard_visual.reset_runtime()
+	_reset_item_cutin_runtime()
 	_presentation_manager.reset_black_hole_presentation()
 	_stage_manager.end_run_to_main_menu()
 	_paddle.set_physics_process(false)
@@ -375,7 +383,8 @@ func _on_stage_changed(definition: StageDefinition) -> void:
 
 
 func _on_stage_shift_presentation_finished(shift_id: int) -> void:
-	_stage_manager.accept_stage_shift_presentation_finished(shift_id)
+	if _stage_manager.accept_stage_shift_presentation_finished(shift_id):
+		_paddle.reset_dash_cooldown()
 
 
 func _on_stage_clear_ready(clear_snapshot: Dictionary, clear_id: int) -> void:
@@ -392,6 +401,7 @@ func _on_next_stage_requested(clear_id: int) -> void:
 
 func _on_stage_run_ended(result_snapshot: Dictionary) -> void:
 	_reset_first_contact_runtime(true)
+	_reset_item_cutin_runtime()
 	_simulation.reset_runtime()
 	_paddle.set_physics_process(false)
 	_hud.visible = false
@@ -445,6 +455,7 @@ func _on_black_hole_finale_locked(result_snapshot: Dictionary) -> void:
 		return
 	_terminal_result_snapshot = result_snapshot.duplicate(true)
 	_paddle.set_physics_process(false)
+	_item_blizzard_visual.set_orb_motion_frozen(true)
 	_presentation_manager.play_black_hole_finale(get_terminal_result_snapshot())
 
 
@@ -526,24 +537,62 @@ func _on_item_collected(item_type: StringName, world_position: Vector2) -> void:
 	_item_effect_gateway.queue_item_collected(item_type, world_position)
 
 
+func _acquire_item_cutin_pause() -> bool:
+	if _item_cutin_pause_locked or _first_contact_pause_locked:
+		return false
+	if not _stage_manager.set_first_contact_pause_locked(true):
+		return false
+	_item_cutin_pause_locked = true
+	_paddle.set_physics_process(false)
+	_paddle.set_process_unhandled_input(false)
+	return true
+
+
+func _release_item_cutin_pause() -> void:
+	if not _item_cutin_pause_locked:
+		return
+	_item_cutin_pause_locked = false
+	_stage_manager.set_first_contact_pause_locked(false)
+	if _stage_manager.current_state == StageManager.PLAYING and not _first_contact_pause_locked:
+		_paddle.set_physics_process(true)
+		_paddle.set_process_unhandled_input(true)
+
+
+func _reset_item_cutin_runtime() -> void:
+	_presentation_manager.reset_item_cutin()
+	_release_item_cutin_pause()
+
+
 func _on_item_cutin_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
+	if not _acquire_item_cutin_pause():
+		call_deferred("_accept_item_cutin_fallback", event_id)
+		return
 	_audio_manager.play_event(&"item_cutin")
-	if item_type == &"blizzard":
-		_item_blizzard_visual.play_item_cutin(event_id, item_type, world_position)
+	var visible_producer_started := _presentation_manager.play_item_cutin(event_id, item_type, world_position)
 	item_cutin_requested.emit(event_id, item_type, world_position)
-	if item_type == &"fire_core" or item_type == &"magnet":
-		# Fire and Magnet have no Presentation-owned CUT-IN producer yet. Preserve
-		# the gateway's explicit safe fallback: defer one skip after observers have
-		# had this frame to consume the request, and keep matching cues idempotent.
+	if not visible_producer_started:
+		_release_item_cutin_pause()
+		# Preserve the Gateway's exact-once fallback when the shared visible
+		# producer is unavailable, busy, or rejects an unsupported item.
 		call_deferred("_accept_item_cutin_fallback", event_id)
 
 
-func _on_blizzard_visual_activation_cue(event_id: int) -> void:
+func _on_item_cutin_activation_cue(event_id: int) -> void:
 	accept_item_cutin_activation_cue(event_id)
+
+
+func _on_item_cutin_finished(_event_id: int) -> void:
+	_release_item_cutin_pause()
 
 
 func _accept_item_cutin_fallback(event_id: int) -> void:
 	skip_item_cutin(event_id)
+
+
+func _debug_force_fire_item_pickup() -> void:
+	if not OS.is_debug_build() or not _stage_manager.is_playing():
+		return
+	_on_item_collected(&"fire_core", _paddle.position)
 
 
 func _on_item_effect_activation_requested(event_id: int, item_type: StringName, world_position: Vector2) -> void:
@@ -683,9 +732,11 @@ func _process_first_contact_arbitration() -> void:
 
 
 func _release_first_contact_pause() -> void:
+	if not _first_contact_pause_locked:
+		return
 	_stage_manager.set_first_contact_pause_locked(false)
 	_first_contact_pause_locked = false
-	if _stage_manager.current_state == StageManager.PLAYING:
+	if _stage_manager.current_state == StageManager.PLAYING and not _item_cutin_pause_locked:
 		_paddle.set_physics_process(true)
 		_paddle.set_process_unhandled_input(true)
 

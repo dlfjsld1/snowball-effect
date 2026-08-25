@@ -11,6 +11,8 @@ const BLACK_HOLE_GLOBAL_LEVEL := 14
 const STANDARD_BATCH_COUNT := LAST_STANDARD_GLOBAL_LEVEL + 1
 
 const CIRCLE_SHADER := preload("res://scripts/simulation/ball_renderer_circle.gdshader")
+const FIRE_OVERLAY_SHADER := preload("res://scripts/simulation/fire_snowball_overlay.gdshader")
+const FIRE_OVERLAY_TEXTURE: Texture2D = preload("res://assets/particles/items/fire/fire_snowball_shell_v13.png")
 
 @export var simulation_path: NodePath
 @export var ball_color := Color(0.86, 0.92, 1.0, 1.0)
@@ -27,6 +29,12 @@ var _level_counts := PackedInt32Array()
 var _level_offsets := PackedInt32Array()
 var _level_cursors := PackedInt32Array()
 var _ordered_snapshot_indices := PackedInt32Array()
+var _fire_overlay_batch: MultiMeshInstance2D
+var _fire_overlay_multimesh: MultiMesh
+var _fire_overlay_material: ShaderMaterial
+var _fire_overlay_capacity := 0
+var _fire_overlay_count := 0
+var _fire_overlay_transform_cache: Array[Transform2D] = []
 var _special_positions := PackedVector2Array()
 var _special_radii := PackedFloat32Array()
 var _special_levels := PackedInt32Array()
@@ -38,6 +46,7 @@ var _clip_rect := Rect2()
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_create_standard_batches()
+	_create_fire_overlay_batch()
 	if not simulation_path.is_empty():
 		set_simulation_manager(get_node_or_null(simulation_path) as SimulationManager)
 
@@ -71,9 +80,11 @@ func refresh_render_snapshot() -> void:
 	var snapshot_positions: PackedVector2Array = snapshot["positions"]
 	var snapshot_radii: PackedFloat32Array = snapshot["radii"]
 	var snapshot_global_levels: PackedInt32Array = snapshot["global_levels"]
+	var snapshot_special_types: PackedByteArray = snapshot["special_types"]
 	var snapshot_count: int = snapshot["count"]
 	_prepare_level_buckets(snapshot_count, snapshot_global_levels)
 	_update_standard_batches(snapshot_positions, snapshot_radii)
+	_update_fire_overlays(snapshot_positions, snapshot_radii, snapshot_special_types)
 	_update_special_fallback(snapshot_positions, snapshot_radii, snapshot_global_levels)
 	_clip_rect = _simulation.get_active_play_field_rect()
 	_update_clip_rect()
@@ -86,6 +97,8 @@ func get_render_metrics() -> Dictionary:
 		"standard_ball_count": _ordered_snapshot_indices.size(),
 		"special_fallback_count": _special_positions.size(),
 		"black_hole_count": _black_hole_positions.size(),
+		"fire_overlay_count": _fire_overlay_count,
+		"fire_overlay_capacity": _fire_overlay_capacity,
 		"batch_visible_counts": _level_counts.duplicate(),
 		"batch_capacities": _batch_capacities.duplicate(),
 		"clip_rect": _clip_rect,
@@ -102,6 +115,12 @@ func get_batch_instance_transform(global_level: int, instance_index: int) -> Tra
 	if instance_index < 0 or instance_index >= _level_counts[global_level]:
 		return Transform2D.IDENTITY
 	return _batch_transform_cache[global_level][instance_index]
+
+
+func get_fire_overlay_transform(instance_index: int) -> Transform2D:
+	if instance_index < 0 or instance_index >= _fire_overlay_count:
+		return Transform2D.IDENTITY
+	return _fire_overlay_transform_cache[instance_index]
 
 
 func _create_standard_batches() -> void:
@@ -132,6 +151,26 @@ func _create_standard_batches() -> void:
 		_batch_transform_cache.append([])
 
 
+func _create_fire_overlay_batch() -> void:
+	_fire_overlay_multimesh = MultiMesh.new()
+	_fire_overlay_multimesh.transform_format = MultiMesh.TRANSFORM_2D
+	_fire_overlay_multimesh.mesh = _create_circle_mesh()
+
+	_fire_overlay_material = ShaderMaterial.new()
+	_fire_overlay_material.shader = FIRE_OVERLAY_SHADER
+	_fire_overlay_material.set_shader_parameter("play_field_rect", Vector4(_clip_rect.position.x, _clip_rect.position.y, _clip_rect.end.x, _clip_rect.end.y))
+
+	_fire_overlay_batch = MultiMeshInstance2D.new()
+	_fire_overlay_batch.name = "FireSnowballOverlayBatch"
+	_fire_overlay_batch.multimesh = _fire_overlay_multimesh
+	_fire_overlay_batch.texture = FIRE_OVERLAY_TEXTURE
+	_fire_overlay_batch.material = _fire_overlay_material
+	_fire_overlay_batch.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_fire_overlay_batch.z_index = 1
+	_fire_overlay_batch.visible = false
+	add_child(_fire_overlay_batch)
+
+
 func _create_circle_mesh() -> QuadMesh:
 	var mesh := QuadMesh.new()
 	mesh.size = Vector2(2.0, 2.0)
@@ -151,6 +190,8 @@ func _update_clip_rect() -> void:
 		var material := batch.material as ShaderMaterial
 		if material != null:
 			material.set_shader_parameter("play_field_rect", shader_rect)
+	if _fire_overlay_material != null:
+		_fire_overlay_material.set_shader_parameter("play_field_rect", shader_rect)
 
 
 func _prepare_level_buckets(snapshot_count: int, snapshot_global_levels: PackedInt32Array) -> void:
@@ -196,6 +237,34 @@ func _update_standard_batches(snapshot_positions: PackedVector2Array, snapshot_r
 			_batch_transform_cache[global_level][instance_index] = instance_transform
 
 
+func _update_fire_overlays(snapshot_positions: PackedVector2Array, snapshot_radii: PackedFloat32Array, snapshot_special_types: PackedByteArray) -> void:
+	_fire_overlay_count = 0
+	for snapshot_index in range(snapshot_special_types.size()):
+		if snapshot_special_types[snapshot_index] == SimulationManager.BallSpecialType.FIRE:
+			_fire_overlay_count += 1
+
+	_ensure_fire_overlay_capacity(_fire_overlay_count)
+	_fire_overlay_batch.visible = _fire_overlay_count > 0
+	_fire_overlay_multimesh.visible_instance_count = _fire_overlay_count
+	if _fire_overlay_count == 0:
+		return
+
+	var instance_index := 0
+	for snapshot_index in range(snapshot_special_types.size()):
+		if snapshot_special_types[snapshot_index] != SimulationManager.BallSpecialType.FIRE:
+			continue
+		var radius := snapshot_radii[snapshot_index]
+		var overlay_position := snapshot_positions[snapshot_index] + Vector2(0.0, -radius * 0.12)
+		var instance_transform := Transform2D(
+			Vector2(radius * 1.49, 0.0),
+			Vector2(0.0, -radius * 1.49),
+			overlay_position
+		)
+		_fire_overlay_multimesh.set_instance_transform_2d(instance_index, instance_transform)
+		_fire_overlay_transform_cache[instance_index] = instance_transform
+		instance_index += 1
+
+
 func _update_special_fallback(snapshot_positions: PackedVector2Array, snapshot_radii: PackedFloat32Array, snapshot_global_levels: PackedInt32Array) -> void:
 	for snapshot_index in range(snapshot_global_levels.size()):
 		var global_level := snapshot_global_levels[snapshot_index]
@@ -227,6 +296,16 @@ func _ensure_batch_capacity(global_level: int, required_count: int) -> void:
 	var color := _get_batch_instance_color(global_level)
 	for instance_index in range(new_capacity):
 		_multimeshes[global_level].set_instance_color(instance_index, color)
+
+
+func _ensure_fire_overlay_capacity(required_count: int) -> void:
+	if required_count <= _fire_overlay_capacity:
+		return
+	var new_capacity := maxi(8, _fire_overlay_capacity * 2)
+	new_capacity = maxi(new_capacity, required_count)
+	_fire_overlay_capacity = new_capacity
+	_fire_overlay_multimesh.instance_count = new_capacity
+	_fire_overlay_transform_cache.resize(new_capacity)
 
 
 func _update_batch_visual(global_level: int, runtime_diameter: float) -> void:

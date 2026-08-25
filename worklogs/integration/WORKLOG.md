@@ -897,3 +897,65 @@ Owned Files: `scripts/core/game_manager.gd`, `tests/integration/s7_g1_item_audio
 - `GameManager._on_item_cutin_requested()`가 Gateway의 authoritative CUT-IN request를 받을 때 AudioManager `item_cutin`을 정확히 한 번 요청하도록 연결했다. Orb pickup의 `item_collect`는 그대로 request 직전에 재생되고, Item Ball 파괴/Orb miss는 두 event 모두 재생하지 않는다.
 - 새 Main fixture는 Blizzard·Fire Core·Magnet 세 item type을 개별 reset 후 수집해 각 경우 `item_collect`와 `item_cutin`이 모두 active AudioManager event가 되는 것을 확인했다: `S7_G1_ITEM_AUDIO_WIRING_VERIFIED item_collect_and_cutin=true item_types=3`, Godot 4.7.1 CLI exit 0.
 - 최신 Web release를 localhost에서 새 query tab으로 기동하고 Start Run 입력을 확인했다. 기존 `item_blizzard_visual.tscn` UID fallback warning은 관찰됐지만, 새 audio resource load/uncaught error는 없었다.
+
+## 2026-08-25 — S7-G2 Blizzard fallback alignment
+
+Owner: Integration
+Locked file: `scripts/core/game_manager.gd` (released)
+
+- 사용자 지시에 따라 Blizzard visual CUT-IN signal 연결과 cue consumer를 제거했다. `item_cutin_requested`는 세 optional item 모두에 대해 observer frame 뒤 `skip_item_cutin(event_id)`를 deferred 한 번 호출한다.
+- Gateway의 pending/activated event lock은 그대로라 cue/skip 중복은 계속 거부한다. Main runtime에서 Blizzard 5-hit→Orb collect 직후 inactive, 다음 두 frames 뒤 1회 active·spawn `6→18`을 확인했다.
+
+## 2026-08-25 — S7-G2 cosmetic CUT-IN relay
+
+Owner: Integration
+Locked file: `scripts/core/game_manager.gd` (released)
+
+- Blizzard request에서 Content visual의 `play_item_cutin(&"blizzard")`를 호출하되 Gateway fallback은 그대로 deferred 처리한다. cosmetic visual은 activation cue를 반환하지 않으며 Fire/Magnet과 같은 발동 순서를 유지한다.
+- Main runtime에서 Orb collect 직후 CUT-IN만 visible, 다음 frame CUT-IN과 Blizzard effect가 함께 active이고 spawn rate가 `18`임을 확인했다.
+- Web release 재export 뒤 새 Browser tab에서 Title Canvas와 `START RUN` 이후 플레이 진입을 확인했으며 console warning/error는 0이었다. 검증용 `McpBridge` 잔여물은 export 전에 제거했다.
+
+## 2026-08-25 — S7-G2 shared CUT-IN activation relay correction
+
+Owner: Integration
+Locked file: `scripts/core/game_manager.gd` (released)
+
+- Blizzard를 Fire/Magnet과 같은 `PresentationManager.play_item_cutin(event_id, item_type, position)` 경로로 전달한다. 공용 banner enter 완료의 matching `item_cutin_activation_cue(event_id)`만 Gateway activation으로 수락한다.
+- visible producer가 unavailable/busy/reject인 경우에만 deferred skip fallback을 사용한다. Start/Main reset은 active item CUT-IN을 즉시 폐기한다.
+- Primary shared-banner fixture에서 cue exact-once와 2.00초 종료를 확인했고, Main runtime screenshot 및 debug output error 0을 확인했다.
+- Primary Main 실제 relay에서 request 직후 CUT-IN active/effect inactive·multiplier `1`, enter 완료 뒤 cue committed/effect active·multiplier `3`을 확인했다. 최신 Web release의 Title→Start Run smoke도 console warning/error 0이었다.
+
+## 2026-08-25 — S7-G4 Magnet forced-Orb live verification
+
+Owner: Integration verification
+Locked files: `tests/integration/s7_g4_magnet_forced_orb_live_verification.*` (released)
+
+- 사용자 허용 범위에서만 `ItemManager.enter_stage(..., forced_item_type = magnet)`라는 기존 producer seam을 사용했다. Production ItemDefinition의 spawn weight, hit count, duration, force tuning과 GameManager는 변경하지 않았다.
+- 새 controlled Main fixture는 세 독립 Run에서 실제 Item Ball→서로 분리된 5회 valid local-Lv2 hit→Magnet Orb→item_collected signal→Gateway fallback activation을 반복한다. 각 Run은 이후 live central simulation의 same-level pair와 different-level negative control을 측정한다.
+- Primary `godot` runtime 실행 결과: `S7_G4_MAGNET_FORCED_ORB_LIVE_VERIFIED runs=3 run1:4.50/-4.50 apps=2; run2:4.50/-4.50 apps=2; run3:4.50/-4.50 apps=2`. 매회 Magnet command active, same-level attraction, different-level zero, 7초 expiry neutral reset을 확인했다.
+- Godot CLI headless scene execution은 게임 script parse와 무관하게 `user://logs` open 실패 뒤 signal 11로 종료되어 tooling issue로 분리했다. Primary validate에서 fixture script/scene, GameManager, ItemManager가 모두 valid였다. Visible CUT-IN/visual 및 Web smoke는 여전히 `UNVERIFIED`이며 S7-G4 상태를 `IMPLEMENTED`로 유지한다.
+
+## 2026-08-25 — S7-G3R-I Debug Fire pickup probe restore
+
+Owner: Integration
+Locked file: `scripts/core/game_manager.gd` (released)
+
+- Debug build의 F8을 기존 실제 item-collected relay에 연결해 Fire 획득→공용 `FIRE ORB` CUT-IN→effect activation→Fire Snowball 표시를 재현할 수 있게 했다. Release gameplay 규칙과 spawn weight는 변경하지 않았다.
+- Debug Web에서 공용 CUT-IN과 Fire 공 표시를 확인한 뒤 clean Release를 재export했다. generated `.godot` cache에 남아 있던 stale MCP bridge 항목은 cache rescan으로 제거했으며 프로젝트 runtime/autoload는 수정하지 않았다.
+- localhost:8080 Release Browser smoke는 console warning/error 0이고 served/local PCK hash가 일치했다. Integration lock을 해제했다.
+
+## 2026-08-25 — S7-G1V Three Item Orb visual repair
+
+Owner: Integration — 사용자 지시 한시적 visual integration 예외
+Locked files: `scripts/presentation/item_blizzard_visual.gd`, `tests/content/s7_g2_blizzard_visual_verification.gd`, `tests/integration/s7_g1_three_item_orb_live_verification.*` (released)
+
+- 진단 결과 ItemManager는 Blizzard/Fire/Magnet data Orb를 모두 정상 생성했지만 Main의 유일한 world renderer가 `item_type != blizzard`를 거부해 Fire와 Magnet Orb가 보이지 않았다. Blizzard Orb는 기존부터 표시됐다.
+- 공용 renderer가 세 type을 보존해 Blizzard 기존 청록 Orb, Fire 기존 불꽃 PNG, 승인된 C형 Magnet pixel Orb를 각각 그리도록 수정했다. ItemManager, ItemDefinition, 효과 tuning, Stage/Core 규칙은 변경하지 않았다.
+- 전용 Main fixture가 세 타입 각각 5-hit→matching data/visible Orb→하강→collect cleanup→matching effect activation과 별도 bottom miss→visual/data cleanup→no activation을 확인했다. 결과: `S7_G1_THREE_ITEM_ORBS_LIVE_VERIFIED types=blizzard/fire_core/magnet hits=5 visible=true falling=true collect=true miss_cleanup=true activation=matching`, exit 0.
+- Primary Main native screenshot 3장에서 세 Orb를 실제 Play Field 안에서 육안 확인했고 runtime error 0이었다. Primary validate 4/4와 Godot 4.7.1 CLI editor project load exit 0을 확인했다. CLI의 root certificate/editor-settings write 오류는 sandbox 환경 문제로 분리했다.
+
+## 2026-08-25 — S7-G4 Magnet manual acceptance
+
+Owner: Content/Systems/Release + Core + Integration
+
+- 사용자가 실제 플레이에서 Magnet 활성 효과를 확인했다. 기존 Gateway activation·7초 expiry·Retry neutral reset fixture와 Core force Evidence에 이 수동 수락을 연결해 S7-G4 상태를 `VERIFIED`로 갱신했다.

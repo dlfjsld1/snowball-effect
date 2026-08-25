@@ -37,9 +37,9 @@ spawn multiplier: ×3
 
 연출:
 
-- `BLIZZARD!`
 - 장식 눈 증가
 - 생성음 가속
+- 활성 중 남은 시간 상태창은 표시하지 않음
 
 완료 조건:
 
@@ -62,6 +62,7 @@ cashout multiplier: ×10
 - 결과는 Fire
 - Fire + Fire도 Fire
 - 눈+불 파티클
+- Fire Snowball은 본체 외곽 전체를 불꽃이 감싸되 균일한 링으로 표시하지 않는다. 좌우·하단은 공 윤곽에 밀착하고, 상단은 깊은 골이나 긴 수직 쌍뿔 없이 5~7개의 짧고 넓은 불꽃 혀가 겹치는 연속된 flame mass로 표시한다. 전체 shell은 공 중심·반지름에 비례하며 본체 texture를 가리지 않는다. 투명 외곽에는 체크 무늬 분리 과정에서 생긴 불투명 near-white/near-neutral 픽셀이 없어야 하며, alpha 0 픽셀의 RGB도 `0,0,0`으로 정규화해 texture filtering halo를 방지한다. overlay는 Snowball batch보다 위에 렌더하고 하단 본체 원호가 shell 밖으로 돌출되지 않도록 Y 정렬한다. 불꽃 내부의 포화된 밝은 노랑 highlight는 유지한다.
 - ×10은 Active Cashout 전용 modifier
 - Final Settlement에는 적용하지 않음
 - Time Bonus에는 적용하지 않음
@@ -128,8 +129,8 @@ Paddle이 Item Orb를 획득하면 아이템 종류를 보여주는 짧은 CUT-I
 예:
 
 ```text
-FIRE SNOWBALL
-[ burning pixel snowball ]
+FIRE ORB
+[ fire orb portrait ]
 CASHOUT ×10
 ```
 

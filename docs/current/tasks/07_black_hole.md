@@ -116,6 +116,10 @@ strong contact lock
 
 첫 Lv14 생성 즉시 Result로 이동하던 이전 계약은 폐기한다. 두 Black Hole 접촉 이후에는 추가 Stage Shift가 없다. `MAIN MENU`는 메인 화면 복귀를 요청한다.
 
+### Result 최고 Stage·Snowball summary
+
+Result는 terminal Stage의 `stage_index`를 `HIGHEST STAGE`에, Run 전체에서 실제로 생성·확정된 가장 높은 Snowball global level을 `HIGHEST BALL`에 표시한다. Ground·Planetary Time Up/실패 Result와 Galactic Black Hole finale Result는 같은 read-only snapshot schema를 사용한다. Result UI는 copied 값으로 Stage/Ball catalog의 이름과 이미지를 고르며, Retry·Main·새 Run 뒤 이전 Result의 최고치가 남아서는 안 된다.
+
 ---
 
 ## 시각
