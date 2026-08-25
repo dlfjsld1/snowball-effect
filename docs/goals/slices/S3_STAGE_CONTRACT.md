@@ -57,9 +57,9 @@ Stage Timer, Time Bonus, Top Ball, Time Up, Final Settlement가 확정 계약대
 
 - Owner: Presentation
 - Owned Files: `scripts/ui/hud.gd`, `scenes/ui/hud.tscn`, `tests/presentation/**`
-- Integration Point: `stage_time_changed`, `score_changed`, `stage_changed`, `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)`, `stage_clear_decided` 구독.
+- Integration Point: `stage_time_changed`, `score_changed`, `stage_changed(definition)`, committed `ball_merged(result_level, world_position)`, `stage_clear_decided` 구독. `stage_changed`에서 현재 `StageDefinition.local_ball_levels`와 `revealed_count=1`을 적용하고, 이후 현재 Stage chain에 속한 committed Merge 결과만 해당 local index까지 공개한다.
 - Dependencies: S3-G2 signal signature와 S3-G1 display data.
-- Verification: Stage Time/Stage Score/Run Score/Clear Target과 Stage 이름(`Ground`/`Planetary`/`Galactic`)을 지속 표시; 현재 Stage의 공 족보는 고정 세로 5칸 housing에 배치하고 Stage 진입 시 첫 공만 표시; 새 공을 처음 만들 때 대응 아이콘·이름이 순서대로 정확히 한 번 공개되며 미발견 공은 출력되지 않음; Time Bonus 0이면 time popup 없음; HUD가 Merge 결과나 규칙 state를 변경하지 않음.
+- Verification: Stage Time/Stage Score/Run Score/Clear Target과 Stage 이름(`Ground`/`Planetary`/`Galactic`)을 지속 표시; 사용자-facing 제목은 정확히 `BALLS`; 현재 Stage의 공 족보는 고정 세로 5칸 housing의 원과 연결선으로 아래에서 위로 배치하고 Stage 진입 시 첫 공만 표시; 공개된 원 안에는 실제 Stage-local `BallTextureLodCatalog` runtime texture를 그 resource의 sampling mode 그대로 24×24 표시하되 Planetary local Lv0 Moon은 Ground local Lv4 Moon의 approved resource identity, Galactic local Lv0 Galaxy는 Planetary local Lv4 Galaxy의 approved resource identity를 공유하고 Galactic local Lv1 Galaxy Cluster는 global Lv11/local Lv1 identity와 16×16 gameplay mapping을 유지한 채 BALLS CRT에서만 선택 A의 전용 24×24 source를 사용; 이 세 HUD-only source override 외 나머지 12개 entry는 현재 Stage의 기존 texture selection을 유지하고 15개 slot identity는 모두 보존; 제목·5개 원·4개 선·아이콘·긴 이름 label의 bounding rect가 실제 106×317 CRT scanline display의 2px inset 안에 위치; 새 공을 처음 만들 때 대응 이미지·이름이 순서대로 정확히 한 번 공개되며 미발견 공의 drawable texture·이미지·이름은 출력되지 않음; Time Bonus 0이면 time popup 없음; HUD가 Merge 결과나 gameplay texture mapping·size·collision·규칙 state를 변경하지 않음.
 - Do Not Modify: Stage runtime, StageManager, resource 값.
 
 ### S3-G7 local Lv4 비종료 계약 마이그레이션

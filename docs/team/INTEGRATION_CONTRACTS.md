@@ -9,12 +9,12 @@
 | Core Stage runtime | `stage_time_changed(time_left)` | Presentation HUD | 남은 시간 표시 |
 | Core score ledger | `score_changed(stage_score, run_score)` | Presentation HUD | 점수 표시 |
 | Core simulation | `cashout_completed(score_amount, global_level, world_position)` | Presentation, Integration, Content AudioManager | popup·StageRuntime local Time Bonus·audio event 선택 |
-| Core simulation | `ball_merged(result_level, world_position)` — 2 arguments only | Presentation, Content AudioManager | Merge FX와 audio event 선택; score amount와 special type은 포함하지 않음 |
+| Core simulation | `ball_merged(result_level, world_position)` — 2 arguments only | Presentation HUD/FX, Content AudioManager | commit된 Merge FX·audio event 선택과 현재 Stage genealogy의 local entry 공개; score amount와 special type은 포함하지 않음 |
 | Core Stage runtime / simulation | `first_contact_discovered(payload: Dictionary)` v1 | Integration S6-G2I | committed Merge 결과 중 승인된 local Lv3/Lv4 identity의 Run-scoped discovery. Presentation은 이 신호를 직접 구독하지 않는다. |
 | Integration S6-G2I | `play_first_contact_cutin(payload: Dictionary) -> bool` | Presentation S6-G2 | current Run과 payload를 검증하고 gameplay pause lock을 먼저 획득한 뒤에만 visible CUT-IN을 요청한다. |
 | Presentation S6-G2 | `first_contact_cutin_finished(event_id: int, run_epoch: int)` | Integration S6-G2I | exit/dim restore가 끝난 matching visible CUT-IN 완료. gameplay resume나 Black Hole Phase를 직접 실행하지 않는다. |
 | Core simulation | `simulation_metrics_updated(metrics)` — read-only `active_balls/slot_capacity/free_slots/candidate_count/grid_cell_count/grid_bucket_capacity/grid_new_buckets/merges` | Presentation, Content/Systems | 성능 HUD와 release stress 측정; simulation state 수정 금지 |
-| Core Stage runtime | `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)` | Presentation HUD | Stage 이름과 세로 5칸 공 족보의 progressive reveal |
+| Integration StageManager | `stage_changed(definition)` | Presentation HUD | 현재 `StageDefinition.local_ball_levels`를 5칸 genealogy에 적용하고 Stage/Retry/fresh Run 진입을 base entry 1개 공개 상태로 reset |
 | Core Stage runtime | `stage_clear_decided(reason)` | Presentation, Integration, Content AudioManager | Clear 표시·상태 잠금·audio event 선택 |
 | Core Settlement → Integration StageManager | `final_settlement_started(amount: float)`, `final_settlement_finished(amount: float)` | Integration GameManager, Content AudioManager | SettlementService의 내부 신호를 StageManager가 한 번 전달한다. GameManager는 각각 `settlement_start`/`settlement_finish` audio event로만 매핑하며 점수·상태는 변경하지 않는다. |
 | Presentation EffectManager | `final_settlement_presentation_finished()` | Presentation HUD·verification, Integration S6-G6J | 최대 0.5초의 batch dissolve·Stage Score count-up 완료 알림. Core `Final Settlement → CLEARED`를 지연시키거나 gameplay state를 변경하지 않는 read-only presentation completion이다. S6-G6J는 이 signal로 pending Clear/Result UI의 **표시 시점만** 열 수 있으며, S5-G6의 Next Stage 확인은 계속 `CLEARED→SHIFTING` 경계에만 적용한다. |

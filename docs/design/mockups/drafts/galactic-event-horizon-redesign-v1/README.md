@@ -2,6 +2,8 @@
 
 Snowball Effect의 Galactic Stage `Event Horizon` 인게임 공 후보 3종이다. 세 후보는 빛과 공간이 끝나는 경계 너머의 **절대적 부재**를 표현한다. 2026-08-24 사용자 승인으로 **C — LAST LIGHT**의 실제 64px 파일이 runtime 적용안으로 확정되었고, A/B와 모든 master/inspection은 비교 후보로 보존한다.
 
+2026-08-25에는 FIRST CONTACT 초상화도 `event-horizon-C-last-light-master.png`와 byte-identical하게 교체했다. 기존 인게임 `64×64` Last Light 공은 변경하지 않았다.
+
 ## 권위 매핑과 실제 크기
 
 - `resources/balls/ball_13_event_horizon.tres`: `global_level = 13`, `display_name = "Event Horizon"`, `visual_key = &"event_horizon"`.

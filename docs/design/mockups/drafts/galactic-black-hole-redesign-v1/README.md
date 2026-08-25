@@ -4,6 +4,8 @@ Snowball Effect의 Galactic Stage 최종공 `Black Hole` 인게임 외형 후보
 
 사용자가 **C — VOID CATHEDRAL**을 최종 선택하고 `C로 적용하자`고 명시적으로 승인했다. A/B와 원본 master/inspection은 비교 기록으로 보존하며, C의 실제 `128×128` 파일만 global Lv14 initial in-game visual LOD에 적용했다.
 
+2026-08-25에는 FIRST CONTACT 초상화도 `black-hole-C-void-cathedral-master.png`와 byte-identical하게 교체했다. 기존 인게임 `128×128` Void Cathedral 공은 변경하지 않았다.
+
 ## 권위 매핑과 실제 크기
 
 - [`scripts/data/ball_catalog.gd`](../../../../../scripts/data/ball_catalog.gd)는 index `14`에서 [`resources/balls/ball_14_black_hole.tres`](../../../../../resources/balls/ball_14_black_hole.tres)를 로드한다.

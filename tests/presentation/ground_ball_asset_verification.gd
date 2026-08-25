@@ -84,8 +84,10 @@ func _ready() -> void:
 		var textured_material := batch.material as ShaderMaterial
 		_expect(textured_material != null and textured_material.get_shader_parameter("use_texture") == true, "Textured Ground batches must retain the clipping/upright shader in texture mode.")
 		_expect(batch.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST, "Ground batch %d must sample with nearest filtering." % level)
-	var untouched_batch := renderer.get_node_or_null("LevelBatch11") as MultiMeshInstance2D
-	_expect(untouched_batch != null and untouched_batch.texture == null and untouched_batch.material != null, "Unproduced Galactic levels must remain on the existing procedural fallback.")
+	var galactic_batch := renderer.get_node_or_null("LevelBatch11") as MultiMeshInstance2D
+	var galactic_material := galactic_batch.material as ShaderMaterial if galactic_batch != null else null
+	_expect(galactic_batch != null and galactic_batch.texture != null and galactic_batch.texture.resource_path.ends_with("ball_lv11_galaxy_cluster_16.png"), "Produced Galactic Lv11 must retain its approved Galaxy Cluster texture.")
+	_expect(galactic_material != null and galactic_material.get_shader_parameter("use_texture") == true, "Produced Galactic Lv11 must retain the clipping/upright shader in texture mode.")
 	var simulation = SimulationManagerScript.new()
 	simulation.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(simulation)

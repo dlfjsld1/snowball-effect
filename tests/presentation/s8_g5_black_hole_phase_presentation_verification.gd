@@ -97,8 +97,11 @@ func _ready() -> void:
 	assert(phase_metrics["visible"])
 	assert(phase_metrics["black_hole_count"] == 1)
 	assert(phase_metrics["core_count"] == 1)
-	assert(phase_metrics["horizon_ring_count"] == 1)
-	assert(phase_metrics["influence_ring_count"] == 1)
+	assert(phase_metrics["horizon_ring_count"] == 0)
+	assert(phase_metrics["influence_ring_count"] == 0)
+	assert(phase_metrics["orbit_square_count"] == 0)
+	assert(phase_metrics["lensing_arc_count"] == 2)
+	assert(phase_metrics["trail_stroke_count"] == 2)
 	assert(phase_metrics["status_label_visible"])
 	assert(String(phase_metrics["status_label"]).contains("GRAVITY ANOMALY"))
 	await _wait_for_phase(presenter)
@@ -150,8 +153,8 @@ func _ready() -> void:
 		await get_tree().process_frame
 	assert(_phase_completions == [41, 41], "A canceled prior-Run tween must not emit into a reused phase ID.")
 
-	# Reduced effects keeps the state name, exact edge movement, compact core/ring,
-	# and finale beats while omitting non-essential trail markers.
+	# Reduced effects keeps the state name, exact edge movement, compact core/arcs,
+	# and finale beats while omitting the movement trail.
 	presenter.reset_black_hole_presentation()
 	presenter.reduced_effects = true
 	assert(presenter.play_black_hole_phase(73, l2_rect, l3_rect))
@@ -159,8 +162,8 @@ func _ready() -> void:
 	var reduced_metrics := presenter.get_black_hole_presentation_metrics()
 	assert(reduced_metrics["reduced_effects"])
 	assert(reduced_metrics["status_label_visible"])
-	assert(reduced_metrics["trail_marker_count"] == 0)
-	assert(reduced_metrics["core_count"] == 1 and reduced_metrics["horizon_ring_count"] == 1)
+	assert(reduced_metrics["trail_marker_count"] == 0 and reduced_metrics["trail_stroke_count"] == 0)
+	assert(reduced_metrics["core_count"] == 1 and reduced_metrics["lensing_arc_count"] == 2)
 	await _wait_for_phase(presenter)
 	assert(presenter.play_black_hole_finale(finale_snapshot))
 	assert(presenter.is_black_hole_finale_active())
@@ -169,7 +172,7 @@ func _ready() -> void:
 	assert(_finale_completion_count == 2)
 	await _verify_main_final_phase_visual()
 
-	print("S8_G5_VERIFIED phase_completions=3 finale_completions=2 field=880_to_1040 symmetric=80 void_cathedral_main=true influence=true reduced=true stale_safe=true core_readonly=true")
+	print("S8_G5_VERIFIED phase_completions=3 finale_completions=2 field=880_to_1040 symmetric=80 void_cathedral_main=true misleading_cues=0 reduced=true stale_safe=true core_readonly=true")
 	get_tree().quit()
 
 

@@ -85,7 +85,7 @@ S8-G4의 기존 `begin_black_hole_phase(from_rect, to_rect) → black_hole_phase
 ### S8-G7 Black Hole cue cleanup·Void Cathedral consistency
 
 - Owner: Presentation
-- Owned Files: `scripts/presentation/black_hole_phase_effect.gd`, `scripts/presentation/ball_texture_lod_catalog.gd`, `scenes/effects/**`, `tests/presentation/s8_g7_**`
+- Owned Files: `scripts/presentation/black_hole_phase_effect.gd`, `scripts/presentation/ball_texture_lod_catalog.gd`, `scenes/effects/**`, `tests/presentation/s8_g7_**`, 직접 결합된 `tests/presentation/s8_g5_black_hole_phase_presentation_verification.gd`
 - Integration Point: Core의 read-only `get_black_hole_snapshot()` position/radius와 프레임 간 이동 방향만 소비한다. 기존 S8-G5 phase/finale completion API를 유지하며 gameplay force·absorption·collision 값을 Presentation에서 추론하지 않는다. player-visible 방어 surface는 승인된 `Void Cathedral C`를 제공하고, Core-owned generic fallback을 직접 수정하지 않는다.
 - Dependencies: S8-G5 Presentation lifecycle과 reset 계약, 승인된 `Void Cathedral C` runtime resource. S8-G6은 구현 시작 선행이 아니지만 third+ Lv14 unreachable 최종 수락은 S8-G8에서 함께 검증한다.
 - Deliverables / Scope: `300-unit` 대형 dashed influence ring과 orbiting square-dot reticle 제거; persistent cue를 최대 두 개의 close-range lensing arc와 짧은 moving-direction light trail로 정리; `Void Cathedral C`의 gold/Galactic-violet palette 유지; normal/reduced-effects와 한 개/두 개 Black Hole snapshot 지원; dependency transition 중 노출 가능한 Presentation fallback도 `Void Cathedral C` 사용. arc/trail은 procedural이라 새 bitmap을 만들지 않는다.

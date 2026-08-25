@@ -2,12 +2,12 @@ class_name BlackHolePhaseEffect
 extends Control
 
 const VIEWPORT_SIZE := Vector2(1600.0, 900.0)
-const DEFAULT_INFLUENCE_RADIUS := 300.0
 const BLACK_HOLE_TEXTURE: CanvasTexture = preload("res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv04_black_hole_void_cathedral_128.tres")
 const CORE_COLOR := Color("02040b")
 const HORIZON_COLOR := Color("74fff0")
 const FIELD_COLOR := Color("35d8cf")
-const TRAIL_COLOR := Color("7a42b8")
+const LENS_GOLD_COLOR := Color("d1a67e")
+const LENS_VIOLET_COLOR := Color("7a42b8")
 const EXPLOSION_COLOR := Color("d8fff7")
 
 var _simulation_source: Node
@@ -116,9 +116,13 @@ func get_visual_metrics() -> Dictionary:
 		"finale_active": _finale_active,
 		"black_hole_count": _positions.size(),
 		"core_count": _positions.size(),
-		"horizon_ring_count": _positions.size(),
-		"influence_ring_count": _positions.size() if _phase_active else 0,
-		"trail_marker_count": 0 if _reduced_effects else _positions.size() * 4,
+		"horizon_ring_count": 0,
+		"influence_ring_count": 0,
+		"orbit_square_count": 0,
+		"lensing_arc_count": _positions.size() * 2 if _phase_active else 0,
+		"trail_marker_count": 0,
+		"trail_stroke_count": 0 if _reduced_effects or not _phase_active else _positions.size() * 2,
+		"trail_directions": _trail_directions.duplicate(),
 		"reduced_effects": _reduced_effects,
 		"phase_progress": _phase_progress,
 		"finale_progress": _finale_progress,
@@ -203,14 +207,11 @@ func _draw_gameplay_black_hole(index: int) -> void:
 	var collapse_scale := lerpf(2.0, 1.0, _ease_out_cubic(minf(_phase_progress * 1.8, 1.0)))
 	var horizon_alpha := lerpf(0.4, 1.0, minf(_phase_progress * 2.4, 1.0))
 
-	_draw_dashed_ring(center, DEFAULT_INFLUENCE_RADIUS, FIELD_COLOR, 0.22 if not _reduced_effects else 0.38, 20, 0.22)
 	_draw_near_field(center, horizon_radius)
 	if not _reduced_effects:
 		_draw_motion_trail(index, center, horizon_radius)
 
 	_draw_void_cathedral(center, core_radius, horizon_alpha, collapse_scale)
-	draw_arc(center, horizon_radius * collapse_scale + 5.0, -1.1 + _elapsed, 1.25 + _elapsed, 18, FIELD_COLOR * Color(1.0, 1.0, 1.0, 0.65), 2.0, false)
-	_draw_orbit_pixels(center, horizon_radius + 9.0, index)
 
 
 func _draw_void_cathedral(center: Vector2, core_radius: float, alpha: float, scale: float = 1.0) -> void:
@@ -255,37 +256,22 @@ func _draw_field_boundaries() -> void:
 func _draw_near_field(center: Vector2, horizon_radius: float) -> void:
 	var rotation := _elapsed * (0.35 if _reduced_effects else 0.9)
 	for band in range(2):
-		var radius := horizon_radius + 12.0 + float(band) * 9.0
-		var alpha := 0.32 - float(band) * 0.09
-		draw_arc(center, radius, rotation + float(band) * 1.4, rotation + 2.2 + float(band) * 1.4, 16, TRAIL_COLOR * Color(1.0, 1.0, 1.0, alpha), 2.0, false)
+		var radius := horizon_radius + 8.0 + float(band) * 7.0
+		var alpha := 0.52 - float(band) * 0.16
+		var color := LENS_GOLD_COLOR if band == 0 else LENS_VIOLET_COLOR
+		var start := rotation + float(band) * 2.45
+		draw_arc(center, radius, start, start + 1.65, 14, color * Color(1.0, 1.0, 1.0, alpha), 2.0, false)
 
 
 func _draw_motion_trail(index: int, center: Vector2, horizon_radius: float) -> void:
 	if index >= _trail_directions.size():
 		return
 	var direction := _trail_directions[index]
-	for marker in range(4):
-		var distance := horizon_radius + 11.0 + float(marker) * 8.0
-		var marker_position := center + direction * distance
-		var size := 5.0 if marker < 2 else 3.0
-		var alpha := 0.65 - float(marker) * 0.12
-		draw_rect(Rect2(marker_position - Vector2.ONE * size * 0.5, Vector2.ONE * size), TRAIL_COLOR * Color(1.0, 1.0, 1.0, alpha))
-
-
-func _draw_orbit_pixels(center: Vector2, radius: float, seed: int) -> void:
-	var count := 4 if _reduced_effects else 8
-	for marker in range(count):
-		var angle := _elapsed * (0.7 + float(seed) * 0.11) + TAU * float(marker) / float(count)
-		var marker_position := center + Vector2.from_angle(angle) * (radius + float(marker % 2) * 5.0)
-		var color := HORIZON_COLOR if marker % 2 == 0 else TRAIL_COLOR
-		draw_rect(Rect2(marker_position - Vector2.ONE * 2.0, Vector2.ONE * 4.0), color * Color(1.0, 1.0, 1.0, 0.72))
-
-
-func _draw_dashed_ring(center: Vector2, radius: float, color: Color, alpha: float, segment_count: int, fill_ratio: float) -> void:
-	for segment in range(segment_count):
-		var start := TAU * float(segment) / float(segment_count) + _elapsed * 0.08
-		var finish := start + TAU / float(segment_count) * fill_ratio
-		draw_arc(center, radius, start, finish, 3, color * Color(1.0, 1.0, 1.0, alpha), 2.0, false)
+	var inner := center + direction * (horizon_radius + 7.0)
+	var middle := center + direction * (horizon_radius + 18.0)
+	var outer := center + direction * (horizon_radius + 31.0)
+	draw_line(inner, middle, LENS_GOLD_COLOR * Color(1.0, 1.0, 1.0, 0.58), 3.0)
+	draw_line(middle, outer, LENS_VIOLET_COLOR * Color(1.0, 1.0, 1.0, 0.38), 2.0)
 
 
 func _draw_finale() -> void:
@@ -307,7 +293,7 @@ func _draw_finale() -> void:
 	if core_alpha > 0.01:
 		_draw_finale_core(first_center, _radii[0], core_alpha, orbit_progress)
 		_draw_finale_core(second_center, _radii[1], core_alpha, orbit_progress)
-		draw_arc(contact_center, orbit_radius, 0.0, TAU, 36, TRAIL_COLOR * Color(1.0, 1.0, 1.0, 0.42 * core_alpha), 2.0, false)
+		draw_arc(contact_center, orbit_radius, 0.0, TAU, 36, LENS_VIOLET_COLOR * Color(1.0, 1.0, 1.0, 0.42 * core_alpha), 2.0, false)
 	if explosion_progress > 0.0:
 		_draw_pixel_explosion(contact_center, explosion_progress)
 
@@ -327,7 +313,7 @@ func _draw_pixel_explosion(center: Vector2, progress: float) -> void:
 		var distance := flash_radius * (0.38 + float((ray * 7) % 11) / 16.0)
 		var pixel_position := center + Vector2.from_angle(angle) * distance
 		var size := 8.0 if ray % 3 == 0 else 4.0
-		var color := EXPLOSION_COLOR if ray % 2 == 0 else TRAIL_COLOR
+		var color := EXPLOSION_COLOR if ray % 2 == 0 else LENS_VIOLET_COLOR
 		draw_rect(Rect2(pixel_position - Vector2.ONE * size * 0.5, Vector2.ONE * size), color * Color(1.0, 1.0, 1.0, 1.0 - progress * 0.72))
 
 

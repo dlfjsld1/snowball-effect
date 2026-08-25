@@ -12,7 +12,9 @@ const GROUND_MOON_ACTIVE_PATH := "res://assets/sprites/balls/ground/runtime/ball
 const SUPERNOVA_PORTRAIT_PATH := "res://assets/sprites/cutins/first_contact/supernova-portrait-v1.png"
 const GALAXY_PORTRAIT_PATH := "res://assets/sprites/cutins/first_contact/galaxy-portrait-v1.png"
 const SUPERNOVA_REFERENCE_PATH := "res://docs/design/mockups/drafts/s6-g2-cutin-d-components/supernova-portrait-v1.png"
-const GALAXY_REFERENCE_PATH := "res://docs/design/mockups/drafts/s6-g2-cutin-d-components/galaxy-portrait-v1.png"
+const GALAXY_CUTIN_MASTER_PATH := "res://docs/design/mockups/drafts/planetary-galaxy-redesign-v1/candidate-a-grand-spiral-master.png"
+const GALAXY_CUTIN_MASTER_SHA256 := "22307bd9cf7f4a31ad8aaaed7bc9ef047e62acb53050c24cee1ebe9cd5513695"
+const GALAXY_CUTIN_SHA256 := "87bda6de1587bda3181af136b140c4f09e02301ee7c9590cb1af86613ca3ba25"
 const EXPECTED_LEVELS := [4, 5, 6, 8, 10]
 const EXPECTED_SIZES := [8, 16, 32, 64, 128]
 const EXPECTED_IDENTITIES := ["moon", "earth", "sun", "supernova", "galaxy"]
@@ -270,9 +272,19 @@ func _contains_supernova_colors(image: Image) -> bool:
 
 func _validate_cutin_identity(images: Array[Image]) -> void:
 	_expect(FileAccess.get_file_as_bytes(SUPERNOVA_PORTRAIT_PATH) == FileAccess.get_file_as_bytes(SUPERNOVA_REFERENCE_PATH), "Supernova CUT-IN portrait must remain byte-identical to the approved reference artwork.")
-	_expect(FileAccess.get_file_as_bytes(GALAXY_PORTRAIT_PATH) == FileAccess.get_file_as_bytes(GALAXY_REFERENCE_PATH), "Galaxy CUT-IN portrait must remain byte-identical to the approved reference artwork.")
+	_expect(FileAccess.get_sha256(GALAXY_CUTIN_MASTER_PATH) == GALAXY_CUTIN_MASTER_SHA256, "Galaxy CUT-IN master bytes must remain exact.")
+	_expect(FileAccess.get_sha256(GALAXY_PORTRAIT_PATH) == GALAXY_CUTIN_SHA256, "Galaxy CUT-IN portrait must match the approved Grand Spiral reduction.")
+	var master := _load_png(GALAXY_CUTIN_MASTER_PATH, "Galaxy CUT-IN master")
+	var portrait := _load_png(GALAXY_PORTRAIT_PATH, "Galaxy CUT-IN portrait")
+	master.convert(Image.FORMAT_RGBA8)
+	master.resize(1254, 1254, Image.INTERPOLATE_LANCZOS)
+	for y in range(1254):
+		for x in range(1254):
+			if is_zero_approx(master.get_pixel(x, y).a):
+				master.set_pixel(x, y, Color(0.0, 0.0, 0.0, 0.0))
+	_expect(portrait.get_data() == master.get_data(), "Galaxy CUT-IN portrait must be the deterministic 1536px-to-1254px Lanczos reduction of approved Grand Spiral A.")
 	_expect(_contains_supernova_colors(images[3]), "In-game Supernova must retain the CUT-IN's pale rupture core and warm-violet orbit language.")
-	_expect(_contains_galaxy_ribbon_colors(images[4]), "In-game Galaxy must retain the CUT-IN's folded violet body and cyan-gold ribbon language.")
+	_expect(_contains_galaxy_ribbon_colors(images[4]), "The existing in-game Galaxy color identity must remain unchanged while only its CUT-IN portrait is replaced.")
 
 
 func _contains_galaxy_ribbon_colors(image: Image) -> bool:

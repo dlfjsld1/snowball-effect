@@ -835,7 +835,7 @@ ItemDefinition
 
 초기 BallCatalog는 global 0~14의 15종을 유지한다. 기본 Run의 Stage chain은 Ground `[0,1,2,3,4]`, Planetary `[4,5,6,8,10]`, Galactic `[10,11,12,13,14]`이며 Lv7·Lv9는 catalog에는 있으나 비활성이다. 15는 밸런스 공식이 아니라 첫 콘텐츠 제작 범위이며, 플레이테스트 결과에 따라 데이터 수를 줄일 수 있다. Stage별 구성과 global catalog의 연결은 `StageDefinition.local_ball_levels`에서 관리한다.
 
-HUD 공 족보는 현재 `StageDefinition.local_ball_levels` 순서대로 `BallCatalog`의 visual key와 display name을 읽어 세로 5칸에 표시한다. Stage 진입 시 `revealed_count = 1`이고, 새 local 공이 처음 생성될 때 Core가 `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)`를 보낸다. Presentation은 앞에서부터 `revealed_count`개만 출력하고 나머지 슬롯의 아이콘·이름은 숨긴다. 별도의 Merge progression 사본이나 `NEXT` Spawn queue를 만들지 않으며 HUD가 Merge 결과나 Stage 데이터를 수정하지 않는다.
+HUD 내부 genealogy는 화면에서 `BALLS`로 표시한다. `stage_changed(definition)`에서 현재 `StageDefinition.local_ball_levels` 순서와 `revealed_count = 1`을 적용하고, `BallCatalog`의 display name과 Presentation의 실제 Stage-local texture mapping을 읽어 아래에서 위로 이어지는 세로 5칸 원에 표시한다. 이후 Simulation의 commit 완료 `ball_merged(result_level, world_position)`가 현재 Stage chain에 속할 때만 해당 local index까지 공개한다. 공개된 원 안에는 `BallTextureLodCatalog.resolve_texture(...)`가 선택한 실제 in-game `Texture2D`를 24×24로 표시하고 그 runtime resource의 texture filter를 유지한다. 단, 현재 Stage의 local Lv0가 authoritative `StageCatalog`의 직전 Stage local Lv4와 같은 global level이면 족보에 한해 직전 Stage 최종 local diameter로 texture를 resolve한다. 그 결과 Planetary Moon은 Ground 최종 Moon resource를, Galactic Galaxy는 Planetary 최종 Galaxy resource를 exact identity로 공유한다. Galactic local Lv1 Galaxy Cluster는 global Lv11/local Lv1 identity와 `16×16` gameplay mapping을 유지하면서 BALLS CRT에만 선택 A의 전용 `24×24` source를 사용한다. 이 세 HUD-only source override 외 나머지 12개 entry는 현재 Stage의 기존 texture selection을 유지하며, 15개 slot identity는 모두 바뀌지 않는다. gameplay renderer, `BallTextureLodCatalog` 전역 mapping, Stage/Ball resource, size/collision은 변경하지 않는다. 실제 CRT genealogy display mask는 wing-local `Rect2(48, 262, 106, 317)`이며, 제목·5개 원·4개 선·아이콘·이름의 bounding rect는 2px inset 안에 들어가야 한다. 미공개 원은 drawable texture·이미지·이름을 비운다. `first_contact_discovered`는 승인된 local Lv3/Lv4 여섯 identity의 Run-scoped CUT-IN source이며 5칸 genealogy 전체의 공개 source로 사용하지 않는다. 별도의 Merge progression 사본이나 `NEXT` Spawn queue를 만들지 않으며 HUD가 Merge 결과나 Stage 데이터를 수정하지 않는다.
 
 현재 S1의 Lv1 Spawn speed와 runtime speed cap은 공통 physics tuning이다. Mouse position은 직접 매핑하므로 movement speed cap을 사용하지 않는다. Paddle contact impact cap, ball reflection speed cap, rotation collision tolerance와 최대 rotation substep 수는 서로 다른 tuning이며 확정 디자인값이 아니다. 향후 BallDefinition override를 추가하더라도 runtime velocity를 지속적으로 고정하는 용도로 사용하지 않는다.
 
@@ -862,7 +862,6 @@ signal next_stage_requested(clear_id: int)
 signal stage_failed(stage: int)
 signal stage_shift_started(from_stage: int, to_stage: int)
 signal stage_shift_completed(stage: int)
-signal stage_ball_progression_changed(stage_id: int, ordered_global_levels: PackedInt32Array, revealed_count: int)
 signal black_hole_phase_started(phase_id: int, from_rect: Rect2, to_rect: Rect2)
 signal black_hole_phase_presentation_finished(phase_id: int)
 signal black_hole_finale_locked(result_snapshot: Dictionary)

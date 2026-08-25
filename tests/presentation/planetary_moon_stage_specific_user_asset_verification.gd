@@ -20,6 +20,7 @@ const PLANETARY_GALAXY_PNG := "res://assets/sprites/balls/planetary/runtime/ball
 const PLANETARY_GALAXY_RESOURCE := "res://assets/sprites/balls/planetary/runtime/ball_planetary_local_lv04_galaxy_user_authored_128.tres"
 const GALACTIC_GALAXY_PNG := "res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv00_galaxy_user_authored_8.png"
 const GALACTIC_GALAXY_RESOURCE := "res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv00_galaxy_user_authored_8.tres"
+const GALACTIC_GALAXY_SOURCE_PNG := "res://docs/design/mockups/drafts/planetary-galaxy-redesign-v1/candidate-a-grand-spiral-preview-128.png"
 const GALACTIC_QUASAR_DRAFT_PNG := "res://docs/design/mockups/drafts/galactic-quasar-redesign-v1/quasar-A-polar-beacon-32.png"
 const GALACTIC_QUASAR_PNG := "res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv02_quasar_polar_beacon_32.png"
 const GALACTIC_QUASAR_RESOURCE := "res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv02_quasar_polar_beacon_32.tres"
@@ -37,9 +38,10 @@ const EXPECTED_EARTH_SHA256 := "126a09594b0be32703e52d566ec1519ad2133930a30dafe7
 const EXPECTED_SUN_SHA256 := "918b553af7eb72cc3a413eb7dd8a15da253a2d4dd9e23ae146fc27793d3f5a38"
 const EXPECTED_SUPERNOVA_SHA256 := "e78e5d4abdc9fc212b88bd2d8e8afa5ed850e89f8552c3268b7abf3b4f1c93ab"
 const EXPECTED_GALAXY_SHA256 := "7c343b003ea981d957a6357257356e47c6e077ab8239893142f37cf858d4b5c0"
-const EXPECTED_GALACTIC_GALAXY_SHA256 := "390febba08240d2d2b5e4025cbf5a8a403b16d6c172d2d81c089c79dd1a49b4b"
+const EXPECTED_GALACTIC_GALAXY_SHA256 := "163b67294b4fd093b99f8761e1b2668bdfae269f6671ce25582f6d1e1d28c5ad"
+const EXPECTED_GALACTIC_GALAXY_SOURCE_SHA256 := "5dad927ef6c2173c9a0f89710fe3a1af2e6a56ff367f52c46a71dbcd0a1a564d"
 const EXPECTED_GALACTIC_QUASAR_SHA256 := "e88c7e35696469ee30285f7c62cf4efd4b9ce4b91810781661fa5a0088146c1d"
-const EXPECTED_GALAXY_CLUSTER_SHA256 := "5803a2b88f2734bd2a7bd1ec13a2d014dd8846eefa1c16f2fa29bd75c3fc71cc"
+const EXPECTED_GALAXY_CLUSTER_SHA256 := "b56ed4b3a55c94be2f7e1b54821261691cc0948f02d3bdfbb5f766e902c13947"
 const EXPECTED_EVENT_HORIZON_SHA256 := "a44fe630208d653aaf53bb4346896b5c325e09bbaa6ad9fc5ffa052e535793cd"
 const EXPECTED_EVENT_HORIZON_FALLBACK_SHA256 := "adbe27c795ba50a24b385c665de825612b7e9ab0134c3206774a25d029b08b42"
 const EXPECTED_BLACK_HOLE_SHA256 := "6efa4ce42876759eea3fa4539b1d46e2acc89867654d2071be88c5a8243ef465"
@@ -77,7 +79,7 @@ func _run_verification() -> void:
 	_verify_sun_png()
 	_verify_png(PLANETARY_SUPERNOVA_PNG, Vector2i(64, 64), EXPECTED_SUPERNOVA_SHA256, 1267, "Planetary Supernova")
 	_verify_png(PLANETARY_GALAXY_PNG, Vector2i(128, 128), EXPECTED_GALAXY_SHA256, 5879, "Planetary Galaxy")
-	_verify_png(GALACTIC_GALAXY_PNG, Vector2i(8, 8), EXPECTED_GALACTIC_GALAXY_SHA256, 24, "Galactic Galaxy")
+	_verify_galactic_galaxy_png()
 	_verify_quasar_png()
 	_verify_event_horizon_png()
 	_verify_black_hole_png()
@@ -123,11 +125,11 @@ func _run_verification() -> void:
 	var event_horizon_definition = catalog.get_definition(13)
 	var black_hole_definition = catalog.get_definition(14)
 	_expect(moon_definition.texture.resource_path.ends_with("ball_lv04_moon_128.png"), "Content's global Lv4 primary texture must remain unchanged.")
-	_expect(earth_definition.texture.resource_path.ends_with("ball_lv05_mercury_16.png"), "Content's global Lv5 primary texture must remain unchanged.")
-	_expect(sun_definition.texture.resource_path.ends_with("ball_lv06_mars_32.png"), "Content's global Lv6 primary texture must remain unchanged.")
-	_expect(supernova_definition.texture.resource_path.ends_with("ball_lv08_earth_64.png"), "Content's global Lv8 primary texture must remain unchanged.")
+	_expect(earth_definition.texture.resource_path.ends_with("ball_planetary_local_lv01_earth_user_authored_16.png"), "Content's global Lv5 primary texture must use the approved Planetary Earth asset.")
+	_expect(sun_definition.texture.resource_path.ends_with("ball_planetary_local_lv02_sun_corona_crown_32.png"), "Content's global Lv6 primary texture must use the approved Planetary Sun asset.")
+	_expect(supernova_definition.texture.resource_path.ends_with("ball_planetary_local_lv03_supernova_user_authored_64.png"), "Content's global Lv8 primary texture must use the approved Planetary Supernova asset.")
 	_expect(galaxy_definition.texture.resource_path.ends_with("ball_lv10_galaxy_128.png"), "Content's global Lv10 primary texture must remain unchanged.")
-	_expect(quasar_definition.texture == null, "Content's global Lv12 definition must remain texture-neutral for the stage-local Quasar LOD binding.")
+	_expect(quasar_definition.texture != null and quasar_definition.texture.resource_path == GALACTIC_QUASAR_RESOURCE, "Content's global Lv12 primary texture must use the approved Galactic Quasar asset.")
 	_expect(event_horizon_definition.global_level == 13 and event_horizon_definition.visual_key == &"event_horizon", "Content's global Lv13 identity must remain unchanged.")
 	_expect(black_hole_definition.global_level == 14 and black_hole_definition.visual_key == &"black_hole", "Content's global Lv14 identity must remain unchanged.")
 	for expected in EXPECTED_STAGE_LODS:
@@ -173,27 +175,69 @@ func _run_verification() -> void:
 	simulation.reset_runtime()
 	simulation.apply_stage_definition(galactic_stage)
 	_expect(is_equal_approx(simulation.get_runtime_radius_for_level(10), 4.0), "Galactic global Lv10 gameplay radius must remain 4.")
+	_expect(is_equal_approx(simulation.get_runtime_radius_for_level(11), 8.0), "Galactic global Lv11 gameplay radius must remain 8.")
 	_expect(is_equal_approx(simulation.get_runtime_radius_for_level(12), 16.0), "Galactic global Lv12 gameplay radius must remain 16.")
 	_expect(is_equal_approx(simulation.get_runtime_radius_for_level(13), 32.0), "Galactic global Lv13 gameplay radius must remain 32.")
 	_expect(is_equal_approx(simulation.get_runtime_radius_for_level(14), 64.0), "Galactic global Lv14 initial gameplay radius must remain 64.")
 	simulation.spawn_ball(Vector2(700.0, 300.0), Vector2.ZERO, 4.0, 10)
+	simulation.spawn_ball(Vector2(760.0, 300.0), Vector2.ZERO, 8.0, 11)
 	simulation.spawn_ball(Vector2(840.0, 300.0), Vector2.ZERO, 16.0, 12)
 	simulation.spawn_ball(Vector2(1000.0, 300.0), Vector2.ZERO, 32.0, 13)
 	renderer.refresh_render_snapshot()
 	await process_frame
 	_verify_renderer_ball(renderer, 10, GALACTIC_GALAXY_RESOURCE, 4.0, "Galactic Galaxy")
+	_verify_renderer_ball(renderer, 11, "res://assets/sprites/balls/galactic/runtime/ball_lv11_galaxy_cluster_16.png", 8.0, "Galactic Galaxy Cluster TRI-SPIRAL CORE")
 	_verify_renderer_ball(renderer, 12, GALACTIC_QUASAR_RESOURCE, 16.0, "Galactic Quasar Polar Beacon")
 	_verify_renderer_ball(renderer, 13, GALACTIC_EVENT_HORIZON_RESOURCE, 32.0, "Galactic Event Horizon Last Light")
 
 	var shader_source := FileAccess.get_file_as_string("res://scripts/simulation/ball_renderer_circle.gdshader")
 	_expect(shader_source.contains("texture(TEXTURE, vec2(UV.x, 1.0 - UV.y))"), "The upright UV correction must remain active for textured batches.")
-	_expect(FileAccess.get_sha256("res://assets/sprites/balls/galactic/runtime/ball_lv11_galaxy_cluster_16.png") == EXPECTED_GALAXY_CLUSTER_SHA256, "Galaxy Cluster bytes must remain unchanged.")
+	_expect(FileAccess.get_sha256("res://assets/sprites/balls/galactic/runtime/ball_lv11_galaxy_cluster_16.png") == EXPECTED_GALAXY_CLUSTER_SHA256, "Galaxy Cluster bytes must match selected A TRI-SPIRAL CORE.")
 	_expect(FileAccess.get_sha256(GALACTIC_EVENT_HORIZON_FALLBACK_PNG) == EXPECTED_EVENT_HORIZON_FALLBACK_SHA256, "The previous Event Horizon fallback bytes must remain available and unchanged.")
 	_expect(FileAccess.get_sha256(GALACTIC_BLACK_HOLE_FALLBACK_PNG) == EXPECTED_BLACK_HOLE_FALLBACK_SHA256, "The previous Black Hole fallback bytes must remain available and unchanged.")
 
 	if _failures == 0:
-		print("PLANETARY_GALACTIC_STAGE_SPECIFIC_ASSETS_VERIFIED hashes=approved_exact dimensions=stage_native rgba=true alpha=quasar+event_horizon+black_hole_smooth import=lossless_alpha_border_no_mipmaps filter=nearest repeat=disabled ground=isolated planetary=stage_specific galactic=galaxy@r4+cluster_unchanged+quasar_polar_beacon@r16+event_horizon_last_light@r32+black_hole_void_cathedral@r64 native=1to1 upright=true")
+		print("PLANETARY_GALACTIC_STAGE_SPECIFIC_ASSETS_VERIFIED hashes=approved_exact dimensions=stage_native rgba=true alpha=galaxy+cluster+quasar+event_horizon+black_hole_smooth import=lossless_alpha_border_no_mipmaps filter=nearest repeat=disabled ground=isolated planetary=stage_specific galactic=grand_spiral_128to8@r4+cluster_tri_spiral_core@r8+quasar_polar_beacon@r16+event_horizon_last_light@r32+black_hole_void_cathedral@r64 native=1to1 upright=true")
 	quit(_failures)
+
+
+func _verify_galactic_galaxy_png() -> void:
+	_expect(FileAccess.get_sha256(GALACTIC_GALAXY_SOURCE_PNG) == EXPECTED_GALACTIC_GALAXY_SOURCE_SHA256, "Galactic Galaxy approved Grand Spiral source hash must remain exact.")
+	_expect(FileAccess.get_sha256(GALACTIC_GALAXY_PNG) == EXPECTED_GALACTIC_GALAXY_SHA256, "Galactic Galaxy runtime bytes must match the approved 8px downscale.")
+	var file := FileAccess.open(GALACTIC_GALAXY_PNG, FileAccess.READ)
+	_expect(file != null, "Galactic Galaxy PNG must be readable.")
+	if file == null:
+		return
+	var image := Image.new()
+	_expect(image.load_png_from_buffer(file.get_buffer(file.get_length())) == OK and image.get_size() == Vector2i(8, 8), "Galactic Galaxy must decode at exactly 8x8.")
+	_expect(image.get_format() == Image.FORMAT_RGBA8, "Galactic Galaxy must decode as RGBA8.")
+	var transparent := 0
+	var opaque := 0
+	var partial := 0
+	for y in range(8):
+		for x in range(8):
+			var pixel := image.get_pixel(x, y)
+			if is_zero_approx(pixel.a):
+				transparent += 1
+				_expect(pixel.r < 0.001 and pixel.g < 0.001 and pixel.b < 0.001, "Galactic Galaxy transparent pixels must not contain matte RGB.")
+			elif is_equal_approx(pixel.a, 1.0):
+				opaque += 1
+			else:
+				partial += 1
+	_expect(transparent == 14 and opaque == 8 and partial == 42, "Galactic Galaxy smooth-alpha footprint must remain 14/8/42.")
+	var source_file := FileAccess.open(GALACTIC_GALAXY_SOURCE_PNG, FileAccess.READ)
+	_expect(source_file != null, "Galactic Galaxy approved source must be readable.")
+	if source_file == null:
+		return
+	var expected := Image.new()
+	_expect(expected.load_png_from_buffer(source_file.get_buffer(source_file.get_length())) == OK, "Galactic Galaxy approved source must decode.")
+	expected.convert(Image.FORMAT_RGBA8)
+	expected.resize(8, 8, Image.INTERPOLATE_LANCZOS)
+	for y in range(8):
+		for x in range(8):
+			if is_zero_approx(expected.get_pixel(x, y).a):
+				expected.set_pixel(x, y, Color(0.0, 0.0, 0.0, 0.0))
+	_expect(image.get_data() == expected.get_data(), "Galactic Galaxy must remain the deterministic Lanczos reduction of approved Grand Spiral A.")
 
 
 func _verify_png(path: String, expected_size: Vector2i, expected_hash: String, expected_transparent_pixels: int, label: String) -> void:
@@ -238,6 +282,27 @@ func _verify_canvas_texture(resource_path: String, png_path: String, expected_si
 	_expect(import_text.contains("process/fix_alpha_border=true"), "%s import must enable alpha-border fixing." % label)
 	_expect(import_text.contains("mipmaps/generate=false"), "%s import must disable mipmaps." % label)
 	_expect(import_text.contains("process/size_limit=0"), "%s import must not resize authored pixels." % label)
+	_expect(_texture_alpha_matches_png(texture, png_path), "%s imported texture cache must match the current PNG alpha footprint." % label)
+
+
+func _texture_alpha_matches_png(texture: CanvasTexture, png_path: String) -> bool:
+	if texture.diffuse_texture == null:
+		return false
+	var imported_image := texture.diffuse_texture.get_image()
+	var source_file := FileAccess.open(png_path, FileAccess.READ)
+	if imported_image == null or source_file == null:
+		return false
+	var source_image := Image.new()
+	if source_image.load_png_from_buffer(source_file.get_buffer(source_file.get_length())) != OK:
+		return false
+	if imported_image.get_size() != source_image.get_size():
+		return false
+	imported_image.convert(Image.FORMAT_RGBA8)
+	for y in range(source_image.get_height()):
+		for x in range(source_image.get_width()):
+			if imported_image.get_pixel(x, y).a8 != source_image.get_pixel(x, y).a8:
+				return false
+	return true
 
 
 func _verify_sun_png() -> void:
@@ -453,8 +518,8 @@ func _verify_authored_galactic_galaxy_orientation() -> void:
 		return
 	var image := Image.new()
 	_expect(image.load_png_from_buffer(file.get_buffer(file.get_length())) == OK, "Galactic Galaxy source must decode for orientation verification.")
-	_expect(image.get_pixel(4, 1).is_equal_approx(Color8(23, 139, 255, 255)), "Galactic Galaxy's cyan upper landmark must remain at the top.")
-	_expect(image.get_pixel(4, 6).a == 0.0, "Galactic Galaxy's transparent lower landmark must remain at the bottom.")
+	_expect(image.get_pixel(3, 3).is_equal_approx(Color8(215, 184, 153, 248)), "Galactic Galaxy's warm core landmark must remain on the authored upper-left side.")
+	_expect(image.get_pixel(4, 6).is_equal_approx(Color8(61, 78, 163, 227)), "Galactic Galaxy's blue-violet lower arm landmark must remain at the bottom.")
 
 
 func _verify_renderer_moon(renderer, expected_path: String, expected_radius: float, stage_label: String) -> void:

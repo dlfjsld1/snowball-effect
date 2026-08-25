@@ -24,7 +24,7 @@ Runtime ownership note: HUD는 Presentation-owned, Pause/Main/Settings runtime�
 | `stage_display_name` | 1 | `Ground`/`Planetary`/`Galactic`을 항상 표시 | StageDefinition |
 | `stage_time_left` | 1 | 항상 표시, 10초 미만 warning state | Core Stage runtime |
 | `stage_score / clear_score` | 1 | Stage Score와 Target을 한 묶음으로 크게 표시하고 아래에 채워지는 gauge bar 배치 | Core score ledger + StageDefinition |
-| `ball_progression[]` | 2 | 현재 Stage의 5종을 낮은 단계부터 세로 5칸에 배치하고 발견된 공만 표시 | StageDefinition + BallCatalog + Core discovery event |
+| `ball_progression[]` | 2 | `BALLS` 제목 아래 현재 Stage의 5종을 낮은 단계부터 세로 5칸에 배치하고 발견된 공만 표시 | StageDefinition + BallCatalog + committed Merge event |
 | `run_score` | 2 | Stage Score보다 작고 낮은 대비로 항상 표시 | Core score ledger |
 | `active_effects[]` | 2 | 0개면 숨김, 활성 효과마다 남은 시간 표시 | Optional Item/Effect system |
 | Pause action | 3 | 작은 고정 utility button과 `Esc` cue | Content UI request |
@@ -40,10 +40,10 @@ Stage 이름은 persistent HUD 필수 항목이다. Stage index 숫자는 선택
 1. Stage name.
 2. Time.
 3. Stage Score / Target.
-4. Current Stage Ball Progression — 세로 5칸.
+4. Current Stage `BALLS` — 세로 5칸.
 5. Run Score.
 
-Stage name, Time, Stage Score/Target은 1차 계층 안에서 역할을 구분한다. 점수 gauge는 `clamp(stage_score / clear_score, 0, 1)`의 read-only 시각화이며 판정이나 점수 계산을 수행하지 않는다. `clear_score <= 0`인 Galactic에서는 숨기거나 final-stage 전용 비결정 상태로 바꾼다. Ball Progression은 Merge 결과를 화면을 떠나지 않고 확인하는 compact read-only vertical chain이다. 5칸 housing은 항상 같은 높이를 유지하지만 Stage 진입 시 첫 아이콘만 표시하고, 새로운 local 공을 만들 때 아래 슬롯의 아이콘과 이름을 하나씩 공개한다. 미발견 항목은 silhouette나 정답 label을 보여주지 않는다.
+Stage name, Time, Stage Score/Target은 1차 계층 안에서 역할을 구분한다. 점수 gauge는 `clamp(stage_score / clear_score, 0, 1)`의 read-only 시각화이며 판정이나 점수 계산을 수행하지 않는다. `clear_score <= 0`인 Galactic에서는 숨기거나 final-stage 전용 비결정 상태로 바꾼다. `BALLS`는 Merge 결과를 화면을 떠나지 않고 확인하는 compact read-only vertical chain이다. 5칸 housing은 항상 같은 높이를 유지하지만 Stage 진입 시 첫 아이콘만 표시하고, 새로운 local 공을 만들 때 아래 슬롯의 아이콘과 이름을 하나씩 공개한다. 미발견 항목은 silhouette나 정답 label을 보여주지 않는다.
 
 ### Right — active state panel
 
@@ -99,7 +99,7 @@ ActiveEffectView
 
 `HUDViewState`, `BallProgressionEntry`, `ActiveEffectView`는 runtime 저장용 Resource나 문자열 key `Dictionary`가 아니라 typed `RefCounted` read-only DTO로 구현한다. `run_epoch`가 이전이면 snapshot 전체를 거부하고 같은 epoch에서는 증가한 `view_revision`만 반영한다. `refresh_sequence`는 같은 효과 재획득을 UI가 한 번만 pulse하기 위한 correlation 값이다.
 
-HUD는 시간·점수·효과를 계산하거나 감소시키지 않고 authoritative snapshot/event만 표시한다. Ball Progression은 전달된 5개 순서와 `is_revealed`/`revealed_count`를 그대로 그리며 다음 Merge 결과를 계산하지 않는다. Stage 진입 시 첫 항목만 공개되고, Core의 `stage_ball_progression_changed(stage_id, ordered_global_levels, revealed_count)`가 증가할 때만 다음 항목을 공개한다. 숫자는 S2-G4 `format_score(value)`를 사용한다. 점수·Pause·effect add/remove·Stage 변경은 즉시 갱신하고, 연속적인 timer/effect countdown snapshot은 producer에서 최대 10Hz로 coalesce한다. HUD는 같은 text/icon 값이면 Control 속성을 다시 쓰지 않는다.
+HUD는 시간·점수·효과를 계산하거나 감소시키지 않고 authoritative snapshot/event만 표시한다. 내부 Ball Progression은 `stage_changed(definition)`의 현재 5개 `local_ball_levels`를 읽고 첫 항목만 공개하며, 이후 commit 완료 `ball_merged(result_level, world_position)`가 현재 Stage chain의 새 local index를 만들 때만 해당 항목까지 공개한다. 공개 아이콘은 반경 19px 원 안의 24×24로 표시하고, 잠금 항목은 texture·아이콘·이름을 비운다. 기본 선택은 실제 Stage-local runtime texture와 sampling mode다. 단, 현재 Stage local Lv0가 `StageCatalog`의 직전 Stage 최종 entry와 같은 global level인 경계 중복이면 족보 icon만 직전 Stage local Lv4의 최종 approved resource identity를 공유한다: Planetary Moon은 Ground Moon, Galactic Galaxy는 Planetary Galaxy를 사용한다. Galactic local Lv1 Galaxy Cluster는 같은 global Lv11/local Lv1 identity와 16×16 gameplay mapping을 유지하고 BALLS CRT에서만 선택 A의 전용 24×24 source를 사용한다. 이 세 HUD-only source override 외 나머지 12개 entry는 현재 Stage 선택을 유지하며, 15개 slot identity는 모두 바뀌지 않는다. 현재 Stage의 작은 gameplay icon, gameplay renderer/data/size/collision은 그대로 둔다. `BALLS` 제목·5개 원·4개 연결선·아이콘·이름은 실제 106×317 CRT scanline display의 2px inset 안에 배치한다. HUD는 다음 Merge 결과를 계산하지 않고, `first_contact_discovered`를 5칸 전체 공개 source로 오용하지 않는다. 숫자는 S2-G4 `format_score(value)`를 사용한다. 점수·Pause·effect add/remove·Stage 변경은 즉시 갱신하고, 연속적인 timer/effect countdown snapshot은 producer에서 최대 10Hz로 coalesce한다. HUD는 같은 text/icon 값이면 Control 속성을 다시 쓰지 않는다.
 
 ## 6. Reflow Rules
 
