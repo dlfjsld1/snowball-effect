@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/content/s8_g3_title_help_verification.gd" id="1_test"]
+
+[node name="S8G3TitleHelpVerification" type="Node"]
+script = ExtResource("1_test")

@@ -369,6 +369,7 @@ func _enter_title_screen() -> void:
 
 
 func _on_stage_changed(definition: StageDefinition) -> void:
+	_reset_stage_item_runtime()
 	_base_stage_spawn_rate = definition.spawn_rate
 	_apply_spawn_rate_multiplier(_spawn_rate_multiplier)
 	_apply_stage_frame(definition.stage_index)
@@ -380,6 +381,14 @@ func _on_stage_changed(definition: StageDefinition) -> void:
 	)
 	_paddle.set_physics_process(true)
 	_pause_menu.visible = true
+
+
+func _reset_stage_item_runtime() -> void:
+	_item_effect_gateway.reset_runtime()
+	_item_blizzard.reset_runtime()
+	_item_fire_core.reset_runtime()
+	_item_magnet.reset_runtime()
+	_item_blizzard_visual.reset_runtime()
 
 
 func _on_stage_shift_presentation_finished(shift_id: int) -> void:

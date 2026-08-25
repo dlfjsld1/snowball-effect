@@ -1559,6 +1559,16 @@ Owner: Content/Systems/Release + Core
 - `fire_snowball_shell_v13.png`은 작은 내부 투명 구멍을 제거하고 중앙 inner rim을 2픽셀 보강한다. renderer는 Fire batch를 `z_index=1`로 고정하고 Y 보정을 `-0.28×radius`에서 `-0.12×radius`로 내려 X/Y `1.49×radius` 크기를 유지하면서 본체 하단을 완전히 감싼다.
 - Godot 4.7.1 production Main Ground 5개 capture에서 Fire 5/5와 큰 공 하단 돌출 0을 확인했다. MultiMesh renderer fixture와 Web release export는 exit 0이었다. localhost:8080 Title→Start Run의 console warning/error는 0이고 served/local PCK SHA-256 `0F5B9717EF036428C8016774E58F8BBEE2B95A06D60B0F0BD48CD17CEE51A953`가 일치했다.
 
+## 2026-08-25 — S7-G3R8 Fire Paddle visual restoration
+
+Owner: Content/Systems/Release + Core
+
+- Fire 효과 상태와 Paddle collision relay는 연결되어 있었지만 `Paddle.set_fire_contact_active()`가 bool만 바꾸고 표시 노드가 없어, Fire Orb 획득 후에도 패들 화염이 보이지 않던 원인을 확인했다.
+- 누락된 승인 원본을 기존 Godot import cache에서 `assets/particles/items/fire/fire_paddle_flames_6f.png`로 복구했다. 1440×16 strip의 240×16 6프레임을 Paddle Scene의 `FireVisual`로 연결해 12 FPS로 재생하며, 원본 Paddle sprite를 유지한 채 위쪽 `y=-16`, `z_index=2`, nearest filtering으로 표시한다.
+- production Main에서 ItemManager의 `forced_item_type=fire_core` test seam을 사용해 Item Ball→파괴→Fire Orb→Paddle 수집→공용 CUT-IN→Fire activation 경로를 3회 반복했다. 3/3회 Fire Paddle visible, 6프레임 순환(`[2, 3, 4]`), data-defined 8초 직전 유지와 만료 직후 hidden을 확인했다.
+- Godot 4.7.1 Core/Content verification과 native forced runtime은 통과했다. 첫 native 재실행은 기본 `user://logs` 파일 open 실패로 엔진이 crash했으나, 별도 user data 경로에서 같은 binary/project/test가 exit 0이어서 tooling/log 환경 문제로 분류했다.
+- Web release export exit 0, localhost:8080 실제 Browser Title→Start Run·Canvas 입력 정상, console warning/error 0을 확인했다. served/local PCK SHA-256은 `A6C30064808E8AD5DC11F180A0CBF73EA09902780516649F3186FEAF431D8B6D`로 일치했다.
+
 ## 2026-08-25 — S7-G4 Magnet manual acceptance
 
 Owner: Content/Systems/Release + Core + Integration
@@ -1584,3 +1594,63 @@ Owner: Content/Systems/Release
 - Native runtime capture는 repo-local `Godot_v4.7.1-stable_win64_console.exe` OpenGL Compatibility에서 exit `0`으로 저장했다: `artifacts/verification/item-ball-rescue-beacon-runtime-20260825/07_runtime_damage_sheet.png`, marker `fps_avg=5.20 fps_min=1.00 max_delta_ms=45.51`. Stretch 때문에 본문이 좌상단에 모여 보여 crop/4x inspection copy도 같은 verification 폴더에 남겼다.
 - Web preset이 있어 `build/item-ball-rescue-beacon-runtime-20260825/index.html` release export를 다시 실행했고 exit `0`과 `index.html/js/wasm/pck` 생성을 확인했다. 이 세션에는 local browser canvas/console을 읽는 QA surface가 없어서 Browser 단계는 수행하지 못했다.
 - `docs/goals/STATUS.md`는 건드리지 않았다. 현재 Content lane은 `S8-G3B Result 최고 Stage·Snowball summary`가 `IN PROGRESS`이고, `docs/goals/STATUS.md` 자체에도 unrelated user WIP가 있어 새 Goal/lock mutation 없이 worklog와 evidence만 기록했다.
+## 2026-08-25 — Stage transition item-effect cleanup
+
+Owner: Content/Systems/Release + Integration
+
+- 다음 Stage 진입 시 ItemEffectGateway, Blizzard, Fire, Magnet과 Item Orb/Blizzard visual runtime을 함께 초기화한다. 따라서 이전 Stage에서 활성화된 spawn multiplier, Fire Paddle 상태, Magnet force, 눈보라 및 Orb가 다음 Stage로 남지 않는다.
+- Primary Main runtime에서 세 효과와 Fire Orb visual을 동시에 활성화한 뒤 Planetary 진입 경로를 실행해 Blizzard/Fire/Magnet active=false, Paddle Fire=false, Magnet force=false, Orb visible=false, Blizzard visual=false를 확인했다. Web release를 다시 export하고 localhost:8080 Browser에서 Canvas 정상 로드와 console error/warning 0을 확인했다.
+
+## 2026-08-25 — S8-G3 Title 도움말 버튼 유지보수
+
+Owner: Content/Systems/Release
+Goal: S8-G3 Title·Main·Terminal UI maintenance
+
+- Title 우측 상단에 `36×36` 실제 Godot Button으로 `?` 도움말 컨트롤을 추가했다. 우측 여백을 8px로 줄여 황동 파이프 디테일을 피한 어두운 외곽 영역으로 옮겼다.
+- 기본 상태는 투명한 배경에 4px 불투명 흰색 원형 외곽선과 weight 900 물음표를 사용하고, mouse hover/press 중에는 둘 다 alpha `0.45`로 낮춘다.
+- 후속 요청에 따라 클릭 시 조작 안내 모달을 열도록 연결했고, 기존 `START RUN`/`SETTINGS` 신호와 기계식 motion은 변경하지 않았다.
+- Godot 4.7.1 CLI/headless 전용 검증이 exit 0과 `S8_G3_TITLE_HELP_VERIFIED button=true upper_right_dark_edge=true circle=36px border=4px hover_alpha=0.45`를 기록했다. 전체 S8-G3 fixture의 현재 Result 정렬/`black_holes` 오류는 동시 진행 중인 S8-G3B 작업 상태로 분류했다.
+- Godot 4.7.1 Web Release export가 `[DONE] savepack`으로 완료됐고 `127.0.0.1:8080`의 HTML/PCK/WASM이 모두 HTTP 200을 반환했다. In-app Browser에서 Title Canvas 로드·포커스, 기본 흰색 도움말 버튼과 hover 반투명 전환을 실제 확인했고 console warning/error는 0건이었다.
+- Web 실행에서 Button의 font/style 최소 크기 계산으로 원이 세로로 늘어나는 문제를 확인했다. 투명한 실제 Button hit area와 고정 `36×36` HelpVisual을 분리하고, 별도 Panel의 18px radius로 정원을 보장했다. `?` Label은 1px 흰색 outline을 추가해 두께를 보강했다. 전용 Godot 검증과 재-export한 8080 Web Release에서 정원·글립 두께·우측 어두운 영역 배치를 확인했고 browser warning/error는 0건이었다.
+- 사용자가 제공한 6패널 조작 안내 이미지를 `title_controls_guide.png`로 추가했다. `?` Button은 암전 HelpModal을 열고, 이미지는 44px/34px 안쪽 여백에서 원본 비율을 유지한다. 모달 전체가 Title 뒤 입력을 차단하며 화면 클릭 또는 `Esc`로 닫힌다.
+- 전용 Godot CLI 검증이 `S8_G3_TITLE_HELP_VERIFIED ... guide_modal=true dismiss=true aspect=preserved`로 통과했다. 재-export한 8080 Web Release에서 실제 `?` 클릭으로 모달 표시, 화면 클릭으로 닫힘, 원본 종횡비 유지와 Title 복귀를 확인했다.
+- 조작 안내 4번 패널 하단의 한글 `+ 스코어 획득 +`을 인게임 영문 표기와 맞춘 `+ SCORE GAIN +`으로 교체했다. Godot 재임포트·전용 CLI 검증·Web Release 재-export 후 8080 Browser 모달에서 영문 표기를 실제 확인했다.
+- 도움말 이미지의 원본 해상도는 유지하고 모달 표시 여백을 좌우 100px·상하 54px로 늘려 약 10% 축소했다. 전용 CLI 검증과 Web Release 재-export를 통과했으며 8080 Browser에서 축소된 배치와 비율 유지를 확인했다.
+- 사용자 제공 교체본을 `title_controls_guide.png`에 반영했다. 새 원본 `1658×855`는 좌우 3px씩만 crop하고 상하 검정 여백 48/49px을 추가해 기존 자산과 정확히 같은 `1652×952`로 맞췄으며, 변형 없이 `DASH`, `SCORE +` 등 새 표기를 유지했다. 재임포트·전용 CLI 검증·Web Release 재-export 후 8080 Browser 모달에서 실제 표시를 확인했다.
+
+## 2026-08-25 — S1-G5 Pause How to Play 후속 UI
+
+Owner: Content/Systems/Release
+
+- Pause 모달의 버튼 순서를 `RESUME → RETRY → SETTINGS → HOW TO PLAY → MAIN MENU`로 확장했다. 버튼 간격을 8px로 조정해 기존 모달 크기 안에서 다섯 항목을 유지한다.
+- `HOW TO PLAY`는 Title에서 사용하는 동일한 조작 안내 이미지(`title_controls_guide.png`)를 전면 modal로 열며, 화면 클릭 또는 `Esc`로 닫는다. 안내를 닫아도 Pause 상태와 gameplay state는 바뀌지 않는다.
+- Godot 4.7.1 headless 전용 fixture를 실행해 버튼 순서, modal 표시/닫기 및 기존 request-only Pause/Retry/Resume 계약을 확인했다: `S1_G5_VERIFIED pause_requests=1 retry_requests=1 gameplay_mutation=none`. 기본 user log 파일 쓰기 제약은 workspace `--log-file`로 우회했고, 게임 코드 오류는 없었다.
+
+## 2026-08-25 — UI focus StyleBox 정리
+
+Owner: Content/Systems/Release
+
+- Title, Stage Clear, Settings에서 전용 `Style…Focus` StyleBox 리소스를 모두 제거했다. Result는 이미 공용 투명 `StyleButtonClear`를 사용하고 있어 별도 Focus 리소스가 없었다.
+- Godot 기본 focus outline이 되살아나지 않도록 focus 슬롯은 각 버튼의 기존 normal StyleBox를 재사용한다. 따라서 키보드 focus/navigation은 유지하면서 focus 전용 노란 사각선만 제거하고, hover/pressed StyleBox는 변경하지 않았다.
+- Godot 4.7.1 headless editor load 및 S1-G5 Pause fixture가 exit 0으로 통과했다.
+
+## 2026-08-25 — UI pressed StyleBox 정리
+
+Owner: Content/Systems/Release
+
+- Title, Pause, Stage Clear, Settings, Result의 전용 `Style…Pressed` StyleBox 리소스를 모두 제거했다.
+- 각 pressed 슬롯은 동일 버튼의 normal StyleBox를 사용한다. Settings의 단계 버튼도 normal step style을 pressed로 명시해 Godot 기본 pressed box가 나타나지 않게 했다. hover StyleBox는 변경하지 않았다.
+- Godot 4.7.1 headless Pause fixture와 `git diff --check`를 통과했다.
+
+## 2026-08-25 — UI interaction outline 제거
+
+Owner: Content/Systems/Release
+
+- Pause의 다섯 modal Button 모두에 `focus = normal`을 명시해 Settings close 뒤 복원되는 keyboard focus가 Godot 기본 흰 사각선으로 보이지 않게 했다.
+- Settings step button의 hover StyleBox에서만 추가로 그려지던 밝은 2px border를 제거했다. hover 색 채움은 유지한다.
+- Pause fixture는 각 button의 focus·pressed StyleBox가 normal StyleBox와 동일함을 검사하도록 확장했고 Godot 4.7.1 headless에서 통과했다.
+
+### 후속 수정
+
+- 첫 적용에서 반복 패치가 `ResumeButton`의 focus 항목만 중복 추가하고 `Retry`·`Settings`·`How To Play`·`Main Menu`에는 적용하지 못한 것을 확인했다. 특히 Settings close는 `SettingsButton.grab_focus()`를 호출하므로 기본 흰 focus outline이 계속 보였다.
+- 중복 항목을 하나로 정리하고, 다섯 modal Button 각각에 `focus = StyleButtonNormal`을 명시했다. fixture의 모든 버튼 focus/pressed equality 검사가 이제 실제 대상별로 통과한다.

@@ -28,17 +28,6 @@ bg_color = Color(0, 0, 0, 0)
 [sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
 bg_color = Color(0.3, 0.25, 0.12, 0.28)
 
-[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
-bg_color = Color(0.714, 0.812, 0.557, 0.2)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.68, 0.81, 0.55, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
-bg_color = Color(0, 0, 0, 0)
-
 [sub_resource type="StyleBoxFlat" id="StyleStepButton"]
 bg_color = Color(0.16, 0.1, 0.06, 1)
 border_width_left = 2
@@ -49,19 +38,6 @@ border_color = Color(0.63, 0.36, 0.16, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleStepButtonHover"]
 bg_color = Color(0.42, 0.22, 0.08, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.98, 0.75, 0.34, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleStepButtonFocus"]
-bg_color = Color(0.16, 0.1, 0.06, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.88, 0.7, 0.35, 0.9)
 
 [node name="SettingsPanel" type="Control"]
 visible = false
@@ -192,7 +168,8 @@ layout_mode = 2
 text = "−"
 theme_override_styles/normal = SubResource("StyleStepButton")
 theme_override_styles/hover = SubResource("StyleStepButtonHover")
-theme_override_styles/focus = SubResource("StyleStepButtonFocus")
+theme_override_styles/pressed = SubResource("StyleStepButton")
+theme_override_styles/focus = SubResource("StyleStepButton")
 
 [node name="VolumeGauge" type="Control" parent="Center/Panel/Margin/Content/VolumeRow"]
 unique_name_in_owner = true
@@ -210,7 +187,8 @@ layout_mode = 2
 text = "+"
 theme_override_styles/normal = SubResource("StyleStepButton")
 theme_override_styles/hover = SubResource("StyleStepButtonHover")
-theme_override_styles/focus = SubResource("StyleStepButtonFocus")
+theme_override_styles/pressed = SubResource("StyleStepButton")
+theme_override_styles/focus = SubResource("StyleStepButton")
 
 [node name="BgmRow" type="HBoxContainer" parent="Center/Panel/Margin/Content"]
 custom_minimum_size = Vector2(0, 38)
@@ -233,7 +211,8 @@ layout_mode = 2
 text = "−"
 theme_override_styles/normal = SubResource("StyleStepButton")
 theme_override_styles/hover = SubResource("StyleStepButtonHover")
-theme_override_styles/focus = SubResource("StyleStepButtonFocus")
+theme_override_styles/pressed = SubResource("StyleStepButton")
+theme_override_styles/focus = SubResource("StyleStepButton")
 
 [node name="BgmGauge" type="Control" parent="Center/Panel/Margin/Content/BgmRow"]
 unique_name_in_owner = true
@@ -251,7 +230,8 @@ layout_mode = 2
 text = "+"
 theme_override_styles/normal = SubResource("StyleStepButton")
 theme_override_styles/hover = SubResource("StyleStepButtonHover")
-theme_override_styles/focus = SubResource("StyleStepButtonFocus")
+theme_override_styles/pressed = SubResource("StyleStepButton")
+theme_override_styles/focus = SubResource("StyleStepButton")
 
 [node name="SfxRow" type="HBoxContainer" parent="Center/Panel/Margin/Content"]
 custom_minimum_size = Vector2(0, 38)
@@ -274,7 +254,8 @@ layout_mode = 2
 text = "−"
 theme_override_styles/normal = SubResource("StyleStepButton")
 theme_override_styles/hover = SubResource("StyleStepButtonHover")
-theme_override_styles/focus = SubResource("StyleStepButtonFocus")
+theme_override_styles/pressed = SubResource("StyleStepButton")
+theme_override_styles/focus = SubResource("StyleStepButton")
 
 [node name="SfxGauge" type="Control" parent="Center/Panel/Margin/Content/SfxRow"]
 unique_name_in_owner = true
@@ -292,7 +273,8 @@ layout_mode = 2
 text = "+"
 theme_override_styles/normal = SubResource("StyleStepButton")
 theme_override_styles/hover = SubResource("StyleStepButtonHover")
-theme_override_styles/focus = SubResource("StyleStepButtonFocus")
+theme_override_styles/pressed = SubResource("StyleStepButton")
+theme_override_styles/focus = SubResource("StyleStepButton")
 
 [node name="ValuePopupsRow" type="HBoxContainer" parent="Center/Panel/Margin/Content"]
 custom_minimum_size = Vector2(0, 38)
@@ -334,8 +316,8 @@ mouse_default_cursor_shape = 2
 text = "APPLY"
 theme_override_styles/normal = SubResource("StyleButton")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
-theme_override_styles/focus = SubResource("StyleButtonFocus")
+theme_override_styles/pressed = SubResource("StyleButton")
+theme_override_styles/focus = SubResource("StyleButton")
 theme_override_colors/font_color = Color(0.87, 0.94, 0.78, 1)
 theme_override_colors/font_hover_color = Color(1, 0.93, 0.62, 1)
 
@@ -404,8 +386,8 @@ mouse_default_cursor_shape = 2
 text = "CLOSE"
 theme_override_styles/normal = SubResource("StyleButton")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
-theme_override_styles/focus = SubResource("StyleButtonFocus")
+theme_override_styles/pressed = SubResource("StyleButton")
+theme_override_styles/focus = SubResource("StyleButton")
 theme_override_colors/font_color = Color(0.87, 0.94, 0.78, 1)
 theme_override_colors/font_hover_color = Color(1, 0.93, 0.62, 1)
 

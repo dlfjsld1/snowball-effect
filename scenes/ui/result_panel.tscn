@@ -27,9 +27,6 @@ bg_color = Color(0, 0, 0, 0)
 [sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
 bg_color = Color(0, 0, 0, 0)
 
-[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
-bg_color = Color(0, 0, 0, 0)
-
 [node name="ResultPanel" type="Control"]
 visible = false
 texture_filter = 1
@@ -241,7 +238,7 @@ theme_override_colors/font_pressed_color = Color(1, 1, 1, 0)
 theme_override_colors/font_focus_color = Color(1, 1, 1, 0)
 theme_override_styles/normal = SubResource("StyleButtonClear")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/pressed = SubResource("StyleButtonClear")
 theme_override_styles/focus = SubResource("StyleButtonClear")
 
 [node name="MainButton" type="Button" parent="SlidePanel"]
@@ -260,5 +257,5 @@ theme_override_colors/font_pressed_color = Color(1, 1, 1, 0)
 theme_override_colors/font_focus_color = Color(1, 1, 1, 0)
 theme_override_styles/normal = SubResource("StyleButtonClear")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/pressed = SubResource("StyleButtonClear")
 theme_override_styles/focus = SubResource("StyleButtonClear")

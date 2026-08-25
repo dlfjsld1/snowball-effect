@@ -1,6 +1,11 @@
 class_name Paddle
 extends Node2D
 
+const FIRE_FRAME_COUNT := 6
+const FIRE_FRAME_WIDTH := 240.0
+const FIRE_FRAME_HEIGHT := 16.0
+const FIRE_ANIMATION_FPS := 12.0
+
 enum PositionControlSource {
 	KEYBOARD,
 	MOUSE,
@@ -35,6 +40,7 @@ enum DashPhase {
 var linear_velocity := Vector2.ZERO
 var angular_velocity := 0.0
 var _fire_contact_active := false
+var _fire_animation_elapsed := 0.0
 
 var _initial_position := Vector2.ZERO
 var _initial_rotation := 0.0
@@ -64,18 +70,36 @@ func _ready() -> void:
 	_initial_rotation = rotation
 	_reset_motion_history()
 	_update_dash_visuals()
+	_update_fire_visual()
 
 
 func set_fire_contact_active(active: bool) -> void:
+	if active and not _fire_contact_active:
+		_fire_animation_elapsed = 0.0
 	_fire_contact_active = active
+	if not active:
+		_fire_animation_elapsed = 0.0
+	_update_fire_visual()
 
 
 func is_fire_contact_active() -> bool:
 	return _fire_contact_active
 
 
+func get_fire_visual_snapshot() -> Dictionary:
+	var fire_visual := get_node_or_null("FireVisual") as Sprite2D
+	if fire_visual == null:
+		return {"visible": false, "frame": -1, "frame_count": FIRE_FRAME_COUNT}
+	return {
+		"visible": fire_visual.visible,
+		"frame": int(roundf(fire_visual.region_rect.position.x / FIRE_FRAME_WIDTH)),
+		"frame_count": FIRE_FRAME_COUNT,
+	}
+
+
 func _physics_process(delta: float) -> void:
 	prepare_physics_transform(delta)
+	_advance_fire_visual(delta)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -163,6 +187,7 @@ func reset_runtime() -> void:
 	position = _initial_position
 	rotation = _initial_rotation
 	_fire_contact_active = false
+	_fire_animation_elapsed = 0.0
 	_has_mouse_target = false
 	_mouse_target_x = _initial_position.x
 	_position_control_source = PositionControlSource.KEYBOARD
@@ -177,7 +202,29 @@ func reset_runtime() -> void:
 	_dash_trail_remaining = 0.0
 	_dash_trail_direction = Vector2.DOWN
 	_update_dash_visuals()
+	_update_fire_visual()
 	_reset_motion_history()
+
+
+func _advance_fire_visual(delta: float) -> void:
+	if not _fire_contact_active or delta <= 0.0:
+		return
+	_fire_animation_elapsed += delta
+	_update_fire_visual()
+
+
+func _update_fire_visual() -> void:
+	var fire_visual := get_node_or_null("FireVisual") as Sprite2D
+	if fire_visual == null:
+		return
+	fire_visual.visible = _fire_contact_active
+	var frame := 0
+	if _fire_contact_active:
+		frame = int(floor(_fire_animation_elapsed * FIRE_ANIMATION_FPS)) % FIRE_FRAME_COUNT
+	fire_visual.region_rect = Rect2(
+		Vector2(FIRE_FRAME_WIDTH * frame, 0.0),
+		Vector2(FIRE_FRAME_WIDTH, FIRE_FRAME_HEIGHT)
+	)
 
 
 func try_start_dash() -> bool:
@@ -293,19 +340,23 @@ func _update_dash_afterimages(
 	trail_direction: Vector2,
 	intensity: float
 ) -> void:
+	# The Paddle can rotate, but dash travel and its trail are always world-vertical.
+	# Child Sprite2D positions are local, so convert the requested world direction
+	# back into Paddle-local space before placing the ghosts.
+	var local_trail_direction := trail_direction.rotated(-global_rotation)
 	if near != null:
 		near.visible = true
-		near.position = trail_direction * 28.0
+		near.position = local_trail_direction * 28.0
 		near.scale = Vector2(1.02, 0.94)
 		near.modulate = Color(0.24, 1.0, 0.60, 0.72 * intensity)
 	if mid != null:
 		mid.visible = true
-		mid.position = trail_direction * 56.0
+		mid.position = local_trail_direction * 56.0
 		mid.scale = Vector2(1.0, 0.88)
 		mid.modulate = Color(0.20, 0.98, 0.56, 0.48 * intensity)
 	if far != null:
 		far.visible = true
-		far.position = trail_direction * 84.0
+		far.position = local_trail_direction * 84.0
 		far.scale = Vector2(0.98, 0.82)
 		far.modulate = Color(0.16, 0.94, 0.50, 0.30 * intensity)
 

@@ -520,7 +520,12 @@ Black Hole끼리는 일반 Snowball 흡수 규칙을 적용하지 않고, 접촉
 ```text
 raw_penalty = calculate_cashout_score(ball) × 0.125
 phase_cap = black_hole_phase_score_baseline × 0.25
-absorption_penalty = min(raw_penalty, phase_cap)
+per_ball_penalty = min(raw_penalty, phase_cap)
+
+phase_gameplay_grace = 1.0s
+damage_window = 0.5s
+damage_window_cap = black_hole_phase_score_baseline × 0.10
+absorption_penalty = min(per_ball_penalty, damage_window_cap - current_window_penalty)
 
 next_stage_score = stage_score - absorption_penalty
 next_run_score = run_score - absorption_penalty
@@ -535,7 +540,9 @@ otherwise
 → run_score = next_run_score
 ```
 
-이 비율은 첫 플레이테스트 seed다. 기존 전액 차감은 Galactic 기본공 Galaxy 하나의 `1e25` 가치가 직전 Planetary 최고공 정산으로 확보한 최소 Run Score와 같은 규모여서, 첫 Black Hole이 기본공 하나를 흡수하는 즉시 Run을 끝낼 수 있었다. `12.5%`는 최소 자금 기준으로 같은 기본공 약 8회의 손실 여지를 만들고, phase baseline의 `25%` 상한은 Galaxy Cluster·Quasar처럼 지수적으로 큰 공 한 개가 즉사 패널티가 되는 것을 막는다. 반대로 고가 공을 반복해서 잃으면 4회 안팎으로 Run을 끝낼 수 있어 위험은 유지한다. Time Bonus와 Cashout popup은 발생시키지 않는다.
+유예 시간은 matching Black Hole Phase presentation이 끝나고 `PLAYING` gameplay가 재개된 뒤에만 흐른다. 유예 중에도 접촉한 공은 즉시 흡수하지만 점수는 차감하지 않는다. 이후 같은 physics tick 또는 같은 `0.5s` 구간에 여러 공이 두 Black Hole에 동시에 흡수되어도 해당 구간의 총 차감은 baseline의 `10%`를 넘지 않는다. 다음 구간에서 예산을 새로 열기 때문에 지속적으로 공을 잃으면 약 `5s` 이상의 실제 gameplay 뒤에는 0점 Run End가 가능하다.
+
+이 비율은 플레이테스트 seed다. 기존 전액 차감은 Galactic 기본공 Galaxy 하나의 `1e25` 가치가 직전 Planetary 최고공 정산으로 확보한 최소 Run Score와 같은 규모여서, 첫 Black Hole이 기본공 하나를 흡수하는 즉시 Run을 끝낼 수 있었다. 공별 `12.5%`와 `25%` 상한은 개별 손실의 상대 가치를 유지하고, 시간 구간 `10%` 상한은 후반 고밀도와 두 Black Hole의 같은-frame 흡수가 즉시 Run을 끝내는 것을 막는다. Time Bonus와 Cashout popup은 발생시키지 않는다.
 
 Game Over 기준은 Stage마다 0으로 초기화되는 `stage_score`가 아니라 Run 전체 누적인 `run_score`다. 흡수 판정은 Black Hole과 공의 실제 접촉을 사용하며 별도 원거리 즉시 흡수 반경을 추가하지 않는다. 정확한 Black Hole 이동 속도는 tuning 대상으로 남긴다.
 
