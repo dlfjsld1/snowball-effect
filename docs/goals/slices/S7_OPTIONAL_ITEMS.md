@@ -29,10 +29,10 @@
 ### S7-G2 Blizzard
 
 - Owner: Content/Systems
-- Owned Files: `scripts/gameplay/item_manager.gd` (Blizzard visual spawn signal만), `scripts/gameplay/item_blizzard.gd`, `scripts/presentation/item_blizzard_visual.gd`, `scenes/effects/item_blizzard_visual.tscn`, `assets/particles/items/blizzard/**`, `resources/items/**`, `tests/content/s7_g2_**`
-- Integration Point: S7-G1 gateway의 제한된 spawn/movement command와 ItemManager의 read-only planet/orb 이벤트, `ItemBlizzard.active_state_changed(snapshot)`을 사용한다. Content/Systems/Release 담당이 모든 item type이 공유하는 identity-neutral Item Ball styling과 Blizzard 전용 Orb styling·장식 눈을 직접 소유하며, Main mount/신호 연결은 Integration에 요청한다. 활성 중 남은 시간 상태창은 표시하지 않는다.
+- Owned Files: `scripts/gameplay/item_manager.gd` (Blizzard visual spawn signal만), `scripts/gameplay/item_blizzard.gd`, `scripts/presentation/item_blizzard_visual.gd`, `scenes/effects/item_blizzard_visual.tscn`, `assets/particles/items/blizzard/**`, `assets/sprites/items/item_ball_rescue_beacon_*`, `resources/items/**`, `tests/content/s7_g2_**`
+- Integration Point: S7-G1 gateway의 제한된 spawn/movement command와 ItemManager의 read-only planet/orb 이벤트, `ItemBlizzard.active_state_changed(snapshot)`을 사용한다. Content/Systems/Release 담당이 모든 item type이 공유하는 승인된 Rescue Beacon Capsule Item Ball H0~H4·rupture styling과 Blizzard 전용 Orb styling·장식 눈을 직접 소유하며, Main mount/신호 연결은 Integration에 요청한다. 활성 중 남은 시간 상태창은 표시하지 않는다.
 - Dependencies: S7-G1 API.
-- Verification: 정의된 범위/시간에만 효과, 종료 후 완전 복구, 범용 identity-neutral Item Ball H0~H4·neutral break와 Blizzard 전용 Orb styling·장식 눈이 계약된 이벤트와 active state에 맞춰 시작/정리, 중앙 남은 시간 상태창 없음, Core 파일 직접 변경 없음.
+- Verification: 정의된 범위/시간에만 효과, 종료 후 완전 복구, 공용 Rescue Beacon Capsule Item Ball H0~H4·approved rupture break와 Blizzard 전용 Orb styling·장식 눈이 계약된 이벤트와 active state에 맞춰 시작/정리, 중앙 남은 시간 상태창 없음, Core 파일 직접 변경 없음.
 - Do Not Modify: Ball simulation 내부와 StageManager.
 
 ### S7-G1V Three Item Orb visual repair
