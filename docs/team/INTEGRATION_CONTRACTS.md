@@ -157,6 +157,15 @@ pause lock은 SceneTree 전체 pause가 아니다. CUT-IN Tween/CanvasLayer와 R
 - Retry와 Main Screen handler는 `PresentationManager.reset_black_hole_presentation()`을 호출한다. 이 API는 Presentation Tween/visual/generation만 초기화하며 Core·Stage·Result state를 변경하지 않는다.
 - 기존 S8-G4 `VERIFIED` evidence는 `black_hole_phase_started` 이후의 downstream과 finale/Retry를 계속 증명한다. FIRST_CONTACT 이전 Phase 금지는 S6-G2I가 별도 검증하며 과거 evidence에 소급하지 않는다.
 
+### S8-G8 max-two overflow·cue 수락 계약
+
+- Core S8-G6가 moving Black Hole capacity `2`와 stable merge-candidate commit order의 slot reservation을 단독 소유한다. Integration과 Presentation은 entity count를 다시 계산해 source Ball을 소비하거나 generic Lv14로 바꾸지 않는다.
+- capacity가 없는 `Lv13 + Lv13` pair는 같은 유효 gameplay 구간의 Core non-Merge contact 결과로 남는다. Integration은 기존 read-only simulation snapshot을 전달할 뿐 overflow용 signal, score, Cashout, absorption 또는 Stage state를 만들지 않는다.
+- Presentation S8-G7은 `get_black_hole_snapshot()`과 frame-to-frame motion만 읽어 승인 `Void Cathedral C`, close-range lensing arc와 짧은 moving-direction trail을 그린다. cue는 Core의 `480` pull radius, contact absorption, collision 또는 Phase bounds를 시각 범위로 재해석하지 않는다.
+- 실제 Main은 S8-G7 surface를 active moving Black Hole 위에 유지해 generic circle fallback이 player-visible하지 않게 한다. transition dependency 때문에 fallback이 보일 수 있다면 승인 `Void Cathedral C`를 사용해야 하며, S8-G6 이후 normal/global third+ Lv14 path는 존재하지 않아야 한다.
+- Retry, Main Screen과 fresh Run은 Core entity/slot plan, FIRST CONTACT/Phase/finale pending state와 Presentation snapshot/trail을 함께 reset한다. 이전 Run의 slot reservation이나 visual callback이 새 epoch의 #1 생성을 막거나 #3 entity를 만들 수 없다.
+- S8-G8은 `PENDING` 동안 lock을 잡지 않는다. `IN PROGRESS`일 때만 `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s8_g8_**`를 `STATUS.md`에 잠그고, Desktop/Web 수락 뒤 해제한다.
+
 ## S6 FX·audio ownership
 
 - Content/Systems는 S6-G1, S6-G3, S6-G4, S6-G5를 소유한다. S6-G1의 대상은 `scripts/presentation/effect_manager.gd`, `scenes/effects/**`, `assets/particles/**`, `tests/content/s6_g1_**`이며, S6-G3/G4/G5의 대상은 `assets/audio/**`, `resources/audio/**`, `scripts/presentation/audio_manager.gd`다.

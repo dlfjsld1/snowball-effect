@@ -61,6 +61,42 @@ S8-G4의 기존 `begin_black_hole_phase(from_rect, to_rect) → black_hole_phase
 - Verification: L2 `880`에서 L3 `1040`으로 Frame·표시 Play Field·고정 폭 HUD housing이 함께 좌우 대칭 확장; `Galactic` Stage 표시는 유지; 전환 완료 뒤 gameplay Black Hole과 HUD가 활성 상태로 남음; 두 Black Hole 접촉 시 mutual orbit·폭발 뒤 HUD/UI 제거와 타이틀·Clear Score·Retry Run·Main 표시; reduced-effects에서도 상태명·경계 이동·finale가 읽힘; duplicate/stale `phase_id`는 완료로 재사용되지 않음.
 - Do Not Modify: StageManager, logical bounds, force 계산, Stage/ball resource 값.
 
+### S8-G6 Black Hole max-two·overflow commit
+
+- Owner: Core
+- Owned Files: `scripts/simulation/ball_simulation_manager.gd`, `tests/simulation/s8_g6_**`
+- Integration Point: 기존 `get_black_hole_snapshot()`/`get_black_hole_count()`, `ball_merged`, FIRST CONTACT, `black_hole_phase_requested`, `black_hole_finale_started` 계약을 유지한다. capacity와 overflow 판정은 Core 내부 source of truth이며 Presentation/Integration이 재계산하지 않는다.
+- Dependencies: S2-G2/G3 deterministic Merge·non-Merge contact, S3-G3 `valid_play_delta`, S8-G1/G2 Black Hole entity·terminal 계약.
+- Deliverables / Scope: 이동 Black Hole 최대 수를 `2`로 강제; stable merge-candidate commit 순서에서 남은 slot을 accepted plan까지 포함해 예약; `1 existing + 2 Lv13 pairs`의 첫 pair만 #2로, `0 existing + 3 pairs`의 앞 두 pair만 #1/#2로 commit; capacity가 없는 pair는 source 두 Lv13을 consume/deactivate하지 않고 mass/current velocity 기반 non-Merge contact·분리로 전달; first entity만 FIRST CONTACT/Phase readiness를 한 번 발행; normal/generic Lv14 spawn과 그 Cashout·인력·흡수 경로 차단.
+- Exclusions: Black Hole force `480/1200/1500`, mutual repulsion `450`, 흡수 패널티, finale contact semantics, Presentation cue/asset, Stage/Ball Resource, GameManager/StageManager/Main wiring 변경.
+- Verification: focused Core fixture에서 `0 existing + 3 pairs`, `1 existing + 2 pairs`, `2 existing + 1 pair`를 반복 실행해 같은 candidate order·entity 수 `2`·보존된 source Lv13 수/level·물리 분리·event exact count를 확인; overflow pair에 `ball_merged`/Lv14 discovery/score/entity event 0회; normal render snapshot·Cashout·absorption 입력에 Lv14 0개; slot 승인 전 source inactive 0개; 기존 S2-G3/S3-G3/S8-G1/G2 회귀 통과.
+- Evidence Expectations: Godot CLI/headless focused fixture와 관련 Core/Simulation 회귀의 명령·exit code·machine-readable marker; 반복 run의 동일 candidate/result order; overflow 전후 active levels/positions/velocities와 signal count. 문서나 코드 정적 검사만으로 완료 처리하지 않는다.
+- Lock Notes: Core-owned 범위만 사용하므로 Integration lock 없음. 이 Goal이 `PENDING`인 동안 어떤 파일도 잠그지 않는다.
+
+### S8-G7 Black Hole cue cleanup·Void Cathedral consistency
+
+- Owner: Presentation
+- Owned Files: `scripts/presentation/black_hole_phase_effect.gd`, `scripts/presentation/ball_texture_lod_catalog.gd`, `scenes/effects/**`, `tests/presentation/s8_g7_**`
+- Integration Point: Core의 read-only `get_black_hole_snapshot()` position/radius와 프레임 간 이동 방향만 소비한다. 기존 S8-G5 phase/finale completion API를 유지하며 gameplay force·absorption·collision 값을 Presentation에서 추론하지 않는다. player-visible 방어 surface는 승인된 `Void Cathedral C`를 제공하고, Core-owned generic fallback을 직접 수정하지 않는다.
+- Dependencies: S8-G5 Presentation lifecycle과 reset 계약, 승인된 `Void Cathedral C` runtime resource. S8-G6은 구현 시작 선행이 아니지만 third+ Lv14 unreachable 최종 수락은 S8-G8에서 함께 검증한다.
+- Deliverables / Scope: `300-unit` 대형 dashed influence ring과 orbiting square-dot reticle 제거; persistent cue를 최대 두 개의 close-range lensing arc와 짧은 moving-direction light trail로 정리; `Void Cathedral C`의 gold/Galactic-violet palette 유지; normal/reduced-effects와 한 개/두 개 Black Hole snapshot 지원; dependency transition 중 노출 가능한 Presentation fallback도 `Void Cathedral C` 사용. arc/trail은 procedural이라 새 bitmap을 만들지 않는다.
+- Exclusions: Core force/absorption/collision/Phase radius, gameplay footprint, finale orbit·폭발 timing, Stage/ball data, 새 bitmap asset, Main/StageManager/GameManager wiring 변경. cue 길이/반경을 gameplay 범위로 표기하지 않는다.
+- Verification: actual-size Native capture에서 300-unit 점선 ring과 공전 사각 점 0개, Black Hole마다 근거리 arc 최대 2개와 짧은 비공전 trail만 표시; trail이 최근 이동 반대 방향을 따름; normal/reduced-effects 모두 `Void Cathedral C` 본체와 gold/violet hierarchy 유지; 한 개/두 개 entity, reset, duplicate/stale phase/finale 회귀; player-visible generic circle/global14 fallback 0개; Core snapshot 불변.
+- Evidence Expectations: Godot CLI/headless Presentation fixture, normal/reduced actual-size Native captures, visual metrics/static draw-path assertion, resource path/hash 또는 동일성 근거, frame sample과 runtime error. 새 bitmap 산출물이 없음을 파일 diff로 확인한다.
+- Lock Notes: Presentation-owned 범위만 사용하므로 Integration lock 없음. Core-owned `scripts/simulation/ball_renderer.gd`가 player-visible한 dependency fallback으로 남는다면 S8-G8 활성 전 Core handoff를 요청하며 직접 수정하지 않는다.
+
+### S8-G8 Black Hole max-two·cue Main acceptance
+
+- Owner: Integration
+- Owned Files: `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s8_g8_**`
+- Integration Point: S8-G6의 authoritative max-two/overflow 결과와 S8-G7의 Presentation surface를 실제 Main에 연결한다. 기존 FIRST CONTACT→Phase, `black_hole_finale_locked`→finale→Result, Retry/Main reset API를 재사용하며 capacity나 cue 의미를 Integration에서 재구현하지 않는다.
+- Dependencies: S8-G6와 S8-G7의 실제 구현·독립 Evidence, 기존 S8-G3/G4/G5 Result·phase/finale·reset 계약.
+- Deliverables / Scope: actual Main에서 최대 두 moving entity만 mount/render; same-tick overflow source Lv13 pair 보존과 non-Merge separation 관찰; first entity의 FIRST CONTACT/Phase exact-once와 second entity의 no-repeat; 두 Black Hole contact의 finale/Result exact-once; active overlay가 generic circle fallback을 노출하지 않도록 연결; Retry Run/Main/fresh Run에서 entity, reserved slot, pending discovery/phase/finale, Presentation trail/snapshot을 함께 초기화.
+- Exclusions: S8-G6 Core 알고리즘 재작성, S8-G7 cue drawing 재작성, force/흡수/점수 tuning, 새 Stage/normal Lv14 behavior, 새 bitmap, Result UI redesign.
+- Verification: actual Main fixture에서 `0 existing + 3 pairs`와 `1 existing + 2 pairs`를 한 valid gameplay tick에 주입해 entity `2`, overflow source Lv13 pair `2`, generic Lv14 `0`, extra discovery/Cashout/absorption `0`을 확인; 보존 pair가 물리적으로 분리; 두 entity contact 후 terminal snapshot/finale/Result 1회; Retry는 fresh Ground/Black Hole `0` 뒤 다음 Run의 #1 FIRST CONTACT를 새 epoch로 허용하고 Main은 Title로 안전 복귀; moving gameplay와 Result 사이에 misleading ring/square cue 0개.
+- Evidence Expectations: Godot CLI/headless Integration fixture와 S8/S3 회귀, 실제 Desktop 전체 경로, fresh Web export→local HTTP→Browser Canvas 입력·finale·Result·Retry/Main, console warning/error, actual-size capture. Desktop/Web 모두 없으면 `VERIFIED`로 올리지 않는다.
+- Lock Notes: `PENDING` 동안 Integration lock은 `없음/released`다. `IN PROGRESS`로 전환할 때만 `scripts/core/game_manager.gd`, `scripts/core/stage_manager.gd`, `scenes/main/main.tscn`, `tests/integration/s8_g8_**`를 `STATUS.md`에 잠그고 완료 뒤 해제한다.
+
 ## Exit Gate
 
 Q-S8, Integration Gate, 전체 Run Desktop/Web 완주.

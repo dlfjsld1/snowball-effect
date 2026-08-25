@@ -85,5 +85,5 @@ func _draw() -> void:
 		var label_origin: Vector2 = POSITIONS[local_level] + Vector2(-90, 145)
 		draw_string(font, label_origin, NAMES[local_level], HORIZONTAL_ALIGNMENT_CENTER, 180, 14, Color("f7faff"))
 		draw_string(font, label_origin + Vector2(0, 26), "%d x %d PX" % [int(RADII[local_level] * 2.0), int(RADII[local_level] * 2.0)], HORIZONTAL_ALIGNMENT_CENTER, 180, 14, Color("85ded1"))
-	draw_string(font, Vector2(285, 730), "OPEN ASTRONOMICAL SILHOUETTES / NEAREST / BINARY ALPHA / GAMEPLAY RADII UNCHANGED", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("85ded1"))
+	draw_string(font, Vector2(285, 730), "OPEN ASTRONOMICAL SILHOUETTES / NEAREST / RGBA ALPHA / GAMEPLAY RADII UNCHANGED", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("85ded1"))
 	draw_string(font, Vector2(285, 756), "BLACK HOLE = GALACTIC FINAL-PHASE HANDOFF / NOT A NEW STAGE OR CLEAR CONDITION", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("f1c66b"))

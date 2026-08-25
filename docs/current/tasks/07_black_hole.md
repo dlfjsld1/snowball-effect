@@ -28,6 +28,14 @@ Black Hole Ball (Lv14)
 
 Lv14 `Black Hole`은 catalog의 최종 BallDefinition이다. 첫 Lv14가 생성되는 순간 그 Ball은 일반 Snowball 상태를 떠나 이동 Black Hole runtime entity로 전환되고, 이것이 Galactic 내부 최종 국면의 발동 조건이다.
 
+### 최대 두 entity와 overflow
+
+- 이동 Black Hole runtime entity는 최대 두 개다.
+- 첫 Lv14는 Black Hole #1과 Run당 한 번의 FIRST CONTACT를 만들고, 두 번째 Lv14는 FIRST CONTACT 반복 없이 Black Hole #2가 된다.
+- 남은 slot은 안정적인 Merge 후보 commit 순서로 예약한다. `1 existing + 2 Lv13 pairs`는 첫 pair만 #2를 만들고 다음 pair를 보존하며, `0 existing + 3 pairs`는 앞의 두 pair만 #1/#2를 만들고 세 번째 pair를 보존한다.
+- 두 slot이 이미 찼거나 같은 tick의 앞선 후보에 예약됐다면 추가 `Lv13 + Lv13`은 source 두 공을 소비하지 않는 non-Merge 물리 contact/분리다. normal/generic Lv14 Ball, Cashout 가능한 Lv14, 흡수/인력 대상 Lv14 또는 숨은 대체 entity를 만들지 않는다.
+- capacity 승인 전에 source Ball을 deactivate하지 않는다. overflow pair는 기존 mass/current velocity와 두 Lv13 identity를 유지한다.
+
 ## Black Hole Phase Transition
 
 - 첫 Lv14 생성은 Run 내 최초 FIRST CONTACT CUT-IN 뒤 Black Hole Phase를 요청하며 Clear/Result를 발생시키지 않는다.
@@ -93,7 +101,7 @@ pull_falloff = (1 - distance / influence_radius)²
 
 ## 두 번째 Black Hole과 최종 시퀀스
 
-Black Hole Phase 중 두 번째 Lv14를 만들면 두 번째 이동 Black Hole entity로 전환한다. 두 Black Hole이 접촉하면 일반 Merge 대신 terminal sequence를 한 번만 실행한다.
+Black Hole Phase 중 두 번째 Lv14를 만들면 두 번째이자 마지막 이동 Black Hole entity로 전환한다. 두 Black Hole이 접촉하면 일반 Merge 대신 terminal sequence를 한 번만 실행한다.
 
 ```text
 strong contact lock
@@ -112,14 +120,12 @@ strong contact lock
 
 ## 시각
 
-우선순위:
-
-1. 회전 링과 별 파티클
-2. 곡선 잔상
-3. 저음 환경음
-4. 가능하면 화면 왜곡 셰이더
-
-셰이더가 일정에 부담이면 생략 가능하다.
+- 이동 Black Hole 본체와 dependency transition 중 player-visible fallback은 승인된 `Void Cathedral C`의 검정 shadow, antique gold, Galactic violet 계보를 사용한다. Core 최종 계약에서는 third+ normal/global Lv14가 도달 불가능하다.
+- 현재 `300 world units` 대형 점선 influence ring은 authoritative 인력 반경 `480`이나 contact 흡수를 정확히 표현하지 않으므로 제거한다.
+- 공전하는 사각 점은 오래된 targeting reticle처럼 읽히므로 제거한다.
+- 지속 cue는 소수의 근거리 lensing arc와 이동 반대 방향의 짧은 light trail로 제한한다. 둘 다 procedural Presentation 효과이며 새 bitmap asset은 요구하지 않는다.
+- 장식 cue는 authoritative runtime 값에 직접 binding되지 않는 한 gravity/pull, absorption, collision 또는 phase radius를 시각화한다고 표기하지 않는다.
+- 저음 환경음과 finale orbit·폭발은 기존 계약을 유지한다. 화면 왜곡 shader는 필수가 아니다.
 
 ---
 
@@ -134,6 +140,9 @@ strong contact lock
 - 흡수 패널티가 Cashout 가치 `12.5%`와 phase-entry Run Score `25%` 상한으로 계산되어 stage/run에서 차감되고, run score가 0이 되면 즉시 Game Over
 - Galactic 최종 국면의 생성량에서 성능 확인
 - 첫 Lv14가 Black Hole entity로 정확히 한 번 전환됨
+- 같은 tick에 여러 Lv13 pair가 생겨도 commit 순서대로 최대 두 slot만 예약되고 overflow source pair가 그대로 반사·분리됨
+- 세 번째 이후 normal/generic Lv14와 그 Cashout·인력·흡수 경로가 존재하지 않음
+- 이동 Black Hole에 300-unit 점선 ring과 공전 사각 점이 없고, Void Cathedral gold/violet 근거리 arc와 짧은 이동 trail만 남음
 - 두 번째 Black Hole 접촉 시 회전·폭발·UI 제거·타이틀·Clear Score·Main Menu Run End가 한 번만 발생
 - Black Hole Phase 발동 후 L3 Frame/Play Field에서 Galactic gameplay가 정상적으로 재개됨
 

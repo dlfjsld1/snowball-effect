@@ -1,0 +1,489 @@
+{
+  "authoritative_mapping": {
+    "global_level": 14,
+    "galactic_local_level": 4,
+    "runtime_radius": 64,
+    "runtime_diameter": 128,
+    "ball_resource": "resources/balls/ball_14_black_hole.tres",
+    "stage_resource": "resources/stages/stage_02_galactic.tres",
+    "current_runtime_asset": "assets/sprites/balls/galactic/runtime/ball_lv14_black_hole_128.png",
+    "mechanic_contract": "Galactic final-phase handoff; not a separate Stage and not an immediate Stage Clear",
+    "converted_entity_footprint_note": "After first-contact handoff, the moving Black Hole gameplay footprint follows Galactic local Lv2 Quasar sizing; this draft only evaluates the authored Lv14 128px visual."
+  },
+  "generation": {
+    "tool": "built-in image_gen",
+    "independent_generation_calls": {
+      "A": 1,
+      "B": 1,
+      "C": 1
+    },
+    "retries": {
+      "A": 1,
+      "B": 0,
+      "C": 0
+    },
+    "retry_note": "A framing retry painted a checkerboard and was rejected; the independent original was retained and only alpha<=5 residue was cleared."
+  },
+  "references": {
+    "cutin_black_hole": "assets/sprites/cutins/first_contact/black-hole-portrait-v1.png",
+    "quasar_a": "assets/sprites/balls/galactic/runtime/ball_galactic_local_lv02_quasar_polar_beacon_32.png",
+    "event_horizon_c": "assets/sprites/balls/galactic/runtime/ball_galactic_local_lv03_event_horizon_last_light_64.png",
+    "event_horizon_c_structure": "one-sided gold-white crescent with a faint cool echo"
+  },
+  "candidates": {
+    "A": {
+      "master": {
+        "file": "black-hole-A-gargantua-classic-master.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          1254,
+          1254
+        ],
+        "alpha_min": 0,
+        "alpha_max": 254,
+        "transparent_pixels": 930978,
+        "opaque_pixels": 0,
+        "partial_alpha_pixels": 641538,
+        "alpha_bbox": [
+          3,
+          146,
+          1253,
+          1059
+        ],
+        "margins_ltrb": [
+          3,
+          146,
+          1,
+          195
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 2,
+        "valid_png_rgba": true,
+        "transparency_contract": "transparent_asset",
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "actual": {
+        "file": "black-hole-A-gargantua-classic-128.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 10416,
+        "opaque_pixels": 1656,
+        "partial_alpha_pixels": 4312,
+        "alpha_bbox": [
+          4,
+          20,
+          124,
+          108
+        ],
+        "margins_ltrb": [
+          4,
+          20,
+          4,
+          20
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_contract": "transparent_asset",
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "inspection": {
+        "file": "black-hole-A-gargantua-classic-inspection-256.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          256,
+          256
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 41664,
+        "opaque_pixels": 6624,
+        "partial_alpha_pixels": 17248,
+        "alpha_bbox": [
+          8,
+          40,
+          248,
+          216
+        ],
+        "margins_ltrb": [
+          8,
+          40,
+          8,
+          40
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_contract": "transparent_asset",
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "shadow": {
+        "connected_shadow_pixels": 1752,
+        "connected_shadow_fraction_of_canvas": 0.1069,
+        "connected_shadow_bbox": [
+          39,
+          38,
+          88,
+          90
+        ],
+        "sample_pixel_count": 110,
+        "sample_alpha_min": 255,
+        "sample_alpha_mean": 255.0,
+        "sample_luma_max": 0.0,
+        "sample_luma_stddev": 0.0,
+        "shadow_area_pass": true,
+        "opaque_center_pass": true,
+        "interior_detail_free_pass": true
+      },
+      "lensing_and_disk": {
+        "bright_upper_lensing_pixels": 1192,
+        "bright_lower_lensing_pixels": 1087,
+        "bright_equatorial_disk_pixels": 991,
+        "equatorial_bright_span_pixels": 111,
+        "equatorial_bright_span_fraction": 0.8672,
+        "estimated_disk_angle_degrees": 0.11,
+        "upper_lower_lensing_pass": true,
+        "equatorial_disk_pass": true
+      },
+      "symmetry": {
+        "left_right_mean_abs_rgba": 0.014,
+        "top_bottom_mean_abs_rgba": 0.0401
+      },
+      "palette": {
+        "qualified_bright_pixels": 3773,
+        "warm_fraction": 0.9515,
+        "cool_fraction": 0.0,
+        "violet_fraction": 0.0
+      },
+      "nearest_2x_pass": true,
+      "event_horizon_c_structural_advancement_pass": true
+    },
+    "B": {
+      "master": {
+        "file": "black-hole-B-doppler-maw-master.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          1254,
+          1254
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 1075626,
+        "opaque_pixels": 3,
+        "partial_alpha_pixels": 496887,
+        "alpha_bbox": [
+          18,
+          218,
+          1234,
+          1017
+        ],
+        "margins_ltrb": [
+          18,
+          218,
+          20,
+          237
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 2,
+        "valid_png_rgba": true,
+        "transparency_contract": "transparent_asset",
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "actual": {
+        "file": "black-hole-B-doppler-maw-128.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 11244,
+        "opaque_pixels": 1490,
+        "partial_alpha_pixels": 3650,
+        "alpha_bbox": [
+          4,
+          24,
+          124,
+          103
+        ],
+        "margins_ltrb": [
+          4,
+          24,
+          4,
+          25
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_contract": "transparent_asset",
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "inspection": {
+        "file": "black-hole-B-doppler-maw-inspection-256.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          256,
+          256
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 44976,
+        "opaque_pixels": 5960,
+        "partial_alpha_pixels": 14600,
+        "alpha_bbox": [
+          8,
+          48,
+          248,
+          206
+        ],
+        "margins_ltrb": [
+          8,
+          48,
+          8,
+          50
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_contract": "transparent_asset",
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "shadow": {
+        "connected_shadow_pixels": 1127,
+        "connected_shadow_fraction_of_canvas": 0.0688,
+        "connected_shadow_bbox": [
+          44,
+          40,
+          85,
+          85
+        ],
+        "sample_pixel_count": 110,
+        "sample_alpha_min": 255,
+        "sample_alpha_mean": 255.0,
+        "sample_luma_max": 0.0,
+        "sample_luma_stddev": 0.0,
+        "shadow_area_pass": true,
+        "opaque_center_pass": true,
+        "interior_detail_free_pass": true
+      },
+      "lensing_and_disk": {
+        "bright_upper_lensing_pixels": 649,
+        "bright_lower_lensing_pixels": 643,
+        "bright_equatorial_disk_pixels": 840,
+        "equatorial_bright_span_pixels": 108,
+        "equatorial_bright_span_fraction": 0.8438,
+        "estimated_disk_angle_degrees": -6.3,
+        "upper_lower_lensing_pass": true,
+        "equatorial_disk_pass": true
+      },
+      "symmetry": {
+        "left_right_mean_abs_rgba": 0.106,
+        "top_bottom_mean_abs_rgba": 0.088
+      },
+      "palette": {
+        "qualified_bright_pixels": 2648,
+        "warm_fraction": 0.3357,
+        "cool_fraction": 0.5752,
+        "violet_fraction": 0.108
+      },
+      "nearest_2x_pass": true,
+      "event_horizon_c_structural_advancement_pass": true
+    },
+    "C": {
+      "master": {
+        "file": "black-hole-C-void-cathedral-master.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          1254,
+          1254
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 886211,
+        "opaque_pixels": 8,
+        "partial_alpha_pixels": 686297,
+        "alpha_bbox": [
+          12,
+          115,
+          1242,
+          1139
+        ],
+        "margins_ltrb": [
+          12,
+          115,
+          12,
+          115
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_contract": "transparent_asset",
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "actual": {
+        "file": "black-hole-C-void-cathedral-128.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          128,
+          128
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 9494,
+        "opaque_pixels": 2415,
+        "partial_alpha_pixels": 4475,
+        "alpha_bbox": [
+          4,
+          14,
+          124,
+          114
+        ],
+        "margins_ltrb": [
+          4,
+          14,
+          4,
+          14
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_contract": "transparent_asset",
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "inspection": {
+        "file": "black-hole-C-void-cathedral-inspection-256.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          256,
+          256
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 37976,
+        "opaque_pixels": 9660,
+        "partial_alpha_pixels": 17900,
+        "alpha_bbox": [
+          8,
+          28,
+          248,
+          228
+        ],
+        "margins_ltrb": [
+          8,
+          28,
+          8,
+          28
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_contract": "transparent_asset",
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "shadow": {
+        "connected_shadow_pixels": 2104,
+        "connected_shadow_fraction_of_canvas": 0.1284,
+        "connected_shadow_bbox": [
+          37,
+          35,
+          91,
+          89
+        ],
+        "sample_pixel_count": 110,
+        "sample_alpha_min": 255,
+        "sample_alpha_mean": 255.0,
+        "sample_luma_max": 0.0,
+        "sample_luma_stddev": 0.0,
+        "shadow_area_pass": true,
+        "opaque_center_pass": true,
+        "interior_detail_free_pass": true
+      },
+      "lensing_and_disk": {
+        "bright_upper_lensing_pixels": 1255,
+        "bright_lower_lensing_pixels": 1247,
+        "bright_equatorial_disk_pixels": 1008,
+        "equatorial_bright_span_pixels": 120,
+        "equatorial_bright_span_fraction": 0.9375,
+        "estimated_disk_angle_degrees": -0.09,
+        "upper_lower_lensing_pass": true,
+        "equatorial_disk_pass": true
+      },
+      "symmetry": {
+        "left_right_mean_abs_rgba": 0.0157,
+        "top_bottom_mean_abs_rgba": 0.0717
+      },
+      "palette": {
+        "qualified_bright_pixels": 4187,
+        "warm_fraction": 0.4669,
+        "cool_fraction": 0.39,
+        "violet_fraction": 0.482
+      },
+      "nearest_2x_pass": true,
+      "event_horizon_c_structural_advancement_pass": true
+    }
+  },
+  "anti_convergence": {
+    "A_B_mean_abs_rgba": 0.109,
+    "A_C_mean_abs_rgba": 0.1136,
+    "B_C_mean_abs_rgba": 0.1618,
+    "minimum_pairwise_difference": 0.109,
+    "pass": true
+  },
+  "comparison_render": {
+    "file": "comparison-render-1440x900.png",
+    "format": "PNG",
+    "mode": "RGBA",
+    "size": [
+      1440,
+      900
+    ],
+    "alpha_min": 255,
+    "alpha_max": 255,
+    "transparent_pixels": 0,
+    "opaque_pixels": 1296000,
+    "partial_alpha_pixels": 0,
+    "alpha_bbox": [
+      0,
+      0,
+      1440,
+      900
+    ],
+    "margins_ltrb": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "edge_alpha_max": 255,
+    "components_alpha_gt_8": 1,
+    "valid_png_rgba": true,
+    "transparency_contract": "opaque_comparison_board",
+    "transparency_pass": true,
+    "edge_clear_pass": false,
+    "expected_size_pass": true
+  }
+}

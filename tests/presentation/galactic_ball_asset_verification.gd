@@ -8,8 +8,9 @@ const SimulationManagerScript = preload("res://scripts/simulation/ball_simulatio
 const KIT_ROOT := "res://assets/sprites/balls/galactic"
 const MANIFEST_PATH := KIT_ROOT + "/manifest.json"
 const PLANETARY_GALAXY_PATH := "res://assets/sprites/balls/planetary/runtime/ball_lv10_galaxy_128.png"
+const PLANETARY_GALAXY_ACTIVE_PATH := "res://assets/sprites/balls/planetary/runtime/ball_planetary_local_lv04_galaxy_user_authored_128.tres"
 const GROUND_MOON_PATH := "res://assets/sprites/balls/ground/runtime/ball_lv04_moon_128.png"
-const PLANETARY_MOON_PATH := "res://assets/sprites/balls/planetary/runtime/ball_lv04_moon_8.png"
+const PLANETARY_MOON_ACTIVE_PATH := "res://assets/sprites/balls/planetary/runtime/ball_planetary_local_lv00_moon_user_authored_8.tres"
 const EVENT_HORIZON_CUTIN_PATH := "res://assets/sprites/cutins/first_contact/event-horizon-portrait-v1.png"
 const EVENT_HORIZON_CUTIN_DRAFT_PATH := "res://docs/design/mockups/drafts/s6-g2-cutin-d-components/event-horizon-portrait-v1.png"
 const BLACK_HOLE_CUTIN_PATH := "res://assets/sprites/cutins/first_contact/black-hole-portrait-v1.png"
@@ -17,6 +18,13 @@ const BLACK_HOLE_CUTIN_DRAFT_PATH := "res://docs/design/mockups/drafts/s6-g2-cut
 const EXPECTED_LEVELS := [10, 11, 12, 13, 14]
 const EXPECTED_SIZES := [8, 16, 32, 64, 128]
 const EXPECTED_IDENTITIES := ["galaxy", "galaxy_cluster", "quasar", "event_horizon", "black_hole"]
+const ACTIVE_GALACTIC_PATHS := [
+	"res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv00_galaxy_user_authored_8.tres",
+	"res://assets/sprites/balls/galactic/runtime/ball_lv11_galaxy_cluster_16.png",
+	"res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv02_quasar_polar_beacon_32.tres",
+	"res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv03_event_horizon_last_light_64.tres",
+	"res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv04_black_hole_void_cathedral_128.tres",
+]
 
 var _failures := 0
 
@@ -75,7 +83,7 @@ func _ready() -> void:
 	if images.size() == 5:
 		_validate_visual_intent(images, opaque_counts)
 	_validate_bindings(assets)
-	await _validate_renderer(assets)
+	await _validate_renderer()
 
 	if _failures == 0:
 		print("GALACTIC_BALL_ASSETS_VERIFIED chain=10/11/12/13/14 sizes=8/16/32/64/128 alpha=binary palette_colors=%s opaque_pixels=%s nearest=true galaxy_native=true bindings=5 black_hole_special_unchanged=true ground_planetary_unchanged=true" % [str(color_counts), str(opaque_counts)])
@@ -113,11 +121,11 @@ func _validate_bindings(assets: Array) -> void:
 	var galaxy_definition = catalog.get_definition(10)
 	_expect(galaxy_definition.texture != null and galaxy_definition.texture.resource_path == PLANETARY_GALAXY_PATH, "Galaxy BallDefinition must keep the Planetary 128px hero as its primary texture.")
 	var planetary_galaxy := lod_catalog.resolve_texture(10, 128.0, galaxy_definition.texture)
-	_expect(planetary_galaxy != null and planetary_galaxy.resource_path == PLANETARY_GALAXY_PATH, "Planetary Galaxy must keep its exact 128px primary binding.")
+	_expect(planetary_galaxy != null and planetary_galaxy.resource_path == PLANETARY_GALAXY_ACTIVE_PATH, "Planetary Galaxy must use its approved exact-size runtime binding.")
 
 	for local_level in range(assets.size()):
 		var global_level: int = EXPECTED_LEVELS[local_level]
-		var runtime_path: String = KIT_ROOT + "/" + String((assets[local_level] as Dictionary).get("path", ""))
+		var runtime_path: String = ACTIVE_GALACTIC_PATHS[local_level]
 		var definition = catalog.get_definition(global_level)
 		var primary_texture: Texture2D = definition.texture if definition != null else null
 		var texture := lod_catalog.resolve_texture(global_level, float(EXPECTED_SIZES[local_level]), primary_texture)
@@ -127,10 +135,10 @@ func _validate_bindings(assets: Array) -> void:
 	var moon_definition = catalog.get_definition(4)
 	_expect(moon_definition.texture != null and moon_definition.texture.resource_path == GROUND_MOON_PATH, "Ground Moon primary texture must remain untouched.")
 	var planetary_moon := lod_catalog.resolve_texture(4, 8.0, moon_definition.texture)
-	_expect(planetary_moon != null and planetary_moon.resource_path == PLANETARY_MOON_PATH, "Planetary Moon symbolic LOD must remain untouched.")
+	_expect(planetary_moon != null and planetary_moon.resource_path == PLANETARY_MOON_ACTIVE_PATH, "Planetary Moon must use its approved exact-size runtime binding.")
 
 
-func _validate_renderer(assets: Array) -> void:
+func _validate_renderer() -> void:
 	var renderer = BallRendererScript.new()
 	add_child(renderer)
 	var simulation = SimulationManagerScript.new()
@@ -145,12 +153,13 @@ func _validate_renderer(assets: Array) -> void:
 	for local_level in range(4):
 		var global_level: int = EXPECTED_LEVELS[local_level]
 		var batch := renderer.get_node_or_null("LevelBatch%d" % global_level) as MultiMeshInstance2D
-		var runtime_path: String = KIT_ROOT + "/" + String((assets[local_level] as Dictionary).get("path", ""))
+		var runtime_path: String = ACTIVE_GALACTIC_PATHS[local_level]
 		_expect(batch != null, "Galactic global level batch %d must exist." % global_level)
 		if batch == null:
 			continue
 		_expect(batch.texture != null and batch.texture.resource_path == runtime_path, "Galactic batch %d must consume its exact-size texture." % global_level)
-		_expect(batch.material == null, "Textured Galactic batch %d must not retain the procedural circle material." % global_level)
+		var textured_material := batch.material as ShaderMaterial
+		_expect(textured_material != null and textured_material.get_shader_parameter("use_texture") == true, "Textured Galactic batch %d must retain the clipping/upright shader in texture mode." % global_level)
 		_expect(batch.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST, "Galactic batch %d must sample with nearest filtering." % global_level)
 		var transform := renderer.get_batch_instance_transform(global_level, 0)
 		var expected_radius := float(EXPECTED_SIZES[local_level]) * 0.5

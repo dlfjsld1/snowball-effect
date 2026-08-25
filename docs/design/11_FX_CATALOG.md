@@ -135,16 +135,16 @@ SG-02는 새로운 전용 일러스트나 복잡한 particle family를 만들지
 |---|---|---:|---|---|---|---|
 | BH-01 | 첫 Lv14 기믹 전환 | T4 | REQUIRED | `black_hole_phase_started` | Ball에서 이동 Black Hole entity로 전환 | 새 Stage처럼 표현하지 않음 |
 | BH-02 | L2 → L3 Frame 전환 | T4 | REQUIRED | phase id + target rect | Galactic 내부 최종 국면 확장 | presentation 완료 뒤 gameplay 재개 |
-| BH-03 | 중력장·회전 링·곡선 잔상 | T2/T3 | REQUIRED | Black Hole read-only state | 위치와 영향 방향을 지속적으로 표시 | gameplay outline 유지 |
-| BH-04 | 일반 공 궤도 휘어짐 | T2 | REQUIRED | read-only influence state | Black Hole 방향의 transient trail/deformation | collision radius는 원형 유지 |
+| BH-03 | 근거리 lensing arc·이동 잔상 | T2/T3 | REQUIRED | Black Hole read-only position/motion | Void Cathedral C 주변의 가까운 빛 휨과 짧은 이동 방향 표시 | gameplay 반경을 주장하지 않음 |
+| BH-04 | 일반 공 궤도 휘어짐 | T2 | REQUIRED | Core가 실제 commit한 공 motion | 실제 공 trajectory 자체로 force 결과를 읽음 | 장식 cue가 pull/흡수 반경을 추론하지 않음 |
 | BH-05 | 저등급 공 흡수 | T3 | REQUIRED | authoritative absorption event | 짧은 tidal stretch 후 중심 소멸 | Cashout·Merge와 혼동 금지 |
-| BH-06 | 두 번째 Black Hole 생성 | T4 | REQUIRED | second Lv14 conversion | 두 entity의 분리된 silhouette과 field | 일반 Merge FX 사용 금지 |
+| BH-06 | 두 번째 Black Hole 생성 | T4 | REQUIRED | second Lv14 conversion | 최대 두 entity의 분리된 Void Cathedral silhouette | 일반 Merge FX·third Lv14 fallback 금지 |
 | BH-07 | 상호 인력·공전 | T4 | REQUIRED | finale contact approach | 두 ring의 위상 동기화와 궤도 가속 | contact 전 gameplay 가능성 보존 |
 | BH-08 | Contact Lock·최종 폭발 | T4 | REQUIRED | finale event | orbit 압축 후 화면 규모 pixel explosion | terminal sequence exactly once |
 | BH-09 | Gameplay UI 제거 | T4 | REQUIRED | terminal sequence | cabinet HUD를 순차 소등·퇴장 | score/state를 변경하지 않음 |
 | BH-10 | Title·Clear Score 등장 | T4 | REQUIRED | final run snapshot | `SNOWBALL EFFECT`와 final score reveal | Main Menu 요청 전 완료 |
 
-화면 왜곡 shader는 품질 후보이며 필수 구현이 아니다. 회전 링, 별·먼지 왜곡, 곡선 잔상만으로 상태가 읽히면 생략할 수 있다.
+화면 왜곡 shader는 품질 후보이며 필수 구현이 아니다. 승인된 Void Cathedral C 본체, 소수의 근거리 lensing arc와 짧은 이동 trail만으로 상태가 읽히면 생략한다. 대형 influence ring이나 targeting-reticle 장식으로 gameplay 범위를 암시하지 않는다.
 
 ### 검토 초안 — BH-01 Horizon Collapse
 
@@ -154,19 +154,21 @@ SG-02는 새로운 전용 일러스트나 복잡한 particle family를 만들지
 - 첫 Black Hole의 Run 최초 `FIRST CONTACT` CUT-IN 직후, 정지한 Lv14 Ball의 표면광이 중심으로 압축되고 black core와 cyan/teal Event Horizon ring만 남아 이동 기믹으로 읽힌다.
 - 같은 Galactic 카메라와 고정 Play Field를 유지하며 BH-02 Frame 확장, 흡수, 두 번째 Black Hole, finale·Result는 포함하지 않는다.
 
-### 검토 초안 — BH-03/BH-04 Gravitational-Field Readability
+### 역사적 검토 초안 — BH-03/BH-04 Gravitational-Field Readability
 
-- 상태: `REVIEW DRAFT ASSET / S8-G5 RUNTIME REFERENCE` — 원본 이미지는 최종 art 승인이 아니지만, 2026-08-20 S8-G5 구현 지시가 compact core·influence·near-field 계층의 runtime 사용을 승인했다.
+- 상태: `SUPERSEDED RUNTIME REFERENCE` — 2026-08-20 compact influence/orbit-pixel 방향은 S8-G7의 max-two·Void Cathedral cue 계약으로 대체됐다. 목업은 역사적 비교 자료일 뿐 현재 구현 기준이 아니다.
 - 목업: [`mockups/drafts/bh-03-04-gravitational-field-readability-storyboard-v1.png`](mockups/drafts/bh-03-04-gravitational-field-readability-storyboard-v1.png)
-- 3-frame 흐름: `FIELD IDLE → INFLUENCE → NEAR FIELD`; black core와 cyan/teal ring을 고정하고 짧은 곡선 trail, 제한된 tidal stretch, sparse orbit pixel만 단계적으로 더한다.
+- 이전 3-frame 흐름은 `FIELD IDLE → INFLUENCE → NEAR FIELD`였으며 cyan/teal ring과 sparse orbit pixel을 포함했다. 현재 계약에서는 대형 점선 ring과 orbiting square dot을 재사용하지 않는다.
 - 일반 공의 nominal 원형 판독과 중심·경로를 유지하며 전체 화면 왜곡, 흡수, 두 번째 Black Hole, Frame 확장, CUT-IN, finale·Result는 포함하지 않는다.
 
-### S8-G5 runtime recipe
+### S8-G7 runtime recipe
 
-- `BlackHolePhaseEffect` 단일 draw node가 read-only `get_black_hole_snapshot()`의 최대 2개 entity를 그린다. gameplay radius를 변경하지 않고 black core, 4px cyan/teal event horizon, 300-unit dashed influence ring, near-field arc, 최대 4개 motion marker를 조립한다.
+- `BlackHolePhaseEffect` 단일 draw node가 read-only `get_black_hole_snapshot()`의 최대 2개 entity를 그린다. gameplay radius를 변경하지 않고 승인된 `Void Cathedral C` 본체, entity당 최대 2개의 close-range gold/Galactic-violet lensing arc, 이동 반대 방향의 짧은 light trail을 조립한다.
+- `300-unit` dashed influence ring과 orbiting square-dot reticle은 그리지 않는다. cue는 authoritative runtime 값에 직접 binding되지 않는 한 gravity/pull, absorption, collision 또는 Phase radius를 나타내지 않는다.
+- 위 arc/trail은 procedural Presentation이라 새 bitmap이 필요 없다. dependency transition에서 player-visible fallback이 필요하면 기존 승인 `Void Cathedral C`를 사용하며 generic circle을 노출하지 않는다. S8-G6 완료 뒤 normal/global third+ Lv14는 도달 불가능하다.
 - phase transition은 기본 `0.9s` 동안 L2 `880`→L3 `1040`을 중심 X `800` 기준 좌우 각 `80`씩 확장한다. Frame, 표시용 side fill, 고정 `200px` HUD housing이 같은 progress를 사용한다. 완료 뒤 `Galactic` HUD와 persistent Black Hole visual은 유지한다.
 - finale는 기본 `1.35s` 동안 두 core의 mutual orbit·압축 뒤 pixel ring/explosion을 재생하고 gameplay HUD/Pause를 숨긴다. S8-G3 Result 자체는 만들지 않으며 no-argument `black_hole_finale_presentation_finished()` 뒤 Integration이 보관한 terminal snapshot을 S8-G3에 전달한다.
-- Reduced Effects는 phase `0.18s`, finale `0.34s`로 줄이고 motion trail을 생략하되 `BLACK HOLE PHASE`, `FINAL CONTACT`, exact field edge, core/horizon, orbit/explosion은 유지한다.
+- Reduced Effects는 phase `0.18s`, finale `0.34s`로 줄이고 motion trail을 생략하되 `BLACK HOLE PHASE`, `FINAL CONTACT`, exact field edge, Void Cathedral 본체, close-range arc와 finale orbit/explosion은 유지한다.
 - shader가 없는 procedural fallback이 정식 경로다. draw node, 상태 Label, Tween 각 1개를 재사용하며 개별 공/별 Node를 생성하지 않는다.
 - `reset_black_hole_presentation()`은 Tween을 kill하고 Run generation을 증가시켜 Retry 전 callback을 무효화한다. 같은 Run의 duplicate/stale phase/finale ID는 완료 신호로 재사용하지 않는다.
 

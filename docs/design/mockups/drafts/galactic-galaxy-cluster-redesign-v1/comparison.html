@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galactic Galaxy Cluster — 16px 후보 3종</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --void: #02040c;
+      --surface: #080d20;
+      --surface-2: #0d1430;
+      --line: #263458;
+      --text: #f4f7ff;
+      --muted: #9db0d4;
+      --neutral: #dce5f2;
+      --gold: #f1c45f;
+      --cyan: #42e2e5;
+      --violet: #b274ff;
+      --magenta: #ed4db5;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #030611;
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    body { padding: 14px 16px 12px; }
+
+    header {
+      height: 66px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 25px;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    .contract {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.02em;
+    }
+
+    .reference-strip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 9px;
+      text-align: right;
+    }
+
+    .reference-strip figure {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0;
+    }
+
+    .reference-strip img { object-fit: contain; image-rendering: pixelated; }
+    .planetary-ref { width: 50px; height: 50px; }
+    .galactic-ref { width: 16px; height: 16px; }
+
+    main {
+      height: calc(100% - 66px);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      min-width: 0;
+      height: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #0b1127 0%, #080d20 100%);
+      padding: 10px;
+      display: grid;
+      grid-template-rows: 28px 292px 22px 160px 1fr;
+      gap: 7px;
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: -0.01em;
+    }
+
+    .tag {
+      color: #a8c5ff;
+      font: 9px/1.2 Consolas, monospace;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .a h2 { color: var(--gold); }
+    .b h2 { color: var(--cyan); }
+    .c h2 { color: var(--violet); }
+
+    .master-stage {
+      min-height: 0;
+      border-radius: 10px;
+      background: radial-gradient(circle at 50% 48%, #121b3b 0%, #080d20 56%, #050914 100%);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .master-stage img {
+      width: 278px;
+      height: 278px;
+      max-width: 100%;
+      object-fit: contain;
+      filter: saturate(1.02) contrast(1.03);
+    }
+
+    .palette {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font: 9px/1 Consolas, monospace;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .runtime-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 154px;
+      gap: 8px;
+    }
+
+    .actual-stack {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .actual {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .actual.neutral { background: var(--neutral); }
+    .actual.dark { background: var(--void); }
+
+    .actual img {
+      width: 16px;
+      height: 16px;
+      image-rendering: pixelated;
+    }
+
+    .actual label {
+      position: absolute;
+      left: 6px;
+      bottom: 4px;
+      color: #40516d;
+      font: 7px/1 Consolas, monospace;
+    }
+
+    .actual.dark label { color: #7890ba; }
+
+    .inspection {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--void);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .inspection img {
+      width: 144px;
+      height: 144px;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .notes {
+      min-height: 0;
+      border-top: 1px solid var(--line);
+      padding-top: 7px;
+      color: #d7e0f7;
+      font-size: 10px;
+      line-height: 1.34;
+      overflow: hidden;
+    }
+
+    .notes p { margin: 0 0 3px; }
+    .notes strong { color: #ffffff; }
+    .pass { color: #7bf0c8; font-weight: 700; }
+    .risk { color: #ffb1d4; }
+    code { color: #bcd4ff; font: 9px/1.2 Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Galactic Galaxy Cluster — 16px 후보 3종</h1>
+      <div class="contract">chain [10,11,12,13,14] · global Lv11 · Galactic local Lv1 · radius 8 · diameter 16 · concept only</div>
+    </div>
+    <div class="reference-strip" aria-label="수정하지 않은 progression references">
+      <figure>
+        <figcaption>Planetary Galaxy<br>local Lv4 · 128px<br>user asset · unchanged</figcaption>
+        <img class="planetary-ref" src="../../../../../assets/sprites/balls/planetary/runtime/ball_planetary_local_lv04_galaxy_user_authored_128.png" alt="Planetary Galaxy 128px reference">
+      </figure>
+      <figure>
+        <figcaption>Galactic Galaxy<br>local Lv0 · 8px<br>user asset · unchanged</figcaption>
+        <img class="galactic-ref" src="../../../../../assets/sprites/balls/galactic/runtime/ball_galactic_local_lv00_galaxy_user_authored_8.png" alt="Galactic Galaxy 8px reference">
+      </figure>
+    </div>
+  </header>
+
+  <main>
+    <article class="card a">
+      <div class="card-head">
+        <h2>A · Triad Cluster</h2>
+        <span class="tag">recommended · most literal</span>
+      </div>
+      <div class="master-stage"><img src="master-a-triad-cluster.png" alt="Triad Cluster master"></div>
+      <div class="palette">
+        <span>palette</span>
+        <i class="swatch" style="background:#101536"></i><i class="swatch" style="background:#2947b8"></i><i class="swatch" style="background:#8157e6"></i><i class="swatch" style="background:#61ddf5"></i><i class="swatch" style="background:#f1c45f"></i><i class="swatch" style="background:#fff6d2"></i>
+        <span>blue/violet + gold/white</span>
+      </div>
+      <div class="runtime-grid">
+        <div class="actual-stack">
+          <div class="actual neutral"><img src="candidate-a-triad-cluster-16.png" alt="A actual 16px on neutral"><label>actual 16×16 · neutral</label></div>
+          <div class="actual dark"><img src="candidate-a-triad-cluster-16.png" alt="A actual 16px on Galactic dark"><label>actual 16×16 · #02040C</label></div>
+        </div>
+        <div class="inspection"><img src="inspection-a-triad-cluster-256.png" alt="A 256px nearest inspection"></div>
+      </div>
+      <div class="notes">
+        <p><strong>형태:</strong> 금빛 핵 3개 + 삼각형 청보라 mini spiral + 옅은 bridge. 세 은하와 가스 자체가 3엽 실루엣을 형성.</p>
+        <p><strong>장점:</strong> “여러 은하가 묶인 은하단”을 가장 즉시 설명하고 Galaxy 8px보다 한 단계 큰 개체감을 줌.</p>
+        <p><strong>단점:</strong> 개체 수는 B/C보다 적어 우주적 규모감은 가장 절제됨.</p>
+        <p><strong>16px:</strong> <span class="pass">PASS</span> · 분리 핵/mini spiral <code>3</code> · <code>96px · 7 colors · 1 comp (4/8) · edge α0</code></p>
+      </div>
+    </article>
+
+    <article class="card b">
+      <div class="card-head">
+        <h2>B · Spiral Swarm Crown</h2>
+        <span class="tag">most populated · biggest scale</span>
+      </div>
+      <div class="master-stage"><img src="master-b-spiral-swarm-crown.png" alt="Spiral Swarm Crown master"></div>
+      <div class="palette">
+        <span>palette</span>
+        <i class="swatch" style="background:#111638"></i><i class="swatch" style="background:#29399a"></i><i class="swatch" style="background:#7248c8"></i><i class="swatch" style="background:#bc83f1"></i><i class="swatch" style="background:#24d2ed"></i><i class="swatch" style="background:#f9ffff"></i>
+        <span>cyan/ice + violet/white</span>
+      </div>
+      <div class="runtime-grid">
+        <div class="actual-stack">
+          <div class="actual neutral"><img src="candidate-b-spiral-swarm-crown-16.png" alt="B actual 16px on neutral"><label>actual 16×16 · neutral</label></div>
+          <div class="actual dark"><img src="candidate-b-spiral-swarm-crown-16.png" alt="B actual 16px on Galactic dark"><label>actual 16×16 · #02040C</label></div>
+        </div>
+        <div class="inspection"><img src="inspection-b-spiral-swarm-crown-256.png" alt="B 256px nearest inspection"></div>
+      </div>
+      <div class="notes">
+        <p><strong>형태:</strong> 큰 시안 중심 은하 1개 + 보라/백색 위성 은하 4개가 응축된 왕관. 겹친 팔과 냉색 haze가 한 덩어리로 연결.</p>
+        <p><strong>장점:</strong> 5개의 핵이 가장 많은 개체감과 Galactic 규모 상승을 보여 줌.</p>
+        <p><strong>단점:</strong> 실제 16px에서 가장 조밀해 긴 팔 세부는 mini arc로 압축됨.</p>
+        <p><strong>16px:</strong> <span class="pass">PASS</span> · 분리 핵/mini spiral <code>5</code> · <code>96px · 7 colors · 1 comp (4/8) · edge α0</code></p>
+      </div>
+    </article>
+
+    <article class="card c">
+      <div class="card-head">
+        <h2>C · Colliding Web</h2>
+        <span class="tag">most kinetic · strongest color split</span>
+      </div>
+      <div class="master-stage"><img src="master-c-colliding-web.png" alt="Colliding Web master"></div>
+      <div class="palette">
+        <span>palette</span>
+        <i class="swatch" style="background:#10152f"></i><i class="swatch" style="background:#1598a9"></i><i class="swatch" style="background:#42e2e5"></i><i class="swatch" style="background:#8349c8"></i><i class="swatch" style="background:#ed4db5"></i><i class="swatch" style="background:#fff7e3"></i>
+        <span>teal/cyan × magenta/violet</span>
+      </div>
+      <div class="runtime-grid">
+        <div class="actual-stack">
+          <div class="actual neutral"><img src="candidate-c-colliding-web-16.png" alt="C actual 16px on neutral"><label>actual 16×16 · neutral</label></div>
+          <div class="actual dark"><img src="candidate-c-colliding-web-16.png" alt="C actual 16px on Galactic dark"><label>actual 16×16 · #02040C</label></div>
+        </div>
+        <div class="inspection"><img src="inspection-c-colliding-web-256.png" alt="C 256px nearest inspection"></div>
+      </div>
+      <div class="notes">
+        <p><strong>형태:</strong> 역회전하는 청록/자홍 주 은하 2개 + 위성 3개. 교차 tidal bridge와 갈라지는 filaments가 비대칭 웹 실루엣을 형성.</p>
+        <p><strong>장점:</strong> 색 분할과 대각선 운동감이 가장 강하며 정적인 단일 Galaxy와 확실히 다름.</p>
+        <p><strong>단점:</strong> 두 주 은하가 강해 첫눈에는 collision으로 보일 수 있으나 위성 3핵이 cluster 해석을 보강.</p>
+        <p><strong>16px:</strong> <span class="pass">PASS</span> · 분리 핵/mini spiral <code>5</code> · <code>101px · 8 colors · 1 comp (4/8) · edge α0</code></p>
+      </div>
+    </article>
+  </main>
+</body>
+</html>

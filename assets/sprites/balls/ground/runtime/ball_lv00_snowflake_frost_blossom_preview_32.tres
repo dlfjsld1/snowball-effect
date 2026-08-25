@@ -1,0 +1,8 @@
+[gd_resource type="CanvasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/balls/ground/runtime/ball_lv00_snowflake_frost_blossom_preview_32.png" id="1_diffuse"]
+
+[resource]
+diffuse_texture = ExtResource("1_diffuse")
+texture_filter = 2
+texture_repeat = 1

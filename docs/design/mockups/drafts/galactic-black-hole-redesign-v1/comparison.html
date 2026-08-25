@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galactic Black Hole — 128px 후보 3종</title>
+  <style>
+    :root { color-scheme: dark; --bg:#03050c; --panel:#0b1020; --line:#263659; --text:#f7f8ff; --muted:#9aaad0; --a:#ffd486; --b:#66dfff; --c:#bf8bff; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; width:100%; min-height:100%; background:var(--bg); }
+    body { width:1440px; height:900px; overflow:hidden; padding:12px 16px 14px; color:var(--text); font-family:Inter,"Noto Sans KR","Segoe UI",sans-serif; background:radial-gradient(circle at 50% -25%,#172047 0,#070b18 35%,#03050c 72%); }
+    header { height:126px; display:grid; grid-template-columns:1fr auto; gap:20px; border-bottom:1px solid #1b2845; }
+    h1 { margin:3px 0 5px; font-size:29px; line-height:1; letter-spacing:-.04em; }
+    .subtitle { color:#b2c1e3; font:11px/1.45 Consolas,monospace; }
+    .contract { margin-top:8px; max-width:675px; color:#dbe2f4; font-size:12px; line-height:1.4; }
+    .contract strong { color:#fff0b6; }
+    .lineage { display:flex; align-items:flex-start; gap:7px; padding-top:5px; }
+    .ref { width:78px; text-align:center; color:#91a5ce; font:8px/1.2 Consolas,monospace; }
+    .ref-icon { height:76px; display:flex; align-items:center; justify-content:center; border:1px solid #192746; border-radius:7px; background:#050915; }
+    .ref img { max-width:70px; max-height:70px; object-fit:contain; image-rendering:pixelated; }
+    .arrow { align-self:center; color:#526b9c; font:17px Consolas,monospace; }
+    .candidate-ref { width:126px; }
+    .candidate-stack { height:76px; display:flex; align-items:center; justify-content:center; gap:1px; border:1px solid #2b3e68; border-radius:7px; background:#050915; }
+    .candidate-stack img { width:40px; height:40px; object-fit:contain; image-rendering:auto; }
+    main { height:748px; padding-top:10px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+    article { min-width:0; overflow:hidden; padding:9px; border:1px solid var(--line); border-radius:15px; background:linear-gradient(180deg,rgba(15,23,48,.98),rgba(7,12,27,.98)); display:grid; grid-template-rows:34px 204px 146px 258px 1fr; gap:6px; }
+    article.a { --accent:var(--a); } article.b { --accent:var(--b); } article.c { --accent:var(--c); }
+    .head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    h2 { margin:0; color:var(--accent); font-size:18px; letter-spacing:-.02em; }
+    .badge { color:#abc2f6; font:8px/1.2 Consolas,monospace; letter-spacing:.12em; text-transform:uppercase; text-align:right; }
+    .master { display:grid; place-items:center; overflow:hidden; border:1px solid #182744; border-radius:10px; background:radial-gradient(circle,#111a36 0,#070c19 58%,#030610 100%); }
+    .master img { display:block; width:auto; height:auto; max-width:96%; max-height:194px; }
+    .actuals { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    .actual { position:relative; display:grid; place-items:center; overflow:hidden; border:1px solid #2c3e62; border-radius:9px; }
+    .actual.light { background:#d9e0e8; }
+    .actual.dark { background:#050816; }
+    .actual img { width:128px; height:128px; object-fit:contain; }
+    .actual span { position:absolute; left:5px; bottom:4px; color:#52617c; font:7px Consolas,monospace; }
+    .actual.dark span { color:#8294ba; }
+    .lower { display:grid; grid-template-columns:256px 1fr; gap:8px; min-width:0; }
+    .inspection { width:256px; height:256px; object-fit:contain; image-rendering:pixelated; border:1px solid #2a3c60; border-radius:9px; background:#050816; }
+    .facts { min-width:0; color:#d5def1; font-size:10px; line-height:1.34; }
+    .facts b { display:block; margin-bottom:5px; color:var(--accent); font-size:12px; }
+    .facts code { color:#9fd4ff; font:9px/1.35 Consolas,monospace; }
+    .pass { margin-top:7px; color:#9fd6b9; font:9px/1.32 Consolas,monospace; }
+    .notes { min-height:0; color:#dce4f7; font-size:10px; line-height:1.35; }
+    .notes strong { color:var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Galactic Black Hole — 128px 후보 3종</h1>
+      <div class="subtitle">authoritative: global Lv14 · Galactic local Lv4 · radius 64 · diameter 128 · draft only / runtime unchanged</div>
+      <div class="contract"><strong>Galactic final-phase handoff:</strong> Black Hole은 별도 Stage도, 생성 즉시 Stage Clear도 아니다. 첫 Lv14 FIRST CONTACT 뒤 이동 Black Hole 국면으로 넘기며, 이번 비교는 Lv14의 128px 인게임 외형 후보만 다룬다.</div>
+    </div>
+    <div class="lineage" aria-label="현재 Galactic progression">
+      <div class="ref"><div class="ref-icon"><img src="../../../../../assets/sprites/balls/galactic/runtime/ball_galactic_local_lv00_galaxy_user_authored_8.png" alt="Galaxy 8px"></div>Galaxy<br>8px</div>
+      <div class="arrow">→</div>
+      <div class="ref"><div class="ref-icon"><img src="../../../../../assets/sprites/balls/galactic/runtime/ball_lv11_galaxy_cluster_16.png" alt="Galaxy Cluster 16px"></div>Cluster<br>16px</div>
+      <div class="arrow">→</div>
+      <div class="ref"><div class="ref-icon"><img src="../../../../../assets/sprites/balls/galactic/runtime/ball_galactic_local_lv02_quasar_polar_beacon_32.png" alt="Quasar A 32px"></div>Quasar A<br>32px</div>
+      <div class="arrow">→</div>
+      <div class="ref"><div class="ref-icon"><img src="../../../../../assets/sprites/balls/galactic/runtime/ball_galactic_local_lv03_event_horizon_last_light_64.png" alt="Event Horizon C 64px"></div>Horizon C<br>64px</div>
+      <div class="arrow">→</div>
+      <div class="ref candidate-ref"><div class="candidate-stack"><img src="black-hole-A-gargantua-classic-128.png" alt="A"><img src="black-hole-B-doppler-maw-128.png" alt="B"><img src="black-hole-C-void-cathedral-128.png" alt="C"></div>candidate Black Hole · 128px</div>
+    </div>
+  </header>
+
+  <main>
+    <article class="a">
+      <div class="head"><h2>A · GARGANTUA CLASSIC</h2><div class="badge">calmest · clearest physics</div></div>
+      <div class="master"><img src="black-hole-A-gargantua-classic-master.png" alt="Gargantua Classic master"></div>
+      <div class="actuals">
+        <div class="actual light"><img src="black-hole-A-gargantua-classic-128.png" alt="A actual on neutral light"><span>actual 128 · neutral light</span></div>
+        <div class="actual dark"><img src="black-hole-A-gargantua-classic-128.png" alt="A actual on Galactic dark"><span>actual 128 · Play Field dark</span></div>
+      </div>
+      <div class="lower">
+        <img class="inspection" src="black-hole-A-gargantua-classic-inspection-256.png" alt="A 2x nearest inspection">
+        <div class="facts"><b>정통적 장엄함</b>금백색 수평 원반<br>차분한 좌우 대칭<br>상·하 lens image 2층<br><br><code>shadow 10.69%</code><br><code>bbox 4,20–124,108</code><br><code>margin 4/20/4/20</code><br><code>disk +0.11°</code><br><code>edge α 0</code><div class="pass">PASS · opaque empty shadow<br>PASS · upper/lower lensing<br>PASS · 2× exact nearest</div></div>
+      </div>
+      <div class="notes"><strong>장점</strong> 설명 없이 가장 즉시 블랙홀로 읽힌다. <strong>단점</strong> 따뜻한 단색 비중이 높아 게임 고유색과의 연결은 C보다 약하다.</div>
+    </article>
+
+    <article class="b">
+      <div class="head"><h2>B · DOPPLER MAW</h2><div class="badge">fastest · most dangerous</div></div>
+      <div class="master"><img src="black-hole-B-doppler-maw-master.png" alt="Doppler Maw master"></div>
+      <div class="actuals">
+        <div class="actual light"><img src="black-hole-B-doppler-maw-128.png" alt="B actual on neutral light"><span>actual 128 · neutral light</span></div>
+        <div class="actual dark"><img src="black-hole-B-doppler-maw-128.png" alt="B actual on Galactic dark"><span>actual 128 · Play Field dark</span></div>
+      </div>
+      <div class="lower">
+        <img class="inspection" src="black-hole-B-doppler-maw-inspection-256.png" alt="B 2x nearest inspection">
+        <div class="facts"><b>회전하는 포식자</b>청백 접근면 / 적금 후퇴면<br>강한 좌우 비대칭<br>기울어진 lens echo<br><br><code>shadow 6.88%</code><br><code>bbox 4,24–124,103</code><br><code>margin 4/24/4/25</code><br><code>disk −6.30°</code><br><code>LR diff 0.106</code><div class="pass">PASS · opaque empty shadow<br>PASS · Doppler color split<br>PASS · 2× exact nearest</div></div>
+      </div>
+      <div class="notes"><strong>장점</strong> 속도와 위험이 가장 강하고 A/C와 즉시 구분된다. <strong>단점</strong> 원반 밀도가 높아 shadow 면적과 차분한 물리 가독성은 세 후보 중 가장 작다.</div>
+    </article>
+
+    <article class="c">
+      <div class="head"><h2>C · VOID CATHEDRAL</h2><div class="badge">recommended · final gimmick</div></div>
+      <div class="master"><img src="black-hole-C-void-cathedral-master.png" alt="Void Cathedral master"></div>
+      <div class="actuals">
+        <div class="actual light"><img src="black-hole-C-void-cathedral-128.png" alt="C actual on neutral light"><span>actual 128 · neutral light</span></div>
+        <div class="actual dark"><img src="black-hole-C-void-cathedral-128.png" alt="C actual on Galactic dark"><span>actual 128 · Play Field dark</span></div>
+      </div>
+      <div class="lower">
+        <img class="inspection" src="black-hole-C-void-cathedral-inspection-256.png" alt="C 2x nearest inspection">
+        <div class="facts"><b>성스러운 압도</b>금백 / Galactic violet<br>거대한 무광 shadow<br>다층 photon/lens arch<br><br><code>shadow 12.84%</code><br><code>bbox 4,14–124,114</code><br><code>margin 4/14/4/14</code><br><code>disk −0.09°</code><br><code>violet 48.20%</code><div class="pass">PASS · largest empty shadow<br>PASS · upper/lower lensing<br>PASS · 2× exact nearest</div></div>
+      </div>
+      <div class="notes"><strong>장점</strong> CUT-IN의 금백·보라 계보와 가장 자연스럽고 최종기믹 위계가 강하다. <strong>단점</strong> 다층 lensing이 A보다 장식적으로 느껴질 수 있어 runtime 채택 시 외곽 FX와 중복을 조정해야 한다.</div>
+    </article>
+  </main>
+</body>
+</html>
