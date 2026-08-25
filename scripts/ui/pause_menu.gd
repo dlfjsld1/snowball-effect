@@ -13,7 +13,10 @@ signal main_menu_requested
 @onready var resume_button: Button = $PauseModal/Center/Panel/Margin/Content/Actions/ResumeButton
 @onready var modal_retry_button: Button = $PauseModal/Center/Panel/Margin/Content/Actions/RetryButton
 @onready var settings_button: Button = $PauseModal/Center/Panel/Margin/Content/Actions/SettingsButton
+@onready var how_to_play_button: Button = $PauseModal/Center/Panel/Margin/Content/Actions/HowToPlayButton
 @onready var main_menu_button: Button = $PauseModal/Center/Panel/Margin/Content/Actions/MainMenuButton
+@onready var how_to_play_modal: Control = $PauseModal/HowToPlayModal
+@onready var how_to_play_dismiss_button: Button = $PauseModal/HowToPlayModal/DismissButton
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -22,10 +25,16 @@ func _ready() -> void:
 	resume_button.pressed.connect(_request_resume)
 	modal_retry_button.pressed.connect(_request_retry)
 	settings_button.pressed.connect(_request_settings)
+	how_to_play_button.pressed.connect(_open_how_to_play)
 	main_menu_button.pressed.connect(_request_main_menu)
+	how_to_play_dismiss_button.pressed.connect(_close_how_to_play)
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if how_to_play_modal.visible and event.is_action_pressed(&"ui_cancel"):
+		_close_how_to_play()
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("pause_game") and not _is_echo(event):
 		if pause_modal.visible:
 			_request_resume()
@@ -38,6 +47,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func set_paused(is_paused: bool) -> void:
+	if not is_paused:
+		_close_how_to_play()
 	pause_modal.visible = is_paused
 	pause_button.visible = not is_paused
 	retry_button.visible = not is_paused
@@ -61,6 +72,19 @@ func _request_resume() -> void:
 
 func _request_settings() -> void:
 	settings_requested.emit()
+
+
+func _open_how_to_play() -> void:
+	how_to_play_modal.visible = true
+	how_to_play_dismiss_button.grab_focus()
+
+
+func _close_how_to_play() -> void:
+	if not how_to_play_modal.visible:
+		return
+	how_to_play_modal.visible = false
+	if pause_modal.visible:
+		how_to_play_button.grab_focus()
 
 
 func _request_main_menu() -> void:

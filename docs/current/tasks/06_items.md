@@ -57,6 +57,7 @@ cashout multiplier: ×10
 ```
 
 - 패들이 불꽃 상태
+- Fire Paddle은 승인된 `fire_paddle_flames_6f.png` 6프레임 strip을 사용한다. 패들 본체 이미지는 교체하거나 코드로 다시 그리지 않으며, 불꽃은 본체 위쪽에만 겹쳐 12 FPS로 재생한다. Fire window가 열릴 때 즉시 표시하고 8초 만료·Retry·Main·Stage 전환 reset에서 즉시 숨긴다.
 - 닿은 공이 Fire 특성
 - Fire + Normal 같은 레벨 합체 가능
 - 결과는 Fire

@@ -13,6 +13,7 @@ func _ready() -> void:
 	add_child(paddle)
 	await get_tree().process_frame
 	_verify_vertical_dash_and_return()
+	_verify_afterimages_ignore_paddle_rotation()
 	_verify_cooldown()
 	if failures == 0:
 		print("S1_G2A_DASH_VERIFIED vertical=true return_speed=true cooldown=5 no_gauge=true")
@@ -57,6 +58,22 @@ func _verify_cooldown() -> void:
 	var gauge_fill := paddle.get_node("DashGaugeFill") as Polygon2D
 	_expect(is_equal_approx(gauge_fill.polygon[1].x, 12.0), "Center bar must refill over the cooldown.")
 	_expect(paddle.try_start_dash(), "Dash must reactivate after cooldown.")
+
+
+func _verify_afterimages_ignore_paddle_rotation() -> void:
+	paddle.reset_runtime()
+	paddle.rotation = PI * 0.5
+	_expect(paddle.try_start_dash(), "Rotated Paddle must still start dash.")
+	paddle.apply_input(0.0, 0.0, STEP)
+	var near := paddle.get_node("DashGhostNear") as Sprite2D
+	_expect(near.global_position.y > paddle.global_position.y, "Ascending dash ghost must remain below Paddle in world space at 90 degrees.")
+	_expect(is_equal_approx(near.global_position.x, paddle.global_position.x), "Ascending dash ghost must not move sideways at 90 degrees.")
+	paddle.reset_runtime()
+	paddle.rotation = PI
+	_expect(paddle.try_start_dash(), "Upside-down Paddle must still start dash.")
+	paddle.apply_input(0.0, 0.0, STEP)
+	near = paddle.get_node("DashGhostNear") as Sprite2D
+	_expect(near.global_position.y > paddle.global_position.y, "Ascending dash ghost must remain below an upside-down Paddle in world space.")
 
 
 func _expect(condition: bool, message: String) -> void:

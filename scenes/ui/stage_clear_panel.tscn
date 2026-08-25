@@ -18,17 +18,6 @@ bg_color = Color(0, 0, 0, 0)
 [sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
 bg_color = Color(0.376, 0.682, 0.482, 0.18)
 
-[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
-bg_color = Color(0.965, 0.906, 0.612, 0.22)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.965, 0.906, 0.612, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
-bg_color = Color(0, 0, 0, 0)
-
 [node name="StageClearPanel" type="Control"]
 visible = false
 z_index = 220
@@ -258,8 +247,8 @@ theme_override_fonts/font = SubResource("PixelFont")
 theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
-theme_override_styles/focus = SubResource("StyleButtonFocus")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
+theme_override_styles/focus = SubResource("StyleButtonNormal")
 
 [node name="CRTGlass" type="ColorRect" parent="Center/Panel/PanelSurface/NextStageButton"]
 show_behind_parent = true

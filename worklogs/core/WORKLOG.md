@@ -971,3 +971,7 @@ Owned Files: `scripts/gameplay/paddle.gd`, `scripts/gameplay/paddle_dash_gauge.g
 ### Paddle visual/collision width alignment
 
 - Changed the default Paddle physics OBB width from `240` to `168` so its collision, end contacts, and play-field clamp match the current 168×16 PNG exactly.
+
+### Rotation-independent dash afterimages
+
+- Corrected dash ghost placement by converting the requested world vertical trail direction to Paddle-local coordinates. Ghost sprites still rotate with the Paddle, but their positions now remain below an upward dash (and above its return) at 0°, 90°, and 180° rotations.

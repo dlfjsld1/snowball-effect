@@ -53,10 +53,14 @@ func _verify_title(title) -> void:
 	_expect(title.get_node("MechanicalMotion") != null, "Title must keep decorative motion separate from input controls.")
 	_expect(title.start_button is Button and title.settings_button is Button, "Title actions must be real Godot Button components.")
 	_expect(title.start_button.mouse_filter == Control.MOUSE_FILTER_STOP and title.settings_button.mouse_filter == Control.MOUSE_FILTER_STOP, "Title buttons must own their pointer hit areas.")
+	_expect(title.help_button is Button and title.help_visual is Control, "Title must separate its real help Button hit area from the fixed circular visual.")
+	_expect(title.help_button.mouse_filter == Control.MOUSE_FILTER_STOP, "Title help control must own its pointer hit area.")
+	_verify_title_help_button(title.help_button)
 	_expect(title.get_node("MechanicalMotion").mouse_filter == Control.MOUSE_FILTER_IGNORE, "Title decorative motion must not intercept pointer input.")
 	_verify_clear_button_chrome(title.start_button, "Title Start")
 	_verify_clear_button_chrome(title.settings_button, "Title Settings")
 	_verify_title_hover_feedback(title)
+	_verify_title_help_modal(title)
 	_expect(title.start_button.has_focus(), "Title must focus the primary Start action when shown.")
 	title.start_button.pressed.emit()
 	_expect(_start_requests == 1, "Title start action must emit exactly one request.")
@@ -177,6 +181,33 @@ func _verify_clear_button_chrome(button: Button, label: String) -> void:
 			and flat.border_width_bottom == 0
 		)
 		_expect(is_zero_approx(flat.bg_color.a) and has_no_border, "%s %s style must not draw a rectangular overlay." % [label, state])
+
+
+func _verify_title_help_button(button: Button) -> void:
+	_expect(button.size.is_equal_approx(Vector2(36.0, 36.0)), "Title help control must keep a compact 36x36 circular hit area.")
+	_expect(button.position.x >= 1550.0 and button.position.y <= 24.0, "Title help control must remain in the dark upper-right edge outside the brass pipe detail.")
+	var visual := button.get_node("HelpVisual") as Control
+	var circle := button.get_node("HelpVisual/Circle") as Panel
+	var mark := button.get_node("HelpVisual/QuestionMark") as Label
+	_expect(visual.size.is_equal_approx(Vector2(36.0, 36.0)), "Title help visual must remain an exact square independently of Button content sizing.")
+	var circle_style := circle.get_theme_stylebox(&"panel") as StyleBoxFlat
+	_expect(circle_style != null and circle_style.corner_radius_top_left == 18 and circle_style.border_width_left == 4, "Title help visual must draw a thick true circle.")
+	_expect(mark.text == "?" and mark.get_theme_constant(&"outline_size") == 1, "Title help question mark must use the reinforced glyph treatment.")
+	button.mouse_entered.emit()
+	_expect(is_equal_approx(visual.modulate.a, 0.45), "Title help circle and question mark must become translucent together while hovered.")
+	button.mouse_exited.emit()
+	_expect(is_equal_approx(visual.modulate.a, 1.0), "Title help visual must return to full opacity after hover.")
+
+
+func _verify_title_help_modal(title) -> void:
+	_expect(not title.help_modal.visible, "Title help modal must start hidden.")
+	title.help_button.pressed.emit()
+	_expect(title.help_modal.visible, "Title help button must open the guide modal.")
+	_expect(title.help_modal.mouse_filter == Control.MOUSE_FILTER_STOP, "Title help modal must block input to the title actions behind it.")
+	_expect(title.help_image.texture != null and title.help_image.texture.resource_path.ends_with("title_controls_guide.png"), "Title help modal must show the approved six-panel guide image.")
+	_expect(title.help_image.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED, "Title help image must preserve its aspect ratio.")
+	title.help_dismiss_button.pressed.emit()
+	_expect(not title.help_modal.visible, "Title help modal must close through its dismiss surface.")
 
 
 func _verify_title_hover_feedback(title) -> void:

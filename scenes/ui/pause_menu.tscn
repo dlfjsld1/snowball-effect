@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_pause"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v1/tiles/bolt_8.png" id="2_bolt"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/c4/field_bezel_96.png" id="3_button_bezel"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/frame/paper8_lab_v2/runtime/field_bezel_v2_910x900.png" id="4_modal_bezel"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/title/title_controls_guide.png" id="5_help_guide"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
 bg_color = Color(0, 0, 0, 0)
@@ -13,14 +14,6 @@ bg_color = Color(0, 0, 0, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
 bg_color = Color(0.3, 0.25, 0.12, 0.28)
-
-[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
-bg_color = Color(0.714, 0.812, 0.557, 0.2)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.714, 0.812, 0.557, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleDivider"]
 bg_color = Color(0.55, 0.42, 0.22, 0.75)
@@ -162,7 +155,7 @@ theme_override_styles/panel = SubResource("StyleDivider")
 
 [node name="Actions" type="VBoxContainer" parent="PauseModal/Center/Panel/Margin/Content"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="ResumeButton" type="Button" parent="PauseModal/Center/Panel/Margin/Content/Actions"]
 unique_name_in_owner = true
@@ -173,7 +166,7 @@ theme_override_colors/font_color = Color(0.9647, 0.9059, 0.6118, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
 
 [node name="CRTGlass" type="ColorRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/ResumeButton"]
 show_behind_parent = true
@@ -236,7 +229,7 @@ theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
 
 [node name="CRTGlass" type="ColorRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/RetryButton"]
 show_behind_parent = true
@@ -300,7 +293,7 @@ theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
 
 [node name="CRTGlass" type="ColorRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/SettingsButton"]
 show_behind_parent = true
@@ -355,6 +348,70 @@ grow_vertical = 0
 mouse_filter = 2
 texture = ExtResource("2_bolt")
 
+[node name="HowToPlayButton" type="Button" parent="PauseModal/Center/Panel/Margin/Content/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 48)
+text = "HOW TO PLAY"
+theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
+
+[node name="CRTGlass" type="ColorRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/HowToPlayButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.025, 0.12, 0.12, 1)
+
+[node name="Bezel" type="NinePatchRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/HowToPlayButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_button_bezel")
+patch_margin_left = 16
+patch_margin_top = 16
+patch_margin_right = 16
+patch_margin_bottom = 16
+draw_center = false
+modulate = Color(0.72, 0.53, 0.29, 1)
+
+[node name="BoltTopLeft" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/HowToPlayButton"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 13.0
+offset_bottom = 13.0
+mouse_filter = 2
+texture = ExtResource("2_bolt")
+
+[node name="BoltBottomRight" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/HowToPlayButton"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -13.0
+offset_top = -13.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("2_bolt")
+
 [node name="MainMenuButton" type="Button" parent="PauseModal/Center/Panel/Margin/Content/Actions"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -364,7 +421,7 @@ theme_override_colors/font_color = Color(0.714, 0.812, 0.557, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
 
 [node name="CRTGlass" type="ColorRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/MainMenuButton"]
 show_behind_parent = true
@@ -402,6 +459,55 @@ offset_right = 13.0
 offset_bottom = 13.0
 mouse_filter = 2
 texture = ExtResource("2_bolt")
+
+[node name="HowToPlayModal" type="Control" parent="PauseModal"]
+visible = false
+z_index = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="Dimmer" type="ColorRect" parent="PauseModal/HowToPlayModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.92)
+
+[node name="DismissButton" type="Button" parent="PauseModal/HowToPlayModal"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
+
+[node name="GuideImage" type="TextureRect" parent="PauseModal/HowToPlayModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 44.0
+offset_top = 34.0
+offset_right = -44.0
+offset_bottom = -34.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_help_guide")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="BoltBottomRight" type="TextureRect" parent="PauseModal/Center/Panel/Margin/Content/Actions/MainMenuButton"]
 layout_mode = 1

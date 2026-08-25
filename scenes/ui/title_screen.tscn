@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/title_screen.gd" id="1_title"]
 [ext_resource type="Texture2D" path="res://assets/backgrounds/title/title_mechanical_ground.webp" id="2_title_art"]
 [ext_resource type="Script" path="res://scripts/ui/title_mechanical_motion.gd" id="3_motion"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/title/title_controls_guide.png" id="4_help_guide"]
 
 [sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
 bg_color = Color(0, 0, 0, 0)
@@ -10,11 +11,24 @@ bg_color = Color(0, 0, 0, 0)
 [sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
 bg_color = Color(0, 0, 0, 0)
 
-[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
-bg_color = Color(0, 0, 0, 0)
+[sub_resource type="SystemFont" id="HelpFont"]
+font_names = PackedStringArray("Consolas", "Courier New", "monospace")
+font_weight = 900
+antialiasing = 0
+hinting = 0
+subpixel_positioning = 0
 
-[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+[sub_resource type="StyleBoxFlat" id="StyleHelpVisual"]
 bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
 
 [node name="TitleScreen" type="Control"]
 visible = false
@@ -69,8 +83,8 @@ theme_override_colors/font_focus_color = Color(1, 1, 1, 0)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0)
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
-theme_override_styles/focus = SubResource("StyleButtonFocus")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
+theme_override_styles/focus = SubResource("StyleButtonNormal")
 
 [node name="SettingsButton" type="Button" parent="."]
 unique_name_in_owner = true
@@ -90,5 +104,103 @@ theme_override_colors/font_focus_color = Color(1, 1, 1, 0)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0)
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
-theme_override_styles/focus = SubResource("StyleButtonFocus")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
+theme_override_styles/focus = SubResource("StyleButtonNormal")
+
+[node name="HelpButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -44.0
+offset_top = 20.0
+offset_right = -8.0
+offset_bottom = 56.0
+grow_horizontal = 0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
+theme_override_styles/focus = SubResource("StyleButtonNormal")
+
+[node name="HelpVisual" type="Control" parent="HelpButton"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 36.0
+offset_bottom = 36.0
+mouse_filter = 2
+
+[node name="Circle" type="Panel" parent="HelpButton/HelpVisual"]
+layout_mode = 0
+offset_right = 36.0
+offset_bottom = 36.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleHelpVisual")
+
+[node name="QuestionMark" type="Label" parent="HelpButton/HelpVisual"]
+layout_mode = 0
+offset_right = 36.0
+offset_bottom = 36.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = SubResource("HelpFont")
+theme_override_font_sizes/font_size = 24
+text = "?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HelpModal" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+z_index = 100
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="Dimmer" type="ColorRect" parent="HelpModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.92)
+
+[node name="DismissButton" type="Button" parent="HelpModal"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonNormal")
+theme_override_styles/focus = SubResource("StyleButtonNormal")
+
+[node name="GuideImage" type="TextureRect" parent="HelpModal"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 100.0
+offset_top = 54.0
+offset_right = -100.0
+offset_bottom = -54.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_help_guide")
+expand_mode = 1
+stretch_mode = 5
