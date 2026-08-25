@@ -975,3 +975,11 @@ Owned Files: `scripts/gameplay/paddle.gd`, `scripts/gameplay/paddle_dash_gauge.g
 ### Rotation-independent dash afterimages
 
 - Corrected dash ghost placement by converting the requested world vertical trail direction to Paddle-local coordinates. Ghost sprites still rotate with the Paddle, but their positions now remain below an upward dash (and above its return) at 0°, 90°, and 180° rotations.
+
+## 2026-08-25 — S8-G1R Black Hole absorption burst damage cap
+
+- Player report: in the two-Black-Hole late phase, several same-frame absorptions could apply the per-Ball `25%` baseline cap four times and end a freshly entered phase at zero score.
+- Kept authoritative contact and immediate Ball consumption unchanged. `StageRuntime` now grants `1.0s` of score-damage grace after Phase gameplay resumes, then shares one `10%` phase-entry baseline budget across every absorption in each `0.5s` gameplay window.
+- Kept the existing per-Ball candidate formula `min(cashout × 12.5%, phase baseline × 25%)`; the window budget only limits burst application. Sustained loss across ten windows can still deplete the Run and emit one Run End.
+- Added regression coverage for two Black Holes absorbing four high-value Balls in the same tick, repeated same-window calls, sustained depletion, and zero-score Result cleanup.
+- Verification: Godot 4.7.1 CLI S8-G1, S8-G4 depletion cleanup, S8-G2, S8-G6, and S3-G2 fixtures all produced their PASS markers. The default `user://logs` path reproduced the known Windows signal 11; rerunning with an explicit temporary `--log-file` completed normally. Root certificate-store messages are non-fatal environment warnings.

@@ -34,7 +34,7 @@ func _ready() -> void:
 	_verify_paddle_reflection()
 	_verify_thousand_ball_force_regression()
 	if _failures == 0:
-		print("S8_G1_VERIFIED phase=once absorption=score_deducted pull_cap=%s mutual=450 bottom_reflect=true stress=1000" % SimulationManager.BLACK_HOLE_TOTAL_PULL_CAP)
+		print("S8_G1_VERIFIED phase=once absorption=grace_1s_window_0.5s_cap_10pct two_source_burst=true pull_cap=%s mutual=450 bottom_reflect=true stress=1000" % SimulationManager.BLACK_HOLE_TOTAL_PULL_CAP)
 	get_tree().quit(_failures)
 
 
@@ -56,22 +56,45 @@ func _verify_first_conversion_and_absorption() -> void:
 	simulation.step_simulation(TEST_DELTA)
 	_expect(not simulation.is_ball_active(absorb_index), "Local Lv0 Ball in actual Black Hole contact must be absorbed.")
 	_expect(_absorption_count == 1, "Absorption must emit exactly one penalty event.")
+	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, starting_score), "The first gameplay second after Black Hole Phase resume must absorb Balls without score loss.")
+	_expect(_run_end_count == 0, "Grace-period absorption must not end the Run.")
+
+	stage_runtime.advance_run_time(StageRuntime.BLACK_HOLE_ABSORPTION_GRACE_SECONDS)
+	var charged_absorb_index := simulation.spawn_ball(simulation.get_black_hole_position(), Vector2.ZERO, simulation.get_runtime_radius_for_level(10), 10)
+	simulation.step_simulation(TEST_DELTA)
+	_expect(not simulation.is_ball_active(charged_absorb_index), "Absorption must remain active after the score grace period.")
 	var expected_low_penalty: float = absorbed_definition.score_value * StageRuntime.BLACK_HOLE_ABSORPTION_SCORE_RATIO
 	_expect(is_equal_approx(stage_runtime.score_ledger.stage_score, starting_score - expected_low_penalty), "Local Lv0 absorption must deduct 12.5% of its Cashout value.")
 	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, starting_score - expected_low_penalty), "A single low Ball absorption must not erase the whole Run Score.")
-	_expect(_run_end_count == 0, "The first low Ball absorption must not immediately end a funded Run.")
-	var high_absorb_index := simulation.spawn_ball(simulation.get_black_hole_position(), Vector2.ZERO, simulation.get_runtime_radius_for_level(13), 13)
+	_expect(_absorption_count == 2, "The grace and charged contacts must each emit one absorption event.")
+	simulation._create_black_hole(Vector2(900.0, 300.0), Vector2.ZERO)
+	var absorption_count_before_burst := _absorption_count
+	for black_hole_index in range(2):
+		for _ball_index in range(2):
+			simulation.spawn_ball(simulation.get_black_hole_position(black_hole_index), Vector2.ZERO, simulation.get_runtime_radius_for_level(13), 13)
 	simulation.step_simulation(TEST_DELTA)
-	_expect(not simulation.is_ball_active(high_absorb_index), "A Black Hole must absorb a contacted high-level normal Ball too.")
+	_expect(_absorption_count == absorption_count_before_burst + 4, "Two Black Holes must commit all same-tick contacted Balls as absorptions.")
 
 	var cap: float = starting_score * StageRuntime.BLACK_HOLE_ABSORPTION_BASELINE_CAP_RATIO
 	var high_cashout_score := 1.0e50
 	_expect(is_equal_approx(stage_runtime.calculate_black_hole_absorption_penalty(high_cashout_score), cap), "A high-value absorbed Ball must cap at 25% of the phase-entry Run Score.")
+	var window_cap := starting_score * StageRuntime.BLACK_HOLE_ABSORPTION_WINDOW_CAP_RATIO
+	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, starting_score - window_cap), "All absorptions in one damage window must deduct at most 10% of the phase-entry score.")
 	for _hit in range(4):
 		stage_runtime.apply_black_hole_absorption(high_cashout_score)
-	_expect(is_equal_approx(stage_runtime.score_ledger.stage_score, 0.0), "Repeated capped absorption must clamp Stage score at zero.")
-	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, 0.0), "Repeated capped absorption must still be able to deplete Run Score.")
+	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, starting_score - window_cap), "A same-frame high-value absorption burst must not bypass the damage-window cap.")
+	_expect(_run_end_count == 0, "A same-frame absorption burst must not immediately end the Run.")
+
+	for _window in range(1, 10):
+		stage_runtime.advance_run_time(StageRuntime.BLACK_HOLE_ABSORPTION_WINDOW_SECONDS)
+		stage_runtime.apply_black_hole_absorption(high_cashout_score)
+	_expect(is_equal_approx(stage_runtime.score_ledger.stage_score, 0.0), "Sustained absorption across damage windows must clamp Stage score at zero.")
+	_expect(is_equal_approx(stage_runtime.score_ledger.run_score, 0.0), "Sustained absorption must still be able to deplete Run Score.")
 	_expect(_run_end_count == 1, "Run score depletion must request Black Hole Run End exactly once.")
+
+	simulation.reset_runtime()
+	simulation.apply_stage_definition(StageCatalog.new().get_stage(2))
+	simulation._create_black_hole(Vector2(700.0, 300.0), Vector2.ZERO)
 
 
 func _verify_pull_and_bottom_reflection() -> void:

@@ -17,6 +17,15 @@
 - Verification: 첫 Lv14가 일반 Clear 없이 Black Hole runtime entity로 한 번 전환; 모든 일반 Snowball 흡수와 Cashout 가치 `12.5%`/phase-entry Run Score `25%` 상한 패널티, 단일 흡수 즉사 방지와 반복 손실의 run score 0 즉시 Game Over, 다중 source vector 합산·1500 total cap, Black Hole 상호 450 척력, 하단 반사·Paddle continuous reflection·Cashout 제외, 비성장·Merge 제외, NaN·폭주 없음, 1,000공 성능 회귀 기록; 별도 Stage나 새 BallDefinition을 생성하지 않음.
 - Do Not Modify: Black Hole visual과 Stage resource 값.
 
+### S8-G1R Black Hole 흡수 burst 피해 제한
+
+- Owner: Core
+- Owned Files: `scripts/core/stage_runtime.gd`, `tests/simulation/s8_g1_black_hole_force_verification.gd`, `tests/integration/s8_g4_score_depletion_result_cleanup_verification.gd`, 관련 Core 문서·Worklog.
+- Integration Point: 기존 `black_hole_absorbed(score_amount, global_level, world_position)`와 `black_hole_run_end_requested()` signature를 유지한다. Simulation은 공을 즉시 소비하고 StageRuntime만 shared damage budget을 소유한다.
+- Dependencies: S8-G1 흡수 contact·점수 baseline, S8-G4 zero-score Result cleanup.
+- Verification: matching Phase 완료 뒤 첫 `1.0s` gameplay에서 흡수는 commit하되 점수 무손실; 이후 두 Black Hole이 같은 tick에 고가 공 4개를 흡수해도 shared `0.5s` 구간 총 차감이 phase baseline `10%` 이하; 공별 `12.5%`/`25%` 후보 유지; 같은 구간 반복 호출이 cap을 우회하지 않음; 구간을 넘는 지속 손실은 약 `5s` 이상 뒤 0점 Run End와 Result cleanup을 정확히 한 번 수행; Stage reset에서 clock/budget 초기화.
+- Do Not Modify: Simulation contact/공 제거, Black Hole force·이동·finale, Presentation, Stage/Ball Resource.
+
 ### S8-G2 두 Black Hole 최종 충돌 runtime
 
 - Owner: Core
