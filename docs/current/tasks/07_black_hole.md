@@ -84,7 +84,7 @@ pull_falloff = (1 - distance / influence_radius)²
 
 반경 밖의 pull은 0이며 기존 Ball runtime speed cap을 유지한다. 두 Black Hole이 존재하면 일반 공은 두 pull vector의 합을 받되 합산 cap을 한 번 적용한다. 같은 방향에서는 강해지고 두 Black Hole 사이에서는 일부 상쇄될 수 있으므로 항상 정확히 2배가 되는 것은 아니다. Black Hole끼리는 전용 척력으로 서로 멀어지며, 강한 상대속도로 실제 접촉했을 때만 terminal 연출로 전환한다. 수치는 tuning data다.
 
-흡수는 실제 contact에서만 발생한다. 첫 Black Hole 등장 시점 Run Score를 한 번 baseline으로 저장하고, 흡수된 공의 Active Cashout 가치 `12.5%`와 baseline `25%` 중 작은 값을 stage/run score에서 각각 차감한다. 전액 차감으로 첫 Galaxy 흡수 즉시 Run이 끝나던 문제를 피하면서, 고가 공 반복 손실은 여전히 치명적으로 유지하기 위한 첫 플레이테스트 seed다. Stage score는 0에서 clamp하고, Run score가 0 이하가 되면 0으로 고정한 뒤 즉시 Game Over/Run End한다. Time Bonus와 Cashout popup은 없다.
+흡수는 실제 contact에서만 발생한다. 첫 Black Hole 등장 시점 Run Score를 한 번 baseline으로 저장하고, matching Phase 완료 뒤 첫 `1.0s` gameplay 동안은 공만 흡수하고 점수 피해를 유예한다. 이후 흡수된 공의 Active Cashout 가치 `12.5%`와 baseline `25%` 중 작은 값을 공별 후보로 계산하되, 같은 `0.5s` 구간의 총 stage/run 차감은 baseline `10%`로 제한한다. 두 Black Hole의 같은 tick 다중 흡수도 이 shared budget을 사용한다. 고밀도 순간 흡수로 즉시 Run이 끝나는 문제를 피하면서 지속 손실은 여전히 치명적으로 유지하기 위한 플레이테스트 seed다. Stage score는 0에서 clamp하고, Run score가 0 이하가 되면 0으로 고정한 뒤 즉시 Game Over/Run End한다. Time Bonus와 Cashout popup은 없다.
 
 ---
 
@@ -141,7 +141,7 @@ Result는 terminal Stage의 `stage_index`를 `HIGHEST STAGE`에, Run 전체에�
 - Black Hole 하단 반사, 비성장, 일반 Merge 제외
 - Black Hole Paddle 반사와 강한 충돌 finale
 - 인력이 강해도 두 번째 Black Hole 제작 gameplay가 계속 가능
-- 흡수 패널티가 Cashout 가치 `12.5%`와 phase-entry Run Score `25%` 상한으로 계산되어 stage/run에서 차감되고, run score가 0이 되면 즉시 Game Over
+- 첫 `1.0s` gameplay 유예와 shared `0.5s` damage window가 동작하고, 공별 Cashout 가치 `12.5%`/phase-entry Run Score `25%` 후보 및 window당 baseline `10%` 상한으로 stage/run에서 차감되며, 지속 손실로 run score가 0이 되면 즉시 Game Over
 - Galactic 최종 국면의 생성량에서 성능 확인
 - 첫 Lv14가 Black Hole entity로 정확히 한 번 전환됨
 - 같은 tick에 여러 Lv13 pair가 생겨도 commit 순서대로 최대 두 slot만 예약되고 overflow source pair가 그대로 반사·분리됨

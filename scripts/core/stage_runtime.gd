@@ -4,6 +4,10 @@ extends Node
 const Ledger = preload("res://scripts/core/score_ledger.gd")
 const BLACK_HOLE_ABSORPTION_SCORE_RATIO := 0.125
 const BLACK_HOLE_ABSORPTION_BASELINE_CAP_RATIO := 0.25
+const BLACK_HOLE_ABSORPTION_GRACE_SECONDS := 1.0
+const BLACK_HOLE_ABSORPTION_WINDOW_SECONDS := 0.5
+const BLACK_HOLE_ABSORPTION_WINDOW_CAP_RATIO := 0.10
+const BLACK_HOLE_ABSORPTION_TIME_EPSILON := 0.000001
 
 signal stage_time_changed(time_left: float)
 signal score_changed(stage_score: float, run_score: float)
@@ -23,6 +27,9 @@ var _black_hole_finale_locked := false
 var _black_hole_finale_snapshot: Dictionary = {}
 var _black_hole_phase_run_score_baseline := 0.0
 var _black_hole_phase_baseline_captured := false
+var _black_hole_absorption_elapsed := 0.0
+var _black_hole_absorption_window_index := -1
+var _black_hole_absorption_window_penalty := 0.0
 var _run_merge_count := 0
 var _run_time_seconds := 0.0
 var _highest_ball_global_level := -1
@@ -41,6 +48,9 @@ func enter_stage(definition: StageDefinition) -> void:
 	_black_hole_finale_snapshot.clear()
 	_black_hole_phase_run_score_baseline = 0.0
 	_black_hole_phase_baseline_captured = false
+	_black_hole_absorption_elapsed = 0.0
+	_black_hole_absorption_window_index = -1
+	_black_hole_absorption_window_penalty = 0.0
 	stage_time_changed.emit(stage_time_left)
 	stage_entered.emit(definition)
 
@@ -71,6 +81,8 @@ func record_run_merge() -> void:
 func advance_run_time(delta: float) -> void:
 	assert(delta >= 0.0, "Run Time delta must not be negative.")
 	_run_time_seconds += delta
+	if _black_hole_phase_baseline_captured:
+		_black_hole_absorption_elapsed += delta
 
 
 func get_run_statistics() -> Dictionary:
@@ -155,10 +167,17 @@ func begin_black_hole_phase(from_rect: Rect2, to_rect: Rect2) -> int:
 
 func apply_black_hole_absorption(score_amount: float) -> bool:
 	assert(score_amount >= 0.0, "Black Hole absorption penalty must not be negative.")
-	var penalty := calculate_black_hole_absorption_penalty(score_amount)
-	score_ledger.stage_score = maxf(score_ledger.stage_score - penalty, 0.0)
-	score_ledger.run_score = maxf(score_ledger.run_score - penalty, 0.0)
-	score_ledger.score_changed.emit(score_ledger.stage_score, score_ledger.run_score)
+	var penalty := _consume_black_hole_absorption_budget(calculate_black_hole_absorption_penalty(score_amount))
+	if penalty > 0.0:
+		if score_ledger.stage_score <= penalty or is_equal_approx(score_ledger.stage_score, penalty):
+			score_ledger.stage_score = 0.0
+		else:
+			score_ledger.stage_score -= penalty
+		if score_ledger.run_score <= penalty or is_equal_approx(score_ledger.run_score, penalty):
+			score_ledger.run_score = 0.0
+		else:
+			score_ledger.run_score -= penalty
+		score_ledger.score_changed.emit(score_ledger.stage_score, score_ledger.run_score)
 	if score_ledger.run_score <= 0.0 and not _black_hole_run_end_locked:
 		_black_hole_run_end_locked = true
 		black_hole_run_end_requested.emit()
@@ -174,6 +193,25 @@ func calculate_black_hole_absorption_penalty(cashout_score: float) -> float:
 
 func get_black_hole_phase_run_score_baseline() -> float:
 	return _black_hole_phase_run_score_baseline
+
+
+func _consume_black_hole_absorption_budget(requested_penalty: float) -> float:
+	if requested_penalty <= 0.0 or _black_hole_absorption_elapsed < BLACK_HOLE_ABSORPTION_GRACE_SECONDS:
+		return 0.0
+
+	var elapsed_after_grace := _black_hole_absorption_elapsed - BLACK_HOLE_ABSORPTION_GRACE_SECONDS
+	var window_index := int(floor(
+		(elapsed_after_grace + BLACK_HOLE_ABSORPTION_TIME_EPSILON) / BLACK_HOLE_ABSORPTION_WINDOW_SECONDS
+	))
+	if window_index != _black_hole_absorption_window_index:
+		_black_hole_absorption_window_index = window_index
+		_black_hole_absorption_window_penalty = 0.0
+
+	var window_cap := _black_hole_phase_run_score_baseline * BLACK_HOLE_ABSORPTION_WINDOW_CAP_RATIO
+	var available_budget := maxf(window_cap - _black_hole_absorption_window_penalty, 0.0)
+	var applied_penalty := minf(requested_penalty, available_budget)
+	_black_hole_absorption_window_penalty += applied_penalty
+	return applied_penalty
 
 
 func lock_black_hole_finale(contact_snapshot: Dictionary) -> Dictionary:

@@ -33,6 +33,13 @@ func _ready() -> void:
 
 	for absorption_index in range(4):
 		stage_manager._stage_runtime.apply_black_hole_absorption(1000000.0)
+	_expect(is_equal_approx(stage_manager._stage_runtime.score_ledger.run_score, 100.0), "Grace-period absorption burst must not end the Run.")
+
+	stage_manager._stage_runtime.advance_run_time(StageRuntime.BLACK_HOLE_ABSORPTION_GRACE_SECONDS)
+	for damage_window in range(10):
+		stage_manager._stage_runtime.apply_black_hole_absorption(1000000.0)
+		if damage_window < 9:
+			stage_manager._stage_runtime.advance_run_time(StageRuntime.BLACK_HOLE_ABSORPTION_WINDOW_SECONDS)
 
 	await get_tree().process_frame
 	renderer.refresh_render_snapshot()
