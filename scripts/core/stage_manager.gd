@@ -61,6 +61,7 @@ func _ready() -> void:
 	add_child(_settlement_service)
 	_settlement_service.configure(_stage_runtime.score_ledger)
 	_simulation.cashout_completed.connect(_on_cashout_completed)
+	_simulation.ball_committed.connect(_on_ball_committed)
 	_simulation.ball_merged.connect(_on_ball_merged)
 	_simulation.black_hole_absorbed.connect(_on_black_hole_absorbed)
 	_simulation.black_hole_finale_started.connect(_on_black_hole_finale_started)
@@ -244,6 +245,11 @@ func _on_ball_merged(_result_level: int, _world_position: Vector2) -> void:
 		_stage_runtime.record_run_merge()
 
 
+func _on_ball_committed(global_level: int) -> void:
+	if current_state == PLAYING or current_state == BLACK_HOLE_PHASE_LOCKED:
+		_stage_runtime.record_highest_ball(global_level)
+
+
 func _on_black_hole_absorbed(score_amount: float, _global_level: int, _world_position: Vector2) -> void:
 	if current_state == PLAYING or current_state == BLACK_HOLE_PHASE_LOCKED:
 		_stage_runtime.apply_black_hole_absorption(score_amount)
@@ -339,6 +345,7 @@ func _build_terminal_result_snapshot(outcome: StringName) -> Dictionary:
 		"stage_index": current_stage_index,
 		"stage_score": _stage_runtime.score_ledger.stage_score,
 		"run_score": _stage_runtime.score_ledger.run_score,
+		"highest_ball_global_level": _stage_runtime.get_highest_ball_global_level(),
 		"outcome": outcome,
 		"optional_stats": _stage_runtime.get_run_statistics(),
 	}

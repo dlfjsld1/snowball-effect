@@ -35,6 +35,7 @@ func _verify_open_display_and_read_only(panel: StageClearPanel) -> void:
 	_expect(panel.next_stage_button.text == "NEXT STAGE", "The action must not use Result or failure language.")
 	_expect(panel.next_stage_button is Button and panel.next_stage_button.has_focus(), "The real Button must own keyboard focus.")
 	_expect(panel.next_stage_button.mouse_filter == Control.MOUSE_FILTER_STOP, "The real Button must own mouse/Web pointer input.")
+	_verify_button_has_no_hover_or_focus_outline(panel.next_stage_button)
 	_expect(not _tree_text_contains(panel, "TIME BONUS"), "The Clear Panel must not show Time Bonus.")
 	_expect(supplied_snapshot == supplied_before, "Opening Presentation must not mutate the supplied Core-style snapshot.")
 
@@ -142,6 +143,21 @@ func _tree_text_contains(root: Node, needle: String) -> bool:
 		if _tree_text_contains(child, needle):
 			return true
 	return false
+
+
+func _verify_button_has_no_hover_or_focus_outline(button: Button) -> void:
+	for state in [&"hover", &"focus"]:
+		var stylebox := button.get_theme_stylebox(state) as StyleBoxFlat
+		_expect(stylebox != null, "NEXT STAGE %s state must have an explicit flat style." % state)
+		if stylebox == null:
+			continue
+		_expect(
+			stylebox.border_width_left == 0
+			and stylebox.border_width_top == 0
+			and stylebox.border_width_right == 0
+			and stylebox.border_width_bottom == 0,
+			"NEXT STAGE %s state must not draw a rectangular outline." % state
+		)
 
 
 func _expect(condition: bool, message: String) -> void:

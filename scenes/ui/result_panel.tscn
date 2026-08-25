@@ -1,8 +1,18 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/result_panel.gd" id="1_result"]
 [ext_resource type="Texture2D" path="res://assets/backgrounds/result/result_galactic_terminal_plate_v3.png" id="2_plate"]
 [ext_resource type="Script" path="res://scripts/ui/result_mechanical_motion.gd" id="3_motion"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/result/stages/ground_snowy_ridge_concept.png" id="4_ground_stage"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/result/stages/planetary_earth_orbit_concept.png" id="5_planetary_stage"]
+
+[sub_resource type="AtlasTexture" id="AtlasGroundStage"]
+atlas = ExtResource("4_ground_stage")
+region = Rect2(46, 190, 815, 170)
+
+[sub_resource type="AtlasTexture" id="AtlasPlanetaryStage"]
+atlas = ExtResource("5_planetary_stage")
+region = Rect2(720, 645, 640, 105)
 
 [sub_resource type="SystemFont" id="PixelValueFont"]
 font_names = PackedStringArray("Consolas", "Courier New", "monospace")
@@ -96,6 +106,7 @@ theme_override_font_sizes/font_size = 86
 
 [node name="HighestStageValue" type="Label" parent="SlidePanel"]
 unique_name_in_owner = true
+z_index = 1
 layout_mode = 0
 offset_left = 435.0
 offset_top = 512.0
@@ -110,6 +121,7 @@ theme_override_font_sizes/font_size = 35
 
 [node name="HighestBallValue" type="Label" parent="SlidePanel"]
 unique_name_in_owner = true
+z_index = 1
 layout_mode = 0
 offset_left = 823.0
 offset_top = 512.0
@@ -122,6 +134,64 @@ theme_override_colors/font_color = Color(0.68, 0.84, 0.45, 1)
 theme_override_fonts/font = SubResource("PixelValueFont")
 theme_override_font_sizes/font_size = 35
 
+[node name="StagePreviewMask" type="ColorRect" parent="SlidePanel"]
+layout_mode = 0
+offset_left = 430.0
+offset_top = 556.0
+offset_right = 775.0
+offset_bottom = 635.0
+mouse_filter = 2
+color = Color(0.004, 0.012, 0.035, 1)
+
+[node name="GroundStageArt" type="TextureRect" parent="SlidePanel"]
+unique_name_in_owner = true
+visible = false
+texture_filter = 1
+layout_mode = 0
+offset_left = 430.0
+offset_top = 556.0
+offset_right = 775.0
+offset_bottom = 635.0
+mouse_filter = 2
+texture = SubResource("AtlasGroundStage")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PlanetaryStageArt" type="TextureRect" parent="SlidePanel"]
+unique_name_in_owner = true
+visible = false
+texture_filter = 1
+layout_mode = 0
+offset_left = 430.0
+offset_top = 556.0
+offset_right = 775.0
+offset_bottom = 635.0
+mouse_filter = 2
+texture = SubResource("AtlasPlanetaryStage")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BallPreviewBackdrop" type="ColorRect" parent="SlidePanel"]
+layout_mode = 0
+offset_left = 830.0
+offset_top = 556.0
+offset_right = 1160.0
+offset_bottom = 635.0
+mouse_filter = 2
+color = Color(0.004, 0.012, 0.035, 1)
+
+[node name="BallPreview" type="TextureRect" parent="SlidePanel"]
+unique_name_in_owner = true
+texture_filter = 1
+layout_mode = 0
+offset_left = 950.0
+offset_top = 556.0
+offset_right = 1040.0
+offset_bottom = 635.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="StatsRow" type="Control" parent="SlidePanel"]
 unique_name_in_owner = true
 layout_mode = 0
@@ -131,10 +201,10 @@ mouse_filter = 2
 
 [node name="MergeCount" type="Label" parent="SlidePanel/StatsRow"]
 layout_mode = 0
-offset_left = 699.0
-offset_top = 649.0
-offset_right = 795.0
-offset_bottom = 687.0
+offset_left = 690.0
+offset_top = 657.0
+offset_right = 782.0
+offset_bottom = 690.0
 text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -144,10 +214,10 @@ theme_override_font_sizes/font_size = 24
 
 [node name="RunTime" type="Label" parent="SlidePanel/StatsRow"]
 layout_mode = 0
-offset_left = 1065.0
-offset_top = 649.0
-offset_right = 1180.0
-offset_bottom = 687.0
+offset_left = 1051.0
+offset_top = 657.0
+offset_right = 1155.0
+offset_bottom = 690.0
 text = "00:00"
 horizontal_alignment = 1
 vertical_alignment = 1

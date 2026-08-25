@@ -25,6 +25,7 @@ var _black_hole_phase_run_score_baseline := 0.0
 var _black_hole_phase_baseline_captured := false
 var _run_merge_count := 0
 var _run_time_seconds := 0.0
+var _highest_ball_global_level := -1
 
 
 func enter_stage(definition: StageDefinition) -> void:
@@ -51,6 +52,16 @@ func apply_stage_definition(definition: StageDefinition) -> void:
 func reset_run_statistics() -> void:
 	_run_merge_count = 0
 	_run_time_seconds = 0.0
+	_highest_ball_global_level = -1
+
+
+func record_highest_ball(global_level: int) -> void:
+	if global_level >= 0:
+		_highest_ball_global_level = maxi(_highest_ball_global_level, global_level)
+
+
+func get_highest_ball_global_level() -> int:
+	return _highest_ball_global_level
 
 
 func record_run_merge() -> void:
@@ -174,6 +185,7 @@ func lock_black_hole_finale(contact_snapshot: Dictionary) -> Dictionary:
 	_black_hole_finale_snapshot["stage_index"] = current_stage.stage_index if current_stage != null else -1
 	_black_hole_finale_snapshot["stage_score"] = score_ledger.stage_score
 	_black_hole_finale_snapshot["run_score"] = score_ledger.run_score
+	_black_hole_finale_snapshot["highest_ball_global_level"] = get_highest_ball_global_level()
 	_black_hole_finale_snapshot["optional_stats"] = get_run_statistics()
 	black_hole_finale_locked.emit(get_black_hole_finale_snapshot())
 	return get_black_hole_finale_snapshot()

@@ -3,6 +3,7 @@ extends Node
 const TitleScreenScene = preload("res://scenes/ui/title_screen.tscn")
 const PauseMenuScene = preload("res://scenes/ui/pause_menu.tscn")
 const ResultPanelScene = preload("res://scenes/ui/result_panel.tscn")
+const BallCatalogScript = preload("res://scripts/data/ball_catalog.gd")
 
 var _failures := 0
 var _start_requests := 0
@@ -36,6 +37,7 @@ func _ready() -> void:
 	_verify_title(title)
 	_verify_pause_modal(pause_menu)
 	_verify_result(result)
+	_verify_ball_catalog_textures()
 	_expect(not get_tree().paused, "Content UI must not change the SceneTree pause state.")
 
 	if _failures == 0:
@@ -109,6 +111,7 @@ func _verify_result(result) -> void:
 	_expect(result.run_time_label.text == "12:46", "Result must format authoritative Run Time as MM:SS without duplicating baked artwork labels.")
 	_expect(result.merge_count_label.position.is_equal_approx(Vector2(699.0, 649.0)) and result.merge_count_label.size.is_equal_approx(Vector2(96.0, 38.0)), "Result Merge count must remain optically centered in its baked value plate.")
 	_expect(result.run_time_label.position.is_equal_approx(Vector2(1065.0, 649.0)) and result.run_time_label.size.is_equal_approx(Vector2(115.0, 38.0)), "Result Run Time must remain optically centered in its baked value plate.")
+	_verify_result_summary(result)
 	supplied_snapshot["black_holes"][0]["position"] = Vector2.ZERO
 	var copied_snapshot: Dictionary = result.get_result_snapshot()
 	_expect(copied_snapshot["black_holes"][0]["position"] == Vector2(10.0, 20.0), "Result must keep a read-only copy of the terminal snapshot.")
@@ -124,6 +127,39 @@ func _verify_result(result) -> void:
 	_expect(result.score_label.get_theme_font_size(&"font_size") < 86, "Huge Result scores must reduce font size to remain inside the Clear Score plate.")
 	result.hide_result()
 	_expect(not result.visible and result.get_result_snapshot().is_empty(), "Hiding the result must clear only its UI copy.")
+
+
+func _verify_result_summary(result) -> void:
+	result.show_result({"run_score": 1.0, "stage_index": 0, "highest_ball_global_level": 4})
+	_expect(result.highest_stage_label.text == "GROUND", "Ground Result must show the terminal Stage catalog name.")
+	_expect(result.highest_ball_label.text == "MOON", "Ground Result must show the highest committed Ball catalog name.")
+	_expect(result.ground_stage_art.visible and not result.planetary_stage_art.visible, "Ground Result must use only the approved Ground strip art.")
+	_expect(result.ball_preview.texture != null, "Result must show the highest Ball catalog texture.")
+	result.show_result({"run_score": 1.0, "stage_index": 1, "highest_ball_global_level": 10})
+	_expect(result.highest_stage_label.text == "PLANETARY", "Planetary Result must show the terminal Stage catalog name.")
+	_expect(result.highest_ball_label.text == "GALAXY", "Planetary Result must show the highest committed Ball catalog name.")
+	_expect(not result.ground_stage_art.visible and result.planetary_stage_art.visible, "Planetary Result must use only the approved Earth-orbit strip art.")
+	result.show_result({"run_score": 1.0, "stage_index": 1, "highest_ball_global_level": 8})
+	_expect(result.highest_ball_label.text == "SUPERNOVA", "Planetary Result must resolve the Supernova catalog name.")
+	_expect(result.ball_preview.texture != null and result.ball_preview.texture.resource_path.ends_with("ball_planetary_local_lv03_supernova_user_authored_64.png"), "Supernova Result must use the approved Supernova artwork, not the Earth placeholder.")
+	result.show_result({"run_score": 1.0, "stage_index": 2, "highest_ball_global_level": 14})
+	_expect(result.highest_stage_label.text == "GALACTIC" and result.highest_ball_label.text == "BLACK HOLE", "Galactic finale Result must show Galactic and Black Hole.")
+	_expect(not result.ground_stage_art.visible and not result.planetary_stage_art.visible and not result.stage_preview_mask.visible, "Galactic Result must preserve its approved base-plate galaxy strip.")
+	_expect(not result.ball_preview_backdrop.visible and not result.ball_preview.visible, "Black Hole Result must preserve its approved base-plate Black Hole preview.")
+
+
+func _verify_ball_catalog_textures() -> void:
+	var catalog = BallCatalogScript.new()
+	for global_level in range(15):
+		var definition = catalog.get_definition(global_level)
+		_expect(definition != null, "Ball catalog must define global level %d." % global_level)
+		if definition == null:
+			continue
+		_expect(definition.texture != null, "Ball catalog level %d (%s) must have a direct texture for Result UI." % [global_level, definition.display_name])
+	_expect(catalog.get_definition(5).texture.resource_path.ends_with("ball_planetary_local_lv01_earth_user_authored_16.png"), "Earth must not use the former Mercury placeholder.")
+	_expect(catalog.get_definition(6).texture.resource_path.ends_with("ball_planetary_local_lv02_sun_corona_crown_32.png"), "Sun must not use the former Mars placeholder.")
+	_expect(catalog.get_definition(7).texture.resource_path.ends_with("ball_lv07_red_giant_1024.png"), "Red Giant must have its dedicated catalog artwork.")
+	_expect(catalog.get_definition(9).texture.resource_path.ends_with("ball_lv09_nebula_1024.png"), "Nebula must have its dedicated catalog artwork.")
 
 
 func _verify_clear_button_chrome(button: Button, label: String) -> void:

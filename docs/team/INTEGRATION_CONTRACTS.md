@@ -35,7 +35,7 @@
 
 현재 S7-G1C producer는 마지막 유효 hit commit에서 `item_planet_broken`을 먼저, `item_orb_spawned`를 바로 다음에 발행한다. Presentation의 neutral break fragment는 별도 Orb와 잠시 겹칠 수 있으며 Orb의 이동·획득·miss를 지연시키지 않는다. 파괴 전 Item Ball만 identity-neutral이면 되고 Orb는 파괴 확정 뒤 첫 item-specific visual이다.
 | Content S7-G2 Blizzard | `activate(item_blizzard.tres)`, `advance(delta)`, `reset_runtime()`; `spawn_multiplier_changed(multiplier)` | Integration spawn controller | matching Blizzard activation만 수락한다. Integration은 base Stage spawn rate에 multiplier를 한 번 적용하고 `1.0`에서 정확히 복구한다. 재획득은 남은 시간을 갱신할 뿐 multiplier를 누적하지 않는다. |
-| Content S7-G2 Blizzard | `active_state_changed(snapshot)` | Content-owned Blizzard visual, Integration Main wiring | Blizzard 전용 `BLIZZARD!` cue와 장식 눈은 active snapshot만 read-only로 소비한다. Item Ball/Orb의 Blizzard styling은 producer events만 표시하며 activation, score, timer, spawn multiplier를 변경하지 않는다. |
+| Content S7-G2 Blizzard | `active_state_changed(snapshot)` | Content-owned Blizzard visual, Integration Main wiring | Blizzard 장식 눈은 active snapshot만 read-only로 소비하고, 활성 중 남은 시간 상태창은 표시하지 않는다. Item Ball/Orb의 Blizzard styling은 producer events만 표시하며 activation, score, timer, spawn multiplier를 변경하지 않는다. Orb 획득 시 Presentation의 Fire/Magnet 공용 2.00초 Pixel Machine CUT-IN을 사용해 `Blizzard Orb`, Blizzard 결정 portrait, `SPAWN RATE ×3`을 표시한다. 공용 banner enter 완료의 matching activation cue로 효과를 시작하며 producer reject/busy 때만 exact-once skip fallback을 사용한다. |
 | Content S7-G3 Fire Core | `activate(item_fire_core.tres)`, `advance(delta)`, `reset_runtime()`; `fire_window_changed(active)`, `active_state_changed(snapshot)` | future Integration/Core Fire consumer | Fire Core는 8초·×10의 read-only timed window만 소유한다. consumer는 Paddle 접촉으로 Fire flag를 부여하고 Merge에 OR 계승하며 Fire ball의 Active Cashout에만 ×10을 적용해야 한다. Time Bonus와 Final Settlement는 이 신호·snapshot을 소비하지 않는다. |
 | Content S7-G4 Magnet | `activate(item_magnet.tres)`, `advance(delta)`, `reset_runtime()`; `force_command_changed(snapshot)`, `get_force_command()` | future Integration/Core Magnet consumer | Content command는 duration·range·pair acceleration cap·neighbour limit(1~2)만 소유한다. Integration은 matching Gateway activation을 ItemMagnet에 전달하고 매 physics tick advance/reset을 연결한다. Core는 active command를 읽어 기존 Spatial Grid에서 같은 level의 가까운 1~2개 이웃만 고르고 pair force를 cap 안에서 적용한다. Content는 simulation loop, grid, position/velocity를 수정하지 않으며 consumer는 inactive command에서 force를 즉시 제거한다. |
 | Integration StageManager | `stage_clear_ready(clear_snapshot: Dictionary, clear_id: int)` | Presentation S5-G6 | non-final `SCORE_CLEAR`의 Final Settlement 완료 뒤 `CLEARED`에서 read-only snapshot과 process-lifetime monotonic ID를 한 번 공개한다. Galactic/failure/Result에는 발행하지 않는다. |
@@ -47,6 +47,16 @@
 | Presentation | `black_hole_phase_presentation_finished(phase_id)` | Integration StageManager | matching phase에서 logical L3 Rect 활성화와 Galactic gameplay 재개 허용. 현재 Main은 실제 S8-G5 producer를 사용하며 임시 adapter가 없다. |
 | Presentation | `black_hole_finale_presentation_finished()` | Integration GameManager | S8-G5의 Black Hole 공전·폭발 overlay가 끝난 뒤 Result UI를 한 번만 표시할 수 있게 한다. Integration은 terminal snapshot을 보존하고 이 완료 전에는 Result 표시·Retry/Main 입력을 열지 않는다. |
 | Core simulation / Stage runtime | `black_hole_finale_started(contact_snapshot)` → `black_hole_finale_locked(result_snapshot)` | Integration, Presentation, Content/Systems | 두 Black Hole의 earliest contact를 simulation이 한 번 잠그고, Stage runtime이 `contact_position`, 두 Black Hole의 position/velocity/radius, `stage_index`, `stage_score`, `run_score`, `optional_stats.merge_count`, `optional_stats.run_time_seconds`를 읽기 전용 final result snapshot으로 확정한다. Integration은 이 신호 뒤 gameplay commit을 재개하지 않는다. |
+| Core Stage runtime | `get_highest_ball_global_level() -> int` 또는 동등한 read-only snapshot field | Integration S8-G3B | 현재 Run에서 committed 일반 Snowball 생성·Merge 결과·첫 Black Hole entity 전환으로 확정된 최고 global level을 반환한다. 화면 렌더 snapshot, Cashout, Settlement는 이 값을 낮추거나 갱신하지 않는다. |
+| Integration terminal result publisher | `result_snapshot.stage_index`, `result_snapshot.highest_ball_global_level` | Content S8-G3B Result Panel | Ground/Planetary failure와 Black Hole finale 모두에 immutable-style value-copy를 한 번 전달한다. Retry/Main/fresh Run 이후 stale snapshot은 다시 publish하지 않는다. |
+
+### S8-G3B Result 최고 Stage·Snowball summary 계약
+
+- `stage_index`는 기존 terminal snapshot의 최고 도달 Stage source다. Result Panel은 이 값을 live StageManager가 아니라 copied snapshot에서만 읽는다.
+- `highest_ball_global_level`은 Run 전체에서 확정된 가장 높은 logical Ball global level이다. Stage entry base Ball, committed Merge 결과와 첫 Black Hole entity 전환은 반영하고, render sample·Cashout·Final Settlement·debug injection은 반영하지 않는다.
+- Integration은 non-final failure 경로와 `black_hole_finale_locked(result_snapshot)` 경로 모두에서 같은 schema를 보장한다. score, settlement, failure/clear 판정과 phase/finale 순서는 이 field를 추가해도 바뀌지 않는다.
+- Content는 snapshot의 두 숫자를 기존 StageDefinition/Ball catalog에서 name/image로 해석한다. Result 표시 중 Core를 조회하거나 UI가 최고치를 재계산하지 않는다.
+- Retry, Main, fresh Run은 이전 run의 highest value와 Result UI text/image를 반드시 폐기한다.
 
 ### FIRST_CONTACT discovery·CUT-IN 계약
 

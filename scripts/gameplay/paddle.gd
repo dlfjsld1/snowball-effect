@@ -6,8 +6,14 @@ enum PositionControlSource {
 	MOUSE,
 }
 
+enum DashPhase {
+	READY,
+	ASCENDING,
+	RETURNING,
+}
+
 @export var play_field_rect := Rect2(500.0, 0.0, 600.0, 900.0)
-@export var paddle_width := 240.0
+@export var paddle_width := 168.0
 @export var paddle_thickness := 16.0
 @export var move_speed := 460.0
 @export var rotation_speed_degrees := 150.0
@@ -20,8 +26,11 @@ enum PositionControlSource {
 @export var paddle_velocity_influence := 0.15
 @export var rotation_collision_tip_step := 2.0
 @export var separation_epsilon := 0.01
-@export var paddle_color := Color(0.78, 0.84, 0.92, 1.0)
+@export var dash_speed := 1200.0
+@export var dash_distance := 120.0
+@export var dash_cooldown_seconds := 5.0
 @export var runtime_start_position := Vector2.ZERO
+
 
 var linear_velocity := Vector2.ZERO
 var angular_velocity := 0.0
@@ -37,6 +46,15 @@ var _mouse_target_x := 0.0
 var _position_control_source := PositionControlSource.KEYBOARD
 var _pending_wheel_rotation_degrees := 0.0
 var _prepared_physics_frame := -1
+var _dash_phase := DashPhase.READY
+var _dash_origin_y := 0.0
+var _dash_target_y := 0.0
+var _dash_phase_elapsed := 0.0
+var _dash_leg_duration := 0.0
+var _dash_cooldown_remaining := 0.0
+const DASH_AFTERIMAGE_DURATION := 0.55
+var _dash_trail_remaining := 0.0
+var _dash_trail_direction := Vector2.DOWN
 
 
 func _ready() -> void:
@@ -45,7 +63,7 @@ func _ready() -> void:
 	_initial_position = position
 	_initial_rotation = rotation
 	_reset_motion_history()
-	queue_redraw()
+	_update_dash_visuals()
 
 
 func set_fire_contact_active(active: bool) -> void:
@@ -68,54 +86,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		event.is_action_pressed("paddle_move_left") or event.is_action_pressed("paddle_move_right")
 	):
 		_activate_keyboard_position_control()
+	elif event.is_action_pressed("paddle_dash"):
+		try_start_dash()
 	elif event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_pending_wheel_rotation_degrees += mouse_wheel_step_degrees * maxf(event.factor, 1.0)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_pending_wheel_rotation_degrees -= mouse_wheel_step_degrees * maxf(event.factor, 1.0)
-
-
-func _draw() -> void:
-	# The visual is deliberately contained inside the physics rectangle: 240 x 16 at
-	# the default tuning.  Collision remains the same single OBB used by the simulation.
-	var half_width := paddle_width * 0.5
-	var half_thickness := paddle_thickness * 0.5
-	var body := Rect2(Vector2(-half_width, -half_thickness), Vector2(paddle_width, paddle_thickness))
-	var outline := Color("101726")
-	var copper_dark := Color("5a2f3b")
-	var copper := Color("aa5f52")
-	var copper_highlight := Color("e29a73")
-	var brass_dark := Color("8f643e")
-	var brass := Color("d7a45a")
-	var brass_highlight := Color("ffe09a")
-	var crt_dark := Color("164d43")
-	var crt_green := Color("4cff9b")
-
-	draw_rect(body, outline, true)
-	draw_rect(body.grow(-2.0), copper_dark, true)
-	draw_rect(Rect2(-half_width + 4.0, -half_thickness + 3.0, paddle_width - 8.0, 10.0), copper, true)
-	draw_rect(Rect2(-half_width + 4.0, -half_thickness + 3.0, paddle_width - 8.0, 2.0), copper_highlight, true)
-	draw_rect(Rect2(-half_width + 4.0, half_thickness - 5.0, paddle_width - 8.0, 2.0), Color("713b42"), true)
-
-	# Brass collars and capped ends give the paddle the same machine language as the frame.
-	for side in [-1.0, 1.0]:
-		var cap_x: float = side * (half_width - 15.0)
-		draw_rect(Rect2(cap_x - 7.0, -half_thickness + 2.0, 14.0, paddle_thickness - 4.0), brass_dark, true)
-		draw_rect(Rect2(cap_x - 4.0, -half_thickness + 3.0, 8.0, paddle_thickness - 6.0), brass, true)
-		draw_rect(Rect2(cap_x - 2.0, -half_thickness + 3.0, 4.0, 2.0), brass_highlight, true)
-		draw_rect(Rect2(side * (half_width - 5.0) - 2.0, -2.0, 4.0, 4.0), crt_dark, true)
-		draw_rect(Rect2(side * (half_width - 5.0) - 1.0, -1.0, 2.0, 2.0), crt_green, true)
-
-	# Flush center CRT module from the approved pneumatic-ram concept.
-	draw_rect(Rect2(-25.0, -half_thickness + 1.0, 50.0, paddle_thickness - 2.0), outline, true)
-	draw_rect(Rect2(-22.0, -half_thickness + 3.0, 44.0, paddle_thickness - 6.0), brass_dark, true)
-	draw_rect(Rect2(-18.0, -3.0, 36.0, 6.0), crt_dark, true)
-	draw_rect(Rect2(-15.0, -1.0, 30.0, 2.0), crt_green, true)
-	draw_rect(Rect2(-13.0, -1.0, 8.0, 1.0), Color("d4ffe0"), true)
-
-	for rivet_x in [-88.0, -52.0, 52.0, 88.0]:
-		draw_rect(Rect2(rivet_x - 2.0, -2.0, 4.0, 4.0), brass_dark, true)
-		draw_rect(Rect2(rivet_x - 1.0, -1.0, 2.0, 2.0), brass_highlight, true)
 
 
 func prepare_physics_transform(delta: float) -> void:
@@ -162,6 +139,7 @@ func apply_input(
 	else:
 		var target_x := position.x + move_axis * move_speed * delta
 		position.x = move_toward(position.x, target_x, move_speed * delta)
+	_advance_dash(delta)
 	_clamp_position_to_play_field()
 
 	linear_velocity = (global_position - _previous_position) / delta
@@ -190,7 +168,155 @@ func reset_runtime() -> void:
 	_position_control_source = PositionControlSource.KEYBOARD
 	_pending_wheel_rotation_degrees = 0.0
 	_prepared_physics_frame = -1
+	_dash_phase = DashPhase.READY
+	_dash_origin_y = _initial_position.y
+	_dash_target_y = _initial_position.y
+	_dash_phase_elapsed = 0.0
+	_dash_leg_duration = 0.0
+	_dash_cooldown_remaining = 0.0
+	_dash_trail_remaining = 0.0
+	_dash_trail_direction = Vector2.DOWN
+	_update_dash_visuals()
 	_reset_motion_history()
+
+
+func try_start_dash() -> bool:
+	if _dash_phase != DashPhase.READY or _dash_cooldown_remaining > 0.0:
+		return false
+	if dash_speed <= 0.0 or dash_distance <= 0.0:
+		return false
+	_dash_origin_y = position.y
+	_dash_target_y = maxf(_top_limit(), _dash_origin_y - dash_distance)
+	if is_equal_approx(_dash_target_y, _dash_origin_y):
+		return false
+	_dash_phase = DashPhase.ASCENDING
+	_dash_phase_elapsed = 0.0
+	_dash_leg_duration = absf(_dash_target_y - _dash_origin_y) / dash_speed
+	_dash_cooldown_remaining = dash_cooldown_seconds
+	_dash_trail_remaining = DASH_AFTERIMAGE_DURATION
+	_dash_trail_direction = Vector2.DOWN
+	_update_dash_visuals()
+	return true
+
+
+func get_dash_cooldown_remaining() -> float:
+	return _dash_cooldown_remaining
+
+
+func reset_dash_cooldown() -> void:
+	_dash_cooldown_remaining = 0.0
+	_update_dash_visuals()
+
+
+func is_dashing() -> bool:
+	return _dash_phase != DashPhase.READY
+
+
+func _advance_dash(delta: float) -> void:
+	if _dash_cooldown_remaining > 0.0:
+		_dash_cooldown_remaining = maxf(0.0, _dash_cooldown_remaining - delta)
+	if _dash_trail_remaining > 0.0:
+		_dash_trail_remaining = maxf(0.0, _dash_trail_remaining - delta)
+	if _dash_phase == DashPhase.ASCENDING:
+		_dash_trail_direction = Vector2.DOWN
+		_dash_phase_elapsed += delta
+		var ascend_progress := _dash_progress()
+		position.y = lerpf(_dash_origin_y, _dash_target_y, _ease_out_sine(ascend_progress))
+		if ascend_progress >= 1.0:
+			_dash_phase = DashPhase.RETURNING
+			_dash_phase_elapsed = 0.0
+	elif _dash_phase == DashPhase.RETURNING:
+		_dash_trail_direction = Vector2.UP
+		_dash_phase_elapsed += delta
+		var return_progress := _dash_progress()
+		position.y = lerpf(_dash_target_y, _dash_origin_y, _ease_in_out_sine(return_progress))
+		if return_progress >= 1.0:
+			position.y = _dash_origin_y
+			_dash_phase = DashPhase.READY
+	_update_dash_visuals()
+
+
+func _dash_progress() -> float:
+	if _dash_leg_duration <= 0.0:
+		return 1.0
+	return clampf(_dash_phase_elapsed / _dash_leg_duration, 0.0, 1.0)
+
+
+func _ease_out_sine(value: float) -> float:
+	return sin(value * PI * 0.5)
+
+
+func _ease_in_out_sine(value: float) -> float:
+	return -(cos(PI * value) - 1.0) * 0.5
+
+
+func _update_dash_visuals() -> void:
+	var gauge_fill := get_node_or_null("DashGaugeFill") as Polygon2D
+	if gauge_fill != null:
+		var ratio := 1.0
+		if dash_cooldown_seconds > 0.0:
+			ratio = clampf(1.0 - _dash_cooldown_remaining / dash_cooldown_seconds, 0.0, 1.0)
+		gauge_fill.polygon = PackedVector2Array([
+			Vector2(-13.0, -2.0),
+			Vector2(-13.0 + 25.0 * ratio, -2.0),
+			Vector2(-13.0 + 25.0 * ratio, 2.0),
+			Vector2(-13.0, 2.0),
+		])
+	var visual := get_node_or_null("Visual") as Sprite2D
+	if visual == null:
+		return
+	var ghost_near := get_node_or_null("DashGhostNear") as Sprite2D
+	var ghost_mid := get_node_or_null("DashGhostMid") as Sprite2D
+	var ghost_far := get_node_or_null("DashGhostFar") as Sprite2D
+	if _dash_phase == DashPhase.ASCENDING:
+		visual.scale = Vector2(1.08, 0.82)
+		visual.modulate = Color(1.32, 1.32, 1.22, 1.0)
+		_update_dash_afterimages(ghost_near, ghost_mid, ghost_far, Vector2.DOWN, 1.0)
+	elif _dash_phase == DashPhase.RETURNING:
+		visual.scale = Vector2(0.94, 1.08)
+		visual.modulate = Color(1.16, 1.22, 1.16, 1.0)
+		_update_dash_afterimages(ghost_near, ghost_mid, ghost_far, Vector2.UP, 1.0)
+	else:
+		visual.scale = Vector2.ONE
+		visual.modulate = Color.WHITE
+		var fade := clampf(_dash_trail_remaining / DASH_AFTERIMAGE_DURATION, 0.0, 1.0)
+		if fade > 0.0:
+			_update_dash_afterimages(ghost_near, ghost_mid, ghost_far, _dash_trail_direction, fade)
+		else:
+			_hide_dash_afterimages(ghost_near, ghost_mid, ghost_far)
+
+
+func _update_dash_afterimages(
+	near: Sprite2D,
+	mid: Sprite2D,
+	far: Sprite2D,
+	trail_direction: Vector2,
+	intensity: float
+) -> void:
+	if near != null:
+		near.visible = true
+		near.position = trail_direction * 28.0
+		near.scale = Vector2(1.02, 0.94)
+		near.modulate = Color(0.24, 1.0, 0.60, 0.72 * intensity)
+	if mid != null:
+		mid.visible = true
+		mid.position = trail_direction * 56.0
+		mid.scale = Vector2(1.0, 0.88)
+		mid.modulate = Color(0.20, 0.98, 0.56, 0.48 * intensity)
+	if far != null:
+		far.visible = true
+		far.position = trail_direction * 84.0
+		far.scale = Vector2(0.98, 0.82)
+		far.modulate = Color(0.16, 0.94, 0.50, 0.30 * intensity)
+
+
+func _hide_dash_afterimages(near: Sprite2D, mid: Sprite2D, far: Sprite2D) -> void:
+	if near != null:
+		near.visible = false
+	if mid != null:
+		mid.visible = false
+	if far != null:
+		far.visible = false
 
 
 func clamp_to_play_field() -> void:

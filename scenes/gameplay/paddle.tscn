@@ -1,6 +1,37 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/gameplay/paddle.gd" id="1_paddle"]
+[ext_resource type="Texture2D" path="res://assets/sprites/paddle/paddle_pneumatic_ram_70.png" id="2_paddle_texture"]
 
 [node name="Paddle" type="Node2D"]
 script = ExtResource("1_paddle")
+
+[node name="Visual" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = ExtResource("2_paddle_texture")
+
+[node name="DashGhostFar" type="Sprite2D" parent="."]
+visible = false
+show_behind_parent = true
+texture_filter = 1
+texture = ExtResource("2_paddle_texture")
+
+[node name="DashGhostNear" type="Sprite2D" parent="."]
+visible = false
+show_behind_parent = true
+texture_filter = 1
+texture = ExtResource("2_paddle_texture")
+
+[node name="DashGhostMid" type="Sprite2D" parent="."]
+visible = false
+show_behind_parent = true
+texture_filter = 1
+texture = ExtResource("2_paddle_texture")
+
+[node name="DashGaugeBackdrop" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-13, -2, 12, -2, 12, 2, -13, 2)
+color = Color(0.0862745, 0.207843, 0.2, 1)
+
+[node name="DashGaugeFill" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-13, -2, 12, -2, 12, 2, -13, 2)
+color = Color(0.298039, 1, 0.607843, 1)

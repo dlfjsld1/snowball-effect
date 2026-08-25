@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/core/s8_g3b_highest_ball_verification.gd" id="1_runner"]
+
+[node name="S8G3BHighestBallVerification" type="Node"]
+script = ExtResource("1_runner")

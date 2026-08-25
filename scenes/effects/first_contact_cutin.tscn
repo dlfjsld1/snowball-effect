@@ -1,7 +1,19 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/presentation/cutin_controller.gd" id="1_controller"]
 [ext_resource type="Texture2D" path="res://assets/sprites/cutins/first_contact/first-contact-background-v1.png" id="2_background"]
+[ext_resource type="Texture2D" path="res://assets/particles/items/fire/fire_orb.png" id="3_fire_orb"]
+[ext_resource type="Script" path="res://scripts/presentation/magnet_orb_portrait.gd" id="4_magnet_portrait"]
+
+[sub_resource type="SystemFont" id="FirePixelFont"]
+font_names = PackedStringArray("Consolas", "Courier New", "monospace")
+font_weight = 700
+antialiasing = 0
+hinting = 0
+subpixel_positioning = 0
+
+[sub_resource type="StyleBoxFlat" id="FireLabelClear"]
+bg_color = Color(0, 0, 0, 0)
 
 [node name="FirstContactCutIn" type="Control"]
 process_mode = 3
@@ -71,6 +83,87 @@ anchor_left = 0.62
 anchor_top = 0.05
 anchor_right = 0.97
 anchor_bottom = 0.95
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ItemTitleLabel" type="Label" parent="FieldClip/CardRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchor_left = 0.045
+anchor_top = 0.20
+anchor_right = 0.64
+anchor_bottom = 0.53
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.792157, 0.270588, 1)
+theme_override_colors/font_outline_color = Color(0.341176, 0.054902, 0.0235294, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = SubResource("FirePixelFont")
+theme_override_font_sizes/font_size = 38
+theme_override_styles/normal = SubResource("FireLabelClear")
+text = "FIRE ORB"
+vertical_alignment = 1
+
+[node name="ItemEffectLabel" type="Label" parent="FieldClip/CardRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchor_left = 0.05
+anchor_top = 0.53
+anchor_right = 0.60
+anchor_bottom = 0.80
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.968627, 0.780392, 1)
+theme_override_colors/font_outline_color = Color(0.341176, 0.054902, 0.0235294, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = SubResource("FirePixelFont")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("FireLabelClear")
+text = "CASHOUT ×10"
+vertical_alignment = 1
+
+[node name="FirePortrait" type="Control" parent="FieldClip/CardRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchor_left = 0.64
+anchor_top = 0.03
+anchor_right = 0.97
+anchor_bottom = 0.97
+mouse_filter = 2
+
+[node name="Orb" type="TextureRect" parent="FieldClip/CardRoot/FirePortrait"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_fire_orb")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MagnetPortrait" type="Control" parent="FieldClip/CardRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchor_left = 0.64
+anchor_top = 0.03
+anchor_right = 0.97
+anchor_bottom = 0.97
+mouse_filter = 2
+script = ExtResource("4_magnet_portrait")
+
+[node name="BlizzardPortrait" type="TextureRect" parent="FieldClip/CardRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchor_left = 0.64
+anchor_top = 0.03
+anchor_right = 0.97
+anchor_bottom = 0.97
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5

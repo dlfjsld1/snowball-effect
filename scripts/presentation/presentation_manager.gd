@@ -6,6 +6,8 @@ signal visual_field_rect_changed(visual_rect: Rect2)
 signal black_hole_phase_presentation_finished(phase_id: int)
 signal black_hole_finale_presentation_finished
 signal first_contact_cutin_finished(event_id: int, run_epoch: int)
+signal item_cutin_activation_cue(event_id: int)
+signal item_cutin_finished(event_id: int)
 
 const FirstContactCutInScene := preload("res://scenes/effects/first_contact_cutin.tscn")
 
@@ -57,6 +59,8 @@ func _ready() -> void:
 	_first_contact_cutin_controller = FirstContactCutInScene.instantiate() as CutInController
 	add_child(_first_contact_cutin_controller)
 	_first_contact_cutin_controller.cutin_finished.connect(_on_first_contact_cutin_finished)
+	_first_contact_cutin_controller.item_cutin_activation_cue.connect(_on_item_cutin_activation_cue)
+	_first_contact_cutin_controller.item_cutin_finished.connect(_on_item_cutin_finished)
 	call_deferred("_bind_main_cashout_cue_mount")
 	call_deferred("_bind_main_black_hole_source")
 
@@ -92,9 +96,35 @@ func get_first_contact_cutin_metrics() -> Dictionary:
 	return _first_contact_cutin_controller.get_visual_metrics()
 
 
+func play_item_cutin(event_id: int, item_type: StringName, world_position: Vector2) -> bool:
+	if _first_contact_cutin_controller == null:
+		return false
+	_first_contact_cutin_controller.set_reduced_effects(reduced_effects)
+	_first_contact_cutin_controller.configure_field_visual_rect(_frame.get_field_visual_rect())
+	var accepted := _first_contact_cutin_controller.play_item_cutin(event_id, item_type, world_position)
+	if accepted:
+		_frame.set_cashout_cue_active(false)
+	return accepted
+
+
+func reset_item_cutin() -> void:
+	if _first_contact_cutin_controller != null:
+		_first_contact_cutin_controller.reset_item_cutin()
+	_frame.set_cashout_cue_active(true)
+
+
 func _on_first_contact_cutin_finished(event_id: int, run_epoch: int) -> void:
 	_frame.set_cashout_cue_active(true)
 	first_contact_cutin_finished.emit(event_id, run_epoch)
+
+
+func _on_item_cutin_activation_cue(event_id: int) -> void:
+	item_cutin_activation_cue.emit(event_id)
+
+
+func _on_item_cutin_finished(event_id: int) -> void:
+	_frame.set_cashout_cue_active(true)
+	item_cutin_finished.emit(event_id)
 
 
 func configure_black_hole_sources(_event_source: Node, simulation_source: Node) -> void:
