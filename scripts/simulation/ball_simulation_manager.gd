@@ -458,11 +458,13 @@ func get_simulation_metrics() -> Dictionary:
 	return _simulation_metrics
 
 
-func commit_merge_candidates() -> int:
+func commit_merge_candidates(delta := 0.0) -> int:
 	_last_merge_count = 0
 	_merge_plans.clear()
 	_consumed_merge_flags.resize(positions.size())
 	_consumed_merge_flags.fill(0)
+	var reserved_black_hole_slots := _black_hole_positions.size()
+	var overflow_pairs: Array[Vector2i] = []
 	for candidate in _rebuild_merge_candidate_pairs():
 		var first_index := candidate.x
 		var second_index := candidate.y
@@ -474,6 +476,12 @@ func commit_merge_candidates() -> int:
 		var result_level := _get_next_stage_global_level(global_levels[first_index])
 		if result_level < 0:
 			continue
+		var creates_black_hole := _is_black_hole_merge_result(result_level)
+		if creates_black_hole and reserved_black_hole_slots >= BLACK_HOLE_MAX_COUNT:
+			overflow_pairs.append(candidate)
+			continue
+		if creates_black_hole:
+			reserved_black_hole_slots += 1
 
 		_consumed_merge_flags[first_index] = 1
 		_consumed_merge_flags[second_index] = 1
@@ -483,8 +491,13 @@ func commit_merge_candidates() -> int:
 			"result_level": result_level,
 			"position": (positions[first_index] + positions[second_index]) * 0.5,
 			"velocity": _get_merge_result_velocity(first_index, second_index),
+			"creates_black_hole": creates_black_hole,
 			"special_type": BallSpecialType.FIRE if special_types[first_index] == BallSpecialType.FIRE or special_types[second_index] == BallSpecialType.FIRE else BallSpecialType.NORMAL,
 		})
+
+	for pair in overflow_pairs:
+		if is_ball_active(pair.x) and is_ball_active(pair.y):
+			_resolve_non_merge_contact(pair.x, pair.y, delta)
 
 	for plan in _merge_plans:
 		deactivate_ball(plan["first_index"])
@@ -494,7 +507,7 @@ func commit_merge_candidates() -> int:
 		var result_level: int = plan["result_level"]
 		var result_position: Vector2 = plan["position"]
 		var black_hole_entity_ordinal := 0
-		if _should_convert_merge_result_to_black_hole(result_level):
+		if plan["creates_black_hole"]:
 			black_hole_entity_ordinal = _black_hole_positions.size() + 1
 			_create_black_hole(result_position, plan["velocity"])
 		else:
@@ -816,7 +829,7 @@ func step_simulation(delta: float) -> void:
 	_commit_black_hole_absorptions()
 
 	if merge_enabled:
-		commit_merge_candidates()
+		commit_merge_candidates(delta)
 	else:
 		_rebuild_merge_candidate_pairs()
 		_last_merge_count = 0
@@ -907,8 +920,8 @@ func _get_merge_result_velocity(first_index: int, second_index: int) -> Vector2:
 	return result_velocity.limit_length(maximum_ball_runtime_speed)
 
 
-func _should_convert_merge_result_to_black_hole(result_level: int) -> bool:
-	return _stage_black_hole_enabled and result_level == _stage_top_global_level and _black_hole_positions.size() < BLACK_HOLE_MAX_COUNT
+func _is_black_hole_merge_result(result_level: int) -> bool:
+	return _stage_black_hole_enabled and result_level == _stage_top_global_level
 
 
 func _create_black_hole(position: Vector2, velocity: Vector2) -> void:

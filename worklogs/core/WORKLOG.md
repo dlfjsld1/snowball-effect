@@ -871,3 +871,14 @@ Integration Point: 기존 read-only render snapshot과 active Play Field clip만
 - capture: `docs/design/mockups/drafts/ground-giant-snowball-redesign-v1/giant-snowball-upright-orientation-fix-native-main.png`, `118,173` bytes, SHA-256 `F4334A187EC7E6C59670EDE4DD7E971CC7D652F8CCFE95D1B9165E58018C117D`. Static actual Main sample은 평균 `60.0 FPS`, 최저 `46.1 FPS`, 최대 frame `21.68ms`; clip rect `(520,50,560,768)`, standard balls `15`였다.
 - current Ground family native capture도 actual MultiMesh 5개 binding으로 save/exit `0`. legacy `ground_ball_asset_verification`은 정확히 기존 5개 `batch.material == null` assertion만 exit `1`; current S4-G4는 textured batch에도 Play Field clip shader material을 의도적으로 유지하므로 known stale assertion으로 별도 분류했다. PNG/TRES/LOD mapping은 수정하지 않았다.
 - Main 120-frame headless smoke는 exit `0`; 기존 shutdown-only `3 ObjectDB / 1 resource` 메시지만 남았다. Primary Godot MCP는 active tool set에 없어 documented native baseline을 사용했다. Web 재측정은 이 UV-only maintenance에 새 성능/Release Gate가 없어서 수행하지 않았으며 기존 S4-G4 Web evidence와 `VERIFIED` 상태를 변경하지 않았다.
+
+## 2026-08-25 — S8-G6 Black Hole max-two overflow commit
+
+Owner: Core
+Branch: `codex/s8-g6-black-hole-capacity`
+
+- `commit_merge_candidates(delta)`는 stable candidate order에서 현재 moving Black Hole 수를 포함해 slot을 예약한다. Galactic Lv13 pair의 결과가 Black Hole이면 승인된 plan만 source를 consume하고 entity를 만든다.
+- 두 slot이 이미 예약되었으면 같은 Lv13 pair는 merge plan/consume 대상에서 제외하고, 같은 tick의 기존 mass/current-velocity non-Merge contact와 penetration separation으로 처리한다. 따라서 generic normal Lv14, extra `ball_merged`, FIRST_CONTACT, phase request, Black Hole entity가 생기지 않는다.
+- Added `tests/simulation/s8_g6_black_hole_capacity_verification.tscn`: `0 existing + 3 pairs`, `1 existing + 2 pairs`, full-capacity overflow의 entity/event count, retained Lv13 source, physical separation, normal render snapshot Lv14 0, absorption 0을 검증한다.
+- Godot 4.7.1 CLI: focused fixture `S8_G6_VERIFIED`; S2-G3 deterministic merge, S3-G9 FIRST_CONTACT, S8-G2 terminal fixture no-error pass. Primary `godot` MCP validation confirmed simulation, fixture script and scene `3/3 valid`.
+- Excluded: S8-G7 cue/visual work, S8-G8 Main/Retry/Web acceptance, Black Hole force/score tuning and all Integration-owned files.
