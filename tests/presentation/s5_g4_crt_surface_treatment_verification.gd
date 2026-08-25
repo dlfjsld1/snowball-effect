@@ -54,11 +54,11 @@ func _ready() -> void:
 	assert(hud.stage_name_label.text == "STAGE GROUND")
 	assert(hud.time_label.text == "TIME 45.0")
 	assert(hud.stage_score_label.text == "STAGE SCORE 0")
-	assert((hud.get_node("Genealogy/Content/Title") as Label).text == "GENEALOGY")
+	assert((hud.get_node("Genealogy/Content/Title") as Label).text == "BALLS")
 	assert(hud.stage_name_label.get_theme_font_size("font_size") == 14)
 	assert(hud.time_label.get_theme_font_size("font_size") == 14)
 	assert(hud.stage_score_label.get_theme_font_size("font_size") == 14)
-	assert(hud.genealogy_slots[0].get_theme_font_size("font_size") == 14)
+	assert(hud.genealogy_slots[0].get_theme_font_size("font_size") == 12)
 	for label in [hud.stage_name_label, hud.time_label, hud.stage_score_label] + hud.genealogy_slots:
 		assert(label.position == label.position.round())
 		assert(label.size == label.size.round())
@@ -69,5 +69,5 @@ func _ready() -> void:
 	assert(main_scene_source.find("[node name=\"GameplayFrame\" parent=\"UI\"") < main_scene_source.find("[node name=\"HUDMount\""))
 	assert(main_scene_source.find("[node name=\"GameplayFrame\" parent=\"UI\"") < main_scene_source.find("[node name=\"PauseMenu\" parent=\"UI\""))
 
-	print("S5_G4_CRT_SURFACE_VERIFIED static=true masks=7 scanlines=1px palette=paper8 text_above=true integer=true labels_unchanged=true")
+	print("S5_G4_CRT_SURFACE_VERIFIED static=true masks=7 scanlines=1px palette=paper8 text_above=true integer=true genealogy_title=BALLS")
 	get_tree().quit()

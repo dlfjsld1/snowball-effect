@@ -1,13 +1,13 @@
 # Planetary Galaxy Redesign — 2026-08-24
 
-Concept-only design exploration for Snowball Effect's second-stage Planetary `Galaxy`. Nothing in the repository runtime, Goal/STATUS, or worklogs is changed by this artifact set.
+Design exploration for Snowball Effect's second-stage Planetary `Galaxy`. On 2026-08-25, the approved A master became the source for the existing `1254×1254` FIRST CONTACT portrait; the in-game Planetary Galaxy asset remains unchanged.
 
 ## Confirmed runtime contract
 
 - Planetary ordered chain: `[4, 5, 6, 8, 10]`.
 - Galaxy: global Lv10, Planetary local Lv4.
 - Runtime radius: `4 × 2^4 = 64`, so the Planetary gameplay diameter is exactly `128px`.
-- The same global Lv10 is Galactic local Lv0 and uses a separately authored `8px` runtime representation. These candidates target only the Planetary 128px hero.
+- The same global Lv10 is Galactic local Lv0. On 2026-08-25, candidate A was also approved as the source for its `8px` in-game representation via deterministic Lanczos downscale; the BALLS CRT keeps the Planetary final Galaxy image under the carryover rule.
 - Pixel-art constraints in `12_PIXEL_DESIGN_GUIDELINES.md` were intentionally not applied per the user's explicit direction.
 
 ## Shared design contract

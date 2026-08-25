@@ -2,15 +2,16 @@
   "schema": 1,
   "family": "galactic",
   "owner": "Presentation",
-  "source": "res://tools/presentation/galactic_ball_assets/generate_galactic_ball_assets.py",
-  "generation": "deterministic_hand_authored_native_grid",
-  "imagegen_used": false,
-  "background": "transparent_binary_alpha",
+  "source": "mixed; selected rows carry per-asset source metadata and unchanged legacy rows use deterministic_source",
+  "deterministic_source": "res://tools/presentation/galactic_ball_assets/generate_galactic_ball_assets.py",
+  "generation": "mixed_approved_user_selected_and_hand_authored",
+  "imagegen_used": true,
+  "background": "transparent_alpha",
   "anchor": [0.5, 0.5],
   "pixel_grid": 1,
   "texture_filter": "nearest",
   "mipmaps": false,
-  "maximum_opaque_colors_per_asset": 13,
+  "maximum_opaque_colors_per_hand_authored_asset": 13,
   "palette": [
     "#02040C",
     "#0B1026",
@@ -32,11 +33,17 @@
       "local_level": 0,
       "visual_identity": "galaxy",
       "display_name": "Galaxy",
-      "path": "runtime/ball_lv10_galaxy_8.png",
+      "path": "runtime/ball_galactic_local_lv00_galaxy_user_authored_8.png",
+      "source": "approved A — GRAND SPIRAL Planetary preview downscale (2026-08-25)",
+      "source_path": "res://docs/design/mockups/drafts/planetary-galaxy-redesign-v1/candidate-a-grand-spiral-preview-128.png",
+      "source_sha256": "5dad927ef6c2173c9a0f89710fe3a1af2e6a56ff367f52c46a71dbcd0a1a564d",
+      "runtime_sha256": "163b67294b4fd093b99f8761e1b2668bdfae269f6671ce25582f6d1e1d28c5ad",
+      "source_size": [128, 128],
+      "downscale_filter": "lanczos",
       "size": [8, 8],
       "runtime_diameter": 8,
       "binding": "BallTextureLodCatalog exact-size override",
-      "motif": "separately authored open two-arm spiral symbol"
+      "motif": "Grand Spiral blue-violet arms with a warm stellar core"
     },
     {
       "global_level": 11,
@@ -44,10 +51,16 @@
       "visual_identity": "galaxy_cluster",
       "display_name": "Galaxy Cluster",
       "path": "runtime/ball_lv11_galaxy_cluster_16.png",
+      "source": "approved A — TRI-SPIRAL CORE (2026-08-25)",
+      "source_sha256": "b56ed4b3a55c94be2f7e1b54821261691cc0948f02d3bdfbb5f766e902c13947",
       "size": [16, 16],
       "runtime_diameter": 16,
       "binding": "BallTextureLodCatalog exact-size override",
-      "motif": "loose gravity-bound group of compact galaxies and bright knots"
+      "crt_path": "runtime/ball_galactic_local_lv01_galaxy_cluster_tri_spiral_core_crt_24.png",
+      "crt_size": [24, 24],
+      "crt_sha256": "0018b474579832cf0d8a29c3b154acf148f33744ace3cdb83cbcc9dac198af6c",
+      "crt_binding": "HUD genealogy-only exact-size override",
+      "motif": "three separated dominant spiral cores linked as one cluster"
     },
     {
       "global_level": 12,
@@ -65,22 +78,32 @@
       "local_level": 3,
       "visual_identity": "event_horizon",
       "display_name": "Event Horizon",
-      "path": "runtime/ball_lv13_event_horizon_64.png",
+      "path": "runtime/ball_galactic_local_lv03_event_horizon_last_light_64.png",
+      "source": "approved C — Last Light native runtime asset (2026-08-24)",
+      "source_path": "res://docs/design/mockups/drafts/galactic-event-horizon-redesign-v1/event-horizon-C-last-light-64.png",
+      "source_sha256": "a44fe630208d653aaf53bb4346896b5c325e09bbaa6ad9fc5ffa052e535793cd",
+      "runtime_sha256": "a44fe630208d653aaf53bb4346896b5c325e09bbaa6ad9fc5ffa052e535793cd",
+      "source_size": [64, 64],
       "size": [64, 64],
       "runtime_diameter": 64,
       "binding": "BallTextureLodCatalog exact-size override",
-      "motif": "CUT-IN-derived fractured navy sphere, broken violet shell, and right-side white-gold lens flare"
+      "motif": "matte event-horizon void with a faint blue lens and right-side white-gold last light"
     },
     {
       "global_level": 14,
       "local_level": 4,
       "visual_identity": "black_hole",
       "display_name": "Black Hole",
-      "path": "runtime/ball_lv14_black_hole_128.png",
+      "path": "runtime/ball_galactic_local_lv04_black_hole_void_cathedral_128.png",
+      "source": "approved C — Void Cathedral native runtime asset (2026-08-24)",
+      "source_path": "res://docs/design/mockups/drafts/galactic-black-hole-redesign-v1/black-hole-C-void-cathedral-128.png",
+      "source_sha256": "6efa4ce42876759eea3fa4539b1d46e2acc89867654d2071be88c5a8243ef465",
+      "runtime_sha256": "6efa4ce42876759eea3fa4539b1d46e2acc89867654d2071be88c5a8243ef465",
+      "source_size": [128, 128],
       "size": [128, 128],
       "runtime_diameter": 128,
       "binding": "BallTextureLodCatalog exact-size hero handoff",
-      "motif": "CUT-IN-derived central void, segmented violet ring, cyan orbit dashes, and four cardinal starbursts"
+      "motif": "Interstellar-like central void with a gold-violet equatorial disk and mirrored gravitational lens"
     }
   ]
 }

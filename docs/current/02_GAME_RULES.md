@@ -44,12 +44,12 @@
 - 현재 활성 아이템
 - 일시정지 진입 버튼
 - 현재 Stage 이름 (`Ground` / `Planetary` / `Galactic`)
-- 현재 Stage 공 족보
+- 현재 Stage 공 목록(화면 제목 `BALLS`)
 - 현재 `stage_score / clear_score` 진행을 보여주는 점수 게이지
 
 점수 영역 안에서 Stage Score와 Run Score를 어떻게 병기할지는 UI 튜닝 대상으로 두되, HUD의 최상위 정보 종류를 불필요하게 늘리지 않는다. 점수 게이지는 authoritative `stage_score`와 현재 Stage의 `clear_score`만 읽고 진행률을 표시하며 Clear를 직접 판정하지 않는다. 활성 아이템이 없을 때는 빈 슬롯 또는 비활성 상태로 표시한다.
 
-공 족보는 수박게임의 진화표처럼 현재 Stage의 local 공 5종을 낮은 단계부터 최고 단계까지 **세로 방향**으로 보여준다. 플레이어가 같은 공 두 개를 합치면 다음에 어떤 공이 되는지 화면을 떠나지 않고 확인할 수 있어야 한다.
+`BALLS` CRT는 수박게임의 진화표처럼 현재 Stage의 local 공 5종을 낮은 단계부터 최고 단계까지 **세로 방향**으로 보여준다. 플레이어가 같은 공 두 개를 합치면 다음에 어떤 공이 되는지 화면을 떠나지 않고 확인할 수 있어야 한다.
 
 - `local Lv0 → Lv1 → Lv2 → ... → Stage Top` 순서를 아이콘으로 표시한다.
 - 현재 Stage에 포함된 공만 표시하고 Scale Shift 시 다음 Stage 족보로 교체한다.
@@ -57,6 +57,7 @@
 - 레이아웃 이동을 막기 위해 5칸 세로 housing은 고정하되, 미발견 공의 아이콘·이름은 출력하지 않는다.
 - 정상적인 Scale Shift에서는 새 Stage의 첫 공만 공개된 상태로 시작한다.
 - 족보는 Ball/Stage 데이터의 read-only 표현이며 Merge 결과를 직접 계산하거나 변경하지 않는다.
+- Stage 경계에서 중복되는 공의 족보 이미지는 이전 Stage의 최종 승인 이미지를 이어 쓴다. 따라서 Planetary local Lv0 Moon은 Ground local Lv4 Moon 이미지를, Galactic local Lv0 Galaxy는 Planetary local Lv4 Galaxy 이미지를 사용한다. 이 예외는 HUD 족보에만 적용하며 실제 gameplay 공의 Stage-local 이미지·크기·충돌과 전역 texture mapping은 바꾸지 않는다.
 
 일시정지는 게임 화면 위에 modal로 열리며 다음 행동을 제공한다.
 

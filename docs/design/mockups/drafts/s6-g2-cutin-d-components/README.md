@@ -13,6 +13,13 @@
 
 All six cards reuse `first-contact-background-v1.png`.
 
+## 2026-08-25 portrait identity alignment
+
+- `planetary_galaxy`: runtime portrait is the approved Grand Spiral A master reduced from `1536×1536` to the existing `1254×1254` CUT-IN canvas with Lanczos filtering.
+- `galactic_event_horizon`: runtime portrait is byte-identical to the approved `event-horizon-C-last-light-master.png`.
+- `galactic_black_hole`: runtime portrait is byte-identical to the approved `black-hole-C-void-cathedral-master.png`.
+- The three in-game ball PNGs, Stage-local radii, collision, LOD bindings, trigger policy, titles, background, and `2.00s` timing remain unchanged. The older same-name portrait copies in this draft directory are retained only as historical design inputs.
+
 ## Trigger policy
 
 - A card is eligible only when its assigned ball is created for the first time in the current Run.
