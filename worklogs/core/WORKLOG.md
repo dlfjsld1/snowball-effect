@@ -855,3 +855,19 @@ Owner: Core
 - Godot 4.7.1 CLI/headless fixture는 same-level attraction, 공당 최대 이웃 2·local candidate 8, acceleration cap 120, neutral/reset과 1,000 sparse-ball candidate `≤8000`을 통과했다.
 - 기존 S7-G1 Fire wiring, Item Gateway와 S4-G1 Spatial Grid 회귀도 각각 exit 0이었다. Primary Godot validate는 Spatial Grid, Simulation, Magnet fixture script/scene 4/4 valid였다.
 - Magnet visible CUT-IN/visual과 실제 Web 사용 경로는 구현 증거에 포함하지 않으며 S7-G4를 `IMPLEMENTED`로 유지한다.
+
+## 2026-08-24 — S4-G4 textured MultiMesh vertical-orientation maintenance
+
+Owner: Core maintenance handoff — 사용자가 owning teammate 통보를 확인하고 이 좁은 renderer 수정 권한을 명시적으로 승인했다.
+Branch: `design/ground-snowflake-redesign`
+Owned Files: `scripts/simulation/ball_renderer_circle.gdshader`, `tests/simulation/s4_g4_texture_orientation_verification.gd{,.uid}`
+Integration Point: 기존 read-only render snapshot과 active Play Field clip만 유지했다. Integration lock은 released이며 Integration-owned 파일, Goal 상태, Presentation asset/LOD mapping은 변경하지 않았다.
+
+- 원인은 Godot 기본 `QuadMesh`의 screen-top vertex가 `UV.y=1`, bottom vertex가 `UV.y=0`인데 textured branch가 `UV`를 그대로 샘플한 것이다. 실제 native OpenGL MultiMesh regression에서 authored `TL/TR/BL/BR`가 `BL/BR/TL/TR`로 나타나 raw `ImageTexture`와 `CanvasTexture` 모두 exit `1`로 재현됐다. 좌우 순서는 유지되어 vertical flip만 확인됐다.
+- shader는 textured branch의 U를 그대로 두고 V만 `1.0 - UV.y`로 보정한다. Godot fragment `COLOR`에는 기본 unflipped texture sample이 이미 포함되므로 두 방향 texel을 곱하지 않도록 vertex/instance tint를 `vertex_color` varying으로 보존하고 corrected UV texture를 정확히 한 번 곱한다. clip discard, procedural circle silhouette, alpha, fallback branch와 simulation/physics는 변경하지 않았다.
+- final native regression은 raw/Canvas 각각 네 corner 8/8 exact match로 exit `0`: `S4_G4_TEXTURE_ORIENTATION_VERIFIED ... horizontal=preserved vertical=preserved`. Godot 4.7.1 headless editor import/load exit `0`; 기존 S4-G4 MultiMesh fixture exit `0`; S2-G1 Ball Catalog exit `0`.
+- 실제 `Main`을 title→`Ground / PLAYING`으로 시작하고 real simulation/MultiMesh path에 Lv0/Lv1/Lv2 각 4개, Lv3 3개를 배치해 `1600×900` native OpenGL capture를 저장했다. 중심 Lv3 source-vs-runtime pixel comparison은 upright mean RGB error `0.00000`/offset `(0,0)`, vertical-flipped best error `0.52388`/offset `(0,-1)`로 upright를 확정했다. current custom Ground Lv0~Lv3도 모두 upright가 flipped보다 낮았다: Lv0 `51.5 < 92.0`(32→8 linear preview), Lv1 `0 < 83.096`, Lv2 `0 < 109.065`, Lv3 `0 < 133.591`.
+- Lv3 landmark 대조도 source/runtime가 정확히 일치했다. 예: `(x=20, top y=27)` dark blue fissure `23,98,148`는 runtime top에 남고 mirrored bottom `y=36`은 pale ridge `218,224,233`; `(x=51, top y=17)` bright snow `252,252,252`와 bottom `y=46` blue shadow `44,99,136`도 같은 위치를 유지했다.
+- capture: `docs/design/mockups/drafts/ground-giant-snowball-redesign-v1/giant-snowball-upright-orientation-fix-native-main.png`, `118,173` bytes, SHA-256 `F4334A187EC7E6C59670EDE4DD7E971CC7D652F8CCFE95D1B9165E58018C117D`. Static actual Main sample은 평균 `60.0 FPS`, 최저 `46.1 FPS`, 최대 frame `21.68ms`; clip rect `(520,50,560,768)`, standard balls `15`였다.
+- current Ground family native capture도 actual MultiMesh 5개 binding으로 save/exit `0`. legacy `ground_ball_asset_verification`은 정확히 기존 5개 `batch.material == null` assertion만 exit `1`; current S4-G4는 textured batch에도 Play Field clip shader material을 의도적으로 유지하므로 known stale assertion으로 별도 분류했다. PNG/TRES/LOD mapping은 수정하지 않았다.
+- Main 120-frame headless smoke는 exit `0`; 기존 shutdown-only `3 ObjectDB / 1 resource` 메시지만 남았다. Primary Godot MCP는 active tool set에 없어 documented native baseline을 사용했다. Web 재측정은 이 UV-only maintenance에 새 성능/Release Gate가 없어서 수행하지 않았으며 기존 S4-G4 Web evidence와 `VERIFIED` 상태를 변경하지 않았다.

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planetary Earth Redesign v1 — Three Candidates</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --field: #05091a;
+      --panel: #101832;
+      --line: #2b3d66;
+      --ink: #f5f3e9;
+      --muted: #a8b6d4;
+      --cyan: #61dce7;
+      --green: #76d76e;
+      --ice: #eafcff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 50% 0%, #18234a 0, var(--field) 46rem);
+      color: var(--ink);
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { width: min(1440px, calc(100% - 32px)); margin: 0 auto; padding: 38px 0 56px; }
+    header { display: grid; gap: 8px; margin-bottom: 26px; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(30px, 4vw, 50px); letter-spacing: -.04em; }
+    header p { max-width: 86ch; color: var(--muted); }
+    .target { color: var(--ice); font-weight: 800; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    article {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      box-shadow: 0 18px 50px rgb(0 0 0 / 34%);
+    }
+    .head { min-height: 166px; padding: 20px; border-bottom: 1px solid var(--line); }
+    .eyebrow { color: var(--cyan); font-size: 12px; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
+    h2 { margin-top: 3px; font-size: 25px; letter-spacing: -.025em; }
+    .head p { margin-top: 8px; color: var(--muted); }
+    .master-well { display: grid; place-items: center; min-height: 410px; padding: 18px; background: #030713; }
+    .master { display: block; width: min(100%, 410px); height: auto; }
+    .sizes { padding: 18px 20px 22px; }
+    .pass { color: var(--green); font-weight: 750; }
+    .sizes > p { min-height: 3em; margin-bottom: 13px; color: var(--muted); }
+    .scale-row { display: grid; grid-template-columns: 68px 96px 1fr; gap: 12px; align-items: end; }
+    figure { margin: 0; display: grid; gap: 7px; justify-items: center; }
+    figcaption { color: var(--muted); font-size: 12px; text-align: center; }
+    .preview-well {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 154px;
+      border: 1px solid #233458;
+      border-radius: 9px;
+      background: #05091a;
+    }
+    .actual { width: 16px; height: 16px; }
+    .x4 { width: 64px; height: 64px; image-rendering: pixelated; }
+    .x16 { width: 256px; max-width: 100%; height: auto; image-rendering: pixelated; }
+    footer { margin-top: 22px; color: var(--muted); }
+    code { color: var(--ice); }
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: 1fr; }
+      .head { min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Snowball Effect · Stage 2 Planetary</p>
+      <h1>Earth gameplay ball — three distinct choices</h1>
+      <p><span class="target">Actual target: 16 px diameter</span> (global Lv5, Planetary local Lv1, radius 8). Masters are transparent concept art. Every scaled view uses the same deterministic 16×16 transparent derivative; 4× and 16× are nearest-neighbor display only.</p>
+    </header>
+
+    <section class="grid" aria-label="Earth concept candidates">
+      <article>
+        <div class="head">
+          <p class="eyebrow">Candidate A</p>
+          <h2>Pocket Blue Marble</h2>
+          <p>Bright full Earth, broad Atlantic-facing land masses, polar cap, and curved cloud belt. Clearest literal choice.</p>
+        </div>
+        <div class="master-well"><img class="master" src="candidate-a-pocket-blue-marble-master.png" alt="Pocket Blue Marble Earth concept on a transparent background"></div>
+        <div class="sizes">
+          <p><span class="pass">PASS at 16 px.</span> Strongest immediate Earth identity; blue, green, ochre, and white remain separated.</p>
+          <div class="scale-row">
+            <figure><div class="preview-well"><img class="actual" src="candidate-a-pocket-blue-marble-preview-16px.png" alt="Pocket Blue Marble at actual 16 pixels"></div><figcaption>1:1 · 16 px</figcaption></figure>
+            <figure><div class="preview-well"><img class="x4" src="candidate-a-pocket-blue-marble-preview-16px.png" alt="Pocket Blue Marble enlarged four times with nearest sampling"></div><figcaption>4× nearest</figcaption></figure>
+            <figure><div class="preview-well"><img class="x16" src="candidate-a-pocket-blue-marble-preview-16px.png" alt="Pocket Blue Marble enlarged sixteen times with nearest sampling"></div><figcaption>16× inspection</figcaption></figure>
+          </div>
+        </div>
+      </article>
+
+      <article>
+        <div class="head">
+          <p class="eyebrow">Candidate B</p>
+          <h2>Living Terminator</h2>
+          <p>Diagonal day/night split, illuminated Americas, deep navy hemisphere, and cyan atmosphere. Strongest spherical read.</p>
+        </div>
+        <div class="master-well"><img class="master" src="candidate-b-living-terminator-master.png" alt="Living Terminator Earth concept on a transparent background"></div>
+        <div class="sizes">
+          <p><span class="pass">PASS at 16 px.</span> Green land and white ice survive on the lit side; the dark half does not collapse into a generic dot.</p>
+          <div class="scale-row">
+            <figure><div class="preview-well"><img class="actual" src="candidate-b-living-terminator-preview-16px.png" alt="Living Terminator at actual 16 pixels"></div><figcaption>1:1 · 16 px</figcaption></figure>
+            <figure><div class="preview-well"><img class="x4" src="candidate-b-living-terminator-preview-16px.png" alt="Living Terminator enlarged four times with nearest sampling"></div><figcaption>4× nearest</figcaption></figure>
+            <figure><div class="preview-well"><img class="x16" src="candidate-b-living-terminator-preview-16px.png" alt="Living Terminator enlarged sixteen times with nearest sampling"></div><figcaption>16× inspection</figcaption></figure>
+          </div>
+        </div>
+      </article>
+
+      <article>
+        <div class="head">
+          <p class="eyebrow">Candidate C</p>
+          <h2>Cloud-Crown Terra</h2>
+          <p>Ocean-led near-full Earth, two green land islands, white polar crown, and sweeping cloud hook. Most lively/iconic choice.</p>
+        </div>
+        <div class="master-well"><img class="master" src="candidate-c-cloud-crown-terra-master.png" alt="Cloud-Crown Terra Earth concept on a transparent background"></div>
+        <div class="sizes">
+          <p><span class="pass">PASS at 16 px.</span> Two green patches and pale crown/hook remain distinct; master terrain detail is the documented limitation.</p>
+          <div class="scale-row">
+            <figure><div class="preview-well"><img class="actual" src="candidate-c-cloud-crown-terra-preview-16px.png" alt="Cloud-Crown Terra at actual 16 pixels"></div><figcaption>1:1 · 16 px</figcaption></figure>
+            <figure><div class="preview-well"><img class="x4" src="candidate-c-cloud-crown-terra-preview-16px.png" alt="Cloud-Crown Terra enlarged four times with nearest sampling"></div><figcaption>4× nearest</figcaption></figure>
+            <figure><div class="preview-well"><img class="x16" src="candidate-c-cloud-crown-terra-preview-16px.png" alt="Cloud-Crown Terra enlarged sixteen times with nearest sampling"></div><figcaption>16× inspection</figcaption></figure>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      Concept package only. Runtime adaptation and LOD wiring await selection. Planetary Moon, Ground assets, current Earth runtime art, CUT-INs, shader, tests, scenes, resources, gameplay, Goal status, and worklogs remain untouched.
+    </footer>
+  </main>
+</body>
+</html>

@@ -445,6 +445,25 @@ if positions[a].distance_squared_to(positions[b]) <= min_distance * min_distance
 
 Merge commit은 현재 `StageDefinition.local_ball_levels`에서 입력 `global_level`의 index를 찾고 다음 항목을 결과 level로 사용한다. 기본 Run은 Planetary `[4, 5, 6, 8, 10]`처럼 비연속 사슬을 허용하므로 `global_level + 1`을 결과로 계산하지 않는다. 입력 level이 현재 Stage 목록에 없거나 마지막 항목이면 요청을 거부한다.
 
+Galactic의 `Lv13 + Lv13 → Lv14` 후보는 일반 Merge plan을 만들기 전에 이동 Black Hole capacity를 예약한다.
+
+```text
+remaining_black_hole_slots = max(0, 2 - existing_black_hole_count)
+
+stable merge-candidate commit order:
+  eligible Lv13 pair + remaining slot
+    → slot 예약
+    → source pair merge lock
+    → commit 시 두 source 제거 + moving Black Hole entity 생성
+
+  eligible Lv13 pair + no remaining slot
+    → merge lock/consume 금지
+    → normal Lv14 spawn 금지
+    → same valid gameplay interval의 non-Merge contact/분리로 전달
+```
+
+한 tick 안에서 capacity는 실제 entity 배열 크기만 다시 읽어 늦게 판단하지 않고 accepted plan까지 포함해 예약한다. 따라서 `1 existing + 2 pairs`는 첫 pair만 #2를 예약하고, `0 existing + 3 pairs`는 앞의 두 pair만 #1/#2를 예약한다. overflow pair는 두 Lv13의 기존 mass/current velocity를 보존하는 swept circle contact와 penetration correction을 사용한다. 승인되지 않은 plan의 source를 먼저 deactivate하거나 `ball_merged`/FIRST CONTACT/score event를 발행해서는 안 된다. 이 특수 overflow는 현재 Stage top pair 일반 규칙과 별개지만 결과는 같은 non-Merge 물리 contact 계약을 사용한다.
+
 ### Non-Merge 공 물리 contact
 
 Merge 가능한 같은 level pair는 Merge한다. 서로 다른 global level pair와 현재 Stage 최고공끼리의 same-level pair는 원형 collision으로 처리한다. 따라서 일반 크기 차이가 있는 공도 서로 통과하지 않으며, 최고공은 더 성장하지 않고 물리 contact만 한다.
@@ -526,7 +545,7 @@ func format_score(value: float) -> String
 
 적용 대상은 Item Ball과 Lv14 Black Hole Ball/전환된 Black Hole runtime entity를 제외한 일반 Snowball이다. Item Ball은 균열·파괴 상태를, Black Hole은 고유 ring/왜곡/흡수 표현을 가지므로 전용 렌더러를 유지한다. Galactic에서는 일반 Lv10~13 batch와 Black Hole 전용 렌더러가 함께 존재한다.
 
-Black Hole runtime entity는 일반 Ball slot/render snapshot 밖에 있으므로, 전용 renderer는 `get_black_hole_snapshot()`의 read-only position/radius를 별도로 읽어 최소한 dark core와 ring을 항상 표시한다. 이는 gameplay state를 변경하지 않는 가시성 fallback이며, 향후 S8-G5의 ring·별 파티클·왜곡 표현이 이를 대체하거나 확장한다.
+Black Hole runtime entity는 일반 Ball slot/render snapshot 밖에 있으므로, 전용 renderer는 `get_black_hole_snapshot()`의 read-only position/radius를 별도로 읽는다. player-visible 방어 fallback이 필요하면 승인된 `Void Cathedral C`를 사용하고 generic dark circle/ring을 노출하지 않는다. 이는 gameplay state를 변경하지 않는 가시성 fallback이며 active S8 Presentation overlay가 이를 덮거나 확장할 수 있다. 최종 max-two 계약에서는 일반/global Lv14 Ball fallback 자체가 도달 불가능하다.
 
 Core는 render snapshot을 읽어 batch를 구성하고 gameplay state를 변경하지 않는다. Presentation은 level별 Texture2D와 머티리얼 표현을 제공할 수 있지만 simulation 내부 배열을 직접 읽거나 수정하지 않는다. 최종 asset atlas는 필수 선행 조건이 아니며 별도 텍스처 방식으로 먼저 연결할 수 있다.
 
@@ -721,7 +740,7 @@ Fire window가 활성인 Paddle의 commit된 continuous contact만 해당 공의
 
 ## 13. 블랙홀 기술
 
-첫 Lv14 Black Hole Ball 생성은 Stage Clear를 요청하지 않는다. Core simulation은 Merge commit에서 해당 Ball slot을 일반 Merge/Cashout 집합에서 제거하고 그 위치와 운동 상태를 이어받는 첫 Black Hole runtime entity로 전환한 뒤 `galactic_black_hole` discovery를 발행한다. 이 entity commit은 CUT-IN보다 먼저지만, Integration은 matching `(run_epoch, event_id)` CUT-IN 완료 전까지 기존 `begin_black_hole_phase(from_rect, to_rect)`를 호출하거나 `phase_id`를 발급하지 않는다. 완료 수락 뒤 CUT-IN pause lock을 S8 Phase lock으로 직접 이전하며, 이때부터 기존 S8-G4의 `black_hole_phase_started(phase_id, ...)`/matching presentation 완료 경로를 사용한다. 두 번째 Lv14도 같은 방식으로 두 번째 Black Hole entity가 되지만 FIRST_CONTACT를 반복하지 않으며, 둘의 접촉은 일반 Merge보다 우선하는 terminal event다.
+첫 Lv14 Black Hole Ball 생성은 Stage Clear를 요청하지 않는다. Core simulation은 Merge commit에서 승인된 source Ball slot을 일반 Merge/Cashout 집합에서 제거하고 그 위치와 운동 상태를 이어받는 첫 Black Hole runtime entity로 전환한 뒤 `galactic_black_hole` discovery를 발행한다. 이 entity commit은 CUT-IN보다 먼저지만, Integration은 matching `(run_epoch, event_id)` CUT-IN 완료 전까지 기존 `begin_black_hole_phase(from_rect, to_rect)`를 호출하거나 `phase_id`를 발급하지 않는다. 완료 수락 뒤 CUT-IN pause lock을 S8 Phase lock으로 직접 이전하며, 이때부터 기존 S8-G4의 `black_hole_phase_started(phase_id, ...)`/matching presentation 완료 경로를 사용한다. 두 번째 Lv14 후보도 같은 방식으로 두 번째 Black Hole entity가 되지만 FIRST_CONTACT를 반복하지 않으며, 둘의 접촉은 일반 Merge보다 우선하는 terminal event다. 이동 Black Hole entity는 최대 두 개이고, 같은 tick의 accepted plan까지 포함해 남은 slot을 안정적인 Merge 후보 commit 순서로 예약한다. capacity가 없는 `Lv13 + Lv13` pair는 source를 소비하지 않는 non-Merge 물리 contact로 남기며 generic Lv14 Ball을 생성하지 않는다.
 
 Black Hole gameplay state와 force/absorption 계산은 Core가 소유하고, BackgroundManager는 read-only 위치 snapshot을 받아 시각 중심을 맞춘다. 활성화는 Stage 변경이 아니라 같은 Galactic Stage 안의 `Black Hole Phase Transition`이다.
 
@@ -738,11 +757,13 @@ func get_black_hole_pull(position: Vector2) -> Vector2
 성능상 공마다 `sqrt`를 줄이고 싶다면 거리 제곱 기반 완만한 함수 사용 가능하다.  
 다만 조작감이 우선이며 실제 측정 후 최적화한다.
 
-초기 force seed는 영향 반경 `300 world units`, 최대 가속도 `450 world units/s²`다. 반경 안의 normalized distance `t = clamp(distance / 300, 0, 1)`에 대해 `(1 - t)²` falloff를 사용하고 반경 밖은 0으로 둔다. delta를 곱해 velocity에 적용한 뒤 기존 final Ball speed cap을 유지한다. 중심 거리 `epsilon` 이하에서는 영벡터를 normalize하지 않아 NaN을 막는다. 수치는 Stage tuning data로 교체 가능해야 한다.
+현재 authoritative ordinary-ball force seed는 Black Hole 하나당 영향 반경 `480 world units`, 최대 pull 가속도 `1200 world units/s²`다. 반경 안의 normalized distance `t = clamp(distance / 480, 0, 1)`에 대해 `(1 - t)²` falloff를 사용하고 반경 밖은 0으로 둔다. delta를 곱해 velocity에 적용한 뒤 기존 final Ball speed cap을 유지한다. 중심 거리 `epsilon` 이하에서는 영벡터를 normalize하지 않아 NaN을 막는다. 이 `1200`은 일반 공에 대한 per-source pull이고, 아래 `450`은 Black Hole끼리의 mutual repulsion이므로 서로 대체하지 않는다. 수치는 Stage tuning data로 교체 가능해야 한다.
 
 일반 공에 대한 다중 Black Hole force는 각 source의 vector를 먼저 합한 뒤 `1500 world units/s²`로 한 번 제한한다. 같은 방향의 힘은 더해지고 반대 방향은 자연스럽게 상쇄되므로 Black Hole 수를 단순 scalar 배수로 적용하지 않는다. 그 뒤 delta를 곱하고 기존 Ball runtime speed cap을 적용한다.
 
 Black Hole entity끼리는 일반 공용 force/absorption loop와 분리해 상대 Black Hole의 반대 방향으로 최대 `450 world units/s²`의 mutual repulsion을 적용한다. 이 값은 자동 finale를 막는 gameplay seed이며, 충분한 상대속도로 실제 접촉이 확정된 경우에만 force 적분을 멈추고 terminal presentation이 회전·폭발 transform을 소유한다.
+
+이 force/absorption 수치를 Presentation 장식 반경으로 복제하지 않는다. 기존 `300-unit` dashed influence ring과 orbiting square-dot reticle은 제거한다. 지속 gameplay cue는 승인된 `Void Cathedral C` 본체에 gold/Galactic-violet의 근거리 lensing arc를 소수만 더하고, 실제 이동 방향의 반대쪽에 짧은 procedural light trail을 두는 범위다. 새 bitmap은 필요하지 않다. cue가 인력·흡수·충돌·Phase 범위를 의미하려면 Core의 authoritative runtime value에 직접 binding해야 하며, 그렇지 않으면 순수 장식으로 유지한다. normal/global Lv14가 dependency transition 중 player-visible fallback에 도달하는 방어 경로가 있다면 같은 `Void Cathedral C`를 사용하고 generic circle을 노출하지 않는다. max-two Core 계약 완료 뒤 third+ Lv14 경로는 도달 불가능해야 한다.
 
 향후 Presentation 후보인 Black Hole 주변 일반 공의 tidal deformation은 일반 Snowball MultiMesh와 양립한다. Core가 제공하는 read-only Black Hole 위치/영향 snapshot과 공의 nominal transform을 바탕으로 instance의 비균일 scale·회전 또는 shared shader custom data만 바꿀 수 있다. 이 시각 변형이 도입되더라도 Core의 공 중심, nominal radius, 원형 Merge/Paddle/벽 충돌은 그대로 유지하고 궤도 변화는 기존 force 계산만이 소유한다. 정확한 변형 강도·falloff·최대 비율은 아직 구현 계약이 아니다.
 

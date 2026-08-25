@@ -8,6 +8,7 @@ const SimulationManagerScript = preload("res://scripts/simulation/ball_simulatio
 const KIT_ROOT := "res://assets/sprites/balls/planetary"
 const MANIFEST_PATH := KIT_ROOT + "/manifest.json"
 const GROUND_MOON_PATH := "res://assets/sprites/balls/ground/runtime/ball_lv04_moon_128.png"
+const GROUND_MOON_ACTIVE_PATH := "res://assets/sprites/balls/ground/runtime/ball_lv04_moon_user_authored_128.tres"
 const SUPERNOVA_PORTRAIT_PATH := "res://assets/sprites/cutins/first_contact/supernova-portrait-v1.png"
 const GALAXY_PORTRAIT_PATH := "res://assets/sprites/cutins/first_contact/galaxy-portrait-v1.png"
 const SUPERNOVA_REFERENCE_PATH := "res://docs/design/mockups/drafts/s6-g2-cutin-d-components/supernova-portrait-v1.png"
@@ -15,6 +16,14 @@ const GALAXY_REFERENCE_PATH := "res://docs/design/mockups/drafts/s6-g2-cutin-d-c
 const EXPECTED_LEVELS := [4, 5, 6, 8, 10]
 const EXPECTED_SIZES := [8, 16, 32, 64, 128]
 const EXPECTED_IDENTITIES := ["moon", "earth", "sun", "supernova", "galaxy"]
+const ACTIVE_PLANETARY_PATHS := [
+	"res://assets/sprites/balls/planetary/runtime/ball_planetary_local_lv00_moon_user_authored_8.tres",
+	"res://assets/sprites/balls/planetary/runtime/ball_planetary_local_lv01_earth_user_authored_16.tres",
+	"res://assets/sprites/balls/planetary/runtime/ball_planetary_local_lv02_sun_corona_crown_32.tres",
+	"res://assets/sprites/balls/planetary/runtime/ball_planetary_local_lv03_supernova_user_authored_64.tres",
+	"res://assets/sprites/balls/planetary/runtime/ball_planetary_local_lv04_galaxy_user_authored_128.tres",
+]
+const GALACTIC_GALAXY_ACTIVE_PATH := "res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv00_galaxy_user_authored_8.tres"
 
 var _failures := 0
 
@@ -68,7 +77,7 @@ func _ready() -> void:
 		_validate_visual_intent(images)
 		_validate_cutin_identity(images)
 	_validate_bindings(assets)
-	await _validate_renderer(assets)
+	await _validate_renderer()
 
 	if _failures == 0:
 		print("PLANETARY_BALL_ASSETS_VERIFIED chain=4/5/6/8/10 sizes=8/16/32/64/128 alpha=binary palette_colors=%s nearest=true moon_native=true bindings=5 ground_primary_unchanged=true galactic_lod_separate=true" % str(color_counts))
@@ -98,22 +107,22 @@ func _validate_bindings(assets: Array) -> void:
 	var moon_definition = catalog.get_definition(4)
 	_expect(moon_definition.texture != null and moon_definition.texture.resource_path == GROUND_MOON_PATH, "Moon BallDefinition must keep the Ground 128px hero as its primary texture.")
 	var planetary_moon := lod_catalog.resolve_texture(4, 8.0, moon_definition.texture)
-	_expect(planetary_moon != null and planetary_moon.resource_path.ends_with("ball_lv04_moon_8.png"), "Planetary Moon must resolve through its exact-size 8px LOD.")
+	_expect(planetary_moon != null and planetary_moon.resource_path == ACTIVE_PLANETARY_PATHS[0], "Planetary Moon must resolve through its approved exact-size 8px LOD.")
 	var ground_moon := lod_catalog.resolve_texture(4, 128.0, moon_definition.texture)
-	_expect(ground_moon != null and ground_moon.resource_path == GROUND_MOON_PATH, "Ground Moon must keep its exact 128px primary binding.")
+	_expect(ground_moon != null and ground_moon.resource_path == GROUND_MOON_ACTIVE_PATH, "Ground Moon must keep its approved exact 128px runtime binding.")
 	for local_level in range(1, assets.size()):
 		var global_level: int = EXPECTED_LEVELS[local_level]
 		var definition = catalog.get_definition(global_level)
-		var runtime_path: String = KIT_ROOT + "/" + String((assets[local_level] as Dictionary).get("path", ""))
+		var runtime_path: String = ACTIVE_PLANETARY_PATHS[local_level]
 		_expect(definition != null and definition.texture != null, "Global Lv%d BallDefinition must retain a Content-owned primary texture." % global_level)
 		if definition != null and definition.texture != null:
 			var planetary_texture := lod_catalog.resolve_texture(global_level, float(EXPECTED_SIZES[local_level]), definition.texture)
 			_expect(planetary_texture != null and planetary_texture.resource_path == runtime_path, "Planetary local Lv%d must resolve its approved exact-size master before the Content fallback." % local_level)
 	var galactic_galaxy := lod_catalog.resolve_texture(10, 8.0, catalog.get_definition(10).texture)
-	_expect(galactic_galaxy != null and galactic_galaxy.resource_path.ends_with("ball_lv10_galaxy_8.png"), "Galactic base Galaxy must use its separately authored 8px LOD without replacing the Planetary hero.")
+	_expect(galactic_galaxy != null and galactic_galaxy.resource_path == GALACTIC_GALAXY_ACTIVE_PATH, "Galactic base Galaxy must use its approved separately authored 8px LOD without replacing the Planetary hero.")
 
 
-func _validate_renderer(assets: Array) -> void:
+func _validate_renderer() -> void:
 	var renderer = BallRendererScript.new()
 	add_child(renderer)
 	var simulation = SimulationManagerScript.new()
@@ -128,12 +137,13 @@ func _validate_renderer(assets: Array) -> void:
 	for local_level in range(EXPECTED_LEVELS.size()):
 		var global_level: int = EXPECTED_LEVELS[local_level]
 		var batch := renderer.get_node_or_null("LevelBatch%d" % global_level) as MultiMeshInstance2D
-		var runtime_path: String = KIT_ROOT + "/" + String((assets[local_level] as Dictionary).get("path", ""))
+		var runtime_path: String = ACTIVE_PLANETARY_PATHS[local_level]
 		_expect(batch != null, "Planetary global level batch %d must exist." % global_level)
 		if batch == null:
 			continue
 		_expect(batch.texture != null and batch.texture.resource_path == runtime_path, "Planetary batch %d must consume its exact-size texture." % global_level)
-		_expect(batch.material == null, "Textured Planetary batch %d must not retain the procedural circle material." % global_level)
+		var textured_material := batch.material as ShaderMaterial
+		_expect(textured_material != null and textured_material.get_shader_parameter("use_texture") == true, "Textured Planetary batch %d must retain the clipping/upright shader in texture mode." % global_level)
 		_expect(batch.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST, "Planetary batch %d must sample with nearest filtering." % global_level)
 		var transform := renderer.get_batch_instance_transform(global_level, 0)
 		var expected_radius := float(EXPECTED_SIZES[local_level]) * 0.5
@@ -143,13 +153,14 @@ func _validate_renderer(assets: Array) -> void:
 	simulation.spawn_ball(Vector2(200, 200), Vector2.ZERO, 64.0, 4)
 	renderer.refresh_render_snapshot()
 	var ground_moon_batch := renderer.get_node("LevelBatch4") as MultiMeshInstance2D
-	_expect(ground_moon_batch.texture != null and ground_moon_batch.texture.resource_path == GROUND_MOON_PATH, "Ground hero Moon must remain bound after Planetary rendering.")
+	_expect(ground_moon_batch.texture != null and ground_moon_batch.texture.resource_path == GROUND_MOON_ACTIVE_PATH, "Ground hero Moon must remain on its approved runtime binding after Planetary rendering.")
 	simulation.reset_runtime()
 	simulation.spawn_ball(Vector2(200, 200), Vector2.ZERO, 4.0, 10)
 	renderer.refresh_render_snapshot()
 	var galactic_galaxy_batch := renderer.get_node("LevelBatch10") as MultiMeshInstance2D
-	_expect(galactic_galaxy_batch.texture != null and galactic_galaxy_batch.texture.resource_path.ends_with("ball_lv10_galaxy_8.png"), "Galactic base Galaxy must use its separately authored 8px LOD rather than shrinking the Planetary hero.")
-	_expect(galactic_galaxy_batch.material == null, "Galactic base Galaxy exact-size LOD must replace the procedural fallback after its production handoff.")
+	_expect(galactic_galaxy_batch.texture != null and galactic_galaxy_batch.texture.resource_path == GALACTIC_GALAXY_ACTIVE_PATH, "Galactic base Galaxy must use its approved separately authored 8px LOD rather than shrinking the Planetary hero.")
+	var galactic_material := galactic_galaxy_batch.material as ShaderMaterial
+	_expect(galactic_material != null and galactic_material.get_shader_parameter("use_texture") == true, "Galactic base Galaxy must retain the clipping/upright shader in texture mode.")
 	simulation.queue_free()
 	renderer.queue_free()
 

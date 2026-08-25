@@ -1,0 +1,8 @@
+[gd_resource type="CanvasTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv00_galaxy_user_authored_8.png" id="1_diffuse"]
+
+[resource]
+diffuse_texture = ExtResource("1_diffuse")
+texture_filter = 1
+texture_repeat = 1

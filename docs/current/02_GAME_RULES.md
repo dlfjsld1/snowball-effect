@@ -538,9 +538,27 @@ otherwise
 
 Game Over 기준은 Stage마다 0으로 초기화되는 `stage_score`가 아니라 Run 전체 누적인 `run_score`다. 흡수 판정은 Black Hole과 공의 실제 접촉을 사용하며 별도 원거리 즉시 흡수 반경을 추가하지 않는다. 정확한 Black Hole 이동 속도는 tuning 대상으로 남긴다.
 
+### 이동 Black Hole 최대 수와 overflow
+
+- 한 Run에 동시에 존재할 수 있는 이동 Black Hole runtime entity는 최대 두 개다.
+- 첫 Lv14만 이동 Black Hole #1을 만들고 Run-scoped `galactic_black_hole` FIRST CONTACT를 한 번 요청한다. 두 번째 Lv14는 이동 Black Hole #2를 만들지만 같은 FIRST CONTACT를 반복하지 않는다.
+- 한 physics tick에서 남은 Black Hole slot은 안정적인 Merge 후보 commit 순서로 예약한다. `1 existing + 2 eligible Lv13 pairs`이면 첫 pair만 #2를 만들고 다음 pair는 남는다. `0 existing + 3 eligible pairs`이면 앞의 두 pair가 #1/#2를 만들고 세 번째 pair는 남는다.
+- 두 slot이 이미 예약됐거나 채워졌다면 추가 `Lv13 + Lv13` pair는 Merge가 아니다. 두 source Lv13을 제거·소비·숨은 타입으로 변환하지 않고, 현재 mass와 velocity를 사용하는 non-Merge 물리 contact/분리로 처리해 둘 다 활성 상태로 보존한다.
+- overflow를 일반/generic Lv14 Ball 생성으로 우회하지 않는다. 따라서 third+ Lv14의 일반 Cashout, 인력 대상, Black Hole 흡수 대상 또는 별도 렌더 fallback으로 이어지는 gameplay 경로는 존재하지 않는다.
+- slot 승인 전에 source 공을 삭제하거나 merge lock으로 소비하지 않는다. 예약 실패 pair의 `ball_merged`, Lv14 discovery, score 또는 Black Hole entity event도 발생하지 않는다.
+- 이 예약과 overflow contact commit도 physics tick의 `valid_play_delta` 안에서만 수행한다. 제한시간 뒤 후보를 미리 계산해 source를 소비하거나 Black Hole을 생성하지 않는다.
+
+### 이동 Black Hole Presentation cue
+
+- 이동 Black Hole 본체와 player-visible 방어 fallback은 승인된 `Void Cathedral C`의 검정 shadow·gold·Galactic-violet 계보를 사용한다. Core overflow 계약이 완료되면 normal/global Lv14 fallback은 도달 불가능해야 한다.
+- `300 world units` 대형 점선 influence ring은 제거한다. 이는 authoritative 인력 반경 `480 world units`와 일치하지 않고, 실제 contact에서만 일어나는 흡수 범위처럼 오독될 수 있다.
+- 오래된 targeting reticle처럼 보이는 공전 사각 점 장식도 제거한다.
+- 남기는 지속 cue는 소수의 근거리 lensing arc와 이동 반대 방향의 짧은 light trail뿐이다. 두 cue는 `Void Cathedral C`의 gold/Galactic-violet palette를 따르는 procedural Presentation이며 새 bitmap asset을 요구하지 않는다.
+- cue는 authoritative runtime 값에 직접 binding되지 않는 한 인력, 흡수, 충돌 또는 Phase 반경을 시각화한다고 주장하지 않는다. 장식의 거리나 길이를 gameplay 판정에 사용하지 않는다.
+
 ### 두 번째 Black Hole과 Run 종료
 
-Black Hole Phase 중 두 번째 Lv14 Black Hole을 만들면 두 Black Hole이 같은 Play Field에 존재한다. 둘이 충돌하면 일반 Merge를 수행하지 않고 최종 시퀀스를 한 번만 잠근다.
+Black Hole Phase 중 두 번째 Lv14 Black Hole을 만들면 최대 두 Black Hole이 같은 Play Field에 존재한다. 둘이 충돌하면 일반 Merge를 수행하지 않고 최종 시퀀스를 한 번만 잠근다.
 
 ```text
 Two Black Holes Contact

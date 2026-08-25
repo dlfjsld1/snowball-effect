@@ -207,6 +207,10 @@ func _update_special_fallback(snapshot_positions: PackedVector2Array, snapshot_r
 
 
 func _update_black_holes() -> void:
+	if _simulation.is_black_hole_terminal_locked():
+		_black_hole_positions.clear()
+		_black_hole_radii.clear()
+		return
 	var snapshot := _simulation.get_black_hole_snapshot()
 	_black_hole_positions = snapshot["positions"]
 	_black_hole_radii = snapshot["radii"]

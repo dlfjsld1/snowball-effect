@@ -1,0 +1,213 @@
+{
+    "schema":  1,
+    "generated_at":  "2026-08-24T09:24:20.3873382Z",
+    "contract":  {
+                     "global_level":  11,
+                     "galactic_local_level":  1,
+                     "radius":  8,
+                     "diameter":  16,
+                     "galactic_chain":  [
+                                            10,
+                                            11,
+                                            12,
+                                            13,
+                                            14
+                                        ]
+                 },
+    "masters":  [
+                    {
+                        "id":  "A",
+                        "file":  "master-a-triad-cluster.png",
+                        "width":  1254,
+                        "height":  1254,
+                        "pixel_format":  "Format32bppArgb",
+                        "alpha_min":  0,
+                        "alpha_max":  255,
+                        "opaque_pixels":  2,
+                        "partial_alpha_pixels":  732933,
+                        "nonzero_alpha_pixels":  732935,
+                        "visible_rgb_colors":  505694,
+                        "bounds":  [
+                                       40,
+                                       39,
+                                       1227,
+                                       1215
+                                   ],
+                        "margins_ltrb":  [
+                                             40,
+                                             39,
+                                             26,
+                                             38
+                                         ],
+                        "edge_max_alpha":  0,
+                        "transparent_rgb_nonzero":  0,
+                        "components_8":  1,
+                        "components_4":  204,
+                        "largest_component_pixels":  732935,
+                        "normalized_pixels":  0
+                    },
+                    {
+                        "id":  "B",
+                        "file":  "master-b-spiral-swarm-crown.png",
+                        "width":  1254,
+                        "height":  1254,
+                        "pixel_format":  "Format32bppArgb",
+                        "alpha_min":  0,
+                        "alpha_max":  254,
+                        "opaque_pixels":  0,
+                        "partial_alpha_pixels":  805339,
+                        "nonzero_alpha_pixels":  805339,
+                        "visible_rgb_colors":  503000,
+                        "bounds":  [
+                                       97,
+                                       59,
+                                       1173,
+                                       1191
+                                   ],
+                        "margins_ltrb":  [
+                                             97,
+                                             59,
+                                             80,
+                                             62
+                                         ],
+                        "edge_max_alpha":  0,
+                        "transparent_rgb_nonzero":  0,
+                        "components_8":  1,
+                        "components_4":  118,
+                        "largest_component_pixels":  805339,
+                        "normalized_pixels":  0
+                    },
+                    {
+                        "id":  "C",
+                        "file":  "master-c-colliding-web.png",
+                        "width":  1254,
+                        "height":  1254,
+                        "pixel_format":  "Format32bppArgb",
+                        "alpha_min":  0,
+                        "alpha_max":  255,
+                        "opaque_pixels":  7,
+                        "partial_alpha_pixels":  709246,
+                        "nonzero_alpha_pixels":  709253,
+                        "visible_rgb_colors":  505057,
+                        "bounds":  [
+                                       27,
+                                       48,
+                                       1224,
+                                       1205
+                                   ],
+                        "margins_ltrb":  [
+                                             27,
+                                             48,
+                                             29,
+                                             48
+                                         ],
+                        "edge_max_alpha":  0,
+                        "transparent_rgb_nonzero":  0,
+                        "components_8":  1,
+                        "components_4":  424,
+                        "largest_component_pixels":  709253,
+                        "normalized_pixels":  0
+                    }
+                ],
+    "candidates":  [
+                       {
+                           "id":  "A",
+                           "file":  "candidate-a-triad-cluster-16.png",
+                           "inspection":  "inspection-a-triad-cluster-256.png",
+                           "width":  16,
+                           "height":  16,
+                           "pixel_format":  "Format32bppArgb",
+                           "alpha_min":  0,
+                           "alpha_max":  255,
+                           "opaque_pixels":  96,
+                           "partial_alpha_pixels":  0,
+                           "visible_rgb_colors":  7,
+                           "bounds":  [
+                                          2,
+                                          1,
+                                          14,
+                                          14
+                                      ],
+                           "margins_ltrb":  [
+                                                2,
+                                                1,
+                                                1,
+                                                1
+                                            ],
+                           "edge_max_alpha":  0,
+                           "transparent_rgb_nonzero":  0,
+                           "components_8":  1,
+                           "components_4":  1,
+                           "core_pixels":  3,
+                           "expected_cores":  3,
+                           "core_check":  true,
+                           "nearest_16x_check":  true
+                       },
+                       {
+                           "id":  "B",
+                           "file":  "candidate-b-spiral-swarm-crown-16.png",
+                           "inspection":  "inspection-b-spiral-swarm-crown-256.png",
+                           "width":  16,
+                           "height":  16,
+                           "pixel_format":  "Format32bppArgb",
+                           "alpha_min":  0,
+                           "alpha_max":  255,
+                           "opaque_pixels":  96,
+                           "partial_alpha_pixels":  0,
+                           "visible_rgb_colors":  7,
+                           "bounds":  [
+                                          2,
+                                          2,
+                                          14,
+                                          14
+                                      ],
+                           "margins_ltrb":  [
+                                                2,
+                                                2,
+                                                1,
+                                                1
+                                            ],
+                           "edge_max_alpha":  0,
+                           "transparent_rgb_nonzero":  0,
+                           "components_8":  1,
+                           "components_4":  1,
+                           "core_pixels":  5,
+                           "expected_cores":  5,
+                           "core_check":  true,
+                           "nearest_16x_check":  true
+                       },
+                       {
+                           "id":  "C",
+                           "file":  "candidate-c-colliding-web-16.png",
+                           "inspection":  "inspection-c-colliding-web-256.png",
+                           "width":  16,
+                           "height":  16,
+                           "pixel_format":  "Format32bppArgb",
+                           "alpha_min":  0,
+                           "alpha_max":  255,
+                           "opaque_pixels":  101,
+                           "partial_alpha_pixels":  0,
+                           "visible_rgb_colors":  8,
+                           "bounds":  [
+                                          2,
+                                          2,
+                                          14,
+                                          14
+                                      ],
+                           "margins_ltrb":  [
+                                                2,
+                                                2,
+                                                1,
+                                                1
+                                            ],
+                           "edge_max_alpha":  0,
+                           "transparent_rgb_nonzero":  0,
+                           "components_8":  1,
+                           "components_4":  1,
+                           "core_pixels":  5,
+                           "expected_cores":  5,
+                           "core_check":  true,
+                           "nearest_16x_check":  true
+                       }
+                   ]
+}

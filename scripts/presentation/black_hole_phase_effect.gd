@@ -3,9 +3,9 @@ extends Control
 
 const VIEWPORT_SIZE := Vector2(1600.0, 900.0)
 const DEFAULT_INFLUENCE_RADIUS := 300.0
+const BLACK_HOLE_TEXTURE: CanvasTexture = preload("res://assets/sprites/balls/galactic/runtime/ball_galactic_local_lv04_black_hole_void_cathedral_128.tres")
 const CORE_COLOR := Color("02040b")
 const HORIZON_COLOR := Color("74fff0")
-const HORIZON_SHADOW_COLOR := Color("168f91")
 const FIELD_COLOR := Color("35d8cf")
 const TRAIL_COLOR := Color("7a42b8")
 const EXPLOSION_COLOR := Color("d8fff7")
@@ -124,7 +124,16 @@ func get_visual_metrics() -> Dictionary:
 		"finale_progress": _finale_progress,
 		"field_rect": _field_rect,
 		"field_expansion_width": maxf(_field_rect.size.x - _origin_field_rect.size.x, 0.0),
+		"black_hole_visual_resource": BLACK_HOLE_TEXTURE.resource_path,
 	}
+
+
+func get_black_hole_visual_texture() -> Texture2D:
+	return BLACK_HOLE_TEXTURE
+
+
+func get_black_hole_draw_texture() -> Texture2D:
+	return BLACK_HOLE_TEXTURE.diffuse_texture
 
 
 func _process(delta: float) -> void:
@@ -199,11 +208,21 @@ func _draw_gameplay_black_hole(index: int) -> void:
 	if not _reduced_effects:
 		_draw_motion_trail(index, center, horizon_radius)
 
-	draw_circle(center, core_radius * collapse_scale + 4.0, HORIZON_SHADOW_COLOR * Color(1.0, 1.0, 1.0, horizon_alpha))
-	draw_circle(center, core_radius * collapse_scale, CORE_COLOR)
-	draw_arc(center, horizon_radius * collapse_scale, 0.0, TAU, 40, HORIZON_COLOR * Color(1.0, 1.0, 1.0, horizon_alpha), 4.0, false)
+	_draw_void_cathedral(center, core_radius, horizon_alpha, collapse_scale)
 	draw_arc(center, horizon_radius * collapse_scale + 5.0, -1.1 + _elapsed, 1.25 + _elapsed, 18, FIELD_COLOR * Color(1.0, 1.0, 1.0, 0.65), 2.0, false)
 	_draw_orbit_pixels(center, horizon_radius + 9.0, index)
+
+
+func _draw_void_cathedral(center: Vector2, core_radius: float, alpha: float, scale: float = 1.0) -> void:
+	var matte_radius := (core_radius + 5.0) * scale
+	var visual_radius := (core_radius + 8.0) * scale
+	draw_circle(center, matte_radius, CORE_COLOR * Color(1.0, 1.0, 1.0, alpha))
+	draw_texture_rect(
+		BLACK_HOLE_TEXTURE.diffuse_texture,
+		Rect2(center - Vector2.ONE * visual_radius, Vector2.ONE * visual_radius * 2.0),
+		false,
+		Color(1.0, 1.0, 1.0, alpha)
+	)
 
 
 func _draw_field_expansion_fill() -> void:
@@ -295,9 +314,7 @@ func _draw_finale() -> void:
 
 func _draw_finale_core(center: Vector2, radius: float, alpha: float, orbit_progress: float) -> void:
 	var core_radius := maxf(radius, 16.0) * lerpf(1.0, 0.72, orbit_progress)
-	draw_circle(center, core_radius + 5.0, HORIZON_SHADOW_COLOR * Color(1.0, 1.0, 1.0, alpha))
-	draw_circle(center, core_radius, CORE_COLOR * Color(1.0, 1.0, 1.0, alpha))
-	draw_arc(center, core_radius + 6.0, _elapsed * 3.0, _elapsed * 3.0 + TAU * 0.74, 28, HORIZON_COLOR * Color(1.0, 1.0, 1.0, alpha), 4.0, false)
+	_draw_void_cathedral(center, core_radius, alpha)
 
 
 func _draw_pixel_explosion(center: Vector2, progress: float) -> void:

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galactic Quasar — 32px 후보 3종</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #02040c;
+      --panel: #0b1021;
+      --line: #26355b;
+      --text: #f6f8ff;
+      --muted: #9baacf;
+      --a: #73efff;
+      --b: #ef59ff;
+      --c: #ffc35b;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; min-height: 100%; background: var(--bg); }
+    body {
+      height: 900px;
+      overflow: hidden;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: Inter, "Noto Sans KR", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 50% -20%, #172147 0, #070b19 36%, #02040c 72%),
+        #02040c;
+    }
+    header {
+      height: 76px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    h1 { margin: 0 0 4px; font-size: 29px; line-height: 1; letter-spacing: -0.04em; }
+    .subtitle { color: var(--muted); font: 12px/1.45 Consolas, monospace; }
+    .lineage { display: flex; align-items: center; gap: 10px; height: 62px; }
+    .lineage-item { min-width: 82px; color: var(--muted); text-align: center; font: 9px/1.25 Consolas, monospace; }
+    .lineage-icon { height: 38px; display: flex; align-items: center; justify-content: center; margin-bottom: 3px; }
+    .lineage img { image-rendering: pixelated; object-fit: contain; max-width: 48px; max-height: 38px; }
+    .lineage-arrow { color: #516694; font: 18px/1 Consolas, monospace; }
+    main {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      height: 782px;
+    }
+    article {
+      min-width: 0;
+      height: 100%;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(15,23,49,.98), rgba(7,12,28,.98));
+      display: grid;
+      grid-template-rows: 38px 296px 27px 258px 1fr;
+      gap: 7px;
+      overflow: hidden;
+    }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    h2 { margin: 0; font-size: 19px; letter-spacing: -0.025em; }
+    .a h2, .a .pass { color: var(--a); }
+    .b h2, .b .pass { color: var(--b); }
+    .c h2, .c .pass { color: var(--c); }
+    .badge { color: #adc4ff; font: 8px/1.2 Consolas, monospace; letter-spacing: .13em; text-transform: uppercase; text-align: right; }
+    .master {
+      border-radius: 11px;
+      border: 1px solid #18233f;
+      background:
+        radial-gradient(circle at 50% 45%, #111a38 0, #080d1d 50%, #030610 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .master img { width: 94%; height: 94%; object-fit: contain; }
+    .palette { display: flex; align-items: center; gap: 5px; color: var(--muted); font: 9px/1 Consolas, monospace; }
+    .swatch { width: 15px; height: 15px; border: 1px solid rgba(255,255,255,.18); border-radius: 3px; }
+    .previews { display: grid; grid-template-columns: 1fr 256px; gap: 8px; min-width: 0; }
+    .actual-stack { display: grid; grid-template-rows: 1fr 1fr; gap: 7px; }
+    .actual-box {
+      position: relative;
+      border: 1px solid #28395f;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .actual-box.neutral { background: #dce7f7; }
+    .actual-box.dark { background: #02040c; }
+    .actual-box img { width: 32px; height: 32px; object-fit: contain; }
+    .actual-box span {
+      position: absolute;
+      left: 6px;
+      bottom: 5px;
+      color: #506181;
+      font: 7px/1 Consolas, monospace;
+    }
+    .actual-box.dark span { color: #7083ad; }
+    .inspection {
+      width: 256px;
+      height: 256px;
+      border: 1px solid #28395f;
+      border-radius: 9px;
+      background: #02040c;
+      image-rendering: pixelated;
+    }
+    .notes { min-height: 0; padding-top: 2px; color: #dbe4fb; font-size: 11px; line-height: 1.37; }
+    .notes p { margin: 0 0 4px; }
+    .notes strong { color: white; }
+    .metric { color: #91a4d3; font: 9px/1.4 Consolas, monospace; }
+    .pass { font-weight: 800; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Galactic Quasar — 32px 후보 3종</h1>
+      <div class="subtitle">authoritative: global Lv12 · Galactic local Lv2 · radius 16 · diameter 32 · concept only / runtime unchanged</div>
+    </div>
+    <div class="lineage" aria-label="existing Galactic runtime lineage">
+      <div class="lineage-item"><div class="lineage-icon"><img src="../../../../../assets/sprites/balls/galactic/runtime/ball_lv11_galaxy_cluster_16.png" alt="Galaxy Cluster"></div>Cluster · 16px<br>multi-core</div>
+      <div class="lineage-arrow">→</div>
+      <div class="lineage-item"><div class="lineage-icon"><img src="../../../../../assets/sprites/balls/galactic/runtime/ball_lv12_quasar_32.png" alt="Current Quasar"></div>current · 32px<br>unchanged</div>
+      <div class="lineage-arrow">→</div>
+      <div class="lineage-item"><div class="lineage-icon"><img src="../../../../../assets/sprites/balls/galactic/runtime/ball_lv13_event_horizon_64.png" alt="Event Horizon"></div>Horizon · 64px<br>dark ring</div>
+      <div class="lineage-arrow">→</div>
+      <div class="lineage-item"><div class="lineage-icon"><img src="../../../../../assets/sprites/balls/galactic/runtime/ball_lv14_black_hole_128.png" alt="Black Hole"></div>Black Hole · 128px<br>void + ring</div>
+    </div>
+  </header>
+
+  <main>
+    <article class="a">
+      <div class="card-head"><h2>A · POLAR BEACON</h2><div class="badge">recommended · fastest quasar read</div></div>
+      <div class="master"><img src="quasar-A-polar-beacon-master.png" alt="Polar Beacon master"></div>
+      <div class="palette">
+        palette
+        <i class="swatch" style="background:#f8ffff"></i><i class="swatch" style="background:#5cf7ff"></i><i class="swatch" style="background:#2475ff"></i><i class="swatch" style="background:#7d35e8"></i><i class="swatch" style="background:#e252ff"></i>
+        platinum / cyan / violet
+      </div>
+      <div class="previews">
+        <div class="actual-stack">
+          <div class="actual-box neutral"><img src="quasar-A-polar-beacon-32.png" alt="Polar Beacon actual 32px"><span>actual 32×32 · neutral</span></div>
+          <div class="actual-box dark"><img src="quasar-A-polar-beacon-32.png" alt="Polar Beacon actual 32px on Galactic dark"><span>actual 32×32 · #02040C</span></div>
+        </div>
+        <img class="inspection" src="quasar-A-polar-beacon-inspection-256.png" alt="Polar Beacon nearest-neighbor inspection">
+      </div>
+      <div class="notes">
+        <p><strong>형태:</strong> 기울어진 타원 원반과 곧은 양극 제트가 선명한 X 실루엣을 만든다.</p>
+        <p><strong>평가:</strong> 세 cue의 분리가 가장 빠르다. 중앙 겹침은 조밀하지만 설명 없이 Quasar로 읽힌다.</p>
+        <div class="metric"><span class="pass">32px PASS</span> · bbox 3,2–28,29 · margin 3/2/3/2 · edge α0</div>
+      </div>
+    </article>
+
+    <article class="b">
+      <div class="card-head"><h2>B · VIOLET MAELSTROM</h2><div class="badge">strongest swirl · most hypnotic</div></div>
+      <div class="master"><img src="quasar-B-violet-maelstrom-master.png" alt="Violet Maelstrom master"></div>
+      <div class="palette">
+        palette
+        <i class="swatch" style="background:#f4ffff"></i><i class="swatch" style="background:#58dfff"></i><i class="swatch" style="background:#6545ff"></i><i class="swatch" style="background:#ad24ed"></i><i class="swatch" style="background:#ff3ed2"></i>
+        blue-white / violet / magenta
+      </div>
+      <div class="previews">
+        <div class="actual-stack">
+          <div class="actual-box neutral"><img src="quasar-B-violet-maelstrom-32.png" alt="Violet Maelstrom actual 32px"><span>actual 32×32 · neutral</span></div>
+          <div class="actual-box dark"><img src="quasar-B-violet-maelstrom-32.png" alt="Violet Maelstrom actual 32px on Galactic dark"><span>actual 32×32 · #02040C</span></div>
+        </div>
+        <img class="inspection" src="quasar-B-violet-maelstrom-inspection-256.png" alt="Violet Maelstrom nearest-neighbor inspection">
+      </div>
+      <div class="notes">
+        <p><strong>형태:</strong> 넓은 정면 whirlpool과 위·아래로 감기는 S형 twin jet.</p>
+        <p><strong>평가:</strong> 회전감은 가장 강하다. jet 직선성은 A보다 약해 세 요소 판독에 반 박자 더 걸린다.</p>
+        <div class="metric"><span class="pass">32px PASS</span> · bbox 6,2–25,29 · margin 6/2/6/2 · edge α0</div>
+      </div>
+    </article>
+
+    <article class="c">
+      <div class="card-head"><h2>C · SOLAR LANCE</h2><div class="badge">hottest · strongest energy split</div></div>
+      <div class="master"><img src="quasar-C-solar-lance-master.png" alt="Solar Lance master"></div>
+      <div class="palette">
+        palette
+        <i class="swatch" style="background:#fff8d6"></i><i class="swatch" style="background:#ffb52d"></i><i class="swatch" style="background:#fa341f"></i><i class="swatch" style="background:#173fbe"></i><i class="swatch" style="background:#7eeaff"></i>
+        gold-white / scarlet / cobalt
+      </div>
+      <div class="previews">
+        <div class="actual-stack">
+          <div class="actual-box neutral"><img src="quasar-C-solar-lance-32.png" alt="Solar Lance actual 32px"><span>actual 32×32 · neutral</span></div>
+          <div class="actual-box dark"><img src="quasar-C-solar-lance-32.png" alt="Solar Lance actual 32px on Galactic dark"><span>actual 32×32 · #02040C</span></div>
+        </div>
+        <img class="inspection" src="quasar-C-solar-lance-inspection-256.png" alt="Solar Lance nearest-neighbor inspection">
+      </div>
+      <div class="notes">
+        <p><strong>형태:</strong> 적/청 난류 원반과 서로 색이 갈리는 두꺼운 양극 lance.</p>
+        <p><strong>평가:</strong> 열기와 힘은 압도적이다. 단독 사용 시 폭발 오인 위험이 있어 원반 cue가 핵심이다.</p>
+        <div class="metric"><span class="pass">32px PASS</span> · bbox 2,2–28,29 · margin 2/2/3/2 · edge α0</div>
+      </div>
+    </article>
+  </main>
+</body>
+</html>

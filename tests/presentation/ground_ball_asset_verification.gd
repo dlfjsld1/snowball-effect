@@ -81,7 +81,8 @@ func _ready() -> void:
 			continue
 		var runtime_path: String = KIT_ROOT + "/" + String((assets[level] as Dictionary).get("path", ""))
 		_expect(batch.texture != null and batch.texture.resource_path == runtime_path, "Ground batch %d must consume its BallDefinition texture." % level)
-		_expect(batch.material == null, "Textured Ground batches must not retain the procedural circle material.")
+		var textured_material := batch.material as ShaderMaterial
+		_expect(textured_material != null and textured_material.get_shader_parameter("use_texture") == true, "Textured Ground batches must retain the clipping/upright shader in texture mode.")
 		_expect(batch.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST, "Ground batch %d must sample with nearest filtering." % level)
 	var untouched_batch := renderer.get_node_or_null("LevelBatch11") as MultiMeshInstance2D
 	_expect(untouched_batch != null and untouched_batch.texture == null and untouched_batch.material != null, "Unproduced Galactic levels must remain on the existing procedural fallback.")
@@ -92,11 +93,11 @@ func _ready() -> void:
 	simulation.spawn_ball(Vector2(100, 100), Vector2.ZERO, 4.0, 4)
 	renderer.refresh_render_snapshot()
 	var moon_batch := renderer.get_node("LevelBatch4") as MultiMeshInstance2D
-	_expect(moon_batch.texture != null and moon_batch.texture.resource_path.ends_with("ball_lv04_moon_8.png"), "Planetary-base Moon must use its separate 8px symbolic LOD instead of shrinking the Ground hero LOD.")
+	_expect(moon_batch.texture != null and moon_batch.texture.resource_path.ends_with("ball_planetary_local_lv00_moon_user_authored_8.tres"), "Planetary-base Moon must use its approved separate 8px LOD instead of shrinking the Ground hero LOD.")
 	simulation.reset_runtime()
 	simulation.spawn_ball(Vector2(100, 100), Vector2.ZERO, 64.0, 4)
 	renderer.refresh_render_snapshot()
-	_expect(moon_batch.texture != null and moon_batch.texture.resource_path.ends_with("ball_lv04_moon_128.png"), "Ground hero Moon must restore its exact 128px texture binding.")
+	_expect(moon_batch.texture != null and moon_batch.texture.resource_path.ends_with("ball_lv04_moon_user_authored_128.tres"), "Ground hero Moon must restore its approved exact 128px texture binding.")
 	simulation.queue_free()
 	renderer.queue_free()
 

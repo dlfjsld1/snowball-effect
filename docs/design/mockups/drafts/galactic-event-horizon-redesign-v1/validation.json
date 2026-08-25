@@ -1,0 +1,346 @@
+{
+  "authoritative_mapping": {
+    "global_level": 13,
+    "galactic_local_level": 3,
+    "runtime_radius": 32,
+    "runtime_diameter": 64
+  },
+  "candidates": {
+    "A": {
+      "master": {
+        "file": "event-horizon-A-void-aperture-master.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          1254,
+          1254
+        ],
+        "alpha_min": 0,
+        "alpha_max": 254,
+        "transparent_pixels": 791742,
+        "opaque_pixels": 0,
+        "partial_alpha_pixels": 780774,
+        "alpha_bbox": [
+          126,
+          109,
+          1130,
+          1119
+        ],
+        "margins_ltrb": [
+          126,
+          109,
+          124,
+          135
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "actual": {
+        "file": "event-horizon-A-void-aperture-64.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 1305,
+        "opaque_pixels": 92,
+        "partial_alpha_pixels": 2699,
+        "alpha_bbox": [
+          2,
+          2,
+          62,
+          62
+        ],
+        "margins_ltrb": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "inspection": {
+        "file": "event-horizon-A-void-aperture-inspection-256.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          256,
+          256
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 20880,
+        "opaque_pixels": 1472,
+        "partial_alpha_pixels": 43184,
+        "alpha_bbox": [
+          8,
+          8,
+          248,
+          248
+        ],
+        "margins_ltrb": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "void": {
+        "connected_void_pixels": 1785,
+        "connected_void_fraction_of_canvas": 0.4358,
+        "connected_void_bbox": [
+          7,
+          9,
+          56,
+          55
+        ],
+        "center_16x16_luma_max": 0.0,
+        "center_16x16_luma_stddev": 0.0,
+        "bright_boundary_pixels": 334,
+        "void_area_pass": true,
+        "interior_detail_free_pass": true,
+        "outer_cue_pass": true
+      },
+      "nearest_4x_pass": true
+    },
+    "B": {
+      "master": {
+        "file": "event-horizon-B-gravity-wound-master.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          1254,
+          1254
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 747561,
+        "opaque_pixels": 192,
+        "partial_alpha_pixels": 824763,
+        "alpha_bbox": [
+          66,
+          71,
+          1192,
+          1181
+        ],
+        "margins_ltrb": [
+          66,
+          71,
+          62,
+          73
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "actual": {
+        "file": "event-horizon-B-gravity-wound-64.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 1533,
+        "opaque_pixels": 115,
+        "partial_alpha_pixels": 2448,
+        "alpha_bbox": [
+          2,
+          2,
+          62,
+          61
+        ],
+        "margins_ltrb": [
+          2,
+          2,
+          2,
+          3
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "inspection": {
+        "file": "event-horizon-B-gravity-wound-inspection-256.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          256,
+          256
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 24528,
+        "opaque_pixels": 1840,
+        "partial_alpha_pixels": 39168,
+        "alpha_bbox": [
+          8,
+          8,
+          248,
+          244
+        ],
+        "margins_ltrb": [
+          8,
+          8,
+          8,
+          12
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "void": {
+        "connected_void_pixels": 756,
+        "connected_void_fraction_of_canvas": 0.1846,
+        "connected_void_bbox": [
+          18,
+          12,
+          49,
+          49
+        ],
+        "center_16x16_luma_max": 8.653,
+        "center_16x16_luma_stddev": 1.145,
+        "bright_boundary_pixels": 484,
+        "void_area_pass": true,
+        "interior_detail_free_pass": true,
+        "outer_cue_pass": true
+      },
+      "nearest_4x_pass": true
+    },
+    "C": {
+      "master": {
+        "file": "event-horizon-C-last-light-master.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          1254,
+          1254
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 992837,
+        "opaque_pixels": 24,
+        "partial_alpha_pixels": 579655,
+        "alpha_bbox": [
+          201,
+          178,
+          1055,
+          1046
+        ],
+        "margins_ltrb": [
+          201,
+          178,
+          199,
+          208
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "actual": {
+        "file": "event-horizon-C-last-light-64.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          64,
+          64
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 1176,
+        "opaque_pixels": 133,
+        "partial_alpha_pixels": 2787,
+        "alpha_bbox": [
+          2,
+          2,
+          61,
+          62
+        ],
+        "margins_ltrb": [
+          2,
+          2,
+          3,
+          2
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "inspection": {
+        "file": "event-horizon-C-last-light-inspection-256.png",
+        "format": "PNG",
+        "mode": "RGBA",
+        "size": [
+          256,
+          256
+        ],
+        "alpha_min": 0,
+        "alpha_max": 255,
+        "transparent_pixels": 18816,
+        "opaque_pixels": 2128,
+        "partial_alpha_pixels": 44592,
+        "alpha_bbox": [
+          8,
+          8,
+          244,
+          248
+        ],
+        "margins_ltrb": [
+          8,
+          8,
+          12,
+          8
+        ],
+        "edge_alpha_max": 0,
+        "components_alpha_gt_8": 1,
+        "valid_png_rgba": true,
+        "transparency_pass": true,
+        "edge_clear_pass": true
+      },
+      "void": {
+        "connected_void_pixels": 1920,
+        "connected_void_fraction_of_canvas": 0.4688,
+        "connected_void_bbox": [
+          5,
+          4,
+          54,
+          57
+        ],
+        "center_16x16_luma_max": 0.0,
+        "center_16x16_luma_stddev": 0.0,
+        "bright_boundary_pixels": 247,
+        "void_area_pass": true,
+        "interior_detail_free_pass": true,
+        "outer_cue_pass": true
+      },
+      "nearest_4x_pass": true
+    }
+  }
+}

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planetary Moon Redesign v1 — Three Candidates</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --field: #070b1d;
+      --panel: #111831;
+      --line: #2d395e;
+      --ink: #f4f1e8;
+      --muted: #aab5d1;
+      --blue: #7f9eff;
+      --ivory: #fff1cb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 50% 0%, #151f43 0, var(--field) 44rem);
+      color: var(--ink);
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { width: min(1420px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 56px; }
+    header { display: grid; gap: 8px; margin-bottom: 28px; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(28px, 4vw, 48px); letter-spacing: -0.035em; }
+    header p { color: var(--muted); max-width: 78ch; }
+    .target { color: var(--ivory); font-weight: 750; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    article {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      box-shadow: 0 18px 50px rgb(0 0 0 / 32%);
+    }
+    .head { padding: 20px 20px 14px; border-bottom: 1px solid var(--line); }
+    .eyebrow { color: var(--blue); font-size: 12px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+    h2 { margin-top: 3px; font-size: 24px; letter-spacing: -.02em; }
+    .head p { margin-top: 8px; color: var(--muted); min-height: 3em; }
+    .master-well {
+      display: grid;
+      place-items: center;
+      min-height: 390px;
+      padding: 18px;
+      background: #060a1b;
+    }
+    .master { display: block; width: min(100%, 400px); height: auto; }
+    .sizes { padding: 18px 20px 22px; }
+    .sizes > p { color: var(--muted); margin-bottom: 12px; }
+    .scale-row { display: grid; grid-template-columns: 64px 90px 1fr; gap: 12px; align-items: end; }
+    figure { margin: 0; display: grid; gap: 7px; justify-items: center; }
+    figcaption { color: var(--muted); font-size: 12px; }
+    .preview-well {
+      display: grid;
+      place-items: center;
+      background: #05091a;
+      border: 1px solid #222e50;
+      border-radius: 8px;
+      width: 100%;
+      height: 148px;
+    }
+    .actual { width: 8px; height: 8px; }
+    .x4 { width: 32px; height: 32px; image-rendering: pixelated; }
+    .x16 { width: 128px; height: 128px; image-rendering: pixelated; }
+    footer { margin-top: 22px; color: var(--muted); }
+    code { color: var(--ivory); }
+    @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } .head p { min-height: 0; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Snowball Effect · Stage 2 Planetary</p>
+      <h1>Moon gameplay ball — three distinct choices</h1>
+      <p><span class="target">Actual target: 8 px diameter</span> (Planetary local Lv0, global Lv4, radius 4). Masters are transparent concept art. Every scaled view below uses the same deterministic 8×8 transparent derivative; 4× and 16× are nearest-neighbor display only.</p>
+    </header>
+
+    <section class="grid" aria-label="Moon concept candidates">
+      <article>
+        <div class="head">
+          <p class="eyebrow">Candidate A</p>
+          <h2>Crater Pearl</h2>
+          <p>Bright literal full Moon with a dominant lower-left basin and pearl-like spherical falloff.</p>
+        </div>
+        <div class="master-well"><img class="master" src="candidate-a-crater-pearl-master.png" alt="Crater Pearl Moon concept on transparent background"></div>
+        <div class="sizes">
+          <p>Small-size read: clearest literal Moon; the basin remains the anchor.</p>
+          <div class="scale-row">
+            <figure><div class="preview-well"><img class="actual" src="candidate-a-crater-pearl-preview-8px.png" alt="Crater Pearl at actual 8 pixels"></div><figcaption>1:1 · 8 px</figcaption></figure>
+            <figure><div class="preview-well"><img class="x4" src="candidate-a-crater-pearl-preview-8px.png" alt="Crater Pearl enlarged four times with nearest sampling"></div><figcaption>4× nearest</figcaption></figure>
+            <figure><div class="preview-well"><img class="x16" src="candidate-a-crater-pearl-preview-8px.png" alt="Crater Pearl enlarged sixteen times with nearest sampling"></div><figcaption>16× inspection</figcaption></figure>
+          </div>
+        </div>
+      </article>
+
+      <article>
+        <div class="head">
+          <p class="eyebrow">Candidate B</p>
+          <h2>Terminator Moon</h2>
+          <p>Bold diagonal terminator, three broad crater masses, and the strongest light/shadow silhouette.</p>
+        </div>
+        <div class="master-well"><img class="master" src="candidate-b-terminator-moon-master.png" alt="Terminator Moon concept on transparent background"></div>
+        <div class="sizes">
+          <p>Small-size read: highest value contrast; bright face and cool shadow split immediately.</p>
+          <div class="scale-row">
+            <figure><div class="preview-well"><img class="actual" src="candidate-b-terminator-moon-preview-8px.png" alt="Terminator Moon at actual 8 pixels"></div><figcaption>1:1 · 8 px</figcaption></figure>
+            <figure><div class="preview-well"><img class="x4" src="candidate-b-terminator-moon-preview-8px.png" alt="Terminator Moon enlarged four times with nearest sampling"></div><figcaption>4× nearest</figcaption></figure>
+            <figure><div class="preview-well"><img class="x16" src="candidate-b-terminator-moon-preview-8px.png" alt="Terminator Moon enlarged sixteen times with nearest sampling"></div><figcaption>16× inspection</figcaption></figure>
+          </div>
+        </div>
+      </article>
+
+      <article>
+        <div class="head">
+          <p class="eyebrow">Candidate C</p>
+          <h2>Maria Emblem</h2>
+          <p>Near-full graphic Moon with one connected dark maria mass and a bright lower-right ray point.</p>
+        </div>
+        <div class="master-well"><img class="master" src="candidate-c-maria-emblem-master.png" alt="Maria Emblem Moon concept on transparent background"></div>
+        <div class="sizes">
+          <p>Small-size read: most iconic; the central maria and ray point survive as a simple emblem.</p>
+          <div class="scale-row">
+            <figure><div class="preview-well"><img class="actual" src="candidate-c-maria-emblem-preview-8px.png" alt="Maria Emblem at actual 8 pixels"></div><figcaption>1:1 · 8 px</figcaption></figure>
+            <figure><div class="preview-well"><img class="x4" src="candidate-c-maria-emblem-preview-8px.png" alt="Maria Emblem enlarged four times with nearest sampling"></div><figcaption>4× nearest</figcaption></figure>
+            <figure><div class="preview-well"><img class="x16" src="candidate-c-maria-emblem-preview-8px.png" alt="Maria Emblem enlarged sixteen times with nearest sampling"></div><figcaption>16× inspection</figcaption></figure>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      Concept package only. Runtime adaptation and stage-specific LOD wiring await selection. Ground Moon gameplay art, the existing Planetary runtime Moon, and Moon FIRST CONTACT CUT-IN remain untouched.
+    </footer>
+  </main>
+</body>
+</html>
